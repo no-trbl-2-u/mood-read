@@ -97,10 +97,21 @@ Measure: 18 open · 0 closed · next A19
    example the DMCA's anti-circumvention rule in the US). Options were: (a) import only DRM-free files and tell
    listeners to bring their own converted copies; (b) decrypt with the listener's own activation bytes on their
    device; (c) leave Audible out of v1.
-3. **Where the music comes from.** The scores need a source Mood Read may legally play: a licensed royalty-free
-   catalog (cost per track or a subscription), a streaming service's API (their terms may forbid mixing their audio
-   with other audio), AI-generated music, or a curated set the owner licenses. This decides 01.2's catalog and A18.
-   Default if unanswered: a small curated royalty-free catalog tagged by mood, enough to prove 01.2 and 01.4.
+3. **Where the music comes from.** *Answered by the owner (2026-10-22):* "I would love to figure out a way to play
+   music from spotify, youtube, music, and the royalty free catalog." The question was which source Mood Read may
+   legally play under the narration: a licensed royalty-free catalog, a streaming service's API, AI-generated
+   music, or a curated set the owner licenses. What the answer means for the build:
+   - **Royalty-free catalog: yes, now.** 01.2 builds on a curated royalty-free catalog tagged by mood, and A18 holds.
+   - **Spotify: blocked as the developer terms read today.** Spotify's Developer Policy says "Do not permit any
+     device or system to segue, mix, re-mix, or overlap any Spotify Content with any other audio content" (III.7).
+     That is exactly music under narration. It also limits streaming to Premium users (IV.1) and bars selling a
+     streaming app (IV.2).
+   - **YouTube: blocked as the developer terms read today.** YouTube's Developer Policies forbid separating or
+     modifying a video's audio (III.I.7) and playing from a background player (III.I.9). YouTube Music has no
+     public playback API.
+   - **"music" (read as Apple Music, or YouTube Music if that was meant): unverified.** MusicKit plays Apple Music
+     for subscribers. Whether its terms allow mixing under other audio is not yet checked.
+   - 01.9 (below) studies a compliant way to bring these services in, and reports back before any of it is built.
 4. **How a chapter is read for its mood.** Speech-to-text on the device (private, slower, no cost per book) or a
    cloud service (faster, a cost per book, the audio leaves the device), and which model names the emotions. Default
    if unanswered: on-device speech-to-text, then a cloud model over the text only, with the listener's consent per
@@ -127,7 +138,12 @@ scoring; then the selector over scoring's choices. Ids keep the order the owner 
 - **01.7** · M · Ambient soundscapes: six or more licensed seamless loops, per book or per chapter, through the
   layer and mixer. Closes A12, partial A18. Needs 01.3.
 - **01.2** · L · AI mood playlists per chapter: transcript, emotions with intensities, ranked pieces from the
-  catalog, as a background job stored per chapter. Closes A13, A14, A15, A18. Needs 01.3 and 01.6; Open questions
-  3 and 4.
+  royalty-free catalog (Open questions 3), as a background job stored per chapter. Closes A13, A14, A15, A18.
+  Needs 01.3 and 01.6; Open questions 4.
 - **01.4** · S · The per-chapter selector: emotions, choices, preview, saved pick over auto. Closes A16, A17.
   Needs 01.2.
+- **01.9** · S · Streaming sources study (Open questions 3): check the current terms of Spotify, YouTube / YouTube
+  Music and Apple Music for any compliant way to use them in Mood Read. Examples: a licensing deal, music played only
+  between chapters rather than under the voice, or the selector linking out to a matching playlist in the
+  listener's own app. Report the options and their costs to the owner. Builds nothing and closes no acceptance ID;
+  it does not block 01.2.
