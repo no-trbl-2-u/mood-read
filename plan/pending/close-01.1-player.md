@@ -42,4 +42,4 @@ Remove 01.1. Add a follow-up so A2 and A4 are not lost:
 - **01.8** · S · Device pass for the player: run a development build on iOS and Android, confirm background
   playback and lock-screen/media-key controls, and settle Android's 2× speed cap. Closes A2, A4. Needs 01.1.
 
-The README row's progress goes to 7 left (01.1 out, 01.8 in).
+The README row's progress stays at 8 left (01.1 out, 01.8 in).
