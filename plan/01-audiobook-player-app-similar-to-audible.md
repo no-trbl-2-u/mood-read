@@ -1,0 +1,128 @@
+# 01 · Mood Read: an audiobook player that scores each chapter
+
+**Why:** Mood Read is an audiobook app in the spirit of Audible. Its twist is that every chapter comes with music:
+AI reads the emotions a chapter evokes and picks scores, instrumentals and ambient pieces to match. The listener
+hears that music under the narration, picks among several choices per chapter, sets the balance between music and
+voice, or swaps the music for an ambient soundscape (rain, fireplace, cityscape). It plays audiobooks the listener
+already owns: their downloaded Audible library and local audio files.
+
+From the owner's words (2026-10-22): "Mood read will be an application similar in nature to audible, except it will
+use AI to determine playlists of music scores, instrumentals, and ambient pieces based off of the emotions evoked
+during certain chapters within the audiobook."
+
+## What exists
+
+Nothing yet. The repository holds a README and this plan; no stack is chosen (Open questions 1). Every chunk below
+is new, and no other spec owns any of it.
+
+## What this spec builds
+
+- **The player (01.1):** a library of books, and playback with what an Audible listener expects: play and pause,
+  skip back and forward 30 s, chapter list and jump, speed (0.5× to 3×), sleep timer (minutes or end of chapter),
+  bookmarks, resume exactly where you stopped, background playback and lock-screen / media-key controls.
+- **Your own books (01.6):** import DRM-free files the listener owns (M4B, M4A/AAC, MP3, WAV, FLAC, OGG/Opus), as one
+  file or a folder of files that make one book. Chapters come from the file's chapter markers (M4B, MP3 CHAP), else
+  one file per chapter, else detected silences, and the listener can rename, merge or split them. Audible downloads
+  are AAX/AAXC with Audible's DRM; how Mood Read handles them is the owner's call (Open questions 2).
+- **A second audio layer (01.3):** a music bed that plays alongside the narration, follows it (pauses with it, moves
+  to the next chapter's pieces when the chapter changes, crossfades between pieces), loops or advances its playlist
+  while a chapter runs, and respects the speed setting without pitch-shifting the music.
+- **The mixer (01.5):** one balance control between narration and music (plus a master volume), saved per book, and
+  an optional "duck under voice" that dips the music while the narrator speaks.
+- **Ambient soundscapes (01.7):** a bundled set of seamless loops (at least rain, fireplace, cityscape, forest,
+  ocean, café), chosen per book or per chapter instead of the music, through the same layer and mixer.
+- **Mood scoring (01.2):** for each chapter, Mood Read gets the chapter's text (speech-to-text over its audio, Open
+  questions 4), has a model name the emotions it evokes (a small fixed set, e.g. tension, sorrow, wonder, joy, dread,
+  calm, romance, triumph, with an intensity), and builds a playlist of matching pieces from the music catalog (Open
+  questions 3). Results are stored per chapter, so a book is scored once, not on every play.
+- **The per-chapter selector (01.4):** each chapter shows its emotions and several scored choices; the listener picks
+  one, previews it, or keeps "auto". The pick is saved per chapter and wins over the default.
+
+## Contracts
+
+- **Data:** `Book` (title, author, narrator, cover, source: `local` | `audible`, files, duration, position),
+  `Chapter` (book, index, title, start/end within the book's audio, transcript ref), `ChapterMood` (chapter, emotions
+  with intensities, model and version, scored at), `Piece` (catalog id, title, artist, kind: `score` | `instrumental`
+  | `ambient`, mood tags, duration, license), `ChapterPlaylist` (chapter, ranked pieces, the listener's pick or
+  `auto`), `Soundscape` (id, name, loop file), `Mix` (book, narration level, music level, duck on/off, layer:
+  `music` | `soundscape` | `off`, soundscape id).
+- **One audio engine, two layers:** narration and the bed are separate players behind one clock owned by the
+  narration, so seek, pause, speed and chapter change drive the bed; the bed never drives the narration.
+- **Scoring is a job, not a play-time call:** scoring a book runs once in the background (with progress), and the
+  player works without it: an unscored chapter plays narration only, or the book's soundscape.
+- **The listener's audio and text stay theirs:** nothing from a book leaves the device without the owner having
+  chosen how (Open questions 4), and transcripts are kept only as long as scoring needs them.
+
+## Acceptance
+
+Measure: 18 open · 0 closed · next A19
+
+- **A1** A book in the library plays, pauses, skips ±30 s and jumps to any chapter from the chapter list.
+- **A2** Speed runs 0.5× to 3× without pitch change; a sleep timer stops playback after N minutes or at chapter end.
+- **A3** Closing and reopening the app resumes the book within 1 s of where it stopped; bookmarks can be added, named
+  and jumped to.
+- **A4** Playback continues in the background and answers lock-screen / media-key controls.
+- **A5** A DRM-free M4B, MP3, M4A, WAV, FLAC or OGG/Opus file, or a folder of them, imports as one book with cover,
+  title and author read from its tags.
+- **A6** Chapters come from embedded markers, else one per file, else detected silences; the listener can rename,
+  merge and split them.
+- **A7** Audible-owned books reach the library the way Open questions 2 settles, and Mood Read never asks for or
+  stores an Audible password.
+- **A8** Music plays under the narration, pauses and seeks with it, and changes to the next chapter's pieces at the
+  chapter boundary with a crossfade.
+- **A9** Changing the narration's speed never changes the music's speed or pitch.
+- **A10** One balance control and a master volume set narration against music; the setting is saved per book.
+- **A11** "Duck under voice" dips the music while the narrator speaks and brings it back in the pauses.
+- **A12** At least six ambient soundscapes loop without an audible seam and can replace the music for a book or one
+  chapter, through the same mixer.
+- **A13** Scoring a book names each chapter's emotions with intensities and stores them; rescoring is explicit.
+- **A14** Each scored chapter gets a ranked playlist of at least three pieces whose mood tags match its emotions.
+- **A15** Scoring runs in the background with progress and survives the app closing; an unscored chapter still plays.
+- **A16** Each chapter's selector shows its emotions and its choices, previews a choice, and saves the pick (or
+  `auto`).
+- **A17** A saved pick plays for that chapter on every later listen, over the auto choice.
+- **A18** Every piece and soundscape Mood Read plays carries a license that allows playing it in the app.
+
+## Open questions (owner decisions)
+
+1. **Platform and stack.** Phone (iOS, Android), web, desktop, or which first? Default if unanswered: a
+   cross-platform phone app first (background audio and lock-screen controls matter most there), with the web for
+   development.
+2. **Audible books.** Audible downloads are AAX/AAXC files locked by Audible's DRM, and Audible offers no public API
+   to play them in another app. Removing the DRM, even for a book you own, has legal risk (for example the DMCA's
+   anti-circumvention rule in the US). Options: (a) import only DRM-free files and tell listeners to bring their own
+   converted copies; (b) decrypt with the listener's own activation bytes on their device; (c) leave Audible out of
+   v1. Default if unanswered: (a), with a clear import note; 01.6 builds no decryption until the owner picks (b).
+3. **Where the music comes from.** The scores need a source Mood Read may legally play: a licensed royalty-free
+   catalog (cost per track or a subscription), a streaming service's API (their terms may forbid mixing their audio
+   with other audio), AI-generated music, or a curated set the owner licenses. This decides 01.2's catalog and A18.
+   Default if unanswered: a small curated royalty-free catalog tagged by mood, enough to prove 01.2 and 01.4.
+4. **How a chapter is read for its mood.** Speech-to-text on the device (private, slower, no cost per book) or a
+   cloud service (faster, a cost per book, the audio leaves the device), and which model names the emotions. Default
+   if unanswered: on-device speech-to-text, then a cloud model over the text only, with the listener's consent per
+   book.
+5. **Accounts and price.** Is Mood Read free, paid once, or a subscription (scoring and music licensing cost money
+   per book)? Do listeners have accounts that sync their library and picks across devices? Default if unanswered: no
+   accounts in v1, everything local.
+
+## Chunks
+
+Build order (nexus's choice): the player first, since everything plays through it; then real books in it; then the
+second audio layer and its mixer; then soundscapes, which give the layer something to play before any AI; then
+scoring; then the selector over scoring's choices. Ids keep the order the owner wrote them in.
+
+- **01.1** · L · The player: library view, playback, chapters, speed, sleep timer, bookmarks, resume, background
+  and lock-screen controls; opens one local file to have something to play. Closes A1, A2, A3, A4.
+  - Needs Open questions 1 answered or its default taken.
+- **01.6** · L · Your own books: import DRM-free files and folders, tags and covers, chapter detection and editing,
+  and Audible's path as Open questions 2 settles. Closes A5, A6, A7. Needs 01.1.
+- **01.3** · M · Music alongside the audiobook: the second layer on the narration's clock, chapter-boundary
+  crossfades, speed-independent bed; plays a fixed test playlist until 01.2 exists. Closes A8, A9. Needs 01.1.
+- **01.5** · S · The mixer: balance, master volume, per-book save, duck under voice. Closes A10, A11. Needs 01.3.
+- **01.7** · M · Ambient soundscapes: six or more licensed seamless loops, per book or per chapter, through the
+  layer and mixer. Closes A12, partial A18. Needs 01.3.
+- **01.2** · L · AI mood playlists per chapter: transcript, emotions with intensities, ranked pieces from the
+  catalog, as a background job stored per chapter. Closes A13, A14, A15, A18. Needs 01.3 and 01.6; Open questions
+  3 and 4.
+- **01.4** · S · The per-chapter selector: emotions, choices, preview, saved pick over auto. Closes A16, A17.
+  Needs 01.2.
