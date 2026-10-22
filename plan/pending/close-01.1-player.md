@@ -33,7 +33,7 @@ with Expo SDK 58 (React Native, Expo Router, expo-audio). Nothing more to apply 
   real phone. Known limits: lock-screen seek stays within the current file, and expo-audio sends no
   next/previous-track events.
 
-Measure: 19 open · 0 closed → 17 open · 2 closed · next A20.
+Measure: 20 open · 0 closed → 18 open · 2 closed · next A21.
 
 ## Chunks
 
@@ -42,4 +42,4 @@ Remove 01.1. Add a follow-up so A2 and A4 are not lost:
 - **01.8** · S · Device pass for the player: run a development build on iOS and Android, confirm background
   playback and lock-screen/media-key controls, and settle Android's 2× speed cap. Closes A2, A4. Needs 01.1.
 
-The README row's progress stays at 8 left (01.1 out, 01.8 in).
+The README row's progress stays at 9 left (01.1 out, 01.8 in; 01.8 belongs to v1 part 1).
