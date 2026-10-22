@@ -33,31 +33,36 @@ is new, and no other spec owns any of it.
   an optional "duck under voice" that dips the music while the narrator speaks.
 - **Ambient soundscapes (01.7):** a bundled set of seamless loops (at least rain, fireplace, cityscape, forest,
   ocean, café), chosen per book or per chapter instead of the music, through the same layer and mixer.
-- **Mood scoring (01.2):** for each chapter, Mood Read gets the chapter's text (speech-to-text over its audio, Open
-  questions 4), has a model name the emotions it evokes (a small fixed set, e.g. tension, sorrow, wonder, joy, dread,
-  calm, romance, triumph, with an intensity), and builds a playlist of matching pieces from the music catalog (Open
-  questions 3). Results are stored per chapter, so a book is scored once, not on every play.
+- **Mood scoring (01.2):** an AI research agent works out what happens in each chapter from what is written about
+  the book: chapter summaries (e.g. SparkNotes), reviews and other sources found by searching on the book's title,
+  author and chapter titles (Open questions 4). From that it names the emotions each chapter evokes (a small fixed
+  set, e.g. tension, sorrow, wonder, joy, dread, calm, romance, triumph, with an intensity) and cites its sources.
+  Mood Read then builds a playlist of matching pieces from the music catalog (Open questions 3). The book's audio is
+  never transcribed or uploaded. Research chapters are matched to the audiobook's chapters by title and order. A
+  book or chapter with too little written about it is marked unscored rather than guessed. Results are stored per
+  chapter, so a book is scored once, not on every play.
 - **The per-chapter selector (01.4):** each chapter shows its emotions and several scored choices; the listener picks
   one, previews it, or keeps "auto". The pick is saved per chapter and wins over the default.
 
 ## Contracts
 
 - **Data:** `Book` (title, author, narrator, cover, source: `local` | `audible`, files, duration, position),
-  `Chapter` (book, index, title, start/end within the book's audio, transcript ref), `ChapterMood` (chapter, emotions
-  with intensities, model and version, scored at), `Piece` (catalog id, title, artist, kind: `score` | `instrumental`
-  | `ambient`, mood tags, duration, license), `ChapterPlaylist` (chapter, ranked pieces, the listener's pick or
-  `auto`), `Soundscape` (id, name, loop file), `Mix` (book, narration level, music level, duck on/off, layer:
-  `music` | `soundscape` | `off`, soundscape id).
+  `Chapter` (book, index, title, start/end within the book's audio), `ChapterMood` (chapter, emotions with
+  intensities, sources cited, coverage: `scored` | `too-little`, model and version, scored at), `Piece` (catalog
+  id, title, artist, kind: `score` | `instrumental` | `ambient`, mood tags, duration, license), `ChapterPlaylist`
+  (chapter, ranked pieces, the listener's pick or `auto`), `Soundscape` (id, name, loop file), `Mix` (book,
+  narration level, music level, duck on/off, layer: `music` | `soundscape` | `off`, soundscape id).
 - **One audio engine, two layers:** narration and the bed are separate players behind one clock owned by the
   narration, so seek, pause, speed and chapter change drive the bed; the bed never drives the narration.
 - **Scoring is a job, not a play-time call:** scoring a book runs once in the background (with progress), and the
   player works without it: an unscored chapter plays narration only, or the book's soundscape.
-- **The listener's audio and text stay theirs:** nothing from a book leaves the device without the owner having
-  chosen how (Open questions 4), and transcripts are kept only as long as scoring needs them.
+- **The listener's audio stays theirs:** scoring sends only the book's title, author and chapter titles to the
+  research agent; the audio never leaves the device and is never transcribed (Open questions 4). Mood Read keeps the
+  agent's findings (emotions and source links), not copies of the sources' text.
 
 ## Acceptance
 
-Measure: 18 open · 0 closed · next A19
+Measure: 19 open · 0 closed · next A20
 
 - **A1** A book in the library plays, pauses, skips ±30 s and jumps to any chapter from the chapter list.
 - **A2** Speed runs 0.5× to 3× without pitch change; a sleep timer stops playback after N minutes or at chapter end.
@@ -85,6 +90,9 @@ Measure: 18 open · 0 closed · next A19
   `auto`).
 - **A17** A saved pick plays for that chapter on every later listen, over the auto choice.
 - **A18** Every piece and soundscape Mood Read plays carries a license that allows playing it in the app.
+- **A19** Each scored chapter's emotions come from research on the book (summaries, reviews and similar sources),
+  cite the sources they came from, and are found without uploading or transcribing the book's audio. A chapter
+  with too little written about it is shown as unscored, not given a guessed mood.
 
 ## Open questions (owner decisions)
 
@@ -112,10 +120,14 @@ Measure: 18 open · 0 closed · next A19
    - **"music" (read as Apple Music, or YouTube Music if that was meant): unverified.** MusicKit plays Apple Music
      for subscribers. Whether its terms allow mixing under other audio is not yet checked.
    - 01.9 (below) studies a compliant way to bring these services in, and reports back before any of it is built.
-4. **How a chapter is read for its mood.** Speech-to-text on the device (private, slower, no cost per book) or a
-   cloud service (faster, a cost per book, the audio leaves the device), and which model names the emotions. Default
-   if unanswered: on-device speech-to-text, then a cloud model over the text only, with the listener's consent per
-   book.
+4. **How a chapter is read for its mood.** *Answered by the owner (2026-10-22):* "An AI agent should be able to
+   determine the types of emotions a book's chapter would invoke based on the events posted in sites like
+   sparknotes, reviews of books, and all other types of research." So scoring researches the book instead of
+   reading its audio: no speech-to-text, and the audio never leaves the device. The options were speech-to-text on
+   the device or a cloud service over the audio. What 01.2 must handle as a result: books with little written
+   about them (marked unscored, A19), and summary chapters that don't line up with the audiobook's chapters. It
+   must also read sources through a search tool and stay within each site's terms (no bulk scraping), and keep
+   findings and links, not copies of the text.
 5. **Accounts and price.** Is Mood Read free, paid once, or a subscription (scoring and music licensing cost money
    per book)? Do listeners have accounts that sync their library and picks across devices? Default if unanswered: no
    accounts in v1, everything local.
@@ -137,9 +149,10 @@ scoring; then the selector over scoring's choices. Ids keep the order the owner 
 - **01.5** · S · The mixer: balance, master volume, per-book save, duck under voice. Closes A10, A11. Needs 01.3.
 - **01.7** · M · Ambient soundscapes: six or more licensed seamless loops, per book or per chapter, through the
   layer and mixer. Closes A12, partial A18. Needs 01.3.
-- **01.2** · L · AI mood playlists per chapter: transcript, emotions with intensities, ranked pieces from the
-  royalty-free catalog (Open questions 3), as a background job stored per chapter. Closes A13, A14, A15, A18.
-  Needs 01.3 and 01.6; Open questions 4.
+- **01.2** · L · AI mood playlists per chapter: a research agent reads what is written about the book (Open
+  questions 4), names each chapter's emotions with intensities and sources, and ranks pieces from the royalty-free
+  catalog (Open questions 3), as a background job stored per chapter. Closes A13, A14, A15, A18, A19. Needs 01.3
+  and 01.6.
 - **01.4** · S · The per-chapter selector: emotions, choices, preview, saved pick over auto. Closes A16, A17.
   Needs 01.2.
 - **01.9** · S · Streaming sources study (Open questions 3): check the current terms of Spotify, YouTube / YouTube
