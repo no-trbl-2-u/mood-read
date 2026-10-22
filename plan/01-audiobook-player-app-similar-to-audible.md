@@ -4,7 +4,7 @@
 AI reads the emotions a chapter evokes and picks scores, instrumentals and ambient pieces to match. The listener
 hears that music under the narration, picks among several choices per chapter, sets the balance between music and
 voice, or swaps the music for an ambient soundscape (rain, fireplace, cityscape). It plays audiobooks the listener
-already owns: their downloaded Audible library and local audio files.
+already owns as DRM-free audio files on their device, their own converted Audible downloads included.
 
 From the owner's words (2026-10-22): "Mood read will be an application similar in nature to audible, except it will
 use AI to determine playlists of music scores, instrumentals, and ambient pieces based off of the emotions evoked
@@ -25,7 +25,8 @@ is new, and no other spec owns any of it.
   file or a folder of files that make one book. Chapters come from the file's chapter markers (M4B, MP3 CHAP), else
   one file per chapter, else detected silences, and the listener can rename, merge or split them. Audible downloads
   are AAX/AAXC with Audible's DRM. Mood Read imports only DRM-free files: it recognizes an AAX/AAXC file, declines
-  it with a clear import note, and decrypts nothing (Open questions 2, answered (a)).
+  it with a clear import note, and decrypts nothing. v1 has no Audible integration at all: no Audible sign-in and no
+  library sync (Open questions 2, answered (a) and (c)).
 - **A second audio layer (01.3):** a music bed that plays alongside the narration, follows it (pauses with it, moves
   to the next chapter's pieces when the chapter changes, crossfades between pieces), loops or advances its playlist
   while a chapter runs, and respects the speed setting without pitch-shifting the music.
@@ -46,7 +47,7 @@ is new, and no other spec owns any of it.
 
 ## Contracts
 
-- **Data:** `Book` (title, author, narrator, cover, source: `local` | `audible`, files, duration, position),
+- **Data:** `Book` (title, author, narrator, cover, files, duration, position),
   `Chapter` (book, index, title, start/end within the book's audio), `ChapterMood` (chapter, emotions with
   intensities, sources cited, coverage: `scored` | `too-little`, model and version, scored at), `Piece` (catalog
   id, title, artist, kind: `score` | `instrumental` | `ambient`, mood tags, duration, license), `ChapterPlaylist`
@@ -99,8 +100,8 @@ Measure: 19 open · 0 closed · next A20
 1. **Platform and stack.** *Answered by the owner (2026-10-22):* a cross-platform phone app first (background
    audio and lock-screen controls matter most there), with the web for development. 01.1 builds it as an Expo
    (React Native) app with its web build for development.
-2. **Audible books.** *Answered by the owner (2026-10-22): (a)*, with a clear import note; 01.6 builds no
-   decryption until the owner picks (b). Audible downloads are AAX/AAXC files locked by Audible's DRM, and Audible
+2. **Audible books.** *Answered by the owner (2026-10-22): (a) and (c)*: DRM-free files only, with a clear import
+   note, and no Audible integration in v1 (no sign-in, no library sync, no decryption). Audible downloads are AAX/AAXC files locked by Audible's DRM, and Audible
    offers no public API to play them in another app. Removing the DRM, even for a book you own, has legal risk (for
    example the DMCA's anti-circumvention rule in the US). Options were: (a) import only DRM-free files and tell
    listeners to bring their own converted copies; (b) decrypt with the listener's own activation bytes on their
@@ -108,7 +109,10 @@ Measure: 19 open · 0 closed · next A20
 3. **Where the music comes from.** *Answered by the owner (2026-10-22):* "I would love to figure out a way to play
    music from spotify, youtube, music, and the royalty free catalog." The question was which source Mood Read may
    legally play under the narration: a licensed royalty-free catalog, a streaming service's API, AI-generated
-   music, or a curated set the owner licenses. What the answer means for the build:
+   music, or a curated set the owner licenses. The owner refined it the same day: "By default, the free ambient
+   soundscapes and royalty-free catalog. But if the user has connected a paid youtube account and/or a connected
+   paid spotify account it would come from there." So the default needs no connection, and a connected paid account
+   is the goal for when the services allow it. What the answer means for the build:
    - **Royalty-free catalog: yes, now.** 01.2 builds on a curated royalty-free catalog tagged by mood, and A18 holds.
    - **Spotify: blocked as the developer terms read today.** Spotify's Developer Policy says "Do not permit any
      device or system to segue, mix, re-mix, or overlap any Spotify Content with any other audio content" (III.7).
@@ -142,6 +146,14 @@ Measure: 19 open · 0 closed · next A20
    - **Open cost note.** Research-agent scoring (01.2) costs model and search fees per book, and with a free app
      the owner pays them. 01.2 should score each book once (already in A13), cache the result on the device, and
      report the cost per book so the owner can see it.
+6. **Where the research agent's AI key lives.** The agent needs an AI model and web search, and a key shipped
+   inside the app can be pulled out and spent by anyone. So "everything local" needs one exception: a small server
+   that holds the key. Default if unanswered: a thin serverless proxy that receives only a book's title, author and
+   chapter titles, enforces a monthly spend cap, and caches each book's moods so every listener of that book shares
+   one research run. It holds no listener data. The owner names the AI provider and the cap.
+7. **Spoilers.** The agent learns each chapter's events, and even a mood can hint at them ("dread" in chapter 30).
+   Default if unanswered: Mood Read never shows events, only emotions, and the selector shows a chapter's emotions
+   only once the listener reaches it.
 
 ## Chunks
 
@@ -153,8 +165,8 @@ scoring; then the selector over scoring's choices. Ids keep the order the owner 
   and lock-screen controls; opens one local file to have something to play. Closes A1, A2, A3, A4.
   - Open questions 1 is answered: a cross-platform phone app, with the web for development.
 - **01.6** · L · Your own books: import DRM-free files and folders, tags and covers, chapter detection and editing,
-  and Audible's path as Open questions 2 settled it: (a), a clear import note for AAX/AAXC and no decryption until
-  the owner picks (b). Closes A5, A6, A7. Needs 01.1.
+  and Audible's path as Open questions 2 settled it: (a) and (c), a clear import note for AAX/AAXC, no decryption
+  and no Audible integration in v1. Closes A5, A6, A7. Needs 01.1.
 - **01.3** · M · Music alongside the audiobook: the second layer on the narration's clock, chapter-boundary
   crossfades, speed-independent bed; plays a fixed test playlist until 01.2 exists. Closes A8, A9. Needs 01.1.
 - **01.5** · S · The mixer: balance, master volume, per-book save, duck under voice. Closes A10, A11. Needs 01.3.
@@ -163,9 +175,9 @@ scoring; then the selector over scoring's choices. Ids keep the order the owner 
 - **01.2** · L · AI mood playlists per chapter: a research agent reads what is written about the book (Open
   questions 4), names each chapter's emotions with intensities and sources, and ranks pieces from the royalty-free
   catalog (Open questions 3), as a background job stored per chapter. Closes A13, A14, A15, A18, A19. Needs 01.3
-  and 01.6.
+  and 01.6; Open questions 6 answered or its default taken.
 - **01.4** · S · The per-chapter selector: emotions, choices, preview, saved pick over auto. Closes A16, A17.
-  Needs 01.2.
+  Needs 01.2; Open questions 7 answered or its default taken.
 - **01.9** · S · Streaming sources study (Open questions 3): check the current terms of Spotify, YouTube / YouTube
   Music and Apple Music for any compliant way to use them in Mood Read. Examples: a licensing deal, music played only
   between chapters rather than under the voice, or the selector linking out to a matching playlist in the
