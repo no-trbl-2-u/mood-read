@@ -1,0 +1,133 @@
+name: next
+
+# Cloud half of the loop. One scheduled run = one `/next` tick: read
+# plan/README.md on origin/main, build the next chunk whose needs are done
+# (or settle what is waiting in plan/pending/), run the gate, push to main.
+# Every tick reads the repo fresh; nothing carries over between runs.
+#
+# Setup and debugging: .github/CLOUD_LOOP.md.
+
+on:
+  schedule:
+    # 4 ticks a day (UTC). A chunk can take a full session, so keep this sparse.
+    - cron: '0 2,8,14,20 * * *'
+  workflow_dispatch:
+    inputs:
+      verb:
+        description: 'next = build the next chunk; settle = only apply plan/pending/; audit = read-only status'
+        required: false
+        type: choice
+        default: next
+        options: [next, settle, audit]
+
+concurrency:
+  # One writer at a time. Disable this workflow before driving the loop locally.
+  group: loop
+  cancel-in-progress: false
+
+jobs:
+  next:
+    runs-on: ubuntu-latest
+    timeout-minutes: 180
+    permissions:
+      contents: write   # push to main
+      issues: write     # failure issues
+      id-token: write   # Claude Code Action's OIDC handshake
+    steps:
+      - name: Checkout (full history)
+        id: checkout
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+          # Default: GITHUB_TOKEN (commits as github-actions[bot]).
+          # For user-author mode, add a fine-grained ACTIONS_PAT secret
+          # (Contents + Issues read/write on this repo) and uncomment:
+          # token: ${{ secrets.ACTIONS_PAT }}
+
+      - name: Set up Node 22
+        uses: actions/setup-node@v4
+        with:
+          node-version: 22
+
+      - name: Install dependencies (once the app exists)
+        run: |
+          if [ -f package-lock.json ]; then npm ci; else echo "No package-lock.json yet; skipping install."; fi
+
+      - name: Daily commit ceiling check
+        id: ceiling
+        run: |
+          # Cloud commits carry a `Cloud-Run:` trailer; local commits don't count.
+          since="$(date -u -d '24 hours ago' '+%Y-%m-%d %H:%M:%S')"
+          ceiling=6
+          count=$(git log --since="$since" --grep='Cloud-Run:' --format='%H' | wc -l)
+          echo "Cloud commits in last 24h: $count / $ceiling"
+          if [ "$count" -ge "$ceiling" ] && [ "${{ inputs.verb }}" != "audit" ]; then
+            echo "Ceiling reached. No work this tick."
+            echo "skip=true" >> "$GITHUB_OUTPUT"
+          else
+            echo "skip=false" >> "$GITHUB_OUTPUT"
+          fi
+
+      - name: Run /next (cloud mode)
+        id: run_next
+        if: steps.ceiling.outputs.skip != 'true'
+        uses: anthropics/claude-code-action@v1
+        with:
+          claude_code_oauth_token: ${{ secrets.CLAUDE_CODE_OAUTH_TOKEN }}
+          # bypassPermissions is required: nobody is here to approve prompts, and
+          # default mode silently starves the tick. Acceptable only because the
+          # runner is disposable and the token is repo-scoped.
+          # Keep claude_args as a flag string; a JSON object drops keys silently.
+          claude_args: >-
+            --model claude-sonnet-5-5
+            --permission-mode bypassPermissions
+          prompt: |
+            You are running Mood Read's build loop in CI (GitHub Actions). Nobody is watching; do not ask questions.
+            Read plan/README.md first: it defines the loop. Read AGENTS.md too if it exists; its rules apply.
+
+            Requested verb: ${{ inputs.verb || 'next' }}.
+
+            - audit: change nothing. Print a short status: the plan table, chunks left, what is in plan/pending/, and anything blocked on the owner. Then exit.
+            - settle: apply every file in plan/pending/ to the spec and plan/README.md as each file says, delete the applied files, commit, push. Then exit.
+            - next (default):
+              1. If plan/pending/ has files, settle them first (as above) in their own commit.
+              2. Pick the next chunk whose needs are done: the Asap lane first, then numbered priorities, then table order. Read its spec section, its acceptance IDs and its Contracts.
+              3. Build that one chunk on main. Size L is one session at most; if it cannot be finished cleanly, ship nothing for it.
+              4. Run the gate in the foreground (never run_in_background) and wait: if package.json exists, `npm run typecheck`, `npm run lint` and `npm test` must all pass. Never --no-verify.
+              5. Remove the chunk from the spec's `## Chunks`, record which acceptance IDs it closed (or why one stays open), update the plan/README.md row and its "N left" count, and commit the code and plan together.
+              6. Push to main.
+
+            Hard rules:
+            - Skip any chunk or step that needs an owner decision (an open question, a licence, an account, a paid service, a device-only check). Note it in the audit and move to the next eligible chunk, or no-op.
+            - Never add secrets, API keys or paid dependencies. Never rewrite history or force-push.
+            - The git identity is set by the workflow's env; do not run git config user.*.
+            - EVERY commit you make MUST end with this trailer, after a blank line, as its own line:
+
+                  Cloud-Run: ${{ github.server_url }}/${{ github.repository }}/actions/runs/${{ github.run_id }}
+
+              It is how the ceiling counts cloud commits. No other trailers.
+            - If you cannot ship cleanly (red gate, blocked chunk, nothing to do), do not half-commit. Either exit with a one-line reason, or for a real failure run `gh issue create --title "Cloud next failed: <iso-date>" --body "<what happened + run URL>"` and exit.
+
+            End every run, shipped or not, by printing the audit status into this log.
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          # User-author mode: uncomment and set your login + noreply email
+          # (id from https://api.github.com/users/<login>).
+          # GIT_AUTHOR_NAME:     '<login>'
+          # GIT_AUTHOR_EMAIL:    '<id>+<login>@users.noreply.github.com'
+          # GIT_COMMITTER_NAME:  '<login>'
+          # GIT_COMMITTER_EMAIL: '<id>+<login>@users.noreply.github.com'
+
+      - name: Open an issue if the tick crashed
+        if: failure() && steps.ceiling.outputs.skip != 'true'
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        run: |
+          existing=$(gh issue list --search 'in:title "Cloud next tick crashed" state:open' --json number --jq 'length')
+          if [ "$existing" -eq 0 ]; then
+            gh issue create \
+              --title "Cloud next tick crashed: $(date -u +%Y-%m-%dT%H:%M:%SZ)" \
+              --body "Run: ${{ github.server_url }}/${{ github.repository }}/actions/runs/${{ github.run_id }}"
+          else
+            echo "An open crash issue already exists; not filing another."
+          fi

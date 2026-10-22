@@ -1,0 +1,55 @@
+name: heartbeat
+
+# No model, no writes: cancels wedged `next` runs so the concurrency group
+# unblocks, and opens a deduped issue when the loop has gone quiet.
+
+on:
+  schedule:
+    - cron: '15 */6 * * *'  # offset from next's firings
+  workflow_dispatch:
+
+permissions:
+  actions: write   # gh run cancel
+  issues: write    # the alarm
+
+jobs:
+  heartbeat:
+    runs-on: ubuntu-latest
+    timeout-minutes: 5
+    env:
+      GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+      GH_REPO: ${{ github.repository }}
+    steps:
+      - name: Cancel wedged runs (in_progress > 3h)
+        run: |
+          now=$(date -u +%s)
+          gh run list --workflow next --status in_progress \
+            --json databaseId,createdAt \
+            --jq '.[] | [.databaseId, .createdAt] | @tsv' |
+          while IFS=$'\t' read -r id created; do
+            age=$(( (now - $(date -u -d "$created" +%s)) / 60 ))
+            if [ "$age" -gt 180 ]; then
+              echo "Cancelling wedged run $id (${age}m old)"
+              gh run cancel "$id"
+            fi
+          done
+
+      - name: Alarm if next has not succeeded in 26h
+        run: |
+          # success, not completed: a loop failing every tick must still alarm.
+          last=$(gh run list --workflow next --status success -L 1 \
+            --json updatedAt --jq '.[0].updatedAt // empty')
+          if [ -z "$last" ]; then
+            echo "No successful next runs yet."
+            exit 0
+          fi
+          hours=$(( ($(date -u +%s) - $(date -u -d "$last" +%s)) / 3600 ))
+          echo "Last successful next tick: ${hours}h ago"
+          if [ "$hours" -ge 26 ]; then
+            existing=$(gh issue list --search 'in:title "Heartbeat: next has flatlined" state:open' --json number --jq 'length')
+            if [ "$existing" -eq 0 ]; then
+              gh issue create \
+                --title "Heartbeat: next has flatlined ($(date -u +%Y-%m-%d))" \
+                --body "No successful next tick in ${hours}h. Check: gh workflow list; gh run list --workflow next -L 5. Likely: every tick failing (auth expiry), workflow disabled, or cron auto-paused after 60 idle days."
+            fi
+          fi
