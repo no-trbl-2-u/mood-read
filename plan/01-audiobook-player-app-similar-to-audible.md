@@ -24,7 +24,8 @@ is new, and no other spec owns any of it.
 - **Your own books (01.6):** import DRM-free files the listener owns (M4B, M4A/AAC, MP3, WAV, FLAC, OGG/Opus), as one
   file or a folder of files that make one book. Chapters come from the file's chapter markers (M4B, MP3 CHAP), else
   one file per chapter, else detected silences, and the listener can rename, merge or split them. Audible downloads
-  are AAX/AAXC with Audible's DRM; how Mood Read handles them is the owner's call (Open questions 2).
+  are AAX/AAXC with Audible's DRM. Mood Read imports only DRM-free files: it recognizes an AAX/AAXC file, declines
+  it with a clear import note, and decrypts nothing (Open questions 2, answered (a)).
 - **A second audio layer (01.3):** a music bed that plays alongside the narration, follows it (pauses with it, moves
   to the next chapter's pieces when the chapter changes, crossfades between pieces), loops or advances its playlist
   while a chapter runs, and respects the speed setting without pitch-shifting the music.
@@ -67,8 +68,9 @@ Measure: 18 open · 0 closed · next A19
   title and author read from its tags.
 - **A6** Chapters come from embedded markers, else one per file, else detected silences; the listener can rename,
   merge and split them.
-- **A7** Audible-owned books reach the library the way Open questions 2 settles, and Mood Read never asks for or
-  stores an Audible password.
+- **A7** Audible-owned books reach the library only as DRM-free files the listener brings (Open questions 2, (a)).
+  Picking an AAX/AAXC file shows a clear import note instead of failing silently, Mood Read decrypts nothing, and it
+  never asks for or stores an Audible password.
 - **A8** Music plays under the narration, pauses and seeks with it, and changes to the next chapter's pieces at the
   chapter boundary with a crossfade.
 - **A9** Changing the narration's speed never changes the music's speed or pitch.
@@ -89,11 +91,12 @@ Measure: 18 open · 0 closed · next A19
 1. **Platform and stack.** *Answered by the owner (2026-10-22):* a cross-platform phone app first (background
    audio and lock-screen controls matter most there), with the web for development. 01.1 builds it as an Expo
    (React Native) app with its web build for development.
-2. **Audible books.** Audible downloads are AAX/AAXC files locked by Audible's DRM, and Audible offers no public API
-   to play them in another app. Removing the DRM, even for a book you own, has legal risk (for example the DMCA's
-   anti-circumvention rule in the US). Options: (a) import only DRM-free files and tell listeners to bring their own
-   converted copies; (b) decrypt with the listener's own activation bytes on their device; (c) leave Audible out of
-   v1. Default if unanswered: (a), with a clear import note; 01.6 builds no decryption until the owner picks (b).
+2. **Audible books.** *Answered by the owner (2026-10-22): (a)*, with a clear import note; 01.6 builds no
+   decryption until the owner picks (b). Audible downloads are AAX/AAXC files locked by Audible's DRM, and Audible
+   offers no public API to play them in another app. Removing the DRM, even for a book you own, has legal risk (for
+   example the DMCA's anti-circumvention rule in the US). Options were: (a) import only DRM-free files and tell
+   listeners to bring their own converted copies; (b) decrypt with the listener's own activation bytes on their
+   device; (c) leave Audible out of v1.
 3. **Where the music comes from.** The scores need a source Mood Read may legally play: a licensed royalty-free
    catalog (cost per track or a subscription), a streaming service's API (their terms may forbid mixing their audio
    with other audio), AI-generated music, or a curated set the owner licenses. This decides 01.2's catalog and A18.
@@ -116,7 +119,8 @@ scoring; then the selector over scoring's choices. Ids keep the order the owner 
   and lock-screen controls; opens one local file to have something to play. Closes A1, A2, A3, A4.
   - Open questions 1 is answered: a cross-platform phone app, with the web for development.
 - **01.6** · L · Your own books: import DRM-free files and folders, tags and covers, chapter detection and editing,
-  and Audible's path as Open questions 2 settles. Closes A5, A6, A7. Needs 01.1.
+  and Audible's path as Open questions 2 settled it: (a), a clear import note for AAX/AAXC and no decryption until
+  the owner picks (b). Closes A5, A6, A7. Needs 01.1.
 - **01.3** · M · Music alongside the audiobook: the second layer on the narration's clock, chapter-boundary
   crossfades, speed-independent bed; plays a fixed test playlist until 01.2 exists. Closes A8, A9. Needs 01.1.
 - **01.5** · S · The mixer: balance, master volume, per-book save, duck under voice. Closes A10, A11. Needs 01.3.
