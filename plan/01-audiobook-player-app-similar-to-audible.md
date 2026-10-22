@@ -12,7 +12,8 @@ during certain chapters within the audiobook."
 
 ## What exists
 
-Nothing yet. The repository holds a README and this plan; no stack is chosen (Open questions 1). Every chunk below
+Nothing yet. The repository holds a README and this plan; the stack is a cross-platform phone app with the web for
+development (Open questions 1, answered). Every chunk below
 is new, and no other spec owns any of it.
 
 ## What this spec builds
@@ -85,9 +86,9 @@ Measure: 18 open · 0 closed · next A19
 
 ## Open questions (owner decisions)
 
-1. **Platform and stack.** Phone (iOS, Android), web, desktop, or which first? Default if unanswered: a
-   cross-platform phone app first (background audio and lock-screen controls matter most there), with the web for
-   development.
+1. **Platform and stack.** *Answered by the owner (2026-10-22):* a cross-platform phone app first (background
+   audio and lock-screen controls matter most there), with the web for development. 01.1 builds it as an Expo
+   (React Native) app with its web build for development.
 2. **Audible books.** Audible downloads are AAX/AAXC files locked by Audible's DRM, and Audible offers no public API
    to play them in another app. Removing the DRM, even for a book you own, has legal risk (for example the DMCA's
    anti-circumvention rule in the US). Options: (a) import only DRM-free files and tell listeners to bring their own
@@ -113,7 +114,7 @@ scoring; then the selector over scoring's choices. Ids keep the order the owner 
 
 - **01.1** · L · The player: library view, playback, chapters, speed, sleep timer, bookmarks, resume, background
   and lock-screen controls; opens one local file to have something to play. Closes A1, A2, A3, A4.
-  - Needs Open questions 1 answered or its default taken.
+  - Open questions 1 is answered: a cross-platform phone app, with the web for development.
 - **01.6** · L · Your own books: import DRM-free files and folders, tags and covers, chapter detection and editing,
   and Audible's path as Open questions 2 settles. Closes A5, A6, A7. Needs 01.1.
 - **01.3** · M · Music alongside the audiobook: the second layer on the narration's clock, chapter-boundary
