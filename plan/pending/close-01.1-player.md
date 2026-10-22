@@ -33,7 +33,7 @@ with Expo SDK 58 (React Native, Expo Router, expo-audio). Nothing more to apply 
   real phone. Known limits: lock-screen seek stays within the current file, and expo-audio sends no
   next/previous-track events.
 
-Measure: 18 open · 0 closed → 16 open · 2 closed · next A19.
+Measure: 19 open · 0 closed → 17 open · 2 closed · next A20.
 
 ## Chunks
 
