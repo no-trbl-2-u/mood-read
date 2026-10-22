@@ -2,10 +2,10 @@
 
 Apply on settle to `plan/01-audiobook-player-app-similar-to-audible.md` and `plan/README.md`, then delete this file.
 
-## Open questions 1: default taken
+## Open questions 1
 
-Platform and stack: a cross-platform phone app built with Expo SDK 58 (React Native, Expo Router, expo-audio),
-with the web build for development. Record this as settled under Open questions 1 unless the owner objects.
+Answered by the owner on main (67a59fa): a cross-platform phone app, with the web for development. 01.1 built it
+with Expo SDK 58 (React Native, Expo Router, expo-audio). Nothing more to apply here.
 
 ## What exists (replace "Nothing yet")
 
@@ -42,5 +42,4 @@ Remove 01.1. Add a follow-up so A2 and A4 are not lost:
 - **01.8** · S · Device pass for the player: run a development build on iOS and Android, confirm background
   playback and lock-screen/media-key controls, and settle Android's 2× speed cap. Closes A2, A4. Needs 01.1.
 
-The README row's progress goes to 7 left (01.1 out, 01.8 in), and the status notes that Open questions 1 took
-its default.
+The README row's progress goes to 7 left (01.1 out, 01.8 in).
