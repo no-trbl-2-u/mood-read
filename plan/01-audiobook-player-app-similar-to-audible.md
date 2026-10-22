@@ -128,9 +128,20 @@ Measure: 19 open · 0 closed · next A20
    about them (marked unscored, A19), and summary chapters that don't line up with the audiobook's chapters. It
    must also read sources through a search tool and stay within each site's terms (no bulk scraping), and keep
    findings and links, not copies of the text.
-5. **Accounts and price.** Is Mood Read free, paid once, or a subscription (scoring and music licensing cost money
-   per book)? Do listeners have accounts that sync their library and picks across devices? Default if unanswered: no
-   accounts in v1, everything local.
+5. **Accounts and price.** *Answered by the owner (2026-10-22):* "Mood Read would be free, but it would help if the
+   user has a paid spotify account and a paid youtube account to help us with the music licensing. But v1,
+   everything local." So:
+   - **Free.** Listeners pay nothing. A free app is also the only kind Spotify allows to stream (its Developer
+     Policy bars selling a streaming app, IV.2).
+   - **v1 is everything local:** no Mood Read accounts and no sync. The library, positions, bookmarks, moods and
+     picks live on the device.
+   - **Listeners' paid Spotify and YouTube accounts are welcome but don't settle licensing.** Spotify requires
+     Premium to stream (IV.1), but its no-mixing rule (III.7) applies whatever the listener pays. YouTube Premium's
+     background play exists only in YouTube's own apps, not through its API. 01.9 checks whether a listener's own
+     subscription opens any compliant path.
+   - **Open cost note.** Research-agent scoring (01.2) costs model and search fees per book, and with a free app
+     the owner pays them. 01.2 should score each book once (already in A13), cache the result on the device, and
+     report the cost per book so the owner can see it.
 
 ## Chunks
 
@@ -158,5 +169,6 @@ scoring; then the selector over scoring's choices. Ids keep the order the owner 
 - **01.9** · S · Streaming sources study (Open questions 3): check the current terms of Spotify, YouTube / YouTube
   Music and Apple Music for any compliant way to use them in Mood Read. Examples: a licensing deal, music played only
   between chapters rather than under the voice, or the selector linking out to a matching playlist in the
-  listener's own app. Report the options and their costs to the owner. Builds nothing and closes no acceptance ID;
-  it does not block 01.2.
+  listener's own app. Include whether the listener's own paid Spotify or YouTube account (Open questions 5) opens
+  any path. Report the options and their costs to the owner. Builds nothing and closes no acceptance ID; it does not
+  block 01.2.
