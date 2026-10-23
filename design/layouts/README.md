@@ -9,7 +9,18 @@ not the design system. Open any board straight from disk, no server needed:
 - [`option-b.html`](./option-b.html) / ![option B](./option-b.png)
 - [`option-c.html`](./option-c.html) / ![option C](./option-c.png)
 
-Each board is a single horizontal row of 12 phone-sized frames (390×844), one per screen/state, with a
+The owner picked option B; [`DECISION.md`](./DECISION.md) is the layout contract read from it. The v2 layout
+pass (spec 06, chunk 06.2) adds the screens and states v1's boards leave undrawn (the library's menus and row
+states, Browse, a LibriVox book, Downloads, Credits, Settings, scoring and "Build playlist" in the river) as two
+more boards in [`v2/`](./v2/), in option B's frame format but drawn in the design system's colours
+(`design/system/DECISION.md`); open them from disk the same way:
+
+- [`v2/library-and-screens.html`](./v2/library-and-screens.html) / ![v2 board 1](./v2/library-and-screens.png)
+- [`v2/river-states.html`](./v2/river-states.html) / ![v2 board 2](./v2/river-states.png)
+
+They are recorded in `DECISION.md`'s "v2" section, frame by frame.
+
+Each option board is a single horizontal row of 12 phone-sized frames (390×844), one per screen/state, with a
 caption under each frame. A single row (not a wrapped grid) was the call here: it keeps every frame's
 pixel position deterministic — easy to reason about and to re-screenshot exactly — at the cost of a wide
 image, which is fine for a side-by-side comparison viewed by scrolling or in an image viewer.
