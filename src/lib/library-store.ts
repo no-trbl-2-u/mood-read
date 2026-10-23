@@ -2,7 +2,7 @@
 // Pure: the store is handed its key-value backend (expo-sqlite's kv-store on native, localStorage on web, a Map
 // in tests), so `node --test` exercises the same code the app runs. Screens reach it through ./library.ts.
 import { clamp, MAX_SPEED, MIN_SPEED, newId } from "./timeline.ts";
-import type { Book, Bookmark } from "./types.ts";
+import type { Book, Bookmark, Chapter } from "./types.ts";
 
 export type Kv = {
   getItem(key: string): string | null;
@@ -29,6 +29,14 @@ export function sortBooks(books: Book[]): Book[] {
     if (pa !== pb) return pb - pa;
     return a.title.localeCompare(b.title, undefined, { sensitivity: "base", numeric: true });
   });
+}
+
+/** True when the chapters run in order from 0 to the book's end with no gap or overlap. */
+export function coversBook(chapters: Chapter[], duration: number): boolean {
+  if (chapters.length === 0) return false;
+  const near = (a: number, b: number) => Math.abs(a - b) < 0.001;
+  if (!near(chapters[0].start, 0) || !near(chapters[chapters.length - 1].end, duration)) return false;
+  return chapters.every((c, i) => c.index === i && c.end > c.start && (i === 0 || near(chapters[i - 1].end, c.start)));
 }
 
 export function createLibraryStore(kv: Kv, now: () => number = Date.now, makeId: () => string = newId) {
@@ -91,6 +99,15 @@ export function createLibraryStore(kv: Kv, now: () => number = Date.now, makeId:
       const { [id]: _removed, ...bookmarks } = state.bookmarks;
       state = { ...state, bookmarks };
       saveBooks(state.books.filter((b) => b.id !== id));
+    },
+    /**
+     * Replaces a book's chapters after the listener renames, merges or splits them (spec 01 A6). The list must
+     * cover the book end to end; one that does not is ignored, so a bad edit never loses audio.
+     */
+    setChapters(id: string, chapters: Chapter[]): void {
+      const b = state.books.find((x) => x.id === id);
+      if (!b || !coversBook(chapters, b.duration)) return;
+      saveBooks(state.books.map((x) => (x.id === id ? { ...x, chapters } : x)));
     },
     /** Marks a book as just played, which moves it to the top of the library. */
     markPlayed(id: string): void {

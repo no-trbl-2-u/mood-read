@@ -146,3 +146,19 @@ test("the library sorts most recently played first, then by title", () => {
   store.markPlayed("missing");
   assert.equal(store.books().length, 2);
 });
+
+test("A6 edited chapters are saved for the book and kept across a reopen; a list with a gap is refused", () => {
+  const kv = memoryKv();
+  const store = createLibraryStore(kv);
+  store.addBook(book("b1", "Dune"));
+  const split = [
+    { bookId: "b1", index: 0, title: "Arrival", fileIndex: 0, start: 0, end: 40 },
+    { bookId: "b1", index: 1, title: "Arrival, part 2", fileIndex: 0, start: 40, end: 100 },
+  ];
+  store.setChapters("b1", split);
+  assert.deepEqual(createLibraryStore(kv).getBook("b1")?.chapters, split);
+  store.setChapters("b1", [{ ...split[0], end: 30 }, split[1]]);
+  store.setChapters("b1", [split[0]]);
+  store.setChapters("b1", []);
+  assert.deepEqual(store.getBook("b1")?.chapters, split);
+});
