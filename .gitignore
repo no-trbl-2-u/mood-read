@@ -1,2 +1,4 @@
 # Local tool state (contains session tokens)
 .nexus/
+# The nexus secrets vault: values and their record stay on this machine
+.env
