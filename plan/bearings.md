@@ -96,6 +96,7 @@ Every route below is a permanent contract. Add new ones through specs; don't cha
 App routes (expo-router, src/app/; the same paths on the web build):
   /                 the library: every book on the device
   /book/[id]        one book's player; [id] is the Book's id
+  /import           Import a book: files or a folder, and the AAX/AAXC note as a state of it (01.6)
 
 Scripts (package.json):
   pnpm web | start                 dev server

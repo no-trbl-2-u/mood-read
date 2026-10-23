@@ -184,13 +184,13 @@ Measure: 20 open · 0 closed · next A21
   needs 06.3
 - [ ] **05.4** One button builds and pre-downloads a book's playlist · M · closes A4, A5 · needs 01.10, 05.3, 05.6, 06.2
 - [ ] **05.7** Library management: remove a download, keep the book; shared pieces survive deletion · M ·
-  closes A7, A8 · needs 01.6, 05.4, 06.2
+  closes A7, A8 · needs 05.4, 06.2
 - [ ] **05.5** Credits, off to the side in the library's overflow menu · S · closes A12 · needs 05.1, 06.2
-- [ ] **05.8** Browse and search LibriVox, and download a book into the library · L · closes A9 · needs 01.6, 05.6, 06.2
+- [ ] **05.8** Browse and search LibriVox, and download a book into the library · L · closes A9 · needs 05.6, 06.2
   - The empty library offers "Browse free books" beside "Import a book", as 06.2 draws it.
 - [ ] **05.9** Score public-domain books from their own text · M · closes A10 · needs 01.2, 05.8
 - [ ] **05.10** Pre-scored books and their moods in Browse · M · closes A11 · needs 05.9
-- [ ] **05.11** Split a one-file book into chapter files on the device · M · closes A13 · needs 01.6, 04.1
+- [ ] **05.11** Split a one-file book into chapter files on the device · M · closes A13 · needs 04.1
 - [ ] **05.12** Spotify chapter playlists: the rights check · S · closes A14 · needs —
   - A study, same shape as 01.9: builds nothing; `unclear` counts as no and leaves 05.13 waiting.
 - [ ] **05.13** Spotify chapter playlists, sized to each chapter · M · closes A15 · needs 05.12, 01.11, 05.3, 06.3, 06.6

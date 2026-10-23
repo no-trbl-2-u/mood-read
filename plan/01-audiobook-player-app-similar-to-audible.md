@@ -95,14 +95,6 @@ just name the pieces/scores/songs/instrumentals (It's important that there's no 
 - **A2** Speed runs 0.5× to 3× without pitch change (0.5× to 2× on Android and iOS, where the audio engine caps it);
   a sleep timer stops playback after N minutes or at chapter end.
 - **A4** Playback continues in the background and answers lock-screen / media-key controls.
-- **A5** A DRM-free M4B, MP3, M4A, WAV, FLAC or OGG/Opus file, or a folder of them, imports as one book with cover,
-  title and author read from its tags.
-- **A6** Chapters come from embedded markers, else one per file, else detected silences; the listener can rename,
-  merge and split them.
-- **A7** Audible-owned books reach the library only as DRM-free files the listener brings (Open questions 2, (a)).
-  Picking an AAX/AAXC file shows a clear import note instead of failing silently: it points to DRM-free stores and
-  companion mode and never suggests converting. Mood Read decrypts nothing, and it never asks for or stores an
-  Audible password.
 - **A10** One balance control and a master volume set narration against the layer; the setting is saved per book.
 - **A11** "Duck under voice" dips the layer while the narrator speaks and brings it back in the pauses.
 - **A12** At least six ambient soundscapes loop without an audible seam and can play under a whole book or one
@@ -138,8 +130,6 @@ just name the pieces/scores/songs/instrumentals (It's important that there's no 
   the playing chapter's elapsed and length ("3:05 / 11:45") and, while a sleep timer runs, what is left of it
   (minutes, or "end of chapter"). The chapter river carries no times: no per-row length, and the playing row
   shows no "3:05 of 11:45" line and no sleep-timer line.
-- **A29** "Remove book" takes a book out of the library after a confirm, with its position, bookmarks,
-  moods, picks and mix.
 - **A30** An unscored book's river offers "Score this book"; scoring shows its progress, says
   plainly when the monthly cap has paused it, and "Rescore" is an explicit action; the first scoring says once
   that only the title, author and chapter titles are sent.
@@ -235,22 +225,13 @@ Every question below is answered; none is open. Elsewhere in the plan, "Open que
    no emotions on its card (A21).
 
 ## Chunks
-Measure: 24 open · 7 closed · next A32
+Measure: 20 open · 11 closed · next A32
 
 Build order follows the owner's two-part v1, and the lines below are in that order. **Part 1, the player:** 01.1,
 01.6, 01.3, 01.5, 01.7: the player, then real books in it, then the second layer, its mixer and the soundscapes it
 plays. **Part 2, moods and named pieces:** 01.2, then 01.4. **After v1:** 01.9 (a study), then 01.10 (play the
 pieces). Ids keep the order they were written in. The app itself (Expo at the repo root, the gates) is spec 02.
 
-- [ ] **01.6** Your own books: DRM-free imports, tags and covers, chapter detection and editing · L ·
-  closes A5, A6, A7, A29 · needs —
-  - Files and folders; Audible's path as Open questions 2 settled it: (a) and (c), a clear import note for
-    AAX/AAXC, no decryption and no Audible integration in v1.
-  - The import screen and its AAX/AAXC note as `design/layouts/DECISION.md` draws them (`plan/bearings.md` Layout).
-  - "Remove book" in the river's overflow takes a book out of the library, with a confirm; v2's "Remove download,
-    keep the book" (05.7) comes later.
-  - Chapter editing is an "Edit chapters" mode from the river's overflow: rename inline, merge with the next row,
-    split at the current position. 01.6 draws it to this default and records it in `design/layouts/DECISION.md`.
 - [ ] **01.5** The mixer: balance, master volume, per-book save, duck under voice · S · closes A10, A11 ·
   needs —
   - Inline in the playing chapter's expanded row, never a sheet (`plan/bearings.md` Layout).
@@ -259,7 +240,7 @@ pieces). Ids keep the order they were written in. The app itself (Expo at the re
   - Per book or per chapter, through the layer and mixer; picked from the mixer's layer chips
     (`plan/bearings.md` Layout).
 - [ ] **01.2** Chapter moods and named pieces through the scoring proxy · L ·
-  closes A13, A14, A15, A19, A20, A22 · needs 01.6
+  closes A13, A14, A15, A19, A20, A22 · needs —
   - v1 part 2: a research agent reads what is written about the book (Open questions 4) and names each chapter's
     emotions with intensities and sources, then one no-vocals piece per chapter plus alternates; nothing is
     played. It runs as a background job, stored per chapter.
@@ -296,8 +277,12 @@ pieces). Ids keep the order they were written in. The app itself (Expo at the re
   closes A2, A4 · needs 04.1
   - The owner's check on 04.1's preview APK (screen off, lock-screen and media-key play, pause and 30 s skips)
     closes A4, and its 0.5x to 2x speed with pitch kept closes A2 (native caps at 2x, D11).
-  - Native lock-screen seeks run inside expo-audio and skip the player's sleep retarget; once 01.6 brings in-file
-    chapters, retarget an End of chapter timer on those seeks too.
+  - Native lock-screen seeks run inside expo-audio and skip the player's sleep retarget; 01.6 brought in-file
+    chapters, so retarget an End of chapter timer on those seeks too.
+  - 01.6's native-only paths were typechecked, never run on a phone: the folder picker
+    (`Directory.pickDirectoryAsync`), cover writing beside the audio, and silence detection, which runs only on WAV
+    files on native (other formats keep one chapter until the listener splits it). Import a file and a folder on
+    the APK and check each.
   - Listen to 01.3's bed on the phone: loop seams, the crossfade's volume ramp, and two bed players sharing the
     audio session with the narration.
 - [ ] **01.16** Time readouts move from the river to the mini player · S · closes A28 · needs —
