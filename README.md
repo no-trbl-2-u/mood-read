@@ -11,3 +11,11 @@ pnpm install
 pnpm verify          # the gate every commit passes
 node scripts/install-hooks.mjs   # once per checkout: arms the pre-commit and pre-push hooks
 ```
+
+## Develop
+
+```bash
+pnpm install
+pnpm web             # dev server, web (expo start --web)
+pnpm verify          # typecheck, lint, unit tests, plus the nexus gates
+```
