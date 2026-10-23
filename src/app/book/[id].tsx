@@ -4,7 +4,7 @@ import { Pressable, StyleSheet, Text, View } from "react-native";
 
 import { bedSoundFor } from "@/lib/bed";
 import { speedLabel } from "@/lib/labels";
-import { useBook } from "@/lib/library";
+import { chapterEdits, useBook } from "@/lib/library";
 import { BookmarksSheet } from "@/player/BookmarksSheet";
 import { ChapterRiver } from "@/player/ChapterRiver";
 import { MiniPlayer } from "@/player/MiniPlayer";
@@ -83,6 +83,15 @@ export default function BookScreen() {
           sleep={p.sleep}
           layer={layer}
           onJump={(i) => active && p.jumpToChapter(i)}
+          edits={
+            active
+              ? {
+                  rename: (i, t) => chapterEdits.rename(book, i, t),
+                  mergeWithNext: (i) => chapterEdits.mergeWithNext(book, i),
+                  splitAt: (s) => chapterEdits.splitAt(book, s),
+                }
+              : undefined
+          }
         />
         {active && sheet === "speed" && <SpeedSleepSheet player={p} onClose={() => setSheet(null)} />}
         {active && sheet === "bookmarks" && (

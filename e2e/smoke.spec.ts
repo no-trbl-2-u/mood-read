@@ -8,6 +8,7 @@ import { guard } from "./guard";
 // not-found state with a way back, not a crash.
 const ROUTES = [
   { path: "/", title: "Library", also: "Import a book" },
+  { path: "/import", title: "Import", also: "Choose files" },
   { path: "/book/sample-1", title: "Book not found", also: "Back to Library" },
 ];
 

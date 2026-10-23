@@ -1,10 +1,12 @@
 // The chapter river: every chapter of the book in one scrolling list, which is also the chapter list. In 01.1 a
 // row shows its title and duration; the playing row is expanded in place and marked with a heavy left rule and a
-// play mark. The expanded row carries the bed's "Layer" line, its soundscape for this chapter (01.3). Emotion chips,
-// the mood card, the mixer and lock marks join from 01.4, 01.5 and 01.7.
-import { useEffect, useRef } from "react";
-import { Pressable, ScrollView, StyleSheet, Text, View, type ScrollViewInstance } from "react-native";
+// play mark. The expanded row carries the bed's "Layer" line, its soundscape for this chapter (01.3), and the
+// chapter edits (01.6, spec 01 A6): rename, merge with the next chapter, and split at the current position. Emotion
+// chips, the mood card, the mixer and lock marks join from 01.4, 01.5 and 01.7.
+import { useEffect, useRef, useState } from "react";
+import { Pressable, ScrollView, StyleSheet, Text, TextInput, View, type ScrollViewInstance } from "react-native";
 
+import { canMergeWithNext, canSplitAt } from "@/lib/chapters";
 import { formatDuration } from "@/lib/format-duration";
 import type { Book, SleepTimer } from "@/lib/types";
 import { PlayGlyph } from "@/ui/glyphs";
@@ -18,6 +20,8 @@ export function ChapterRiver(props: {
   /** The bed's sound for the playing chapter, by name; null when the layer is off. */
   layer: string | null;
   onJump: (index: number) => void;
+  /** Chapter edits; absent until the book is open in the player. */
+  edits?: ChapterEditsApi;
 }) {
   const scroll = useRef<ScrollViewInstance>(null);
   const rowY = useRef<Record<number, number>>({});
@@ -85,12 +89,94 @@ export function ChapterRiver(props: {
                     {props.layer ?? "Off"}
                   </Text>
                 </View>
+                {props.edits && (
+                  <ChapterEdits
+                    key={`${c.index}:${c.title}`}
+                    title={c.title}
+                    canMerge={canMergeWithNext(props.book.chapters, c.index)}
+                    canSplit={canSplitAt(props.book.chapters, props.position)}
+                    splitLabel={formatDuration(props.position - c.start)}
+                    onRename={(t) => props.edits!.rename(c.index, t)}
+                    onMerge={() => props.edits!.mergeWithNext(c.index)}
+                    onSplit={() => props.edits!.splitAt(props.position)}
+                  />
+                )}
               </View>
             )}
           </View>
         );
       })}
     </ScrollView>
+  );
+}
+
+export type ChapterEditsApi = {
+  rename: (index: number, title: string) => void;
+  mergeWithNext: (index: number) => void;
+  splitAt: (position: number) => void;
+};
+
+/** Rename (an inline field), Merge with next, and Split here, under the playing chapter. */
+function ChapterEdits(props: {
+  title: string;
+  canMerge: boolean;
+  canSplit: boolean;
+  splitLabel: string;
+  onRename: (title: string) => void;
+  onMerge: () => void;
+  onSplit: () => void;
+}) {
+  const [draft, setDraft] = useState<string | null>(null);
+  if (draft !== null) {
+    const save = () => {
+      props.onRename(draft);
+      setDraft(null);
+    };
+    return (
+      <View style={styles.editRow}>
+        <TextInput
+          testID="chapter-title-input"
+          aria-label="Chapter title"
+          value={draft}
+          onChangeText={setDraft}
+          onSubmitEditing={save}
+          autoFocus
+          style={styles.input}
+          placeholderTextColor={colors.textMuted}
+        />
+        <EditButton testID="chapter-rename-save" label="Save" onPress={save} disabled={!draft.trim()} />
+        <EditButton testID="chapter-rename-cancel" label="Cancel" onPress={() => setDraft(null)} />
+      </View>
+    );
+  }
+  return (
+    <View style={styles.editRow}>
+      <EditButton testID="chapter-rename" label="Rename" onPress={() => setDraft(props.title)} />
+      <EditButton testID="chapter-merge" label="Merge with next" onPress={props.onMerge} disabled={!props.canMerge} />
+      <EditButton
+        testID="chapter-split"
+        label={`Split at ${props.splitLabel}`}
+        a11yLabel="Split this chapter at the current position"
+        onPress={props.onSplit}
+        disabled={!props.canSplit}
+      />
+    </View>
+  );
+}
+
+function EditButton(props: { label: string; a11yLabel?: string; onPress: () => void; disabled?: boolean; testID: string }) {
+  return (
+    <Pressable
+      testID={props.testID}
+      role="button"
+      aria-label={props.a11yLabel ?? props.label}
+      aria-disabled={props.disabled || undefined}
+      disabled={props.disabled}
+      onPress={props.onPress}
+      style={[styles.editButton, props.disabled && styles.disabled]}
+    >
+      <Text style={styles.editText}>{props.label}</Text>
+    </Pressable>
   );
 }
 
@@ -124,5 +210,28 @@ const styles = StyleSheet.create({
     borderWidth: 1,
     borderColor: colors.border,
     overflow: "hidden",
+  },
+  editRow: { flexDirection: "row", flexWrap: "wrap", alignItems: "center", gap: spacing.sm, marginTop: spacing.sm },
+  editButton: {
+    minHeight: 36,
+    justifyContent: "center",
+    paddingHorizontal: spacing.sm + 2,
+    borderRadius: 18,
+    borderWidth: 1,
+    borderColor: colors.border,
+    backgroundColor: colors.background,
+  },
+  editText: { color: colors.text, fontSize: 13, fontWeight: "600" },
+  disabled: { opacity: 0.4 },
+  input: {
+    flexGrow: 1,
+    minWidth: 160,
+    minHeight: 36,
+    paddingHorizontal: spacing.sm,
+    borderRadius: 6,
+    borderWidth: 1,
+    borderColor: colors.border,
+    color: colors.text,
+    fontSize: 15,
   },
 });

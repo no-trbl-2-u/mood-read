@@ -114,11 +114,13 @@ async function readyToPlay(page: Page) {
   await expect(page.getByTestId("mini-play-pause").locator("[role=progressbar]")).toHaveCount(0);
 }
 
-/** Opens the library, imports the two files through its file input, and lands on the book's river. */
+/** Opens the library, imports the two files through the Import screen's file input, and lands on the book's river. */
 async function importBook(page: Page) {
   await page.goto("/");
-  const chooser = page.waitForEvent("filechooser");
   await page.getByTestId("import-book").click();
+  await expect(page).toHaveURL(/\/import$/);
+  const chooser = page.waitForEvent("filechooser");
+  await page.getByTestId("import-files").click();
   await (
     await chooser
   ).setFiles([

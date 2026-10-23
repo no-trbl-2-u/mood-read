@@ -1,9 +1,22 @@
-// Web development media store: picked files live in IndexedDB so books survive a reload.
-import type { DocumentPickerAsset } from 'expo-document-picker';
+// Web development media store: picked files (and covers) live in IndexedDB so books survive a reload. Same API
+// as media.ts. A folder is picked with the browser's directory input; silence detection decodes the audio in
+// the page with Web Audio, at a low sample rate, and keeps only its envelope.
+import type { PickedFile } from './import-plan';
+import type { ByteSource } from './meta/bytes';
+import { isImportable } from './meta/read';
+import type { Picture } from './meta/types';
+import { envelopeFromPcm, isWav, wavEnvelope, type Envelope } from './silence';
+
+export type PickedAudio = PickedFile & { uri: string; blob?: Blob };
 
 const DB = 'mood-read';
 const STORE = 'files';
 const urls = new Map<string, string>();
+/** The input's accept list: audio, the MP4 family by extension (browsers label them unevenly), and AAX/AAXC to explain. */
+const ACCEPT = 'audio/*,video/mp4,.m4b,.m4a,.mp3,.wav,.flac,.ogg,.oga,.opus,.aax,.aaxc';
+/** Web Audio decodes a whole file at once; past this size the book keeps one chapter (the listener can split it). */
+const MAX_DECODE_BYTES = 150 * 1024 * 1024;
+const DECODE_RATE = 8000;
 
 function open(): Promise<IDBDatabase> {
   return new Promise((resolve, reject) => {
@@ -23,9 +36,60 @@ async function tx<T>(mode: IDBTransactionMode, run: (s: IDBObjectStore) => IDBRe
   });
 }
 
-export async function storeFile(bookId: string, index: number, asset: DocumentPickerAsset): Promise<string> {
-  const blob: Blob = asset.file ?? (await (await fetch(asset.uri)).blob());
+function blobSource(blob: Blob): ByteSource {
+  return {
+    size: blob.size,
+    read: async (offset, length) => new Uint8Array(await blob.slice(offset, offset + length).arrayBuffer()),
+  };
+}
+
+function picked(file: File): PickedAudio {
+  return { name: file.name, size: file.size, uri: '', blob: file, source: blobSource(file) };
+}
+
+/** A hidden file input, clicked; resolves with its files, or null if the listener cancelled. */
+function chooseFiles(folder: boolean): Promise<File[] | null> {
+  return new Promise((resolve) => {
+    const input = document.createElement('input');
+    input.type = 'file';
+    input.style.display = 'none';
+    if (folder) input.setAttribute('webkitdirectory', '');
+    else {
+      input.multiple = true;
+      input.accept = ACCEPT;
+    }
+    const finish = (files: File[] | null) => {
+      input.remove();
+      resolve(files);
+    };
+    input.addEventListener('change', () => finish(input.files?.length ? [...input.files] : null));
+    input.addEventListener('cancel', () => finish(null));
+    document.body.appendChild(input);
+    input.click();
+  });
+}
+
+export async function pickFiles(): Promise<PickedAudio[] | null> {
+  const files = await chooseFiles(false);
+  return files ? files.map(picked) : null;
+}
+
+/** A folder's audio files (and any AAX/AAXC, to explain); its other files (covers, notes) are left out. */
+export async function pickFolder(): Promise<PickedAudio[] | null> {
+  const files = await chooseFiles(true);
+  return files ? files.filter((f) => isImportable(f.name)).map(picked) : null;
+}
+
+export async function storeFile(bookId: string, index: number, file: PickedAudio): Promise<string> {
+  const blob: Blob = file.blob ?? (await (await fetch(file.uri)).blob());
   const ref = `idb:${bookId}/${index}`;
+  await tx('readwrite', (s) => s.put(blob, ref));
+  return ref;
+}
+
+export async function storeCover(bookId: string, picture: Picture): Promise<string> {
+  const ref = `idb:${bookId}/cover`;
+  const blob = new Blob([picture.data.slice().buffer], { type: picture.mime });
   await tx('readwrite', (s) => s.put(blob, ref));
   return ref;
 }
@@ -49,6 +113,20 @@ export async function deleteBookFiles(bookId: string): Promise<void> {
       URL.revokeObjectURL(url);
       urls.delete(ref);
     }
+  }
+}
+
+/** The file's envelope: a WAV streamed, anything else decoded by the browser at 8 kHz; null if it cannot be. */
+export async function silenceEnvelope(file: PickedAudio): Promise<Envelope | null> {
+  if (await isWav(file.source)) return wavEnvelope(file.source);
+  if (!file.blob || file.size > MAX_DECODE_BYTES || typeof OfflineAudioContext === 'undefined') return null;
+  try {
+    const ctx = new OfflineAudioContext(1, 1, DECODE_RATE);
+    const audio = await ctx.decodeAudioData(await file.blob.arrayBuffer());
+    const channels = Array.from({ length: audio.numberOfChannels }, (_, i) => audio.getChannelData(i));
+    return envelopeFromPcm(channels, audio.sampleRate);
+  } catch {
+    return null;
   }
 }
 

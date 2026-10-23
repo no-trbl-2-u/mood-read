@@ -1,12 +1,13 @@
 import { Image, StyleSheet, Text, View } from "react-native";
 
+import { useFileUri } from "@/lib/library";
 import type { Book } from "@/lib/types";
 
 import { PlayGlyph } from "./glyphs";
 import { colors, radii } from "./theme";
 
 /**
- * The book's cover, or a tile with its initials until 01.6 reads covers from tags. `marked` draws the play mark
+ * The book's cover from its tags (01.6), or a tile with its initials when it has none. `marked` draws the play mark
  * the library puts on the book in progress.
  */
 export function Cover({
@@ -21,6 +22,7 @@ export function Cover({
   marked?: boolean;
 }) {
   const box = { width, height, borderRadius: radii.sm };
+  const uri = useFileUri(book.cover);
   const initials = book.title
     .split(/\s+/)
     .filter(Boolean)
@@ -30,8 +32,8 @@ export function Cover({
   const hue = [...book.id].reduce((h, c) => (h * 31 + c.charCodeAt(0)) % 360, 0);
   return (
     <View style={box}>
-      {book.cover ? (
-        <Image source={{ uri: book.cover }} style={box} />
+      {uri ? (
+        <Image testID="cover-image" source={{ uri }} style={box} accessibilityIgnoresInvertColors />
       ) : (
         <View style={[styles.tile, box, { backgroundColor: `hsl(${hue}, 30%, 28%)` }]}>
           <Text style={[styles.initials, { fontSize: Math.min(width, height) / 3 }]}>{initials || "?"}</Text>

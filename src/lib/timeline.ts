@@ -68,7 +68,7 @@ export function stripExtension(name: string): string {
   return name.replace(/\.[A-Za-z0-9]{1,5}$/, "");
 }
 
-/** One chapter per file: the 01.1 rule until 01.6 reads markers and detects silences. */
+/** One chapter per file, titled by file name (01.1's rule; imports now go through chapters.ts deriveChapters). */
 export function chaptersFromFiles(bookId: string, files: (FileLike & { name: string })[]) {
   const offsets = fileOffsets(files);
   return files.map((f, i) => ({

@@ -1,14 +1,26 @@
 // The library on this device, for the screens: the store bound to the platform's key-value backend
-// (expo-sqlite on native, localStorage on web), its React hooks, and opening a local file as a book.
-// Storage is reached only through src/lib/ (agents.md rule 7).
-import * as DocumentPicker from "expo-document-picker";
-import { useSyncExternalStore } from "react";
+// (expo-sqlite on native, localStorage on web), its React hooks, importing picked files as a book, and the
+// listener's chapter edits. Storage is reached only through src/lib/ (agents.md rule 7).
+import { useEffect, useState, useSyncExternalStore } from "react";
 
+import { deriveChapters, mergeWithNext, renameChapter, splitChapter } from "./chapters";
+import { bookTags, checkImport, inspectFiles } from "./import-plan";
 import { getItem, removeItem, setItem } from "./kv";
 import { createLibraryStore } from "./library-store";
-import { deleteBookFiles, probeDuration, resolveFile, storeFile } from "./media";
-import { guessTitle } from "./labels";
-import { chaptersFromFiles, newId, totalDuration } from "./timeline";
+import {
+  deleteBookFiles,
+  pickFiles,
+  pickFolder,
+  probeDuration,
+  resolveFile,
+  silenceEnvelope,
+  storeCover,
+  storeFile,
+  type PickedAudio,
+} from "./media";
+import type { DrmKind } from "./meta/types";
+import { silenceBreaks } from "./silence";
+import { newId, totalDuration } from "./timeline";
 import type { Book, BookFile, Bookmark } from "./types";
 
 export const library = createLibraryStore({ getItem, setItem, removeItem });
@@ -26,43 +38,110 @@ export function useBookmarks(bookId: string): Bookmark[] {
   return useSyncExternalStore(library.subscribe, read, read);
 }
 
-const AUDIO_TYPES = ["audio/*", "video/mp4", "application/octet-stream"];
+/** A displayable URI for a stored file ref (a cover), or null while it resolves or if it is gone. */
+export function useFileUri(ref: string | null): string | null {
+  const [resolved, setResolved] = useState<{ ref: string; uri: string | null } | null>(null);
+  useEffect(() => {
+    let live = true;
+    if (ref) resolveFile(ref).then((uri) => live && setResolved({ ref, uri }), () => live && setResolved({ ref, uri: null }));
+    return () => {
+      live = false;
+    };
+  }, [ref]);
+  return ref && resolved?.ref === ref ? resolved.uri : null;
+}
+
+export type ImportOutcome =
+  | { kind: "book"; book: Book }
+  | { kind: "drm"; fileName: string; drm: DrmKind }
+  | { kind: "unsupported"; fileName: string }
+  | { kind: "empty" }
+  | { kind: "cancelled" };
+
+/** What the import is doing, for the screen's progress line. */
+export type ImportStep = "reading" | "copying" | "chapters";
+
+export { pickFiles, pickFolder };
 
 /**
- * Opens the system picker for one or more audio files and adds them as one book, one chapter per file, in
- * file-name order. Returns the new book, or null if the listener cancelled. The files are copied onto the
- * device (IndexedDB on web) and never leave it. Tags, covers, folders and chapter markers arrive with 01.6.
+ * Imports picked files as one book (spec 01 A5-A7). Tags are read first; an AAX/AAXC file stops everything
+ * before a byte is copied. Then the files are copied onto the device (IndexedDB on web) and never leave it,
+ * each one's duration is probed, the cover is saved, and chapters come from markers, else files, else
+ * silences.
  */
-export async function importBookFromPicker(): Promise<Book | null> {
-  const result = await DocumentPicker.getDocumentAsync({ type: AUDIO_TYPES, multiple: true });
-  if (result.canceled || !result.assets?.length) return null;
-  const assets = [...result.assets].sort((a, b) =>
-    a.name.localeCompare(b.name, undefined, { numeric: true, sensitivity: "base" }),
-  );
-  const id = newId();
+export async function importFiles(picked: PickedAudio[] | null, onStep?: (s: ImportStep) => void): Promise<ImportOutcome> {
+  if (!picked) return { kind: "cancelled" };
   try {
-    const files: BookFile[] = [];
-    for (let i = 0; i < assets.length; i++) {
-      const ref = await storeFile(id, i, assets[i]);
-      const duration = await probeDuration(await resolveFile(ref));
-      files.push({ ref, name: assets[i].name, duration });
+    onStep?.("reading");
+    const check = checkImport(await inspectFiles(picked));
+    if (check.kind !== "ok") return check;
+
+    const id = newId();
+    try {
+      onStep?.("copying");
+      const files: BookFile[] = [];
+      for (let i = 0; i < check.files.length; i++) {
+        const { file, meta } = check.files[i];
+        const ref = await storeFile(id, i, file);
+        let duration: number;
+        try {
+          duration = await probeDuration(await resolveFile(ref));
+        } catch (e) {
+          // A file the player cannot load is not a book, whatever its tags say.
+          if (!meta.duration) throw e;
+          duration = meta.duration;
+        }
+        files.push({ ref, name: file.name, duration });
+      }
+      const tags = bookTags(check.files);
+      const cover = tags.cover ? await storeCover(id, tags.cover).catch(() => null) : null;
+
+      onStep?.("chapters");
+      const forChapters = check.files.map((x, i) => ({
+        name: x.file.name,
+        duration: files[i].duration,
+        title: x.meta.title,
+        markers: x.meta.chapters,
+      }));
+      let breaks: number[] = [];
+      if (forChapters.length === 1 && forChapters[0].markers.length === 0) {
+        const env = await silenceEnvelope(check.files[0].file).catch(() => null);
+        if (env) breaks = silenceBreaks(env, files[0].duration);
+      }
+      const { chapters } = deriveChapters(id, forChapters, breaks);
+
+      const book: Book = {
+        id,
+        title: tags.title,
+        author: tags.author,
+        narrator: tags.narrator,
+        cover,
+        files,
+        chapters,
+        duration: totalDuration(files),
+        addedAt: Date.now(),
+        lastPlayedAt: null,
+      };
+      library.addBook(book);
+      return { kind: "book", book };
+    } catch (e) {
+      await deleteBookFiles(id).catch(() => {});
+      throw e;
     }
-    const book: Book = {
-      id,
-      title: guessTitle(assets.map((a) => a.name)),
-      author: "Unknown author",
-      narrator: "",
-      cover: null,
-      files,
-      chapters: chaptersFromFiles(id, files),
-      duration: totalDuration(files),
-      addedAt: Date.now(),
-      lastPlayedAt: null,
-    };
-    library.addBook(book);
-    return book;
-  } catch (e) {
-    await deleteBookFiles(id).catch(() => {});
-    throw e;
+  } finally {
+    for (const f of picked) f.source.close?.();
   }
 }
+
+/** The listener's chapter edits (spec 01 A6), saved for the book. */
+export const chapterEdits = {
+  rename(book: Book, index: number, title: string): void {
+    library.setChapters(book.id, renameChapter(book.chapters, index, title));
+  },
+  mergeWithNext(book: Book, index: number): void {
+    library.setChapters(book.id, mergeWithNext(book.chapters, book.files, index));
+  },
+  splitAt(book: Book, position: number): void {
+    library.setChapters(book.id, splitChapter(book.chapters, book.files, position));
+  },
+};

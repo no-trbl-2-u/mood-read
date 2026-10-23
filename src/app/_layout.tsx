@@ -5,7 +5,8 @@ import { StyleSheet, View } from "react-native";
 import { PlayerProvider } from "@/player/PlayerProvider";
 import { colors } from "@/ui/theme";
 
-// A two-level stack with no tab bar: the library, then a book's chapter river (design/layouts/DECISION.md).
+// A two-level stack with no tab bar: the library, then a book's chapter river or the Import screen
+// (design/layouts/DECISION.md).
 // Each screen draws its own top bar, so the stack's header is off.
 export default function RootLayout() {
   return (
@@ -19,6 +20,7 @@ export default function RootLayout() {
           }}
         >
           <Stack.Screen name="index" options={{ title: "Library" }} />
+          <Stack.Screen name="import" options={{ title: "Import" }} />
           <Stack.Screen name="book/[id]" options={{ title: "Mood Read" }} />
         </Stack>
       </View>

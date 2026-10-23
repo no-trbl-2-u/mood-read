@@ -25,7 +25,7 @@ export type Book = {
   title: string;
   author: string;
   narrator: string;
-  /** Cover image URI, if any (tags and covers arrive with 01.6). */
+  /** The cover from the files' tags, as a stored ref (resolved by the media store), if any. */
   cover: string | null;
   files: BookFile[];
   chapters: Chapter[];
