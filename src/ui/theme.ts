@@ -147,7 +147,7 @@ export const motion = {
 export type ContrastKind = "text" | "large" | "ui";
 
 /** Every foreground/background pair the app draws, with the AA bar it must clear. */
-export const contrastPairs: ReadonlyArray<{ name: string; fg: string; bg: string; kind: ContrastKind }> = [
+export const contrastPairs: readonly { name: string; fg: string; bg: string; kind: ContrastKind }[] = [
   { name: "text on background", fg: colors.text, bg: colors.background, kind: "text" },
   { name: "text on surface", fg: colors.text, bg: colors.surface, kind: "text" },
   { name: "text on raised", fg: colors.text, bg: colors.raised, kind: "text" },
