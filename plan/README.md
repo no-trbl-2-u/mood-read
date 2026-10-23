@@ -14,7 +14,7 @@ priorities, then table order), builds it, and removes it. `/plot` puts a task in
 
 | # | Initiative | Spec | Status | Progress |
 |---|---|---|---|---|
-| 1 | Mood Read v1 in two parts. Part 1, the player: your own audiobooks (01.1, 01.6) with an ambient soundscape under the narration (01.3, 01.7) and a mixer (01.5). Part 2: each chapter's moods researched by AI, with one named no-vocals piece per chapter, named but not played in v1 (01.2, 01.4). After v1: playing the pieces (01.10), after a streaming study (01.9) | [01-audiobook-player-app-similar-to-audible.md](01-audiobook-player-app-similar-to-audible.md) | planned (**priority 1**, the only spec; build order: part 1 01.1, 01.6, 01.3, 01.5, 01.7; part 2 01.2, 01.4; after v1 01.9, 01.10. Open questions 1-5 answered; 6 (where the research agent's AI key lives) and 7 (spoilers) have defaults) | 9 left |
+| 1 | Mood Read v1 in two parts. Part 1, the player: your own audiobooks (01.1, 01.6) with an ambient soundscape under the narration (01.3, 01.7) and a mixer (01.5). Part 2: each chapter's moods researched by AI, with one named no-vocals piece per chapter, named but not played in v1 (01.2, 01.4). After v1: playing the pieces (01.10), after a streaming study (01.9) | [01-audiobook-player-app-similar-to-audible.md](01-audiobook-player-app-similar-to-audible.md) | planned (**priority 1**, the only spec; build order: part 1 01.1, 01.6, 01.3, 01.5, 01.7; part 2 01.2, 01.4; after v1 01.9, 01.10. Open questions 1-7 answered; 01.2 still needs the AI provider and spend cap named) | 9 left |
 
 ## Chunks and pending
 

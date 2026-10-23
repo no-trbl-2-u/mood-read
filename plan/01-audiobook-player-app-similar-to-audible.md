@@ -61,6 +61,7 @@ just name the pieces/scores/songs/instrumentals (It's important that there's no 
   chapter, so a book is scored once, not on every play.
 - **The chapter mood card (01.4):** each chapter shows its emotions, its named piece and the alternates. The listener
   can pick an alternate or keep "auto", and the pick is saved per chapter. Nothing is previewed or played in v1.
+  The card never shows events, and shows a chapter's emotions only once the listener reaches it (Open questions 7).
 - **Playing the chapter's piece (01.10, after v1):** the chapter's piece (the pick, else auto) loops under the
   narration through the layer and mixer, from a source licensed to play it (Open questions 3).
 
@@ -80,11 +81,15 @@ just name the pieces/scores/songs/instrumentals (It's important that there's no 
   player works without it: an unscored chapter plays narration only, or the book's soundscape.
 - **The listener's audio stays theirs:** scoring sends only the book's title, author and chapter titles to the
   research agent; the audio never leaves the device and is never transcribed (Open questions 4). Mood Read keeps the
-  agent's findings (emotions and source links), not copies of the sources' text.
+  agent's findings (emotions and source links), not copies of the sources' text, and never the chapter's events
+  (Open questions 7).
+- **The scoring proxy (Open questions 6):** the app's only server. It holds the AI and search keys, receives only
+  title, author and chapter titles, enforces a monthly spend cap, and caches each book's result for every listener.
+  It keeps no listener data.
 
 ## Acceptance
 
-Measure: 20 open · 0 closed · next A21
+Measure: 22 open · 0 closed · next A23
 
 - **A1** A book in the library plays, pauses, skips ±30 s and jumps to any chapter from the chapter list.
 - **A2** Speed runs 0.5× to 3× without pitch change; a sleep timer stops playback after N minutes or at chapter end.
@@ -120,6 +125,11 @@ Measure: 20 open · 0 closed · next A21
   with too little written about it is shown as unscored, not given a guessed mood.
 - **A20** Every named piece is instrumental, with no vocals: no singing and no spoken words. A piece with vocals is
   never named, as the main piece or as an alternate.
+- **A21** Mood Read never shows a chapter's events, only its emotions; a chapter's mood card shows its emotions only
+  once the listener has reached that chapter (Open questions 7).
+- **A22** No AI or search key ships in the app. Scoring goes through the proxy, which receives only title, author
+  and chapter titles, stops starting new research runs at the monthly cap, and returns a book already scored for
+  any listener from its cache without a new run (Open questions 6).
 
 ## Open questions (owner decisions)
 
@@ -172,16 +182,26 @@ Measure: 20 open · 0 closed · next A21
      background play exists only in YouTube's own apps, not through its API. 01.9 checks whether a listener's own
      subscription opens any compliant path.
    - **Open cost note.** Research-agent scoring (01.2) costs model and search fees per book, and with a free app
-     the owner pays them. 01.2 should score each book once (already in A13), cache the result on the device, and
-     report the cost per book so the owner can see it.
+     the owner pays them. 01.2 should score each book once (already in A13), cache the result on the device and on
+     the proxy (Open questions 6), and report the cost per book so the owner can see it.
 6. **Where the research agent's AI key lives.** The agent needs an AI model and web search, and a key shipped
    inside the app can be pulled out and spent by anyone. So "everything local" needs one exception: a small server
-   that holds the key. Default if unanswered: a thin serverless proxy that receives only a book's title, author and
-   chapter titles, enforces a monthly spend cap, and caches each book's moods so every listener of that book shares
-   one research run. It holds no listener data. The owner names the AI provider and the cap.
+   that holds the key. *Answered by the owner (2026-10-22):* "a thin serverless proxy that receives only a book's
+   title, author and chapter titles, enforces a monthly spend cap, and caches each book's moods so every listener
+   of that book shares one research run." So:
+   - **The key never ships in the app.** The app calls the proxy, and only the proxy holds the AI and search keys.
+   - **The proxy receives only title, author and chapter titles** and holds no listener data: no accounts, no
+     device IDs kept, no positions or picks.
+   - **A monthly spend cap.** Past the cap, new books wait as unscored until the next month; already-cached books
+     still return. Chapters still play (A15).
+   - **One research run per book, shared.** The proxy caches each book's moods and pieces, so a second listener of
+     the same book gets the cached result at no new cost. The app also keeps its copy on the device.
+   - **Still to name before 01.2 is built:** the AI provider and the cap's amount. 01.2 asks for them then.
 7. **Spoilers.** The agent learns each chapter's events, and even a mood can hint at them ("dread" in chapter 30).
-   Default if unanswered: Mood Read never shows events, only emotions, and the mood card shows a chapter's emotions
-   only once the listener reaches it.
+   *Answered by the owner (2026-10-22):* "Mood Read never shows events, only emotions, and the mood card shows a
+   chapter's emotions only once the listener reaches it." So the app stores and shows emotions, intensities, source
+   links and pieces, never the agent's notes on what happens; and a chapter the listener hasn't reached yet shows
+   no emotions on its card (A21).
 
 ## Chunks
 
@@ -205,9 +225,11 @@ they were written in.
 - **01.2** · L · Chapter moods and named pieces (v1 part 2): a research agent reads what is written about the
   book (Open questions 4) and names each chapter's emotions with intensities and sources. It then names one
   no-vocals piece per chapter plus alternates; nothing is played. It runs as a background job, stored per chapter.
-  Closes A13, A14, A15, A19, A20. Needs 01.6; Open questions 6 answered or its default taken.
+  Scoring goes through the proxy that holds the key, caps spend and caches each book (Open questions 6, answered).
+  Closes A13, A14, A15, A19, A20, A22. Needs 01.6, and the owner to name the AI provider and the cap.
 - **01.4** · S · The chapter mood card: emotions, the named piece and alternates, and a saved pick over auto; no
-  preview in v1. Closes A16. Needs 01.2; Open questions 7 answered or its default taken.
+  preview in v1. No events, only emotions, shown once the listener reaches the chapter (Open questions 7,
+  answered). Closes A16, A21. Needs 01.2.
 - **01.9** · S · Streaming sources study (Open questions 3): check the current terms of Spotify, YouTube / YouTube
   Music and Apple Music for any compliant way to use them in Mood Read. Examples: a licensing deal, music played only
   between chapters rather than under the voice, or the mood card linking out to a matching playlist in the
