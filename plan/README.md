@@ -14,8 +14,6 @@ under the narration.
 
 **Asap** (built before the table, in this order, once their needs are done):
 
-- **01.16** · the owner's ask about the player on screen now; S, and it moves the readouts before 01.4 fills the
-  expanded row
 
 **Held** (waits on a person's word; never picked until the line goes):
 
@@ -30,7 +28,7 @@ under the narration.
 | 6 | Design system and the undrawn screens: palette, type, icons and voice; a layout for every v2 screen and state (Browse, Downloads, Credits, Settings, scoring, Build playlist, first run); Settings; an accessibility pass; a privacy policy. Built after v1, before v2 | [06-design-and-app-screens.md](06-design-and-app-screens.md) | planned · priority 3 | 5 left |
 | 5 | Mood Read v2: browse and download free LibriVox books, manage the library (remove a download, keep the book), a royalty-free music catalog, one button that builds and pre-downloads a book's chapter playlist, credits, Spotify chapter playlists, and the Play Store and App Store | [05-mood-read-v2.md](05-mood-read-v2.md) | planned | 18 left |
 | 4 | Android preview APKs: Mood Read installed on a real phone from a preview APK built from main, before any store; iOS after v1 | [04-android-preview.md](04-android-preview.md) | planned | 1 left |
-| 1 | Mood Read v1 in two parts. Part 1, the player: your own audiobooks with an ambient soundscape under the narration (01.7) and a mixer (01.5). Part 2: each chapter's moods researched by AI, with one named no-vocals piece per chapter, named but not played in v1 (01.2, 01.4). After v1: a streaming study, then playing the pieces (01.10) | [01-audiobook-player-app-similar-to-audible.md](01-audiobook-player-app-similar-to-audible.md) | planned · priority 2 | 11 left |
+| 1 | Mood Read v1 in two parts. Part 1, the player: your own audiobooks with an ambient soundscape under the narration (01.7) and a mixer (01.5). Part 2: each chapter's moods researched by AI, with one named no-vocals piece per chapter, named but not played in v1 (01.2, 01.4). After v1: a streaming study, then playing the pieces (01.10) | [01-audiobook-player-app-similar-to-audible.md](01-audiobook-player-app-similar-to-audible.md) | planned · priority 2 | 10 left |
 
 ## How the loop reads this folder
 
