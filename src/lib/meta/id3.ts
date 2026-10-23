@@ -114,7 +114,7 @@ function apic(data: Uint8Array, v22: boolean): { type: number; picture: Picture 
 type Frame = { id: string; data: Uint8Array };
 
 /** The frames of a tag body (or of a CHAP/CTOC's embedded frames). */
-function frames(body: Uint8Array, version: number): Frame[] {
+function frames(body: Uint8Array, version: number, allUnsynced = false): Frame[] {
   const out: Frame[] = [];
   const v22 = version === 2;
   const headLen = v22 ? 6 : 10;
@@ -133,7 +133,8 @@ function frames(body: Uint8Array, version: number): Frame[] {
     let data = body.subarray(o + headLen, Math.min(body.length, o + headLen + size));
     if (version === 4) {
       if (flags & 0x0001) data = data.subarray(4); // data length indicator
-      if (flags & 0x0002) data = deunsync(data);
+      // v2.4 unsynchronises frame by frame: the header's flag means every frame is, as if each set its own.
+      if (allUnsynced || flags & 0x0002) data = deunsync(data);
     } else if (version === 3 && flags & 0x0080) {
       data = data.subarray(4); // compressed: decompressed size first; the data stays unread
     }
@@ -179,7 +180,7 @@ export function parseId3v2(tag: Uint8Array): Id3Tags {
   const chaps = new Map<string, TagChapter>();
   let order: string[] | null = null;
 
-  for (const f of frames(body, version)) {
+  for (const f of frames(body, version, version === 4 && (flags & 0x80) !== 0)) {
     const id = version === 2 ? (V22[f.id] ?? f.id) : f.id;
     switch (id) {
       case "TIT2":
