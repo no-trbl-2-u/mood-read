@@ -69,7 +69,7 @@ the downloads and the deletion rules.
 - **Credits (05.5).** A Credits screen reached from the library's overflow menu, out of the way of listening:
   every catalog piece with its title, artist, license and source link, the soundscapes, LibriVox's readers for
   each downloaded book, and the app's open-source notices.
-- **Chapter files (05.11).** A book that arrives as one long file (an unabridged M4B or MP3) can be split on the
+- **Chapter files (05.11).** A book that arrives as one long file (a LibriVox M4B or MP3 that holds the whole book) can be split on the
   device into one file per chapter, losslessly where the format allows, keeping the book's chapters, position and
   bookmarks. Native builds only. Nothing leaves the device.
 - **Spotify chapter playlists (05.12, 05.13).** An option on a scored book: connect Spotify, and Mood Read creates
@@ -139,13 +139,16 @@ Decisions made upfront (do not ask):
 All answered; none is open.
 
 - **Why chapter files?** Mood Read's player already plays chapter by chapter from markers in a single file
-  (01.6). *Answered by the owner (2026-10-23):* 05.11 builds the split anyway, as the owner asked; if the reason
-  was only Spotify timing, the owner can drop it, since 05.13 times playlists from chapter durations alone.
+  (01.6). *Answered by the owner (2026-10-23):* the split is for LibriVox books that come as one file holding the
+  whole book ("unabridged" meant that): a five-hour file can't take one piece per chapter, so 05.11 splits it
+  into one file per chapter.
 - **Instrumental tracks on Spotify.** Spotify's API offers no instrumental flag to new apps. *Answered by the
   owner (2026-10-23):* the scorer names tracks it judges instrumental, each checked before it joins a playlist; a
-  track it can't confirm is left out.
+  track it can't confirm is left out. The owner left this to the loop (2026-10-23), which kept it: A20 forbids
+  vocals, and leaving out what can't be confirmed is the one rule that can't break it.
 - **Play Store developer account.** Google's one-time fee and an account in the owner's name. *Answered by the
-  owner (2026-10-23):* 05.14 parks in the `/oversight` queue until the owner has one.
+  owner (2026-10-23):* not now: Mood Read stays the owner's own preview APK (spec 04), so 05.14
+  and 05.15 wait in the Held lane.
 
 ## Chunks
 Measure: 17 open · 0 closed · next A18

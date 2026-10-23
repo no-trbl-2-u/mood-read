@@ -17,6 +17,10 @@ under the narration.
 
 **Held** (waits on a person's word; never picked until the line goes):
 
+- **05.14** · blocked: Mood Read stays the owner's own preview APK for now; no Play Store developer account
+  (spec 05, Open questions) · 2026-10-23
+- **05.15** · blocked: needs 05.14 and the Apple Developer Program (D6) · 2026-10-23
+
 ## Specs
 
 | # | Initiative | Spec | Status | Progress |
