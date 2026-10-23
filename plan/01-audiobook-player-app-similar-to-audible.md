@@ -130,9 +130,9 @@ just name the pieces/scores/songs/instrumentals (It's important that there's no 
 - **A22** No AI or search key ships in the app. Scoring goes through the proxy, which receives only title, author
   and chapter titles, stops starting new research runs at the monthly cap, and returns a book already scored for
   any listener from its cache without a new run (Open questions 6).
-- **A24** Each chapter's mood card links out to its named piece on Spotify, YouTube / YouTube Music and
-  Apple Music, and Mood Read plays none of it; a listener can save a book's pieces as a playlist in their own
-  YouTube or Apple Music account.
+- **A24** Each chapter's mood card links out to its reference piece ("In the spirit of") on Spotify, YouTube /
+  YouTube Music and Apple Music, and Mood Read plays none of it; a listener can save a book's reference pieces as
+  a playlist in their own YouTube or Apple Music account.
 - **A27** A listener can turn on companion mode: Mood Read plays only its own soundscape or piece, no
   narration, mixed with the audio another app plays (Audible, Libby, Chirp or a music app). It follows chapters by
   the listener's tap or a timer, and never captures, controls, reads or ducks the other app. It is checked with
@@ -141,6 +141,11 @@ just name the pieces/scores/songs/instrumentals (It's important that there's no 
   the playing chapter's elapsed and length ("3:05 / 11:45") and, while a sleep timer runs, what is left of it
   (minutes, or "end of chapter"). The chapter river carries no times: no per-row length, and the playing row
   shows no "3:05 of 11:45" line and no sleep-timer line.
+- **A29** "Remove book" takes a book out of the library after a confirm, with its position, bookmarks,
+  moods, picks and mix.
+- **A30** An unscored book's river offers "Score this book"; scoring shows its progress, says
+  plainly when the monthly cap has paused it, and "Rescore" is an explicit action; the first scoring says once
+  that only the title, author and chapter titles are sent.
 
 ## Owner decisions (all answered)
 
@@ -231,7 +236,7 @@ Every question below is answered; none is open. Elsewhere in the plan, "Open que
    no emotions on its card (A21).
 
 ## Chunks
-Measure: 23 open · 5 closed · next A29
+Measure: 25 open · 5 closed · next A31
 
 Build order follows the owner's two-part v1, and the lines below are in that order. **Part 1, the player:** 01.1,
 01.6, 01.3, 01.5, 01.7: the player, then real books in it, then the second layer, its mixer and the soundscapes it
@@ -239,10 +244,14 @@ plays. **Part 2, moods and named pieces:** 01.2, then 01.4. **After v1:** 01.9 (
 pieces). Ids keep the order they were written in. The app itself (Expo at the repo root, the gates) is spec 02.
 
 - [ ] **01.6** Your own books: DRM-free imports, tags and covers, chapter detection and editing · L ·
-  closes A5, A6, A7 · needs —
+  closes A5, A6, A7, A29 · needs —
   - Files and folders; Audible's path as Open questions 2 settled it: (a) and (c), a clear import note for
     AAX/AAXC, no decryption and no Audible integration in v1.
   - The import screen and its AAX/AAXC note as `design/layouts/DECISION.md` draws them (`plan/bearings.md` Layout).
+  - "Remove book" in the river's overflow takes a book out of the library, with a confirm; v2's "Remove download,
+    keep the book" (05.7) comes later.
+  - Chapter editing is an "Edit chapters" mode from the river's overflow: rename inline, merge with the next row,
+    split at the current position. 01.6 draws it to this default and records it in `design/layouts/DECISION.md`.
 - [ ] **01.3** The second audio layer on the narration's clock · M · closes A8, A9 · needs —
   - Chapter-boundary crossfades, looping, independent of the narration's speed. It plays a test loop until 01.7's
     soundscapes exist.
@@ -268,19 +277,22 @@ pieces). Ids keep the order they were written in. The app itself (Expo at the re
   - The card is the expanded chapter row, inline in the river; an unreached row never expands (`plan/bearings.md`
     Layout).
 - [ ] **01.10** After v1: play the chapter's piece, looped under the narration · M · closes A17, A18 ·
-  needs 01.2, 01.3, 01.5
+  needs 01.2, 01.3, 01.5, 05.3
   - The pick, else auto, loops for the whole chapter through the layer and mixer, from a licensed source: the
     royalty-free catalog. 01.9 found no compliant path for a connected paid account (`docs/streaming-sources.md`).
-  - A named piece with no licensed recording gets the closest licensed match, and never one with vocals.
+  - It plays the catalog piece 05.3 picks for the chapter (D8), with no closest-match search of its own, so it
+    waits for the catalog (05.1, 05.2) and the catalog-only scorer (05.3).
   - Sources, best first (`docs/workarounds.md`): Kevin MacLeod's CC BY catalog and hand-picked CC0 / CC BY /
     CC BY-SA tracks (D7), each cleared by the rights-checker; AIVA Pro or a commissioned composer only on the
     owner's word. Any CC BY track needs the Credits screen (05.5).
 - [ ] **01.11** Mood-card link-outs and playlist saving · M · closes A24 · needs 01.10
+  - The links go to the chapter's reference piece: the famous no-vocals piece shown only as "In the spirit of"
+    beside the catalog pick (D13). Mood Read never plays it.
   - As `docs/streaming-sources.md` sets them: each service's branding rules; Spotify gets plain links only (its
     Developer Policy III.5, until the owner revisits it after v1); YouTube playlists through the Data API within
     its daily quota; Apple Music playlists only once the Apple Developer Program is joined (after v1); SoundCloud
     gets a plain soundcloud.com link, no API.
-- [ ] **01.14** Companion mode: Mood Read's bed beside another app · M · closes A27 · needs 01.7
+- [ ] **01.14** Companion mode: Mood Read's bed beside another app · M · closes A27 · needs 01.7, 06.3
   - As `docs/workarounds.md` (Companion mode) sets it: iOS `.playback` with `mixWithOthers`; Android requests no
     `AUDIOFOCUS_GAIN`; Expo needs `doNotMix` for lock-screen controls, so this is a mode the listener turns on,
     never the default. Automatic chapter following is out (iOS has no API; Android's notification access is unclear).
@@ -302,3 +314,6 @@ pieces). Ids keep the order they were written in. The app itself (Expo at the re
     card and mixer later chunks put there.
   - Out of scope: the Bookmarks sheet's "Ch. N — mm:ss" rows (a list of places, not a readout) and the Speed &
     Sleep sheet's chips stay as they are.
+- [ ] **01.17** Scoring in the river: start, progress, cap paused, rescore · S ·
+  closes A30 · needs 01.2, 06.2
+  - As 06.2 draws it: "Score this book" and its progress in the river's top bar, "Rescore" in its overflow.

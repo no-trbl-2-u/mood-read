@@ -42,7 +42,9 @@ the downloads and the deletion rules.
 - **The scorer picks from the catalog (05.3).** From v2, 01.2's research agent names each chapter's piece and its
   alternates by catalog id only, so the piece the card names is the piece that plays. Books scored before v2 are
   re-matched against the catalog from their stored emotions, with no new research run. The mood card shows the
-  piece's title, artist and license.
+  piece's title, artist and license. Beside the catalog pick the scorer keeps one famous no-vocals piece per
+  chapter as a reference, shown only as "In the spirit of" with 01.11's link-outs and never played
+  (D13).
 - **One button, one playlist (05.4).** "Build playlist" on a scored book takes each chapter's pick (else auto),
   queues every piece for download, and shows progress. Once done the book plays offline from any chapter: each
   chapter's piece loops for that chapter only (01.10) and changes only at the chapter boundary. Changing a pick
@@ -89,6 +91,18 @@ Decisions made upfront (do not ask):
 - A piece is shared, never copied: one file on the device, however many books use it.
 - Credits live in the library's overflow menu, never on the player or the river.
 
+- **The web build streams; phones keep (05.6, 05.8).** Browsers cap what a site may store, so the web build keeps
+  at most one book and its pieces offline and says so in Downloads; full offline libraries are for the phone
+  builds.
+- **The library grows up (05.16).** A book can be marked finished (and is when its last chapter
+  ends); the library sorts by recent, title or author and filters to in progress, not started or finished, with a
+  search field once it holds more than ten books.
+- **Backup (05.17).** "Export library" writes one file (books' metadata, positions, bookmarks, moods, picks,
+  mixes; never audio) to the device's share sheet; "Import library" reads it back and matches books by title,
+  author and duration.
+- **In the car (05.18).** Android Auto, then CarPlay once the Apple Developer Program is joined: the library and
+  the playing book's chapters as a browsable list, with transport; the bed and its mix play as on the phone.
+
 ## Contracts
 
 - **Routes (new):** `/browse` (search and results), `/browse/[id]` (one LibriVox book; `[id]` is its LibriVox id),
@@ -133,6 +147,12 @@ Decisions made upfront (do not ask):
   matching its emotions, at least as long as the chapter; Mood Read plays none of it.
 - **A16** Mood Read is published on Google Play.
 - **A17** Mood Read is on TestFlight and published on the App Store.
+- **A18** A book can be marked finished, and is when its last chapter ends; the library sorts by recent,
+  title or author, filters by state, and searches once it holds more than ten books.
+- **A19** "Export library" writes one file with no audio in it, and "Import library" restores positions,
+  bookmarks, moods, picks and mixes onto matching books.
+- **A20** Mood Read appears in Android Auto (and in CarPlay once iOS ships) with its library, chapters and
+  transport.
 
 ## Open questions
 
@@ -151,7 +171,7 @@ All answered; none is open.
   and 05.15 wait in the Held lane.
 
 ## Chunks
-Measure: 17 open · 0 closed · next A18
+Measure: 20 open · 0 closed · next A21
 
 - [ ] **05.1** The music catalog: manifest, R2 hosting, and `catalog:add` through the rights-checker · M ·
   closes A1 · needs — · secrets CLOUDFLARE_S3_ACCESS_KEY_ID, CLOUDFLARE_S3_SECRET_ACCESS_KEY, S3_API_ENDPOINT
@@ -161,18 +181,24 @@ Measure: 17 open · 0 closed · next A18
 - [ ] **05.3** The scorer names catalog pieces only, and re-matches books scored before v2 · M · closes A3 ·
   needs 01.2, 05.2
 - [ ] **05.6** The download manager: queue, pause and resume, retry, Wi-Fi only, storage meter · M · closes A6 ·
-  needs —
-- [ ] **05.4** One button builds and pre-downloads a book's playlist · M · closes A4, A5 · needs 01.10, 05.3, 05.6
+  needs 06.3
+- [ ] **05.4** One button builds and pre-downloads a book's playlist · M · closes A4, A5 · needs 01.10, 05.3, 05.6, 06.2
 - [ ] **05.7** Library management: remove a download, keep the book; shared pieces survive deletion · M ·
-  closes A7, A8 · needs 01.6, 05.4
-- [ ] **05.5** Credits, off to the side in the library's overflow menu · S · closes A12 · needs 05.1
-- [ ] **05.8** Browse and search LibriVox, and download a book into the library · L · closes A9 · needs 01.6, 05.6
+  closes A7, A8 · needs 01.6, 05.4, 06.2
+- [ ] **05.5** Credits, off to the side in the library's overflow menu · S · closes A12 · needs 05.1, 06.2
+- [ ] **05.8** Browse and search LibriVox, and download a book into the library · L · closes A9 · needs 01.6, 05.6, 06.2
+  - The empty library offers "Browse free books" beside "Import a book", as 06.2 draws it.
 - [ ] **05.9** Score public-domain books from their own text · M · closes A10 · needs 01.2, 05.8
 - [ ] **05.10** Pre-scored books and their moods in Browse · M · closes A11 · needs 05.9
 - [ ] **05.11** Split a one-file book into chapter files on the device · M · closes A13 · needs 01.6, 04.1
 - [ ] **05.12** Spotify chapter playlists: the rights check · S · closes A14 · needs —
   - A study, same shape as 01.9: builds nothing; `unclear` counts as no and leaves 05.13 waiting.
-- [ ] **05.13** Spotify chapter playlists, sized to each chapter · M · closes A15 · needs 05.12, 01.11, 05.3
-- [ ] **05.14** Google Play release · M · closes A16 · needs 04.1 · secrets EXPO_TOKEN
+- [ ] **05.13** Spotify chapter playlists, sized to each chapter · M · closes A15 · needs 05.12, 01.11, 05.3, 06.3, 06.6
+- [ ] **05.14** Google Play release · M · closes A16 · needs 04.1, 06.5, 06.6 · secrets EXPO_TOKEN
 - [ ] **05.15** TestFlight and the App Store · M · closes A17 · needs 05.14 · secrets EXPO_TOKEN
   - Needs the owner in the Apple Developer Program (D6, `plan/AUDIT.md`).
+- [ ] **05.16** Finished books, sort, filter and search in the library · S · closes A18 ·
+  needs 05.7, 06.2
+- [ ] **05.17** Export and import the library, never the audio · S · closes A19 · needs 05.7
+- [ ] **05.18** Android Auto, then CarPlay · M · closes A20 · needs 05.14
+  - Android Auto lists only apps from Google Play, so this waits on 05.14 (held); CarPlay waits on 05.15.
