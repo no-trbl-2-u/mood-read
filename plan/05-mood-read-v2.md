@@ -182,11 +182,11 @@ Measure: 20 open · 0 closed · next A21
   needs 01.2, 05.2
 - [ ] **05.6** The download manager: queue, pause and resume, retry, Wi-Fi only, storage meter · M · closes A6 ·
   needs 06.3
-- [ ] **05.4** One button builds and pre-downloads a book's playlist · M · closes A4, A5 · needs 01.10, 05.3, 05.6, 06.2
+- [ ] **05.4** One button builds and pre-downloads a book's playlist · M · closes A4, A5 · needs 01.10, 05.3, 05.6
 - [ ] **05.7** Library management: remove a download, keep the book; shared pieces survive deletion · M ·
-  closes A7, A8 · needs 05.4, 06.2
-- [ ] **05.5** Credits, off to the side in the library's overflow menu · S · closes A12 · needs 05.1, 06.2
-- [ ] **05.8** Browse and search LibriVox, and download a book into the library · L · closes A9 · needs 05.6, 06.2
+  closes A7, A8 · needs 05.4
+- [ ] **05.5** Credits, off to the side in the library's overflow menu · S · closes A12 · needs 05.1
+- [ ] **05.8** Browse and search LibriVox, and download a book into the library · L · closes A9 · needs 05.6
   - The empty library offers "Browse free books" beside "Import a book", as 06.2 draws it.
 - [ ] **05.9** Score public-domain books from their own text · M · closes A10 · needs 01.2, 05.8
 - [ ] **05.10** Pre-scored books and their moods in Browse · M · closes A11 · needs 05.9
@@ -198,7 +198,7 @@ Measure: 20 open · 0 closed · next A21
 - [ ] **05.15** TestFlight and the App Store · M · closes A17 · needs 05.14 · secrets EXPO_TOKEN
   - Needs the owner in the Apple Developer Program (D6, `plan/AUDIT.md`).
 - [ ] **05.16** Finished books, sort, filter and search in the library · S · closes A18 ·
-  needs 05.7, 06.2
+  needs 05.7
 - [ ] **05.17** Export and import the library, never the audio · S · closes A19 · needs 05.7
 - [ ] **05.18** Android Auto, then CarPlay · M · closes A20 · needs 05.14
   - Android Auto lists only apps from Google Play, so this waits on 05.14 (held); CarPlay waits on 05.15.

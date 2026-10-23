@@ -282,7 +282,7 @@ pieces). Ids keep the order they were written in. The app itself (Expo at the re
   - Listen to 01.3's bed on the phone: loop seams, the crossfade's volume ramp, and two bed players sharing the
     audio session with the narration.
 - [ ] **01.17** Scoring in the river: start, progress, cap paused, rescore · S ·
-  closes A30 · needs 01.2, 06.2
+  closes A30 · needs 01.2
   - As 06.2 draws it: "Score this book" and its progress in the river's top bar, "Rescore" in its overflow.
 - [ ] **01.18** Pause holds through a file handoff; no play-button flicker on web · S ·
   closes A31 · needs —

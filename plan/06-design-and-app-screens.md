@@ -60,8 +60,8 @@ Decisions made upfront (do not ask):
 - 06.1 and 06.2 are design chunks: boards and a decision file, no app code, as spec 03 was. The owner may pick
   among options; with no pick in a day, the loop takes the board's recommendation and records it.
 - The overflow menu is the one home for Browse, Downloads, Settings and Credits; the library gains no tab bar.
-- Chapter editing (01.6) is drawn by 01.6 itself, to its default (an "Edit chapters" mode from the river's
-  overflow), and recorded in `design/layouts/DECISION.md` there.
+- Chapter editing (01.6) was built inline under the playing row (Rename, Merge with next, Split), not as an
+  "Edit chapters" mode; 06.2 drew and recorded the built version in `design/layouts/DECISION.md`.
 
 ## Contracts
 
@@ -72,9 +72,6 @@ Decisions made upfront (do not ask):
 
 ## Acceptance
 
-- **A2** `design/layouts/DECISION.md` draws every screen and state spec 05 and this spec add: the library's
-  overflow menu and row states, the empty library with Browse, Browse, a LibriVox book, Downloads, Credits,
-  Settings, scoring's start, progress and cap states, and "Build playlist" with its progress.
 - **A3** A Settings screen, reached from the library's overflow menu, holds Wi-Fi-only downloads (on by default),
   companion mode, the default soundscape, storage, connected accounts and the privacy policy, each saved on the
   device.
@@ -92,11 +89,16 @@ Decisions made upfront (do not ask):
   icons are Lucide.
 
 ## Chunks
-Measure: 5 open · 1 closed · next A7
+Measure: 4 open · 2 closed · next A7
 
-- [ ] **06.2** The v2 layout pass: every screen and state the chapter-river decision leaves undrawn · M ·
-  closes A2 · needs —
 - [ ] **06.6** The privacy policy page, linked from the app · S · closes A6 · needs —
-- [ ] **06.3** Settings, from the library's overflow menu · S · closes A3 · needs 06.2, 06.6
+- [ ] **06.3** Settings, from the library's overflow menu · S · closes A3 · needs 06.6
 - [ ] **06.4** Apply the design system to every built screen · M · closes A4 · needs —
+  - Install `lucide-react-native` v1.x and `react-native-svg`; no brand icons. Ship the Lucide ISC, Feather MIT
+    and react-native-svg MIT notices word for word (copied from each package's LICENSE) on an in-app licenses
+    screen and in a licenses file served with the web build (06.1's rights check).
+  - Bundle Bricolage Grotesque (OFL) and set `fonts.display` in `src/ui/theme.ts`.
+  - Add the two pairs 06.2's boards use to `contrastPairs`: dark text on `pop` (the Finished chip) and dark text
+    on `danger` (the Delete book button).
+  - Retire v1's copy for `design/layouts/DECISION.md`'s v2 copy ("Library" becomes "Your shelf"), tests with it.
 - [ ] **06.5** Accessibility pass, with an automated check in the e2e leg · M · closes A5 · needs 06.4
