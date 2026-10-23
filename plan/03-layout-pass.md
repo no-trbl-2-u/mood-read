@@ -66,9 +66,6 @@ when it is plotted.
 
 ## Acceptance
 
-- **A1** Three layout options, A, B and C as Design describes them, each cover every screen and state Design lists,
-  with the same fake book, as self-contained HTML boards with a PNG beside each, viewable from disk with no network.
-- **A2** `design/layouts/README.md` compares the three on the five criteria in Design and recommends one.
 - **A3** The owner's pick is recorded in `design/layouts/DECISION.md` and as a "Layout" section in
   `plan/bearings.md`, and spec 01's screen-building chunks point at it.
 
@@ -79,8 +76,6 @@ when it is plotted.
    owner says "your call": the README's recommendation.
 
 ## Chunks
-Measure: 3 open · 0 closed · next A4
+Measure: 1 open · 2 closed · next A4
 
-- [ ] **03.1** Three layout options as wireframe boards, compared · M · closes A1, A2 · needs —
-  - Static HTML and PNG only; it needs no app, so it can be built before spec 02's shell.
-- [ ] **03.2** The owner's layout pick becomes the layout contract · S · closes A3 · needs 03.1
+- [ ] **03.2** The owner's layout pick becomes the layout contract · S · closes A3 · needs —
