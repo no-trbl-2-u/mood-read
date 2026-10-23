@@ -2,12 +2,14 @@ import { router, useLocalSearchParams } from "expo-router";
 import { useEffect, useState } from "react";
 import { Pressable, StyleSheet, Text, View } from "react-native";
 
+import { bedSoundFor } from "@/lib/bed";
 import { speedLabel } from "@/lib/labels";
 import { useBook } from "@/lib/library";
 import { BookmarksSheet } from "@/player/BookmarksSheet";
 import { ChapterRiver } from "@/player/ChapterRiver";
 import { MiniPlayer } from "@/player/MiniPlayer";
 import { usePlayer } from "@/player/PlayerProvider";
+import { soundscape, SOUNDSCAPE_IDS } from "@/player/soundscapes";
 import { SpeedSleepSheet } from "@/player/SpeedSleepSheet";
 import { colors, radii, spacing } from "@/ui/theme";
 import { TopBar, TopBarButton } from "@/ui/TopBar";
@@ -44,6 +46,7 @@ export default function BookScreen() {
   const active = p.book?.id === book.id;
   const position = active ? p.position : 0;
   const chapter = active ? p.chapter : book.chapters[0];
+  const layer = soundscape(bedSoundFor(chapter?.index ?? null, p.bed, SOUNDSCAPE_IDS))?.name ?? null;
   const speedButton = p.sleep ? `${speedLabel(p.speed)} · Sleep` : speedLabel(p.speed);
 
   return (
@@ -78,6 +81,7 @@ export default function BookScreen() {
           currentIndex={chapter?.index}
           position={position}
           sleep={p.sleep}
+          layer={layer}
           onJump={(i) => active && p.jumpToChapter(i)}
         />
         {active && sheet === "speed" && <SpeedSleepSheet player={p} onClose={() => setSheet(null)} />}

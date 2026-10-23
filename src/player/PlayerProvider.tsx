@@ -1,10 +1,11 @@
 // The audio engine: one narration player for the whole app, on a book-wide clock.
 // Spec 01 Contracts: the narration owns the clock; the bed (01.3) subscribes to `clock` and follows it, and
-// never drives the narration back.
+// never drives the narration back. The bed's decisions are src/lib/bed.ts; its players are ./bed-engine.ts.
 import { setAudioModeAsync, useAudioPlayer, useAudioPlayerStatus } from "expo-audio";
 import { createContext, useCallback, useContext, useEffect, useMemo, useRef, useState, type ReactNode } from "react";
 import { AppState, Platform } from "react-native";
 
+import { bedSoundFor, DEFAULT_BED, IDLE_BED, planBed, type BedChoice, type BedState } from "@/lib/bed";
 import { createClock, type Clock, type ClockEvent } from "@/lib/clock";
 import { library, useBooks } from "@/lib/library";
 import { resolveFile } from "@/lib/media";
@@ -23,7 +24,9 @@ import {
 } from "@/lib/timeline";
 import type { Book, Chapter, SleepTimer } from "@/lib/types";
 
+import { createBedEngine } from "./bed-engine";
 import { bindMediaSession } from "./media-session";
+import { soundscape, SOUNDSCAPE_IDS } from "./soundscapes";
 
 /**
  * The fastest speed this platform plays. expo-audio clamps the rate to 2.0 natively (Android
@@ -42,8 +45,10 @@ export type PlayerApi = {
   error: string | null;
   speed: number;
   sleep: SleepTimer | null;
-  /** The narration's clock, for a layer that follows it (01.3). */
+  /** The narration's clock, which the bed follows (01.3). */
   clock: Clock;
+  /** What the bed plays (until 01.5 and 01.7 make it the book's choice, each chapter's test loop). */
+  bed: BedChoice;
   open: (bookId: string) => Promise<void>;
   play: () => void;
   pause: () => void;
@@ -85,6 +90,7 @@ export function PlayerProvider({ children }: { children: ReactNode }) {
   const status = useAudioPlayerStatus(player);
   const books = useBooks();
   const clock = useMemo(() => createClock(), []);
+  const bed = DEFAULT_BED;
 
   const [bookId, setBookId] = useState<string | null>(null);
   const [fileIndex, setFileIndex] = useState(0);
@@ -102,6 +108,9 @@ export function PlayerProvider({ children }: { children: ReactNode }) {
   const lastSave = useRef(0);
   const loadToken = useRef(0);
   const pendingEvent = useRef<ClockEvent | null>(null);
+  // True from a file's natural end until the next file is set to play: the clock keeps saying "playing" across the
+  // handoff, so the bed crossfades into the next chapter instead of stopping for it.
+  const continuing = useRef(false);
 
   const book = bookId ? books.find((b) => b.id === bookId) : undefined;
   const position = book ? bookPosition(book.files, fileIndex, target ? target.offset : status.currentTime) : 0;
@@ -170,6 +179,7 @@ export function PlayerProvider({ children }: { children: ReactNode }) {
         bookRef.current = b;
         fileRef.current = fi;
         targetRef.current = t;
+        continuing.current = false;
         setBookId(b.id);
         setFileIndex(fi);
         setTarget(t);
@@ -186,6 +196,7 @@ export function PlayerProvider({ children }: { children: ReactNode }) {
         targetRef.current = null;
         setTarget(null);
       } catch (e) {
+        continuing.current = false;
         if (token === loadToken.current) {
           targetRef.current = null;
           setTarget(null);
@@ -243,6 +254,7 @@ export function PlayerProvider({ children }: { children: ReactNode }) {
     const nextStart = bookPosition(b.files, fi + 1, 0);
     const stop = sleepDue(sleepRef.current, Date.now(), nextStart);
     if (stop) stopForSleep();
+    else continuing.current = true;
     goTo(b, nextStart, !stop);
   }, [status.didJustFinish, goTo, stopForSleep]);
 
@@ -331,13 +343,38 @@ export function PlayerProvider({ children }: { children: ReactNode }) {
   useEffect(() => {
     const event = pendingEvent.current ?? "tick";
     pendingEvent.current = null;
-    clock.publish({ bookId, position, playing, rate: speed, chapterIndex }, event);
-  }, [clock, bookId, position, playing, speed, chapterIndex]);
+    // The listener's intent, not the status flag: the web's status says "paused" whenever the element is short of
+    // data (readyState), which would stutter the bed; and across a file handoff the book is still playing.
+    const intent = player.playing || !!targetRef.current?.play || continuing.current;
+    clock.publish({ bookId, position, playing: intent, rate: speed, chapterIndex }, event);
+  }, [clock, player, bookId, position, playing, speed, chapterIndex]);
+
+  // The bed follows the narration's clock: its sound for the chapter, play, pause, seek and crossfades (A8). It
+  // only listens; nothing it does reaches the narration, and the narration's speed never reaches it (A9).
+  useEffect(() => {
+    const engine = createBedEngine((id) => soundscape(id)?.loop);
+    let state: BedState = IDLE_BED;
+    const off = clock.subscribe((s, event) => {
+      const chapters = bookRef.current?.id === s.bookId ? (bookRef.current?.chapters ?? []) : [];
+      const plan = planBed(state, s, event, {
+        chapterStart: chapters.find((c) => c.index === s.chapterIndex)?.start ?? 0,
+        soundFor: (i) => bedSoundFor(i, bed, SOUNDSCAPE_IDS),
+        loopSeconds: (id) => soundscape(id)?.loopSeconds ?? 0,
+      });
+      state = plan.state;
+      plan.commands.forEach(engine.apply);
+    });
+    return () => {
+      off();
+      engine.dispose();
+    };
+  }, [clock, bed]);
 
   const api = useMemo<PlayerApi>(() => {
     const pause = () => {
       if (targetRef.current) targetRef.current = { ...targetRef.current, play: false };
       pendingEvent.current = "pause";
+      continuing.current = false;
       player.pause();
       persist();
     };
@@ -369,6 +406,7 @@ export function PlayerProvider({ children }: { children: ReactNode }) {
       speed,
       sleep,
       clock,
+      bed,
       open,
       play,
       pause,
@@ -407,7 +445,7 @@ export function PlayerProvider({ children }: { children: ReactNode }) {
       },
       cancelSleep: () => setSleep(null),
     };
-  }, [book, chapter, position, playing, target, error, speed, sleep, clock, open, goTo, persist, player, livePosition, followSleep]);
+  }, [book, chapter, position, playing, target, error, speed, sleep, clock, bed, open, goTo, persist, player, livePosition, followSleep]);
 
   useEffect(() => {
     remote.current = { play: api.play, pause: api.pause, skip: api.skip };

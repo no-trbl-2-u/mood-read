@@ -1,7 +1,8 @@
 // The player on the web build (01.1, spec 01 A1-A4): a book opened from two local WAV files made here (two
 // chapters), then play and pause, +/-30 s with clamps, a chapter jump from the river, speed without pitch change,
-// the sleep timer, bookmarks, resume after a reload, and the browser's Media Session. The narration's
-// HTMLAudioElement is read directly (page.evaluate) so nothing waits on real time it does not need.
+// the sleep timer, bookmarks, resume after a reload, and the browser's Media Session; then the bed (01.3, A8, A9)
+// under it. The narration's and the bed's HTMLAudioElements are read directly (page.evaluate) so nothing waits
+// on real time it does not need; the bed's are the looping ones.
 import { expect, test, type Page } from "@playwright/test";
 
 import { guard } from "./guard";
@@ -61,10 +62,15 @@ async function instrument(page: Page) {
   });
 }
 
-/** The narration's element: the newest one the player made (it sets ontimeupdate; the duration probe does not). */
+/**
+ * The narration's element: the newest one the player made (it sets ontimeupdate; the duration probe does not)
+ * that does not loop (the bed's loop).
+ */
 async function narration(page: Page): Promise<AudioState> {
   return page.evaluate(() => {
-    const all = (window as unknown as { __audios: HTMLAudioElement[] }).__audios.filter((a) => a.ontimeupdate);
+    const all = (window as unknown as { __audios: HTMLAudioElement[] }).__audios.filter(
+      (a) => a.ontimeupdate && !a.loop,
+    );
     const a = all[all.length - 1];
     if (!a) return { currentTime: -1, paused: true, playbackRate: 0, preservesPitch: false };
     return { currentTime: a.currentTime, paused: a.paused, playbackRate: a.playbackRate, preservesPitch: a.preservesPitch };
@@ -74,6 +80,29 @@ async function narration(page: Page): Promise<AudioState> {
 async function expectTime(page: Page, seconds: number, tolerance = 0.6) {
   await expect.poll(async () => (await narration(page)).currentTime).toBeGreaterThan(seconds - tolerance);
   await expect.poll(async () => (await narration(page)).currentTime).toBeLessThan(seconds + tolerance);
+}
+
+type BedDeck = { sound: string; currentTime: number; paused: boolean; volume: number; playbackRate: number };
+
+/** The bed's live decks (looping elements the player has not removed), each named by its loop file. */
+async function bedDecks(page: Page): Promise<BedDeck[]> {
+  return page.evaluate(() =>
+    (window as unknown as { __audios: HTMLAudioElement[] }).__audios
+      .filter((a) => a.ontimeupdate && a.loop)
+      .map((a) => ({
+        sound: a.src.includes("test-drift") ? "drift" : a.src.includes("test-low-hum") ? "hum" : a.src,
+        currentTime: a.currentTime,
+        paused: a.paused,
+        volume: a.volume,
+        playbackRate: a.playbackRate,
+      })),
+  );
+}
+
+/** The bed's sound heard now: the one playing deck at full volume, or "" for none (or mid-crossfade). */
+async function bedPlaying(page: Page): Promise<string> {
+  const playing = (await bedDecks(page)).filter((d) => !d.paused);
+  return playing.length === 1 && playing[0].volume === 1 ? playing[0].sound : "";
 }
 
 async function expectChapter(page: Page, index: number) {
@@ -309,5 +338,75 @@ test.describe("the player", () => {
     await expect.poll(async () => (await narration(page)).paused).toBe(false);
     await call("pause");
     await expect.poll(async () => (await narration(page)).paused).toBe(true);
+  });
+
+  test("A8, A9: the bed loops under the narration, follows play, pause and seek, crossfades at the chapter boundary and ignores the speed", async ({
+    page,
+  }) => {
+    await importBook(page);
+    // The playing row's Layer line names its chapter's sound; chapters take the test loops in turn.
+    await expect(page.getByTestId("chapter-row-0").getByTestId("layer-line")).toContainText("Layer");
+    await expect(page.getByTestId("chapter-row-0").getByTestId("layer-sound")).toHaveText("Low Hum (test loop)");
+    await expect(page.getByTestId("chapter-row-1").getByTestId("layer-line")).toHaveCount(0);
+    await expect.poll(async () => (await bedDecks(page)).map((d) => d.sound)).toContain("hum");
+    expect((await bedDecks(page)).every((d) => d.paused)).toBe(true);
+
+    // Play and pause with the narration.
+    await page.getByTestId("mini-play-pause").click();
+    await expect.poll(() => bedPlaying(page)).toBe("hum");
+    await pause(page);
+    await expect.poll(async () => (await bedDecks(page)).every((d) => d.paused)).toBe(true);
+
+    // A seek moves the bed within its 4 s loop: 30 s into the chapter is 2 s into the loop.
+    await page.getByTestId("mini-fwd-30").click();
+    await expectTime(page, 30);
+    await expect
+      .poll(async () => (await bedDecks(page)).find((d) => d.sound === "hum")?.currentTime ?? -1)
+      .toBeGreaterThan(1.5);
+    expect((await bedDecks(page)).find((d) => d.sound === "hum")!.currentTime).toBeLessThan(2.5);
+
+    // A9: the narration at 2x and 3x, the bed still at 1x.
+    await page.getByTestId("open-speed-sleep").click();
+    for (const [chip, rate] of [
+      ["speed-2", 2],
+      ["speed-3", 3],
+    ] as const) {
+      await page.getByTestId(chip).click();
+      await expect.poll(async () => (await narration(page)).playbackRate).toBe(rate);
+      expect((await bedDecks(page)).every((d) => d.playbackRate === 1)).toBe(true);
+    }
+    await page.getByTestId("sheet-done").click();
+
+    // A8: at 3x from 30 s, Ch.1 ends in under 2 s. Watch for the crossfade: both decks playing, part volume.
+    const fade = page.evaluate(
+      () =>
+        new Promise<boolean>((resolve) => {
+          const started = Date.now();
+          const t = setInterval(() => {
+            const live = (window as unknown as { __audios: HTMLAudioElement[] }).__audios.filter(
+              (a) => a.ontimeupdate && a.loop && !a.paused,
+            );
+            const mid = live.length === 2 && live.every((a) => a.volume > 0 && a.volume < 1);
+            if (mid || Date.now() - started > 15000) {
+              clearInterval(t);
+              resolve(mid);
+            }
+          }, 20);
+        }),
+    );
+    await page.getByTestId("mini-play-pause").click();
+    expect(await fade).toBe(true);
+    await expectChapter(page, 1);
+    await expect(page.getByTestId("chapter-row-1").getByTestId("layer-sound")).toHaveText("Drift (test loop)");
+    await expect.poll(() => bedPlaying(page), { timeout: 10_000 }).toBe("drift");
+    expect((await bedDecks(page)).every((d) => d.playbackRate === 1)).toBe(true);
+    await pause(page);
+    await expect.poll(async () => (await bedDecks(page)).every((d) => d.paused)).toBe(true);
+
+    // A jump back to Ch.1 while paused brings its sound back.
+    await page.getByTestId("chapter-0").click();
+    await expectChapter(page, 0);
+    await expect.poll(() => bedPlaying(page)).toBe("hum");
+    await pause(page);
   });
 });

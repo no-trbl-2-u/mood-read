@@ -48,3 +48,12 @@ export type Bookmark = {
 export type SleepTimer =
   | { kind: 'minutes'; minutes: number; endsAt: number }
   | { kind: 'chapterEnd'; chapterIndex: number; end: number };
+
+/** A bed loop (spec 01, Contracts). `loop` is a bundled asset (a `require` of a file in `assets/`) or a URI. */
+export type Soundscape = {
+  id: string;
+  name: string;
+  loop: number | string;
+  /** The loop's length in seconds, so the bed can sit at the right place in it. */
+  loopSeconds: number;
+};

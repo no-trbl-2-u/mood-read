@@ -1,6 +1,7 @@
 // The chapter river: every chapter of the book in one scrolling list, which is also the chapter list. In 01.1 a
 // row shows its title and duration; the playing row is expanded in place and marked with a heavy left rule and a
-// play mark. Emotion chips, the mood card, the mixer and lock marks join from 01.3, 01.4, 01.5 and 01.7.
+// play mark. The expanded row carries the bed's "Layer" line, its soundscape for this chapter (01.3). Emotion chips,
+// the mood card, the mixer and lock marks join from 01.4, 01.5 and 01.7.
 import { useEffect, useRef } from "react";
 import { Pressable, ScrollView, StyleSheet, Text, View, type ScrollViewInstance } from "react-native";
 
@@ -14,6 +15,8 @@ export function ChapterRiver(props: {
   currentIndex: number | undefined;
   position: number;
   sleep: SleepTimer | null;
+  /** The bed's sound for the playing chapter, by name; null when the layer is off. */
+  layer: string | null;
   onJump: (index: number) => void;
 }) {
   const scroll = useRef<ScrollViewInstance>(null);
@@ -76,6 +79,12 @@ export function ChapterRiver(props: {
                 {props.sleep?.kind === "chapterEnd" && props.sleep.chapterIndex === c.index && (
                   <Text style={styles.muted}>Sleep timer: stops at the end of this chapter.</Text>
                 )}
+                <View style={styles.layerLine} testID="layer-line">
+                  <Text style={styles.label}>Layer</Text>
+                  <Text style={styles.layerChip} testID="layer-sound">
+                    {props.layer ?? "Off"}
+                  </Text>
+                </View>
               </View>
             )}
           </View>
@@ -104,4 +113,16 @@ const styles = StyleSheet.create({
   duration: { color: colors.textMuted, fontSize: 13, fontVariant: ["tabular-nums"] },
   expanded: { marginTop: spacing.sm, gap: spacing.xs },
   muted: { color: colors.textMuted, fontSize: 13 },
+  layerLine: { flexDirection: "row", alignItems: "center", gap: spacing.sm, marginTop: spacing.xs },
+  label: { color: colors.textMuted, fontSize: 13 },
+  layerChip: {
+    color: colors.text,
+    fontSize: 13,
+    paddingHorizontal: spacing.sm,
+    paddingVertical: spacing.xs,
+    borderRadius: 14,
+    borderWidth: 1,
+    borderColor: colors.border,
+    overflow: "hidden",
+  },
 });
