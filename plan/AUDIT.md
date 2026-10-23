@@ -65,8 +65,15 @@
   `node scripts/secrets.mjs run --only EXPO_TOKEN -- pnpm build:android:preview`, or run `android-preview` in Actions.
 - default taken: 04.1 lands A1 and stays open (claimed) until you report; your report closes 04.1 (A2) and 01.15
   (spec 01 A2, A4).
+- owner (2026-10-23): build now, check later from this queue (option 1). Both builds finished; 12bde103 is main's 04.1 code.
 
 ## Pending — findings
+
+### [5.4] Two sessions' gates collide on e2e port 4173
+- category: tooling
+- impact: 5 (a parallel session's e2e holds 127.0.0.1:4173, so another session's `git commit` hook fails red with "is already used"; seen three times in one evening)
+- ease: 6 (`playwright.config.ts` takes `E2E_PORT` and the hook or `scripts/` picks a free port per worktree)
+- next: /iterate, with a test that two gates can run at once
 
 ### [5.5] settle leaves a closed chunk in a need that wraps onto a second line
 - category: tooling
