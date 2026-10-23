@@ -63,6 +63,30 @@ export function resolveRequest(root, url, exists = isFile) {
   return { status: 404 };
 }
 
+/**
+ * A single byte range from a Range header, as Cloudflare Pages answers one (media elements seek with them):
+ * null for no header or a form this server does not split (several ranges), 'unsatisfiable' for one outside
+ * the file, else the inclusive { start, end }.
+ */
+export function parseRange(header, size) {
+  if (!header) return null;
+  const m = /^bytes=(\d*)-(\d*)$/.exec(header.trim());
+  if (!m || (m[1] === '' && m[2] === '')) return null;
+  let start;
+  let end;
+  if (m[1] === '') {
+    const suffix = Number(m[2]);
+    if (suffix === 0) return 'unsatisfiable';
+    start = Math.max(0, size - suffix);
+    end = size - 1;
+  } else {
+    start = Number(m[1]);
+    end = m[2] === '' ? size - 1 : Math.min(Number(m[2]), size - 1);
+  }
+  if (start >= size || start > end) return 'unsatisfiable';
+  return { start, end };
+}
+
 export function createStaticServer(root) {
   return createServer((req, res) => {
     if (req.method !== 'GET' && req.method !== 'HEAD') {
@@ -74,12 +98,23 @@ export function createStaticServer(root) {
       res.writeHead(hit.status, { 'Content-Type': 'text/plain; charset=utf-8' }).end(`${hit.status}\n`);
       return;
     }
-    res.writeHead(200, { 'Content-Type': contentType(hit.file), 'Cache-Control': 'no-store' });
+    const size = statSync(hit.file).size;
+    const headers = { 'Content-Type': contentType(hit.file), 'Cache-Control': 'no-store', 'Accept-Ranges': 'bytes' };
+    const range = parseRange(req.headers.range, size);
+    if (range === 'unsatisfiable') {
+      res.writeHead(416, { ...headers, 'Content-Range': `bytes */${size}` }).end();
+      return;
+    }
+    if (range) {
+      headers['Content-Range'] = `bytes ${range.start}-${range.end}/${size}`;
+      headers['Content-Length'] = String(range.end - range.start + 1);
+    } else headers['Content-Length'] = String(size);
+    res.writeHead(range ? 206 : 200, headers);
     if (req.method === 'HEAD') {
       res.end();
       return;
     }
-    createReadStream(hit.file).on('error', () => res.destroy()).pipe(res);
+    createReadStream(hit.file, range ?? {}).on('error', () => res.destroy()).pipe(res);
   });
 }
 

@@ -1,13 +1,13 @@
 // e2e/serve.mjs (the e2e leg's static server over dist/): a file in the root is served, a client route with no
 // extension falls back to index.html, a missing asset is a 404, nothing outside the root is reachable, a malformed
-// URL is a 400; and over a real socket on a temp root the server answers the same way.
+// URL is a 400; a byte range is answered 206 (media elements seek with them); and over a real socket on a temp root the server answers the same way.
 // node:test, no deps.
 import assert from 'node:assert/strict';
 import { mkdtempSync, mkdirSync, rmSync, writeFileSync } from 'node:fs';
 import os from 'node:os';
 import path from 'node:path';
 import { after, before, describe, it } from 'node:test';
-import { contentType, createStaticServer, resolveRequest } from '../../e2e/serve.mjs';
+import { contentType, createStaticServer, parseRange, resolveRequest } from '../../e2e/serve.mjs';
 
 const root = path.resolve(os.tmpdir(), 'serve-root');
 const files = new Set([path.join(root, 'index.html'), path.join(root, '_expo', 'app.js'), path.join(root, 'favicon.ico')]);
@@ -54,6 +54,26 @@ describe('resolving a request', () => {
   });
 });
 
+describe('byte ranges', () => {
+  it('reads one range, open-ended or a suffix, clamped to the file', () => {
+    assert.deepEqual(parseRange('bytes=0-', 100), { start: 0, end: 99 });
+    assert.deepEqual(parseRange('bytes=10-19', 100), { start: 10, end: 19 });
+    assert.deepEqual(parseRange('bytes=90-500', 100), { start: 90, end: 99 });
+    assert.deepEqual(parseRange('bytes=-10', 100), { start: 90, end: 99 });
+    assert.deepEqual(parseRange('bytes=-500', 100), { start: 0, end: 99 });
+  });
+
+  it('ignores no header and forms it does not split; refuses a range outside the file', () => {
+    assert.equal(parseRange(undefined, 100), null);
+    assert.equal(parseRange('bytes=0-1,5-6', 100), null);
+    assert.equal(parseRange('items=0-1', 100), null);
+    assert.equal(parseRange('bytes=-', 100), null);
+    assert.equal(parseRange('bytes=100-', 100), 'unsatisfiable');
+    assert.equal(parseRange('bytes=20-10', 100), 'unsatisfiable');
+    assert.equal(parseRange('bytes=-0', 100), 'unsatisfiable');
+  });
+});
+
 describe('the server over a socket', () => {
   let dir;
   let server;
@@ -91,5 +111,18 @@ describe('the server over a socket', () => {
     const post = await fetch(`${base}/`, { method: 'POST' });
     assert.equal(post.status, 405);
     await post.text();
+  });
+
+  it('answers a byte range with 206 and Content-Range, and a range outside the file with 416', async () => {
+    const whole = await fetch(`${base}/_expo/app.js`);
+    assert.equal(whole.headers.get('accept-ranges'), 'bytes');
+    await whole.text();
+    const part = await fetch(`${base}/_expo/app.js`, { headers: { Range: 'bytes=0-6' } });
+    assert.equal(part.status, 206);
+    assert.equal(part.headers.get('content-range'), 'bytes 0-6/15');
+    assert.equal(await part.text(), 'console');
+    const out = await fetch(`${base}/_expo/app.js`, { headers: { Range: 'bytes=99-' } });
+    assert.equal(out.status, 416);
+    await out.text();
   });
 });
