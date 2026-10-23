@@ -92,7 +92,8 @@ just name the pieces/scores/songs/instrumentals (It's important that there's no 
 
 ## Acceptance
 
-- **A2** Speed runs 0.5× to 3× without pitch change; a sleep timer stops playback after N minutes or at chapter end.
+- **A2** Speed runs 0.5× to 3× without pitch change (0.5× to 2× on Android and iOS, where the audio engine caps it);
+  a sleep timer stops playback after N minutes or at chapter end.
 - **A4** Playback continues in the background and answers lock-screen / media-key controls.
 - **A5** A DRM-free M4B, MP3, M4A, WAV, FLAC or OGG/Opus file, or a folder of them, imports as one book with cover,
   title and author read from its tags.
@@ -283,6 +284,6 @@ pieces). Ids keep the order they were written in. The app itself (Expo at the re
 - [ ] **01.15** Device pass for the player: background, lock screen and native speed on a real phone · S ·
   closes A2, A4 · needs 04.1
   - The owner's check on 04.1's preview APK (screen off, lock-screen and media-key play, pause and 30 s skips)
-    closes A4; A2's native 3x follows the owner's answer on the 2x cap (plan/AUDIT.md).
+    closes A4, and its 0.5x to 2x speed with pitch kept closes A2 (native caps at 2x, D11).
   - Native lock-screen seeks run inside expo-audio and skip the player's sleep retarget; once 01.6 brings in-file
     chapters, retarget an End of chapter timer on those seeks too.
