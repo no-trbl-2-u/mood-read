@@ -7,6 +7,8 @@ feeds 01.10. Every term below was read on 2026-10-23. "Unclear" is treated as no
 It now also covers SoundCloud, for chunk 01.12 (closes A25). Its terms were read on 2026-10-23 too. SoundCloud adds
 one question the others do not raise: can single Creative Commons tracks from it join the royalty-free catalog.
 
+What to do instead: docs/workarounds.md (01.13).
+
 ## 1. Bottom line
 
 - No service allows its music to play under the narration. That holds whether the listener pays or not.
