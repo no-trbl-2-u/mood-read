@@ -28,7 +28,7 @@ on:
     # Every 2h, off-peak UTC. Adjust to match your timezone — GH cron
     # always runs in UTC. The example below = ~7 ticks/day, weighted
     # toward 22:00-12:00 UTC (US East off-peak).
-    - cron: '0 1,3,5,7,9,11,23 * * *'
+    - cron: '0 */2 * * *'
   workflow_dispatch:
     inputs:
       verb:
