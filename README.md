@@ -17,5 +17,8 @@ node scripts/install-hooks.mjs   # once per checkout: arms the pre-commit and pr
 ```bash
 pnpm install
 pnpm web             # dev server, web (expo start --web)
-pnpm verify          # typecheck, lint, unit tests, plus the nexus gates
+pnpm exec playwright install chromium   # once, for the e2e leg
+pnpm build           # the web build, into dist/ (expo export -p web)
+pnpm e2e             # the hermetic smoke walk over dist/ on localhost:4173
+pnpm verify          # the nexus gates, typecheck, lint, unit tests, build and e2e
 ```

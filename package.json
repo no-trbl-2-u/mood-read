@@ -20,6 +20,7 @@
     "react-native-web": "^0.21.4"
   },
   "devDependencies": {
+    "@playwright/test": "^1.64.1",
     "@types/node": "^26.6.5",
     "@types/react": "~19.3.0",
     "eslint": "^9",
@@ -35,7 +36,9 @@
     "plan:check": "node scripts/plan-check.mjs --since HEAD",
     "secrets:scan": "node scripts/secrets.mjs scan --staged",
     "test:scripts": "node --test \"scripts/__tests__/*.test.mjs\"",
-    "verify": "pnpm plan:check && pnpm secrets:scan && pnpm typecheck && pnpm lint && pnpm test:run && pnpm test:scripts",
+    "build": "expo export -p web",
+    "e2e": "playwright test",
+    "verify": "pnpm plan:check && pnpm secrets:scan && pnpm typecheck && pnpm lint && pnpm test:run && pnpm test:scripts && pnpm build && pnpm e2e",
     "deploy:check": "node scripts/deploy-check.mjs",
     "pulse": "node scripts/pulse.mjs",
     "settle": "node scripts/plan/settle.mjs",

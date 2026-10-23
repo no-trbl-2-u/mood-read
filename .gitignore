@@ -18,3 +18,7 @@ web-build/
 expo-env.d.ts
 # Local Playwright MCP captures
 .playwright-mcp/
+# Playwright output
+test-results/
+playwright-report/
+blob-report/
