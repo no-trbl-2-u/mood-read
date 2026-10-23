@@ -94,7 +94,8 @@ test.describe("your own books", () => {
     // Merge it with the next: one chapter, the whole book.
     await page.getByTestId("chapter-merge").click();
     await expect(page.getByText("Ch.2 — The Storm")).toHaveCount(0);
-    await expect(page.getByTestId("chapter-row-0")).toContainText("1:10");
+    // Lengths read from the mini player: the river carries no times (A28).
+    await expect(page.getByTestId("mini-length")).toHaveText("1:10");
     await expect(page.getByTestId("chapter-merge")).toBeDisabled();
 
     // Split at the current position (30 s in).
@@ -103,7 +104,8 @@ test.describe("your own books", () => {
     await expect(page.getByTestId("chapter-split")).toHaveText("Split here");
     await page.getByTestId("chapter-split").click();
     await expect(page.getByText("Ch.2 — The Landing, part 2")).toBeVisible();
-    await expect(page.getByTestId("chapter-row-0")).toContainText("0:30");
+    await page.getByTestId("chapter-0").click();
+    await expect(page.getByTestId("mini-length")).toHaveText("0:30");
 
     // The edits are kept: after a reload the river is the same.
     await page.reload();
@@ -128,7 +130,7 @@ test.describe("your own books", () => {
     await expect(page.getByRole("heading", { name: "Quiet Breaks" })).toBeVisible();
     await expect(page.getByText("Ch.1 — Chapter 1")).toBeVisible();
     await expect(page.getByText("Ch.2 — Chapter 2")).toBeVisible();
-    await expect(page.getByTestId("chapter-row-0")).toContainText("1:06");
+    await expect(page.getByTestId("mini-length")).toHaveText("1:06");
   });
 
   test("A7: an AAX file shows the import note, pointing to DRM-free stores and companion mode", async ({ page }) => {
