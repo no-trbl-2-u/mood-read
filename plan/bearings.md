@@ -130,8 +130,31 @@ mood-read/
 
 ## The `design/` folder
 
-No design exports yet. If the owner adds some to `design/`, `design/decisions.<ext>` wins over the visual defaults
-below. **The loop does not wait for design.**
+`design/layouts/` holds the layout pass (spec 03): three wireframe boards and the owner's pick,
+`design/layouts/DECISION.md`, which is the layout contract below. It decides structure only; a later design
+system (palette, type, motion, voice; the owner leans "gen z chaotic") replaces the visual defaults further down.
+If the owner adds design exports, `design/decisions.<ext>` wins over the visual defaults. **The loop does not wait
+for design.**
+
+## Layout
+
+Option B, chapter river, picked by the owner on 2026-10-23. `design/layouts/DECISION.md` is the full contract,
+frame by frame; this is its summary. Options A and C stay in `design/layouts/` as reference only.
+
+- **Navigation:** a two-level stack, no tab bar. Library is the root; a book opens its chapter river. Import is a
+  full screen pushed from the library. Speed & Sleep and Bookmarks are the only bottom sheets, rising over a
+  dimmed river from just above the mini player. The mixer and the mood card are always inline, never a sheet.
+- **Mini player:** docked at the bottom of the river and of every sheet over it: cover, chapter title over a
+  progress bar that scrubs, back 30 s, play/pause, forward 30 s, all in thumb reach. None in the library.
+- **Library:** a list of book rows (cover, title, chapter count and state); empty, a centred "Import a book".
+- **Chapter river:** the book's chapters are one scrolling list, which is also the chapter list. A reached row
+  shows its title and emotion chips; the playing row expands in place to the mood card (all emotion chips, the
+  named piece, alternates) and the inline mixer (balance, master, duck, layer chips); an unreached row is muted,
+  locked and shows no emotions (A21); an unscored row carries an "Unscored" chip and never a guessed mood.
+- **Import note (A7):** a full-screen state of Import: what the file is, why it can't open, how to bring a
+  DRM-free copy, "Choose another file".
+- **Lock screen:** the OS draws it; Mood Read supplies cover, titles and progress, and handles play/pause and
+  30 s skips.
 
 ## Sub-agents
 

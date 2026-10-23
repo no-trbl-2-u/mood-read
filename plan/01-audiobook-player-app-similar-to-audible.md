@@ -199,7 +199,9 @@ just name the pieces/scores/songs/instrumentals (It's important that there's no 
      still return. Chapters still play (A15).
    - **One research run per book, shared.** The proxy caches each book's moods and pieces, so a second listener of
      the same book gets the cached result at no new cost. The app also keeps its copy on the device.
-   - **Still to name before 01.2 is built:** the AI provider and the cap's amount. 01.2 asks for them then.
+   - **Provider and cap.** *Answered by the owner (2026-10-23):* OpenAI for the model and Brave Search for search
+     (the vault's `OPENAI_API_KEY` and `BRAVE_SEARCH_API_KEY`), and a monthly cap of $20, held as one config value
+     on the proxy so it changes without a rebuild.
 7. **Spoilers.** The agent learns each chapter's events, and even a mood can hint at them ("dread" in chapter 30).
    *Answered by the owner (2026-10-22):* "Mood Read never shows events, only emotions, and the mood card shows a
    chapter's emotions only once the listener reaches it." So the app stores and shows emotions, intensities, source
@@ -215,7 +217,7 @@ plays. **Part 2, moods and named pieces:** 01.2, then 01.4. **After v1:** 01.9 (
 pieces). Ids keep the order they were written in. The app itself (Expo at the repo root, the gates) is spec 02.
 
 - [ ] **01.1** The player: library, playback, chapters, speed, sleep timer, bookmarks, resume, background and
-  lock-screen controls · L · closes A1, A2, A3, A4 · needs 02.2, 03.2
+  lock-screen controls · L · closes A1, A2, A3, A4 · needs 02.2
   - Built in the layout spec 03 settles (`design/layouts/DECISION.md`, `plan/bearings.md` Layout).
   - Opens one local file to have something to play; 01.6 brings real imports.
   - Open questions 1 is answered: a cross-platform phone app, with the web for development.
@@ -225,25 +227,31 @@ pieces). Ids keep the order they were written in. The app itself (Expo at the re
   closes A5, A6, A7 · needs 01.1
   - Files and folders; Audible's path as Open questions 2 settled it: (a) and (c), a clear import note for
     AAX/AAXC, no decryption and no Audible integration in v1.
+  - The import screen and its AAX/AAXC note as `design/layouts/DECISION.md` draws them (`plan/bearings.md` Layout).
 - [ ] **01.3** The second audio layer on the narration's clock · M · closes A8, A9 · needs 01.1
   - Chapter-boundary crossfades, looping, independent of the narration's speed. It plays a test loop until 01.7's
     soundscapes exist.
+  - Its soundscape line sits in the playing chapter's expanded row (`plan/bearings.md` Layout).
 - [ ] **01.5** The mixer: balance, master volume, per-book save, duck under voice · S · closes A10, A11 ·
   needs 01.3
+  - Inline in the playing chapter's expanded row, never a sheet (`plan/bearings.md` Layout).
 - [ ] **01.7** Ambient soundscapes: six or more licensed seamless loops · M · closes A12 · partial A18 ·
   needs 01.3
-  - Per book or per chapter, through the layer and mixer.
+  - Per book or per chapter, through the layer and mixer; picked from the mixer's layer chips
+    (`plan/bearings.md` Layout).
 - [ ] **01.2** Chapter moods and named pieces through the scoring proxy · L ·
   closes A13, A14, A15, A19, A20, A22 · needs 01.6
   - v1 part 2: a research agent reads what is written about the book (Open questions 4) and names each chapter's
     emotions with intensities and sources, then one no-vocals piece per chapter plus alternates; nothing is
     played. It runs as a background job, stored per chapter.
   - Scoring goes through the proxy that holds the key, caps spend and caches each book (Open questions 6,
-    answered). Held until the owner names the AI provider and the monthly cap (plan/README.md, Held).
+    answered): OpenAI with Brave Search, and a $20 monthly cap held as one config value on the proxy.
 - [ ] **01.4** The chapter mood card: emotions, the named piece and alternates, a saved pick over auto · S ·
   closes A16, A21 · needs 01.2
   - No preview in v1. No events, only emotions, shown once the listener reaches the chapter (Open questions 7,
     answered).
+  - The card is the expanded chapter row, inline in the river; an unreached row never expands (`plan/bearings.md`
+    Layout).
 - [ ] **01.9** Streaming sources study (Open questions 3) · S · closes A23 · needs —
   - Check the current terms of Spotify, YouTube / YouTube Music and Apple Music for any compliant way to use them
     in Mood Read. Examples: a licensing deal, music played only between chapters rather than under the voice, or
