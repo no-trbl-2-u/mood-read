@@ -3,6 +3,7 @@ import assert from "node:assert/strict";
 import { test } from "node:test";
 
 import { bookTags, checkImport, inspectFiles, orderFiles, UNKNOWN_AUTHOR, type PickedFile } from "./import-plan.ts";
+import { isImportable } from "./meta/read.ts";
 import { memorySource } from "./meta/bytes.ts";
 import {
   aaxFile,
@@ -104,4 +105,24 @@ test("A5 a multi-disc rip whose track numbers restart on each disc, with no disc
   ]);
   // With disc tags the numbers are unique again, and they still beat the names.
   assert.deepEqual(names([f("a.mp3", 1, 2), f("b.mp3", 1, 1), f("c.mp3", 2, 1)]), ["b.mp3", "c.mp3", "a.mp3"]);
+});
+
+test("A5 macOS AppleDouble files (._name.mp3) in a folder are skipped, not imported as audio", async () => {
+  const appleDouble = cat([0, 5, 22, 7, 0, 2, 0, 0], new Uint8Array(100));
+  assert.equal(isImportable("._01.mp3"), false);
+  assert.equal(isImportable("01.mp3"), true);
+  assert.equal(isImportable("__MACOSX/Book/._01.mp3"), false);
+  assert.equal(isImportable("Book\\._01.mp3"), false);
+  const mp3 = (title: string) => taggedMp3({ title, album: "The Long Road", artist: "A. Writer" }, 0.1);
+  const list = await inspectFiles([picked("._01.mp3", appleDouble), picked("01.mp3", mp3("One")), picked("02.mp3", mp3("Two"))]);
+  assert.equal(list[0].meta.format, "unknown");
+  const r = checkImport(list);
+  assert.equal(r.kind, "ok");
+  if (r.kind !== "ok") return;
+  assert.deepEqual(
+    r.files.map((x) => x.file.name),
+    ["01.mp3", "02.mp3"],
+  );
+  // Renamed or not, AppleDouble bytes are never audio.
+  assert.equal((await inspectFiles([picked("x.mp3", appleDouble)]))[0].meta.format, "unknown");
 });

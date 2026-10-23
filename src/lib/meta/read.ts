@@ -17,8 +17,13 @@ export function extension(name: string): string {
   return name.match(/\.([A-Za-z0-9]{1,5})$/)?.[1].toLowerCase() ?? "";
 }
 
-/** True for a name an import should consider: audio, or an Audible file to explain. */
+/**
+ * True for a name an import should consider: audio, or an Audible file to explain. A macOS AppleDouble file
+ * ("._01.mp3", the resource fork a Mac leaves on a USB stick or in an archive's __MACOSX folder) is not audio
+ * whatever its extension.
+ */
 export function isImportable(name: string): boolean {
+  if (/(^|[\\/])\._/.test(name)) return false;
   const ext = extension(name);
   return (AUDIO_EXTENSIONS as readonly string[]).includes(ext) || (AUDIBLE_EXTENSIONS as readonly string[]).includes(ext);
 }
@@ -30,6 +35,8 @@ function drmByName(name: string): DrmKind | null {
 
 /** The container, from the first bytes; the extension decides only when the bytes say nothing. */
 export function sniffFormat(head: Uint8Array, name = ""): AudioFormat {
+  // AppleDouble (00 05 16 07) or AppleSingle (00 05 16 00): metadata only, never audio, whatever the name.
+  if (head[0] === 0 && head[1] === 5 && head[2] === 0x16 && (head[3] === 7 || head[3] === 0)) return "unknown";
   if (ascii(head, 4) === "ftyp") return "mp4";
   if (ascii(head, 0) === "fLaC") return "flac";
   if (ascii(head, 0) === "OggS") return "ogg";
