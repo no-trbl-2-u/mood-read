@@ -26,3 +26,4 @@ identity · deleted in <sha>`; recover its text with
 - 2026-10-23 · 01.1 · The player: library, river, transport, speed, sleep, bookmarks, resume · e01c0ee7..5d0a7fb3
 - 2026-10-23 · 01.3 · A soundscape bed follows the narration, crossfades at chapters · 73b9a942..766b13b3
 - 2026-10-23 · 01.6 · DRM-free files and folders import with tags, covers and chapters · f2f52b98..b89c74f2
+- 2026-10-23 · 06.1 · Design system decided: acid sticker tokens in theme.ts · 407cf865..6fca5273

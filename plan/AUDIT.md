@@ -7,6 +7,13 @@
 
 ## Pending — [needs-user-call]
 
+### [needs-user-call] Review the 06.1 design system pick
+- category: design
+- logged: 2026-10-23 (06.1, `design/system/DECISION.md`, `design/system/board.png`)
+- what: the board draws three "full gen z chaotic" options: A acid sticker, B zine collage, C y2k chrome.
+- default taken: A, the board's recommendation (loudest with no image assets or gradient library; most contrast
+  headroom). Overrule by naming B or C; the overrule is recorded in DECISION.md and 06.4 applies it.
+
 ### [needs-user-call] Two cloud loops are armed on one branch
 - category: ops
 - logged: 2026-10-22, at adoption

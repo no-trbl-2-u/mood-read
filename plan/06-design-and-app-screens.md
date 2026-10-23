@@ -72,8 +72,6 @@ Decisions made upfront (do not ask):
 
 ## Acceptance
 
-- **A1** `design/system/DECISION.md` sets palette tokens, type scale, spacing, radius, icon set (rights-checked),
-  motion and voice, and `src/ui/theme.ts` holds them as the only source of colour and size.
 - **A2** `design/layouts/DECISION.md` draws every screen and state spec 05 and this spec add: the library's
   overflow menu and row states, the empty library with Browse, Browse, a LibriVox book, Downloads, Credits,
   Settings, scoring's start, progress and cap states, and "Build playlist" with its progress.
@@ -89,15 +87,16 @@ Decisions made upfront (do not ask):
 
 ## Open questions
 
-- None now. The owner may overrule any board's recommendation when it lands.
+- None now. *Answered by the owner (2026-10-23):* each board's recommendation is taken by default when it lands,
+  and any owner overrule is recorded in that board's DECISION.md entry. The direction is "full gen z chaotic";
+  icons are Lucide.
 
 ## Chunks
-Measure: 6 open · 0 closed · next A7
+Measure: 5 open · 1 closed · next A7
 
-- [ ] **06.1** The design system: palette, type, icons, motion and voice, as tokens · M · closes A1 · needs —
 - [ ] **06.2** The v2 layout pass: every screen and state the chapter-river decision leaves undrawn · M ·
   closes A2 · needs —
 - [ ] **06.6** The privacy policy page, linked from the app · S · closes A6 · needs —
 - [ ] **06.3** Settings, from the library's overflow menu · S · closes A3 · needs 06.2, 06.6
-- [ ] **06.4** Apply the design system to every built screen · M · closes A4 · needs 06.1
+- [ ] **06.4** Apply the design system to every built screen · M · closes A4 · needs —
 - [ ] **06.5** Accessibility pass, with an automated check in the e2e leg · M · closes A5 · needs 06.4

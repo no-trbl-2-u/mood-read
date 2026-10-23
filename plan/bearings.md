@@ -136,7 +136,7 @@ mood-read/
 
 `design/layouts/` holds the layout pass (spec 03): three wireframe boards and the owner's pick,
 `design/layouts/DECISION.md`, which is the layout contract below. It decides structure only; a later design
-system (palette, type, motion, voice; the owner leans "gen z chaotic") replaces the visual defaults further down.
+system (`design/system/DECISION.md`, 06.1: palette, type, motion, voice, "full gen z chaotic") sets the look.
 If the owner adds design exports, `design/decisions.<ext>` wins over the visual defaults. **The loop does not wait
 for design.**
 
@@ -174,14 +174,19 @@ Defined under `.claude/agents/`. Spawn them freely: they run in parallel and kee
 
 ## Visual & tonal defaults
 
-No design system yet; these hold until one lands.
+The design system (06.1, option A "acid sticker", owner direction "full gen z chaotic") is
+`design/system/DECISION.md`; it replaces the old calm-and-plain defaults. In short:
 
 - **Mode:** dark only (`userInterfaceStyle: dark`).
-- **Palette:** a near-black violet ground (`#14121a`, the Android icon's background), light text, one warm accent;
-  tokens in `src/ui/theme.ts`.
-- **Type:** the platform's system font; large, high-contrast controls for one-handed, lock-screen-adjacent use.
-- **Spacing:** a 4-point scale.
-- **Voice:** calm and plain, like a good audiobook narrator: short labels, no exclamation marks, never cute.
+- **Tokens:** `src/ui/theme.ts` is the only place a colour or size lives: near-black violet ground, acid lime
+  accent against hot pink, one hue per emotion in the fixed set, a cyan focus ring. Every text pair meets WCAG 2.2
+  AA, asserted by `src/lib/contrast.test.ts`.
+- **Shape:** chips are die-cut stickers (ink outline, hard offset shadow, a few degrees of tilt); a chip always
+  carries its label, never colour alone.
+- **Icons:** Lucide v1.x (ISC; Feather-derived icons MIT; `react-native-svg` MIT), rights-checked 2026-10-23; all
+  three notices ship word for word on a licenses screen and a web licenses file; no brand icons.
+- **Voice:** playful and loud, labels included, but an action still says plainly what it does; the fixed lines
+  ("Unscored", the cap line, the privacy line, the AAX/AAXC note) are never rewritten; no emojis.
 
 ## Plan expansion posture
 
