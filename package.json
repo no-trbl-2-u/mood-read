@@ -25,7 +25,8 @@
     "@types/react": "~19.3.0",
     "eslint": "^9",
     "eslint-config-expo": "~58.0.4",
-    "typescript": "~6.0.3"
+    "typescript": "~6.0.3",
+    "wrangler": "^4.152.0"
   },
   "scripts": {
     "web": "expo start --web",

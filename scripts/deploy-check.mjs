@@ -11,8 +11,9 @@
 //   exit 2  →  timeout
 //   exit 3  →  config / auth failure
 //
-// Set DEPLOY_PROVIDER in .env to pick your provider (defaults
-// to 'netlify'); configure that provider's auth in .env too.
+// Set DEPLOY_PROVIDER to pick your provider (defaults to
+// 'cloudflare-pages'); configure that provider's auth in .env, or
+// inject it with `node scripts/secrets.mjs run --only ... --`.
 //
 // See nexus/playbooks/ci-providers.md for full details.
 
@@ -29,9 +30,11 @@ if (fs.existsSync('.env')) {
   }
 }
 
-// Mood Read: 'none' until chunk 02.3 creates the Cloudflare Pages project
-// and flips this default to 'cloudflare-pages' (plan/02-bootstrap.md).
-const PROVIDER = process.env.DEPLOY_PROVIDER ?? 'none'
+// Mood Read deploys to the Cloudflare Pages project `mood-read` from
+// .github/workflows/deploy.yml (chunk 02.3, plan/02-bootstrap.md).
+// From a checkout with no .env (a worktree), supply the two names through the vault:
+//   node scripts/secrets.mjs run --only CLOUDFLARE_API_TOKEN,CLOUDFLARE_ACCOUNT_ID -- pnpm deploy:check
+const PROVIDER = process.env.DEPLOY_PROVIDER ?? 'cloudflare-pages'
 const TIMEOUT_MS = 10 * 60 * 1000   // 10 min default
 const POLL_MS = 5 * 1000
 
@@ -175,29 +178,21 @@ else if (PROVIDER === 'cloudflare-pages') {
   const TOKEN = process.env.CF_API_TOKEN ?? process.env.CLOUDFLARE_API_TOKEN
   const ACCOUNT = process.env.CF_ACCOUNT_ID ?? process.env.CLOUDFLARE_ACCOUNT_ID
   const PROJECT = process.env.CF_PAGES_PROJECT ?? 'mood-read'
-  if (!TOKEN) configFail('CF_API_TOKEN', 'https://dash.cloudflare.com/profile/api-tokens')
-  if (!ACCOUNT) configFail('CF_ACCOUNT_ID', 'Cloudflare dashboard sidebar')
+  if (!TOKEN) configFail('CLOUDFLARE_API_TOKEN', 'https://dash.cloudflare.com/profile/api-tokens', 'CLOUDFLARE_API_TOKEN,CLOUDFLARE_ACCOUNT_ID')
+  if (!ACCOUNT) configFail('CLOUDFLARE_ACCOUNT_ID', 'Cloudflare dashboard sidebar', 'CLOUDFLARE_API_TOKEN,CLOUDFLARE_ACCOUNT_ID')
   if (!PROJECT) configFail('CF_PAGES_PROJECT', 'Pages project settings')
 
-  const auth = { Authorization: `Bearer ${TOKEN}` }
+  // The matching, stage reading and auth handling live in deploy-check-cloudflare.mjs (unit-tested).
+  const { probeCloudflare, EXIT } = await import('./deploy-check-cloudflare.mjs')
+  console.log(`Pages project "${PROJECT}" (https://${PROJECT}.pages.dev)`)
 
   await pollLoop(async () => {
-    const url = `https://api.cloudflare.com/client/v4/accounts/${ACCOUNT}/pages/projects/${PROJECT}/deployments`
-    const res = await fetch(url, { headers: auth })
-    if (!res.ok) return null
-    const data = await res.json()
-    const match = data.result?.find((d) => d.deployment_trigger?.metadata?.commit_hash === sha)
-    if (!match) return { state: 'pending' }
-    const status = match.latest_stage?.status
-    if (status === 'success') return { state: 'ready', url: match.url }
-    if (status === 'failure') {
-      return {
-        state: 'error',
-        message: match.latest_stage?.name ? `stage "${match.latest_stage.name}" failed` : undefined,
-        admin: `https://dash.cloudflare.com/${ACCOUNT}/pages/view/${PROJECT}/${match.id}`,
-      }
+    const result = await probeCloudflare({ fetch, token: TOKEN, account: ACCOUNT, project: PROJECT, sha })
+    if (result?.state === 'config') {
+      console.error(result.message)
+      process.exit(EXIT.config)
     }
-    return { state: status ?? 'pending', id: match.id?.slice(0, 8) }
+    return result
   })
 }
 
@@ -391,11 +386,13 @@ async function pollLoop(probe) {
   process.exit(2)
 }
 
-function configFail(varName, helpUrl) {
+function configFail(varName, helpUrl, vaultNames = varName) {
   console.error(`${varName} is not set.`)
   console.error(`  • Get a token at ${helpUrl}`)
   console.error(`  • Add to .env as: ${varName}=...`)
   console.error(`  • .env is gitignored; never commit it.`)
+  console.error(`  • From a worktree (no .env), run it through the vault:`)
+  console.error(`      node scripts/secrets.mjs run --only ${vaultNames} -- pnpm deploy:check`)
   process.exit(3)
 }
 
