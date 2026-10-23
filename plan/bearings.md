@@ -272,6 +272,8 @@ otherwise stop per the skill's failure modes.
   watches them. Operator's guide: `.github/CLOUD_LOOP.md`.
 - **Operational secrets** live in the vault: `node scripts/secrets.mjs status` lists every name and where it is set;
   `push NAME --to github-actions` (or `--to cloudflare`, through wrangler) sends one where it is needed.
+- **Cloudflare secrets** (from 02.4): run `pnpm secrets:sync` after a `set` or a rotation; it pushes every name
+  bound for `cloudflare` into the Worker `mood-read-proxy` (`--dry-run` lists them).
 
 ## Useful commands
 

@@ -245,6 +245,9 @@ OS keychain). `node scripts/secrets.mjs status` shows each name
 and where it is set; `node scripts/secrets.mjs push NAME --to
 github-actions` (or `--to cloudflare`) sends one where it is
 needed. The model never reads a value.
+After a `set` or a rotation, run `pnpm secrets:sync`: every
+name bound for `cloudflare` goes to the Worker
+`mood-read-proxy` (`--dry-run` lists them).
 
 ### `CLOUDFLARE_API_TOKEN` + `CLOUDFLARE_ACCOUNT_ID` — deploy gate
 

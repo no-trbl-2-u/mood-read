@@ -49,7 +49,8 @@
     "announce": "node scripts/announce.mjs",
     "ledger": "node scripts/ledger.mjs",
     "worktree": "node scripts/worktree.mjs",
-    "secrets": "node scripts/secrets.mjs"
+    "secrets": "node scripts/secrets.mjs",
+    "secrets:sync": "node scripts/secrets-sync.mjs"
   },
   "engines": {
     "node": ">=22"
