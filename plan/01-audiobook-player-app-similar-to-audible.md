@@ -133,6 +133,11 @@ just name the pieces/scores/songs/instrumentals (It's important that there's no 
 - **A24** Each chapter's mood card links out to its named piece on Spotify, YouTube / YouTube Music and
   Apple Music, and Mood Read plays none of it; a listener can save a book's pieces as a playlist in their own
   YouTube or Apple Music account.
+- **A25** The owner has a written report on SoundCloud as a music source: whether its API and terms allow
+  Mood Read to play a track under the narration, between chapters or only by linking out; whether
+  Creative Commons and other freely licensed tracks on it can join the royalty-free catalog (bundled or streamed,
+  with the attribution each license asks); what a listener's own SoundCloud account (Go / Go+) changes; and the
+  cost and access steps (API registration, rate limits), before 01.10 picks its source.
 
 ## Owner decisions (all answered)
 
@@ -215,7 +220,7 @@ Every question below is answered; none is open. Elsewhere in the plan, "Open que
    no emotions on its card (A21).
 
 ## Chunks
-Measure: 23 open · 1 closed · next A25
+Measure: 24 open · 1 closed · next A26
 
 Build order follows the owner's two-part v1, and the lines below are in that order. **Part 1, the player:** 01.1,
 01.6, 01.3, 01.5, 01.7: the player, then real books in it, then the second layer, its mixer and the soundscapes it
@@ -259,7 +264,7 @@ pieces). Ids keep the order they were written in. The app itself (Expo at the re
   - The card is the expanded chapter row, inline in the river; an unreached row never expands (`plan/bearings.md`
     Layout).
 - [ ] **01.10** After v1: play the chapter's piece, looped under the narration · M · closes A17, A18 ·
-  needs 01.2, 01.3, 01.5
+  needs 01.2, 01.3, 01.5, 01.12
   - The pick, else auto, loops for the whole chapter through the layer and mixer, from a licensed source: the
     royalty-free catalog. 01.9 found no compliant path for a connected paid account (`docs/streaming-sources.md`).
   - A named piece with no licensed recording gets the closest licensed match, and never one with vocals.
@@ -267,3 +272,10 @@ pieces). Ids keep the order they were written in. The app itself (Expo at the re
   - As `docs/streaming-sources.md` sets them: each service's branding rules; Spotify gets plain links only (its
     Developer Policy III.5, until the owner revisits it after v1); YouTube playlists through the Data API within
     its daily quota; Apple Music playlists only once the Apple Developer Program is joined (after v1).
+- [ ] **01.12** SoundCloud as a music source: a study · S · closes A25 · needs —
+  - The owner asked (2026-10-23): "A research pass to see if we can leverage soundcloud as a source for music."
+    Same shape as 01.9 (`docs/streaming-sources.md`): the `rights-checker` reads the live API terms and quotes
+    them, the report adds a SoundCloud section there (or a sibling file it links), and builds nothing.
+  - Check per track, not per site: a Creative Commons license allows Mood Read's use only if it allows commercial
+    use where needed, modification-free looping under other audio, and attribution the mood card can show; and the
+    piece has no vocals (A20).
