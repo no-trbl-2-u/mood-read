@@ -57,29 +57,51 @@ export function latin1(b: Uint8Array): string {
   return s;
 }
 
-/** UTF-8, tolerant: a malformed sequence becomes U+FFFD rather than an error. */
+/**
+ * One UTF-8 sequence at `i`: its code point and length, or null when the bytes there are not valid UTF-8 (a bad
+ * lead, a missing or wrong continuation byte, an overlong form, a surrogate, past U+10FFFF).
+ */
+function utf8At(b: Uint8Array, i: number): [number, number] | null {
+  const c = b[i];
+  if (c < 0x80) return [c, 1];
+  const n = c >= 0xc2 && c < 0xe0 ? 2 : c >= 0xe0 && c < 0xf0 ? 3 : c >= 0xf0 && c < 0xf5 ? 4 : 0;
+  if (!n || i + n > b.length) return null;
+  // The second byte's range rules out overlong forms, surrogates and code points past U+10FFFF.
+  const lo = c === 0xe0 ? 0xa0 : c === 0xf0 ? 0x90 : 0x80;
+  const hi = c === 0xed ? 0x9f : c === 0xf4 ? 0x8f : 0xbf;
+  if (b[i + 1] < lo || b[i + 1] > hi) return null;
+  let cp = c & (0xff >> (n + 1));
+  for (let k = 1; k < n; k++) {
+    if ((b[i + k] & 0xc0) !== 0x80) return null;
+    cp = (cp << 6) | (b[i + k] & 0x3f);
+  }
+  return [cp, n];
+}
+
+/** UTF-8, tolerant: each byte that does not start a valid sequence becomes one U+FFFD, and decoding goes on. */
 export function utf8(b: Uint8Array): string {
   let s = "";
-  let i = 0;
-  while (i < b.length) {
-    const c = b[i];
-    let cp = 0xfffd;
-    let n = 1;
-    if (c < 0x80) cp = c;
-    else if (c >= 0xc2 && c < 0xe0 && i + 1 < b.length) {
-      cp = ((c & 0x1f) << 6) | (b[i + 1] & 0x3f);
-      n = 2;
-    } else if (c >= 0xe0 && c < 0xf0 && i + 2 < b.length) {
-      cp = ((c & 0x0f) << 12) | ((b[i + 1] & 0x3f) << 6) | (b[i + 2] & 0x3f);
-      n = 3;
-    } else if (c >= 0xf0 && c < 0xf5 && i + 3 < b.length) {
-      cp = ((c & 0x07) << 18) | ((b[i + 1] & 0x3f) << 12) | ((b[i + 2] & 0x3f) << 6) | (b[i + 3] & 0x3f);
-      n = 4;
-    }
-    s += String.fromCodePoint(cp);
-    i += n;
+  for (let i = 0; i < b.length; ) {
+    const at = utf8At(b, i);
+    s += at ? String.fromCodePoint(at[0]) : "�";
+    i += at ? at[1] : 1;
   }
   return s;
+}
+
+/** True when every byte belongs to a valid UTF-8 sequence. */
+export function isUtf8(b: Uint8Array): boolean {
+  for (let i = 0; i < b.length; ) {
+    const at = utf8At(b, i);
+    if (!at) return false;
+    i += at[1];
+  }
+  return true;
+}
+
+/** Text with no declared encoding (WAV's LIST/INFO): UTF-8 when the bytes are valid UTF-8, else Latin-1. */
+export function utf8OrLatin1(b: Uint8Array): string {
+  return isUtf8(b) ? utf8(b) : latin1(b);
 }
 
 /** UTF-16: a BOM picks the byte order, else `bigEndian`. */

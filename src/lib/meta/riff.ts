@@ -1,7 +1,7 @@
 // WAV (RIFF): LIST/INFO tags (INAM title, IART artist, IPRD album, ITRK track), an "id3 " chunk if a tool wrote
 // one, the duration from fmt and data, and chapters from cue points named by LIST/adtl 'labl' notes. The data
 // chunk is skipped by its header; the audio is never read.
-import { ascii, clean, u16le, u32le, utf8, type ByteSource } from "./bytes.ts";
+import { ascii, clean, u16le, u32le, utf8OrLatin1, type ByteSource } from "./bytes.ts";
 import { parseId3v2 } from "./id3.ts";
 import { emptyMeta, leadingNumber, tidyChapters, type AudioMeta } from "./types.ts";
 
@@ -69,13 +69,13 @@ export async function readWav(source: ByteSource): Promise<AudioMeta> {
         const size = u32le(p, o + 4);
         const sub = p.subarray(o + 8, o + 8 + size);
         if (kind === "INFO") {
-          const text = clean(utf8(sub)) || undefined;
+          const text = clean(utf8OrLatin1(sub)) || undefined;
           if (id === "INAM") meta.title ??= text;
           else if (id === "IART") meta.artist ??= text;
           else if (id === "IPRD") meta.album ??= text;
           else if (id === "ITRK" || id === "IPRT") meta.track ??= leadingNumber(text);
         } else if (kind === "adtl" && id === "labl" && sub.length >= 4) {
-          labels.set(u32le(sub, 0), clean(utf8(sub.subarray(4))));
+          labels.set(u32le(sub, 0), clean(utf8OrLatin1(sub.subarray(4))));
         }
         o += 8 + size + (size & 1);
       }

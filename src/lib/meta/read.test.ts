@@ -43,6 +43,25 @@ test("bytes: UTF-8, UTF-16 with a BOM, and base64 round trip", () => {
   assert.deepEqual(fromBase64(toBase64(raw)), raw);
 });
 
+test("A5 bytes: UTF-8 checks continuation bytes, so a stray Latin-1 byte costs one U+FFFD and no neighbours", () => {
+  assert.equal(utf8(new Uint8Array([0x43, 0x61, 0x66, 0xe9, 0x20, 0x53, 0x74])), "Caf� St");
+  assert.equal(utf8(new Uint8Array([0xc3, 0x41])), "�A");
+  assert.equal(utf8(new Uint8Array([0xc0, 0x80, 0x41])), "��A"); // overlong
+  assert.equal(utf8(new Uint8Array([0xed, 0xa0, 0x80])), "���"); // a surrogate
+  assert.equal(utf8(new Uint8Array([0xf0, 0x9f, 0x8e])), "���"); // cut short
+  assert.equal(utf8(new Uint8Array([0xf0, 0x9f, 0x8e, 0xa7])), "\u{1F3A7}");
+  assert.equal(utf8(new Uint8Array([0xe2, 0x80, 0x94])), "—");
+});
+
+test("A5 WAV: LIST/INFO text that is not UTF-8 is read as Latin-1", async () => {
+  const file = wavFile(new Int16Array(800), 8000, { INAM: "CafX Stories", IART: "Zoé Author" });
+  const at = file.indexOf(0x58); // the X, the only one in the file: the samples are all zero
+  file[at] = 0xe9; // Latin-1 e-acute
+  const m = await read(file, "w.wav");
+  assert.equal(m.title, "Café Stories");
+  assert.equal(m.artist, "Zoé Author"); // real UTF-8 stays UTF-8
+});
+
 test("sniffFormat reads the container from the bytes, the extension only as a fallback", () => {
   assert.equal(sniffFormat(ftyp("M4B "), "x.mp3"), "mp4");
   assert.equal(sniffFormat(new TextEncoder().encode("fLaC...."), "x"), "flac");
