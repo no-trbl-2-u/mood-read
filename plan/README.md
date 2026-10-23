@@ -14,17 +14,20 @@ under the narration.
 
 **Asap** (built before the table, in this order, once their needs are done):
 
-- (none yet)
+- **03.1** · the layout options first: they need no app, and the owner's pick takes calendar time
 
 **Held** (waits on a person's word; never picked until the line goes):
 
 - **01.2** · blocked: the owner names the AI provider and the scoring proxy's monthly spend cap (spec 01, Open
   questions 6) · 2026-10-22
+- **03.2** · blocked: the owner picks layout A, B or C once the boards land (the layout pass, Open questions 1) ·
+  2026-10-22
 
 ## Specs
 
 | # | Initiative | Spec | Status | Progress |
 |---|---|---|---|---|
+| 3 | Layout pass: three layout options for every v1 screen as wireframe boards, then the owner's pick as the layout contract (the design system comes later) | [03-layout-pass.md](03-layout-pass.md) | planned (03.1 in Asap; 03.2 held for the pick) | 2 left |
 | 2 | Bootstrap: the Expo app shell at the repo root on pnpm, the verify gate with a hermetic e2e on the web build, and Cloudflare Pages deploys with a green deploy gate | [02-bootstrap.md](02-bootstrap.md) | planned · priority 1 | 4 left |
 | 1 | Mood Read v1 in two parts. Part 1, the player: your own audiobooks (01.1, 01.6) with an ambient soundscape under the narration (01.3, 01.7) and a mixer (01.5). Part 2: each chapter's moods researched by AI, with one named no-vocals piece per chapter, named but not played in v1 (01.2, 01.4). After v1: a streaming study (01.9), then playing the pieces (01.10) | [01-audiobook-player-app-similar-to-audible.md](01-audiobook-player-app-similar-to-audible.md) | planned · priority 2 (01.2 held for the AI provider and spend cap) | 9 left |
 

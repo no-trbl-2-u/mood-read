@@ -215,7 +215,8 @@ plays. **Part 2, moods and named pieces:** 01.2, then 01.4. **After v1:** 01.9 (
 pieces). Ids keep the order they were written in. The app itself (Expo at the repo root, the gates) is spec 02.
 
 - [ ] **01.1** The player: library, playback, chapters, speed, sleep timer, bookmarks, resume, background and
-  lock-screen controls · L · closes A1, A2, A3, A4 · needs 02.2
+  lock-screen controls · L · closes A1, A2, A3, A4 · needs 02.2, 03.2
+  - Built in the layout spec 03 settles (`design/layouts/DECISION.md`, `plan/bearings.md` Layout).
   - Opens one local file to have something to play; 01.6 brings real imports.
   - Open questions 1 is answered: a cross-platform phone app, with the web for development.
   - Prior work: the local branch `chunk-01.1-player` (unpushed, npm) holds a first build of this chunk. Start
