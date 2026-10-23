@@ -229,11 +229,12 @@ test.describe("the player", () => {
       await expect(page.getByRole("button", { name: label, exact: true })).toBeVisible();
     }
     await page.getByTestId("sleep-15").click();
-    await expect(page.getByTestId("sleep-status")).toHaveText(/Stops in 1[45]:\d\d\./);
-    // A28: the mini player docked under the sheet reads what is left of the timer.
+    await expect(page.getByTestId("sleep-15")).toHaveAttribute("aria-pressed", "true");
+    // A28: the sheet shows which timer is set but no time; the mini player docked under it reads what is left.
+    await expect(page.getByTestId("speed-sleep-sheet")).not.toContainText(/\d:\d\d|Stops/);
     await expect(page.getByTestId("mini-sleep")).toHaveText("Sleep · 15 min");
     await page.getByTestId("sleep-off").click();
-    await expect(page.getByTestId("sleep-status")).toHaveCount(0);
+    await expect(page.getByTestId("sleep-off")).toHaveAttribute("aria-pressed", "true");
     await expect(page.getByTestId("mini-sleep")).toHaveCount(0);
 
     // End of chapter: 5 s before chapter 1 ends, at 3x, playback stops at the chapter's end, parked on chapter 2.
@@ -243,7 +244,8 @@ test.describe("the player", () => {
     await expectTime(page, 30);
     await page.getByTestId("open-speed-sleep").click();
     await page.getByTestId("sleep-chapter").click();
-    await expect(page.getByTestId("sleep-status")).toHaveText("Stops at the end of Ch.1.");
+    await expect(page.getByTestId("sleep-chapter")).toHaveAttribute("aria-pressed", "true");
+    await expect(page.getByTestId("speed-sleep-sheet")).not.toContainText(/Stops/);
     await page.getByTestId("sheet-done").click();
     await expect(page.getByTestId("mini-sleep")).toHaveText("Sleep · end of chapter");
     await expect(page.getByTestId("chapter-river")).not.toContainText(/sleep/i);
@@ -260,26 +262,25 @@ test.describe("the player", () => {
     page,
   }) => {
     await importBook(page);
-    // Set on Ch.1 (ends at 35 s), then jump to Ch.2: it plays from Ch.2's start and the timer moves to Ch.2.
+    // Set on Ch.1 (ends at 35 s), then jump to Ch.2: it plays on past the old end, so the timer moved to Ch.2.
     await page.getByTestId("open-speed-sleep").click();
+    await page.getByTestId("speed-3").click();
     await page.getByTestId("sleep-chapter").click();
-    await expect(page.getByTestId("sleep-status")).toHaveText("Stops at the end of Ch.1.");
     await page.getByTestId("sheet-done").click();
     await page.getByTestId("chapter-1").click();
     await expectChapter(page, 1);
     await expect.poll(async () => (await narration(page)).currentTime).toBeGreaterThan(1.5);
     expect((await narration(page)).paused).toBe(false);
     await expectChapter(page, 1);
-    await page.getByTestId("open-speed-sleep").click();
-    await expect(page.getByTestId("sleep-status")).toHaveText("Stops at the end of Ch.2.");
-    await page.getByTestId("sheet-done").click();
-    // A skip back across into Ch.1 follows it back.
+    await expect(page.getByTestId("mini-sleep")).toHaveText("Sleep · end of chapter");
+    // A skip back across into Ch.1 follows it back: playback stops at Ch.1's end, parked on Ch.2, not at Ch.2's.
     await page.getByTestId("mini-back-30").click();
     await expectChapter(page, 0);
-    await page.getByTestId("open-speed-sleep").click();
-    await expect(page.getByTestId("sleep-status")).toHaveText("Stops at the end of Ch.1.");
-    await page.getByTestId("sheet-done").click();
-    await pause(page);
+    // The skip back leaves Ch.2's element as the newest one, so the stop is read from the mini player.
+    await expect(page.getByTestId("mini-play-pause")).toHaveAttribute("aria-label", "Play", { timeout: 15_000 });
+    await expectChapter(page, 1);
+    await expect(page.getByTestId("mini-time")).toHaveText("0:00 / 0:40");
+    await expect(page.getByTestId("mini-sleep")).toHaveCount(0);
   });
 
   test("A3: bookmarks are added, named and jumped to", async ({ page }) => {

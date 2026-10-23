@@ -1,12 +1,10 @@
 // The Speed & Sleep bottom sheet: speed presets (0.5x to 3x where the platform plays it) with 0.1 steps, and the
-// sleep timer (15, 30, 45 min, End of chapter, Off).
-import { useEffect, useState } from "react";
+// sleep timer (15, 30, 45 min, End of chapter, Off). The chosen chip shows which timer is set; what is left of it
+// reads in the mini player docked below (A28), never here.
 import { Pressable, StyleSheet, Text, View } from "react-native";
 
-import { formatDuration } from "@/lib/format-duration";
 import { speedLabel } from "@/lib/labels";
 import { MAX_SPEED, MIN_SPEED, SLEEP_MINUTES, speedPresets, stepSpeed } from "@/lib/timeline";
-import type { SleepTimer } from "@/lib/types";
 import { Chip } from "@/ui/Chip";
 import { Sheet } from "@/ui/Sheet";
 import { colors, spacing } from "@/ui/theme";
@@ -72,7 +70,6 @@ export function SpeedSleepSheet({ player, onClose }: { player: PlayerApi; onClos
           />
           <Chip testID="sleep-off" label="Off" on={!sleep} onPress={player.cancelSleep} />
         </View>
-        <SleepStatus sleep={sleep} />
       </View>
     </Sheet>
   );
@@ -90,29 +87,6 @@ function StepButton(props: { label: string; disabled: boolean; onPress: () => vo
     >
       <Text style={styles.stepText}>{props.label}</Text>
     </Pressable>
-  );
-}
-
-function SleepStatus({ sleep }: { sleep: SleepTimer | null }) {
-  const [now, setNow] = useState(() => Date.now());
-  const counting = sleep?.kind === "minutes";
-  useEffect(() => {
-    if (!counting) return;
-    const t = setInterval(() => setNow(Date.now()), 1000);
-    return () => clearInterval(t);
-  }, [counting]);
-  if (!sleep) return <Text style={styles.muted}>Off. Playback runs until you pause.</Text>;
-  if (sleep.kind === "chapterEnd") {
-    return (
-      <Text style={styles.muted} testID="sleep-status">
-        Stops at the end of Ch.{sleep.chapterIndex + 1}.
-      </Text>
-    );
-  }
-  return (
-    <Text style={styles.muted} testID="sleep-status">
-      Stops in {formatDuration(Math.max(0, (sleep.endsAt - now) / 1000))}.
-    </Text>
   );
 }
 
