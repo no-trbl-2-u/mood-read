@@ -54,6 +54,16 @@
 - default taken: left as they are (names only, already working). Fill in `for` and `where` through the GUI's Vault or
   by hand when convenient.
 
+### [needs-user-call] Android caps playback speed at 2x (spec 01 A2)
+- category: product
+- logged: 2026-10-23 (01.1, heads-down)
+- what: spec 01 A2 asks for 0.5x to 3x. The installed expo-audio 58.0.10 clamps the rate to 2.0x on Android
+  (`AudioPlayer.kt:149`, `rate.coerceIn(0.1f, 2.0f)`) and on iOS (`AudioModule.swift:237`), silently. The web build
+  runs 3x with pitch kept. Choices: accept 2x on native, patch expo-audio (a pnpm patch), or switch the narration
+  engine (e.g. react-native-track-player).
+- default taken: native speed chips stop at 2.0x (`PLATFORM_MAX_SPEED`), web offers 3x; A2 stays partial and moves
+  to 01.1's device-pass follow-up, which settles it with your answer.
+
 ## Pending — findings
 
 ### [5.6] heartbeat.yml reads a secret in a job-level env
