@@ -137,6 +137,10 @@ just name the pieces/scores/songs/instrumentals (It's important that there's no 
   narration, mixed with the audio another app plays (Audible, Libby, Chirp or a music app). It follows chapters by
   the listener's tap or a timer, and never captures, controls, reads or ducks the other app. It is checked with
   Audible on a real iOS and Android phone, and the narration's lock-screen controls are unchanged when it is off.
+- **A28** Every time readout of the playing book sits in the docked mini player, beside its progress bar:
+  the playing chapter's elapsed and length ("3:05 / 11:45") and, while a sleep timer runs, what is left of it
+  (minutes, or "end of chapter"). The chapter river carries no times: no per-row length, and the playing row
+  shows no "3:05 of 11:45" line and no sleep-timer line.
 
 ## Owner decisions (all answered)
 
@@ -227,7 +231,7 @@ Every question below is answered; none is open. Elsewhere in the plan, "Open que
    no emotions on its card (A21).
 
 ## Chunks
-Measure: 22 open · 5 closed · next A28
+Measure: 23 open · 5 closed · next A29
 
 Build order follows the owner's two-part v1, and the lines below are in that order. **Part 1, the player:** 01.1,
 01.6, 01.3, 01.5, 01.7: the player, then real books in it, then the second layer, its mixer and the soundscapes it
@@ -287,3 +291,14 @@ pieces). Ids keep the order they were written in. The app itself (Expo at the re
     closes A4, and its 0.5x to 2x speed with pitch kept closes A2 (native caps at 2x, D11).
   - Native lock-screen seeks run inside expo-audio and skip the player's sleep retarget; once 01.6 brings in-file
     chapters, retarget an End of chapter timer on those seeks too.
+- [ ] **01.16** Time readouts move from the river to the mini player · S · closes A28 · needs —
+  - The owner asked (2026-10-23), over a screenshot of the river: "Move all the time related information down
+    to the bottom near the player."
+  - `src/player/ChapterRiver.tsx` drops the row length (`styles.duration`), the expanded row's elapsed line
+    (`chapter-elapsed`) and its sleep-timer line; `src/player/MiniPlayer.tsx` shows elapsed / length with
+    tabular numbers flanking or under the progress bar, and a muted sleep readout when a timer runs. Keep a
+    `testID` on each and move the e2e assertions (`e2e/player.spec.ts`) to the mini player.
+  - The playing row keeps its heavy left rule and play mark; with no time line it stays expanded for the mood
+    card and mixer later chunks put there.
+  - Out of scope: the Bookmarks sheet's "Ch. N — mm:ss" rows (a list of places, not a readout) and the Speed &
+    Sleep sheet's chips stay as they are.

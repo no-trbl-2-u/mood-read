@@ -148,7 +148,9 @@ frame by frame; this is its summary. Options A and C stay in `design/layouts/` a
   full screen pushed from the library. Speed & Sleep and Bookmarks are the only bottom sheets, rising over a
   dimmed river from just above the mini player. The mixer and the mood card are always inline, never a sheet.
 - **Mini player:** docked at the bottom of the river and of every sheet over it: cover, chapter title over a
-  progress bar that scrubs, back 30 s, play/pause, forward 30 s, all in thumb reach. None in the library.
+  progress bar that scrubs, back 30 s, play/pause, forward 30 s, all in thumb reach. None in the library. It holds
+  every time readout of the playing book (elapsed / length, the sleep timer's remainder); the river shows none
+  (D12).
 - **Library:** a list of book rows (cover, title, chapter count and state); empty, a centred "Import a book".
 - **Chapter river:** the book's chapters are one scrolling list, which is also the chapter list. A reached row
   shows its title and emotion chips; the playing row expands in place to the mood card (all emotion chips, the
