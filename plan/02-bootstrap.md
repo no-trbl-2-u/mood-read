@@ -93,8 +93,6 @@ Decisions made upfront (do not ask):
 
 ## Acceptance
 
-- **A3** A push to `main` deploys the web build to Cloudflare Pages, and `pnpm deploy:check` exits 0 against
-  https://mood-read.pages.dev for that commit.
 - **A4** The Worker `mood-read-proxy` exists on the Cloudflare account, configured in
   `proxy/wrangler.jsonc`, and answers `GET /health` with 200, so a Cloudflare push has a target before 01.2.
 - **A5** `pnpm secrets:sync` pushes every name the manifest sends to `cloudflare` into `mood-read-proxy`,
@@ -106,12 +104,9 @@ Decisions made upfront (do not ask):
 (None. The R2 / S3 question is answered in Design, under 02.4's manifest.)
 
 ## Chunks
-Measure: 3 open · 2 closed · next A6
+Measure: 2 open · 3 closed · next A6
 
-- [ ] **02.3** Cloudflare Pages deploy from Actions and a green deploy gate · M · closes A3 · needs — ·
-  secrets CLOUDFLARE_API_TOKEN, CLOUDFLARE_ACCOUNT_ID
-  - Iterate within this chunk until `pnpm deploy:check` is green; a red first deploy is expected.
 - [ ] **02.4** One command syncs the vault's Cloudflare secrets to the proxy Worker · S ·
-  closes A4, A5 · needs 02.3 · secrets CLOUDFLARE_API_TOKEN, CLOUDFLARE_ACCOUNT_ID
+  closes A4, A5 · needs — · secrets CLOUDFLARE_API_TOKEN, CLOUDFLARE_ACCOUNT_ID
   - Reuse `scripts/secrets-sinks.mjs`'s `cloudflare` sink and `wrangler` as 02.3 pins it; add no second path to a
     value.

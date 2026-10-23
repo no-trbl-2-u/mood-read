@@ -20,3 +20,4 @@ identity · deleted in <sha>`; recover its text with
 - 2026-10-23 · 01.12 · SoundCloud study: link out, bundle hand-checked CC-BY tracks · 34202194..34202194
 - 2026-10-23 · 01.13 · Workarounds study: CC, generated music, companion mode, DRM-free stores · 4ef5173d..0db06502
 - 2026-10-23 · 02.2 · pnpm verify builds the web app and walks it hermetically · 79f6ee10..32b20f36
+- 2026-10-23 · 02.3 · A push to main deploys to mood-read.pages.dev · eccba633..eccba633
