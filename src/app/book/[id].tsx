@@ -8,6 +8,7 @@ import { chapterEdits, useBook } from "@/lib/library";
 import { BookmarksSheet } from "@/player/BookmarksSheet";
 import { ChapterRiver } from "@/player/ChapterRiver";
 import { MiniPlayer } from "@/player/MiniPlayer";
+import { Mixer } from "@/player/Mixer";
 import { usePlayer } from "@/player/PlayerProvider";
 import { soundscape, SOUNDSCAPE_IDS } from "@/player/soundscapes";
 import { SpeedSleepSheet } from "@/player/SpeedSleepSheet";
@@ -81,6 +82,7 @@ export default function BookScreen() {
           currentIndex={chapter?.index}
           position={position}
           layer={layer}
+          mixer={active ? <Mixer mix={p.mix} onChange={p.setMix} /> : undefined}
           onJump={(i) => active && p.jumpToChapter(i)}
           edits={
             active

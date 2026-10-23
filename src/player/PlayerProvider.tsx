@@ -1,12 +1,15 @@
 // The audio engine: one narration player for the whole app, on a book-wide clock.
 // Spec 01 Contracts: the narration owns the clock; the bed (01.3) subscribes to `clock` and follows it, and
 // never drives the narration back. The bed's decisions are src/lib/bed.ts; its players are ./bed-engine.ts.
-import { setAudioModeAsync, useAudioPlayer, useAudioPlayerStatus } from "expo-audio";
+// The mixer (01.5) sets both layers' volumes from the book's Mix (src/lib/mix.ts), saved per book, and ducks the bed
+// under the narrator's voice from a level measured on the device (./voice-level.ts); the audio goes nowhere.
+import { setAudioModeAsync, useAudioPlayer, useAudioPlayerStatus, type AudioPlayer } from "expo-audio";
 import { createContext, useCallback, useContext, useEffect, useMemo, useRef, useState, type ReactNode } from "react";
 import { AppState, Platform } from "react-native";
 
 import { bedSoundFor, DEFAULT_BED, IDLE_BED, planBed, type BedChoice, type BedState } from "@/lib/bed";
 import { createClock, type Clock, type ClockEvent } from "@/lib/clock";
+import { createDucker, DEFAULT_MIX, mixLevels, normalizeMix, type Mix } from "@/lib/mix";
 import { library, useBooks } from "@/lib/library";
 import { resolveFile } from "@/lib/media";
 import {
@@ -24,9 +27,10 @@ import {
 } from "@/lib/timeline";
 import type { Book, Chapter, SleepTimer } from "@/lib/types";
 
-import { createBedEngine } from "./bed-engine";
+import { createBedEngine, type BedEngine } from "./bed-engine";
 import { bindMediaSession } from "./media-session";
 import { soundscape, SOUNDSCAPE_IDS } from "./soundscapes";
+import { listenToVoice, stopVoice } from "./voice-level";
 
 /**
  * The fastest speed this platform plays. expo-audio clamps the rate to 2.0 natively (Android
@@ -34,6 +38,11 @@ import { soundscape, SOUNDSCAPE_IDS } from "./soundscapes";
  */
 export const PLATFORM_MAX_SPEED = Platform.OS === "web" ? MAX_SPEED : 2;
 const SAVE_EVERY_MS = 500;
+
+/** The narration's volume, from the mix (a property set outside render, where the player is a plain object). */
+function setVolume(player: AudioPlayer, volume: number) {
+  player.volume = volume;
+}
 
 export type PlayerApi = {
   book: Book | undefined;
@@ -47,8 +56,10 @@ export type PlayerApi = {
   sleep: SleepTimer | null;
   /** The narration's clock, which the bed follows (01.3). */
   clock: Clock;
-  /** What the bed plays (until 01.5 and 01.7 make it the book's choice, each chapter's test loop). */
+  /** What the bed plays (until 01.7 makes it the book's choice, each chapter's test loop). */
   bed: BedChoice;
+  /** The open book's mixer setting (01.5, A10): balance, master and duck under voice. */
+  mix: Mix;
   open: (bookId: string) => Promise<void>;
   play: () => void;
   pause: () => void;
@@ -60,6 +71,8 @@ export type PlayerApi = {
   setSleepMinutes: (minutes: number) => void;
   setSleepEndOfChapter: () => void;
   cancelSleep: () => void;
+  /** Changes the open book's mix and saves it for that book. */
+  setMix: (patch: Partial<Mix>) => void;
 };
 
 /** A file being loaded: where to land in it and whether to play once it is ready. */
@@ -98,6 +111,7 @@ export function PlayerProvider({ children }: { children: ReactNode }) {
   const [loadError, setLoadError] = useState<string | null>(null);
   const [speed, setSpeedState] = useState(1);
   const [sleep, setSleep] = useState<SleepTimer | null>(null);
+  const [mix, setMixState] = useState<Mix>(DEFAULT_MIX);
 
   // Mirrors of state for callbacks and event handlers, which must not read stale renders.
   const bookRef = useRef<Book | undefined>(undefined);
@@ -105,6 +119,10 @@ export function PlayerProvider({ children }: { children: ReactNode }) {
   const targetRef = useRef<Target | null>(null);
   const speedRef = useRef(1);
   const sleepRef = useRef<SleepTimer | null>(null);
+  const narrationLevel = useRef(mixLevels(DEFAULT_MIX).narration);
+  const bedLevel = useRef(mixLevels(DEFAULT_MIX).bed);
+  const engineRef = useRef<BedEngine | null>(null);
+  const ducker = useMemo(() => createDucker(), []);
   const lastSave = useRef(0);
   const loadToken = useRef(0);
   const pendingEvent = useRef<ClockEvent | null>(null);
@@ -191,6 +209,8 @@ export function PlayerProvider({ children }: { children: ReactNode }) {
         if (token !== loadToken.current) return;
         await player.seekTo(offset);
         player.setPlaybackRate(speedRef.current, "high");
+        // A new file is a new element on the web, at full volume: the mix applies again.
+        setVolume(player, narrationLevel.current);
         // A pause during the load flips the live target's `play`.
         if (targetRef.current?.play) player.play();
         targetRef.current = null;
@@ -330,6 +350,7 @@ export function PlayerProvider({ children }: { children: ReactNode }) {
       const rate = clamp(library.getSpeed(id), MIN_SPEED, PLATFORM_MAX_SPEED);
       speedRef.current = rate;
       setSpeedState(rate);
+      setMixState(library.getMix(id));
       pendingEvent.current = "load";
       await goTo(b, resumeStart(library.getPosition(id), b.duration), false);
     },
@@ -353,6 +374,8 @@ export function PlayerProvider({ children }: { children: ReactNode }) {
   // only listens; nothing it does reaches the narration, and the narration's speed never reaches it (A9).
   useEffect(() => {
     const engine = createBedEngine((id) => soundscape(id)?.loop);
+    engine.setLevel(bedLevel.current * ducker.gain());
+    engineRef.current = engine;
     let state: BedState = IDLE_BED;
     const off = clock.subscribe((s, event) => {
       const chapters = bookRef.current?.id === s.bookId ? (bookRef.current?.chapters ?? []) : [];
@@ -366,9 +389,35 @@ export function PlayerProvider({ children }: { children: ReactNode }) {
     });
     return () => {
       off();
+      engineRef.current = null;
       engine.dispose();
     };
-  }, [clock, bed]);
+  }, [clock, bed, ducker]);
+
+  // The mix sets both layers: the narration's volume, and the bed's level under its crossfades (A10).
+  useEffect(() => {
+    const levels = mixLevels(mix);
+    narrationLevel.current = levels.narration;
+    bedLevel.current = levels.bed;
+    setVolume(player, levels.narration);
+    if (!mix.duck) ducker.reset();
+    engineRef.current?.setLevel(levels.bed * ducker.gain());
+  }, [mix, player, ducker]);
+
+  // Duck under voice (A11): while the narration plays with duck on, its level is measured on the device and the bed
+  // dips while the narrator speaks, coming back in the pauses. Sampling starts only once the listener plays (the
+  // web's audio graph needs their gesture) and stops with duck off. A pause only stops listening.
+  const duckListening = mix.duck && playing;
+  useEffect(() => {
+    if (!duckListening) return;
+    return listenToVoice(player, (frames) => {
+      const gain = ducker.hear(frames, Date.now(), true);
+      engineRef.current?.setLevel(bedLevel.current * gain);
+    });
+  }, [duckListening, player, ducker]);
+  useEffect(() => {
+    if (!mix.duck) stopVoice(player);
+  }, [mix.duck, player]);
 
   const api = useMemo<PlayerApi>(() => {
     const pause = () => {
@@ -444,8 +493,17 @@ export function PlayerProvider({ children }: { children: ReactNode }) {
         if (c) setSleep({ kind: "chapterEnd", chapterIndex: c.index, end: c.end });
       },
       cancelSleep: () => setSleep(null),
+      mix,
+      setMix: (patch) => {
+        const b = bookRef.current;
+        setMixState((prev) => {
+          const next = normalizeMix({ ...prev, ...patch });
+          if (b) library.saveMix(b.id, next);
+          return next;
+        });
+      },
     };
-  }, [book, chapter, position, playing, target, error, speed, sleep, clock, bed, open, goTo, persist, player, livePosition, followSleep]);
+  }, [book, chapter, position, playing, target, error, speed, sleep, clock, bed, mix, open, goTo, persist, player, livePosition, followSleep]);
 
   useEffect(() => {
     remote.current = { play: api.play, pause: api.pause, skip: api.skip };

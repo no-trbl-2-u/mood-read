@@ -2,12 +2,13 @@ import { Pressable, StyleSheet, Text } from "react-native";
 
 import { colors, spacing } from "./theme";
 
-/** A selectable chip: speed presets, sleep timer choices. */
-export function Chip(props: { label: string; on: boolean; onPress: () => void; testID?: string }) {
+/** A selectable chip: speed presets, sleep timer choices, the mixer's duck. */
+export function Chip(props: { label: string; a11yLabel?: string; on: boolean; onPress: () => void; testID?: string }) {
   return (
     <Pressable
       testID={props.testID}
       role="button"
+      aria-label={props.a11yLabel}
       aria-pressed={props.on}
       onPress={props.onPress}
       style={[styles.chip, props.on && styles.chipOn]}

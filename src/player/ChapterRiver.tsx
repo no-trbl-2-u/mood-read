@@ -1,10 +1,11 @@
 // The chapter river: every chapter of the book in one scrolling list, which is also the chapter list. A row shows
 // its title; the playing row is expanded in place and marked with a heavy left rule and a play mark. The river
-// carries no times: every time readout sits in the mini player (A28). The expanded row carries the bed's "Layer"
-// line, its soundscape for this chapter (01.3), and the chapter edits (01.6, spec 01 A6): rename, merge with the
-// next chapter, and split at the current position. Emotion chips, the mood card, the mixer and lock marks join from
-// 01.4, 01.5 and 01.7.
-import { useEffect, useRef, useState } from "react";
+// carries no times: every time readout sits in the mini player (A28). The expanded row carries the inline mixer
+// (01.5: balance, master volume, duck under voice), the bed's "Layer" line, its soundscape for this chapter (01.3),
+// and the chapter edits (01.6, spec 01 A6): rename, merge with the
+// next chapter, and split at the current position. Emotion chips, the mood card, the layer chips and lock marks join
+// from 01.4 and 01.7.
+import { useEffect, useRef, useState, type ReactNode } from "react";
 import { Pressable, ScrollView, StyleSheet, Text, TextInput, View, type ScrollViewInstance } from "react-native";
 
 import { canMergeWithNext, canSplitAt } from "@/lib/chapters";
@@ -19,6 +20,8 @@ export function ChapterRiver(props: {
   position: number;
   /** The bed's sound for the playing chapter, by name; null when the layer is off. */
   layer: string | null;
+  /** The inline mixer, shown in the playing row above the Layer line; absent until the book is open in the player. */
+  mixer?: ReactNode;
   onJump: (index: number) => void;
   /** Chapter edits; absent until the book is open in the player. */
   edits?: ChapterEditsApi;
@@ -75,6 +78,7 @@ export function ChapterRiver(props: {
             </Pressable>
             {playing && (
               <View style={styles.expanded} testID="chapter-expanded">
+                {props.mixer}
                 <View style={styles.layerLine} testID="layer-line">
                   <Text style={styles.label}>Layer</Text>
                   <Text style={styles.layerChip} testID="layer-sound">

@@ -1,22 +1,36 @@
 // The bed's players: two expo-audio decks, so a chapter change can crossfade from one loop into the next. It carries
 // out src/lib/bed.ts's commands and decides nothing itself. Its rate is always BED_RATE: the narration's speed never
-// reaches it (A9).
+// reaches it (A9). Each deck's volume is its crossfade gain times the level the mixer sets (01.5: the bed's share of
+// balance and master, times the duck), composed by src/lib/mix.ts.
 import { createAudioPlayer, type AudioPlayer, type AudioSource } from "expo-audio";
 
 import { BED_RATE, crossfadeGains, CROSSFADE_MS, type BedCommand } from "@/lib/bed";
+import { bedVolume } from "@/lib/mix";
 
 const FADE_STEP_MS = 50;
 const LOAD_TIMEOUT_MS = 10000;
 
 type Fade = { from: AudioPlayer; to: AudioPlayer | null; started: number; timer: ReturnType<typeof setInterval> };
 
-export type BedEngine = { apply: (command: BedCommand) => void; dispose: () => void };
+export type BedEngine = {
+  apply: (command: BedCommand) => void;
+  /** The mixer's level for the bed (0 to 1): its share of balance and master, times the duck. */
+  setLevel: (level: number) => void;
+  dispose: () => void;
+};
 
 export function createBedEngine(source: (soundId: string) => AudioSource | undefined): BedEngine {
   const decks: [AudioPlayer, AudioPlayer] = [
     createAudioPlayer(null, { updateInterval: 1000 }),
     createAudioPlayer(null, { updateInterval: 1000 }),
   ];
+  // Each deck's crossfade gain; its volume is that times the mixer's level.
+  const gains = new Map<AudioPlayer, number>(decks.map((d) => [d, 1]));
+  let level = 1;
+  const setGain = (deck: AudioPlayer, gain: number) => {
+    gains.set(deck, gain);
+    deck.volume = bedVolume(level, gain);
+  };
   let active = 0;
   let fade: Fade | null = null;
   // While a deck loads, the latest play state and place wait here.
@@ -28,8 +42,8 @@ export function createBedEngine(source: (soundId: string) => AudioSource | undef
     if (!fade) return;
     clearInterval(fade.timer);
     fade.from.pause();
-    fade.from.volume = 1;
-    if (fade.to) fade.to.volume = 1;
+    setGain(fade.from, 1);
+    if (fade.to) setGain(fade.to, 1);
     fade = null;
   };
 
@@ -37,8 +51,8 @@ export function createBedEngine(source: (soundId: string) => AudioSource | undef
     const started = Date.now();
     const timer = setInterval(() => {
       const g = crossfadeGains(Date.now() - started, CROSSFADE_MS);
-      from.volume = g.out;
-      if (to) to.volume = g.in;
+      setGain(from, g.out);
+      if (to) setGain(to, g.in);
       if (g.in >= 1) finishFade();
     }, FADE_STEP_MS);
     fade = { from, to, started, timer };
@@ -62,7 +76,7 @@ export function createBedEngine(source: (soundId: string) => AudioSource | undef
     if (!withFade) out.pause();
     inc.replace(src);
     inc.loop = true;
-    inc.volume = withFade ? 0 : 1;
+    setGain(inc, withFade ? 0 : 1);
     const started = Date.now();
     const ready = () => {
       if (token !== loading) return;
@@ -76,14 +90,14 @@ export function createBedEngine(source: (soundId: string) => AudioSource | undef
       inc.seekTo(wantOffset).catch(() => {});
       if (!wantPlay) {
         out.pause();
-        inc.volume = 1;
+        setGain(inc, 1);
         return;
       }
       inc.play();
       if (withFade && out.playing) startFade(out, inc);
       else {
         out.pause();
-        inc.volume = 1;
+        setGain(inc, 1);
       }
     };
     ready();
@@ -111,6 +125,11 @@ export function createBedEngine(source: (soundId: string) => AudioSource | undef
           decks.forEach((d) => d.pause());
           return;
       }
+    },
+    setLevel(next) {
+      if (next === level) return;
+      level = next;
+      decks.forEach((d) => (d.volume = bedVolume(level, gains.get(d) ?? 1)));
     },
     dispose() {
       finishFade();

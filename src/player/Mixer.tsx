@@ -1,0 +1,97 @@
+// The mixer, inline in the playing chapter's expanded row (01.5; design/layouts/DECISION.md "Mixer (inline, in the
+// expanded row)"), never a sheet: Balance between narration and the layer, Master volume, and Duck under voice
+// (On / Off). The Layer line sits under it; its chips are 01.7's. The setting is the book's, saved per book (A10).
+import { StyleSheet, Text, View } from "react-native";
+
+import { balanceText, MIX_STEP, percentText, type Mix } from "@/lib/mix";
+import { Chip } from "@/ui/Chip";
+import { Slider } from "@/ui/Slider";
+import { colors, spacing } from "@/ui/theme";
+
+import { VOICE_LEVEL_SUPPORTED } from "./voice-level";
+
+const COPY = {
+  heading: "Mixer",
+  balance: "Balance",
+  narration: "Narration",
+  layer: "Layer",
+  master: "Master volume",
+  duck: "Duck under voice",
+  on: "On",
+  off: "Off",
+  duckUnsupported: "This device can't hear the narrator yet, so the layer stays level.",
+};
+
+export function Mixer({ mix, onChange }: { mix: Mix; onChange: (patch: Partial<Mix>) => void }) {
+  return (
+    <View style={styles.mixer} testID="mixer">
+      <Text style={styles.heading}>{COPY.heading}</Text>
+
+      <View style={styles.control}>
+        <View style={styles.captionRow}>
+          <Text style={styles.label}>{COPY.balance}</Text>
+          <Text style={styles.value} testID="mix-balance-value">
+            {balanceText(mix)}
+          </Text>
+        </View>
+        <Slider
+          testID="mix-balance"
+          label={COPY.balance}
+          value={mix.balance}
+          min={-1}
+          max={1}
+          step={MIX_STEP}
+          origin={0}
+          valueText={balanceText(mix)}
+          onChange={(balance) => onChange({ balance })}
+        />
+        <View style={styles.ends}>
+          <Text style={styles.end}>{COPY.narration}</Text>
+          <Text style={styles.end}>{COPY.layer}</Text>
+        </View>
+      </View>
+
+      <View style={styles.control}>
+        <View style={styles.captionRow}>
+          <Text style={styles.label}>{COPY.master}</Text>
+          <Text style={styles.value} testID="mix-master-value">
+            {percentText(mix.master)}
+          </Text>
+        </View>
+        <Slider
+          testID="mix-master"
+          label={COPY.master}
+          value={mix.master}
+          min={0}
+          max={1}
+          step={MIX_STEP}
+          valueText={percentText(mix.master)}
+          onChange={(master) => onChange({ master })}
+        />
+      </View>
+
+      <View style={styles.duckRow} role="group" aria-label={COPY.duck}>
+        <Text style={styles.label}>{COPY.duck}</Text>
+        <View style={styles.chips}>
+          <Chip testID="mix-duck-on" label={COPY.on} a11yLabel={`${COPY.duck}: ${COPY.on}`} on={mix.duck} onPress={() => onChange({ duck: true })} />
+          <Chip testID="mix-duck-off" label={COPY.off} a11yLabel={`${COPY.duck}: ${COPY.off}`} on={!mix.duck} onPress={() => onChange({ duck: false })} />
+        </View>
+      </View>
+      {mix.duck && !VOICE_LEVEL_SUPPORTED && <Text style={styles.note}>{COPY.duckUnsupported}</Text>}
+    </View>
+  );
+}
+
+const styles = StyleSheet.create({
+  mixer: { gap: spacing.sm, marginTop: spacing.xs, marginBottom: spacing.xs },
+  heading: { color: colors.textMuted, fontSize: 13, fontWeight: "700" },
+  control: { gap: spacing.xxs },
+  captionRow: { flexDirection: "row", justifyContent: "space-between", alignItems: "baseline" },
+  label: { color: colors.text, fontSize: 14, fontWeight: "700" },
+  value: { color: colors.textMuted, fontSize: 13 },
+  ends: { flexDirection: "row", justifyContent: "space-between" },
+  end: { color: colors.textMuted, fontSize: 12 },
+  duckRow: { flexDirection: "row", flexWrap: "wrap", alignItems: "center", justifyContent: "space-between", gap: spacing.sm },
+  chips: { flexDirection: "row", gap: spacing.sm },
+  note: { color: colors.textMuted, fontSize: 13 },
+});

@@ -1,7 +1,7 @@
 // The player on the web build (01.1, spec 01 A1-A4): a book opened from two local WAV files made here (two
 // chapters), then play and pause, +/-30 s with clamps, a chapter jump from the river, speed without pitch change,
 // the sleep timer, bookmarks, resume after a reload, and the browser's Media Session; then the bed (01.3, A8, A9)
-// under it. The narration's and the bed's HTMLAudioElements are read directly (page.evaluate) so nothing waits
+// under it, and the mixer (01.5, A10, A11) setting both. The narration's and the bed's HTMLAudioElements are read directly (page.evaluate) so nothing waits
 // on real time it does not need; the bed's are the looping ones.
 import { expect, test, type Page } from "@playwright/test";
 
@@ -9,6 +9,8 @@ import { guard } from "./guard";
 
 const CH1 = 35;
 const CH2 = 40;
+/** The bed's level under the default mix (src/lib/mix.ts DEFAULT_MIX: balance -0.4, master 1). */
+const BED_DEFAULT = 0.6;
 
 /** A mono 16-bit PCM WAV of a quiet tone, `seconds` long. */
 function wav(seconds: number, rate = 8000): Buffer {
@@ -34,7 +36,13 @@ function wav(seconds: number, rate = 8000): Buffer {
   return Buffer.concat([h, data]);
 }
 
-type AudioState = { currentTime: number; paused: boolean; playbackRate: number; preservesPitch: boolean };
+type AudioState = {
+  currentTime: number;
+  paused: boolean;
+  playbackRate: number;
+  preservesPitch: boolean;
+  volume: number;
+};
 
 // Before the app loads: remember every Audio element made (expo-audio's web player makes one per file) and every
 // Media Session handler registered (the last one registered for an action is the live one).
@@ -72,8 +80,14 @@ async function narration(page: Page): Promise<AudioState> {
       (a) => a.ontimeupdate && !a.loop,
     );
     const a = all[all.length - 1];
-    if (!a) return { currentTime: -1, paused: true, playbackRate: 0, preservesPitch: false };
-    return { currentTime: a.currentTime, paused: a.paused, playbackRate: a.playbackRate, preservesPitch: a.preservesPitch };
+    if (!a) return { currentTime: -1, paused: true, playbackRate: 0, preservesPitch: false, volume: -1 };
+    return {
+      currentTime: a.currentTime,
+      paused: a.paused,
+      playbackRate: a.playbackRate,
+      preservesPitch: a.preservesPitch,
+      volume: a.volume,
+    };
   });
 }
 
@@ -99,10 +113,22 @@ async function bedDecks(page: Page): Promise<BedDeck[]> {
   );
 }
 
-/** The bed's sound heard now: the one playing deck at full volume, or "" for none (or mid-crossfade). */
-async function bedPlaying(page: Page): Promise<string> {
+/** The bed's sound heard now: the one playing deck at the mix's steady level, or "" for none (or mid-crossfade). */
+async function bedPlaying(page: Page, level = BED_DEFAULT): Promise<string> {
   const playing = (await bedDecks(page)).filter((d) => !d.paused);
-  return playing.length === 1 && playing[0].volume === 1 ? playing[0].sound : "";
+  return playing.length === 1 && Math.abs(playing[0].volume - level) < 1e-6 ? playing[0].sound : "";
+}
+
+/** The volume of the bed's deck carrying `sound`, or -1 if none does. */
+async function bedVolume(page: Page, sound: string): Promise<number> {
+  return (await bedDecks(page)).find((d) => d.sound === sound)?.volume ?? -1;
+}
+
+/** Clicks a mixer slider's track at a fraction of its width. */
+async function clickSlider(page: Page, testID: string, fraction: number) {
+  const slider = page.getByTestId(testID);
+  const box = (await slider.boundingBox())!;
+  await slider.click({ position: { x: box.width * fraction, y: box.height / 2 } });
 }
 
 async function expectChapter(page: Page, index: number) {
@@ -420,6 +446,81 @@ test.describe("the player", () => {
     await page.getByTestId("chapter-0").click();
     await expectChapter(page, 0);
     await expect.poll(() => bedPlaying(page)).toBe("hum");
+    await pause(page);
+  });
+
+  test("A10: balance and master volume set the narration against the layer, saved per book across a reload", async ({
+    page,
+  }) => {
+    await importBook(page);
+    const row = page.getByTestId("chapter-row-0");
+    // Inline in the playing row, above the Layer line; nothing opens a sheet.
+    for (const id of ["mixer", "mix-balance", "mix-master", "mix-duck-on", "mix-duck-off", "layer-line"]) {
+      await expect(row.getByTestId(id)).toBeVisible();
+    }
+    await expect(page.getByTestId("chapter-row-1").getByTestId("mixer")).toHaveCount(0);
+    const balance = page.getByRole("slider", { name: "Balance" });
+    const master = page.getByRole("slider", { name: "Master volume" });
+    await expect(balance).toHaveAttribute("aria-valuetext", "Narration 100%, layer 60%");
+    await expect(master).toHaveAttribute("aria-valuenow", "1");
+    await expect(page.getByTestId("mix-duck-off")).toHaveAttribute("aria-pressed", "true");
+
+    // The defaults reach both layers.
+    await expect.poll(async () => (await narration(page)).volume).toBe(1);
+    await expect.poll(() => bedVolume(page, "hum")).toBe(BED_DEFAULT);
+
+    // Balance three quarters of the way to the layer: the narration down to 50%, the layer at full.
+    await clickSlider(page, "mix-balance", 0.75);
+    await expect(balance).toHaveAttribute("aria-valuenow", "0.5");
+    await expect(page.getByTestId("mix-balance-value")).toHaveText("Narration 50%, layer 100%");
+    await expect.poll(async () => (await narration(page)).volume).toBe(0.5);
+    await expect.poll(() => bedVolume(page, "hum")).toBe(1);
+
+    // Master at half scales both.
+    await clickSlider(page, "mix-master", 0.5);
+    await expect(master).toHaveAttribute("aria-valuenow", "0.5");
+    await expect.poll(async () => (await narration(page)).volume).toBe(0.25);
+    await expect.poll(() => bedVolume(page, "hum")).toBe(0.5);
+
+    // The keyboard steps a focused slider by 10%.
+    await master.focus();
+    await page.keyboard.press("ArrowRight");
+    await expect(master).toHaveAttribute("aria-valuenow", "0.6");
+    await expect(page.getByTestId("mix-master-value")).toHaveText("60%");
+    await expect.poll(() => bedVolume(page, "hum")).toBe(0.6);
+
+    // Playing keeps the mix, across the chapter's new file too.
+    await page.getByTestId("chapter-1").click();
+    await expectChapter(page, 1);
+    await expect.poll(async () => (await narration(page)).volume).toBe(0.3);
+    await expect.poll(() => bedPlaying(page, 0.6), { timeout: 10_000 }).toBe("drift");
+    await pause(page);
+
+    // Saved for this book: a reload brings it back.
+    await page.reload();
+    await readyToPlay(page);
+    await expect(page.getByRole("slider", { name: "Balance" })).toHaveAttribute("aria-valuenow", "0.5");
+    await expect(page.getByRole("slider", { name: "Master volume" })).toHaveAttribute("aria-valuenow", "0.6");
+    await expect.poll(async () => (await narration(page)).volume).toBe(0.3);
+    await expect.poll(async () => (await bedDecks(page)).some((d) => d.volume === 0.6)).toBe(true);
+  });
+
+  test("A11: duck under voice dips the layer while the narration speaks and brings it back when turned off", async ({
+    page,
+  }) => {
+    await importBook(page);
+    await page.getByTestId("mix-duck-on").click();
+    await expect(page.getByTestId("mix-duck-on")).toHaveAttribute("aria-pressed", "true");
+    // Paused, nothing is heard: the layer is level.
+    await expect.poll(() => bedVolume(page, "hum")).toBe(BED_DEFAULT);
+    // The test narration is a steady tone, a narrator who never pauses: the layer dips under it.
+    await page.getByTestId("mini-play-pause").click();
+    await expect.poll(async () => (await narration(page)).paused).toBe(false);
+    await expect.poll(() => bedVolume(page, "hum"), { timeout: 5_000 }).toBeLessThan(BED_DEFAULT * 0.5);
+    expect(await bedVolume(page, "hum")).toBeGreaterThan(0);
+    // Duck off: straight back to the mix's level.
+    await page.getByTestId("mix-duck-off").click();
+    await expect.poll(() => bedVolume(page, "hum")).toBe(BED_DEFAULT);
     await pause(page);
   });
 });
