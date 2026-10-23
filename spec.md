@@ -19,7 +19,7 @@ certain chapters within the audiobook."
 
 ## Audience
 
-People who own audiobooks as DRM-free files (their own converted Audible downloads included) and want atmosphere
+People who own audiobooks as DRM-free files (from stores like Libro.fm, or public domain) and want atmosphere
 under the narration, on their phone.
 
 ## Scope
