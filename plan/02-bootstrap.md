@@ -78,6 +78,9 @@ Decisions made upfront (do not ask):
   - **The manifest.** `CLOUDFLARE_API_TOKEN` and `CLOUDFLARE_ACCOUNT_ID` are wrangler's own credentials, not the
     Worker's: drop `cloudflare` from their `destinations` (they keep `local` and `github-actions`). Every other
     entry keeps the destinations the owner set.
+    The R2 / S3 credentials (`CLOUDFLARE_S3_ACCESS_KEY_ID`, `CLOUDFLARE_S3_SECRET_ACCESS_KEY`, `S3_API_ENDPOINT`)
+    keep `cloudflare` and are pushed to the Worker, as the owner set them (owner, 2026-10-23); 01.2 revisits them
+    when it decides the proxy's storage, since a Worker usually reaches R2 through a binding, not keys.
   - **Docs.** `plan/bearings.md`'s Operational notes and `agents.md`'s Operational secrets gain one line each:
     `pnpm secrets:sync` after a `set` or a rotation.
 
@@ -100,9 +103,7 @@ Decisions made upfront (do not ask):
 
 ## Open questions
 
-- Should the R2 / S3 credentials (`CLOUDFLARE_S3_ACCESS_KEY_ID`, `CLOUDFLARE_S3_SECRET_ACCESS_KEY`,
-  `S3_API_ENDPOINT`) be Worker secrets at all? A Worker usually reaches R2 through a binding, not keys. Default:
-  keep them as the owner set them (pushed), and revisit when 01.2 decides the proxy's storage.
+(None. The R2 / S3 question is answered in Design, under 02.4's manifest.)
 
 ## Chunks
 Measure: 3 open · 2 closed · next A6
