@@ -46,7 +46,7 @@ lock-screen controls (A4), which only a native build shows. The vault already na
 ## Chunks
 Measure: 2 open · 0 closed · next A3
 
-- [ ] **04.1** Android preview APKs through EAS Build, on demand from main · M · closes A1, A2 · needs 01.1 ·
+- [ ] **04.1** Android preview APKs through EAS Build, on demand from main · M · closes A1, A2 · needs — ·
   secrets EXPO_TOKEN
   - A2 needs the owner's phone: the build lands A1, then the close records the owner's check; under a loop with no
     one at hand, it parks A2's check in the `/oversight` queue and closes only when it is done.

@@ -92,10 +92,7 @@ just name the pieces/scores/songs/instrumentals (It's important that there's no 
 
 ## Acceptance
 
-- **A1** A book in the library plays, pauses, skips ±30 s and jumps to any chapter from the chapter list.
 - **A2** Speed runs 0.5× to 3× without pitch change; a sleep timer stops playback after N minutes or at chapter end.
-- **A3** Closing and reopening the app resumes the book within 1 s of where it stopped; bookmarks can be added, named
-  and jumped to.
 - **A4** Playback continues in the background and answers lock-screen / media-key controls.
 - **A5** A DRM-free M4B, MP3, M4A, WAV, FLAC or OGG/Opus file, or a folder of them, imports as one book with cover,
   title and author read from its tags.
@@ -229,26 +226,19 @@ Every question below is answered; none is open. Elsewhere in the plan, "Open que
    no emotions on its card (A21).
 
 ## Chunks
-Measure: 24 open · 3 closed · next A28
+Measure: 22 open · 5 closed · next A28
 
 Build order follows the owner's two-part v1, and the lines below are in that order. **Part 1, the player:** 01.1,
 01.6, 01.3, 01.5, 01.7: the player, then real books in it, then the second layer, its mixer and the soundscapes it
 plays. **Part 2, moods and named pieces:** 01.2, then 01.4. **After v1:** 01.9 (a study), then 01.10 (play the
 pieces). Ids keep the order they were written in. The app itself (Expo at the repo root, the gates) is spec 02.
 
-- [ ] **01.1** The player: library, playback, chapters, speed, sleep timer, bookmarks, resume, background and
-  lock-screen controls · L · closes A1, A2, A3, A4 · needs —
-  - Built in the layout spec 03 settles (`design/layouts/DECISION.md`, `plan/bearings.md` Layout).
-  - Opens one local file to have something to play; 01.6 brings real imports.
-  - Open questions 1 is answered: a cross-platform phone app, with the web for development.
-  - Prior work: the local branch `chunk-01.1-player` (unpushed, npm) holds a first build of this chunk. Start
-    from it: take its `src/` onto spec 02's app, on pnpm, rather than writing the player again.
 - [ ] **01.6** Your own books: DRM-free imports, tags and covers, chapter detection and editing · L ·
-  closes A5, A6, A7 · needs 01.1
+  closes A5, A6, A7 · needs —
   - Files and folders; Audible's path as Open questions 2 settled it: (a) and (c), a clear import note for
     AAX/AAXC, no decryption and no Audible integration in v1.
   - The import screen and its AAX/AAXC note as `design/layouts/DECISION.md` draws them (`plan/bearings.md` Layout).
-- [ ] **01.3** The second audio layer on the narration's clock · M · closes A8, A9 · needs 01.1
+- [ ] **01.3** The second audio layer on the narration's clock · M · closes A8, A9 · needs —
   - Chapter-boundary crossfades, looping, independent of the narration's speed. It plays a test loop until 01.7's
     soundscapes exist.
   - Its soundscape line sits in the playing chapter's expanded row (`plan/bearings.md` Layout).
@@ -290,3 +280,9 @@ pieces). Ids keep the order they were written in. The app itself (Expo at the re
     `AUDIOFOCUS_GAIN`; Expo needs `doNotMix` for lock-screen controls, so this is a mode the listener turns on,
     never the default. Automatic chapter following is out (iOS has no API; Android's notification access is unclear).
   - Music apps join only through plain links (01.11): no SDK, MusicKit or remote control.
+- [ ] **01.15** Device pass for the player: background, lock screen and native speed on a real phone · S ·
+  closes A2, A4 · needs 04.1
+  - The owner's check on 04.1's preview APK (screen off, lock-screen and media-key play, pause and 30 s skips)
+    closes A4; A2's native 3x follows the owner's answer on the 2x cap (plan/AUDIT.md).
+  - Native lock-screen seeks run inside expo-audio and skip the player's sleep retarget; once 01.6 brings in-file
+    chapters, retarget an End of chapter timer on those seeks too.

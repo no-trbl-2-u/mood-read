@@ -158,11 +158,11 @@ Measure: 17 open · 0 closed · next A18
 - [ ] **05.3** The scorer names catalog pieces only, and re-matches books scored before v2 · M · closes A3 ·
   needs 01.2, 05.2
 - [ ] **05.6** The download manager: queue, pause and resume, retry, Wi-Fi only, storage meter · M · closes A6 ·
-  needs 01.1
+  needs —
 - [ ] **05.4** One button builds and pre-downloads a book's playlist · M · closes A4, A5 · needs 01.10, 05.3, 05.6
 - [ ] **05.7** Library management: remove a download, keep the book; shared pieces survive deletion · M ·
   closes A7, A8 · needs 01.6, 05.4
-- [ ] **05.5** Credits, off to the side in the library's overflow menu · S · closes A12 · needs 05.1, 01.1
+- [ ] **05.5** Credits, off to the side in the library's overflow menu · S · closes A12 · needs 05.1
 - [ ] **05.8** Browse and search LibriVox, and download a book into the library · L · closes A9 · needs 01.6, 05.6
 - [ ] **05.9** Score public-domain books from their own text · M · closes A10 · needs 01.2, 05.8
 - [ ] **05.10** Pre-scored books and their moods in Browse · M · closes A11 · needs 05.9
