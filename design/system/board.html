@@ -1,0 +1,400 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<title>Mood Read — design system board</title>
+<!-- Display faces are all SIL OFL 1.1 from Google Fonts. Offline, the board falls back to system fonts. -->
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Bricolage+Grotesque:wght@400;700;800&family=Anton&family=Space+Mono:wght@400;700&family=Syne:wght@700;800&display=swap" rel="stylesheet">
+<style>
+*{box-sizing:border-box;}
+html,body{margin:0;padding:0;background:#050409;color:#fbf8ff;
+  font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,Helvetica,Arial,sans-serif;}
+header.page{padding:24px 40px;border-bottom:3px solid #fbf8ff;}
+header.page h1{margin:0 0 6px;font-size:26px;}
+header.page p{margin:0;font-size:13px;color:#c4bad6;max-width:1500px;line-height:19px;}
+.board{display:flex;gap:40px;padding:40px;align-items:flex-start;width:max-content;}
+.opt{width:900px;border-radius:28px;padding:32px;background:var(--bg);color:var(--text);position:relative;
+  border:3px solid var(--edge);}
+.opt h2{margin:0;font-family:var(--display);font-weight:800;font-size:56px;line-height:58px;letter-spacing:-1.5px;}
+.opt h2 .two{color:var(--pop);}
+.opt .tag{margin:8px 0 22px;font-size:15px;color:var(--muted);line-height:21px;height:42px;}
+.opt h3{margin:26px 0 10px;font-size:12px;letter-spacing:1.5px;text-transform:uppercase;color:var(--muted);}
+.rec{position:absolute;top:-18px;right:28px;background:var(--accent);color:var(--onAccent);font-weight:800;
+  font-size:15px;padding:8px 16px;border:3px solid var(--ink);border-radius:999px;transform:rotate(4deg);
+  box-shadow:4px 4px 0 var(--pop);}
+.sw{display:grid;grid-template-columns:repeat(9,1fr);gap:8px;}
+.sw div{height:74px;border-radius:12px;border:2px solid var(--edge);padding:6px;font-size:10px;line-height:12px;
+  display:flex;flex-direction:column;justify-content:flex-end;font-weight:700;}
+.sw.emo{grid-template-columns:repeat(8,1fr);margin-top:8px;}
+.sw.emo div{color:var(--ink);}
+.type div{margin:0 0 6px;}
+.t-display{font-family:var(--display);font-size:44px;line-height:46px;font-weight:800;letter-spacing:-1px;}
+.t-title{font-family:var(--display);font-size:30px;line-height:34px;font-weight:800;}
+.t-heading{font-family:var(--display);font-size:20px;line-height:24px;font-weight:800;}
+.t-body{font-family:var(--body);font-size:16px;line-height:22px;}
+.t-label{font-family:var(--body);font-size:14px;line-height:18px;font-weight:700;}
+.t-caption{font-family:var(--body);font-size:13px;line-height:18px;color:var(--muted);}
+.spec{font-size:11px;color:var(--muted);font-family:Consolas,monospace;margin-left:8px;font-weight:400;letter-spacing:0;}
+.chips{display:flex;flex-wrap:wrap;gap:14px 12px;padding:6px 4px;}
+.chip{display:inline-block;padding:6px 14px;font-size:14px;font-weight:800;color:var(--ink);font-family:var(--body);}
+.chip.unscored{background:transparent;color:var(--muted);}
+.btns{display:flex;gap:22px;align-items:center;flex-wrap:wrap;}
+.btn{font-family:var(--body);font-size:16px;font-weight:800;padding:13px 22px;}
+.row{border-radius:var(--rlg);padding:14px 16px;margin-bottom:12px;background:var(--surface);border:1px solid var(--border);}
+.row .t{font-weight:700;font-size:16px;display:flex;align-items:center;gap:8px;}
+.row .m{font-size:13px;color:var(--muted);margin-top:2px;}
+.row.playing{background:var(--raised);}
+.row .chips{margin-top:10px;}
+.icons{display:flex;gap:16px;align-items:center;}
+.icons svg{width:30px;height:30px;stroke:var(--text);fill:none;stroke-width:2.5;stroke-linecap:round;stroke-linejoin:round;}
+.icons .ic{display:flex;flex-direction:column;align-items:center;font-size:10px;color:var(--muted);gap:4px;}
+.voice{border-radius:18px;padding:16px 18px;background:var(--surface);}
+.voice div{display:flex;gap:12px;font-size:14px;line-height:20px;padding:5px 0;border-bottom:1px dashed var(--border);}
+.voice div:last-child{border-bottom:0;}
+.voice b{flex:0 0 150px;color:var(--muted);font-weight:700;font-size:12px;}
+.voice span.locked{color:var(--accent);}
+.motion{font-size:13px;line-height:20px;color:var(--text);}
+.motion code{font-family:Consolas,monospace;color:var(--accent);}
+.cost{margin-top:22px;font-size:13px;line-height:19px;color:var(--muted);border-top:2px solid var(--border);padding-top:12px;height:96px;}
+
+/* Option A: acid sticker (Recommended). Values mirror src/ui/theme.ts. */
+.a{--bg:#0e0b14;--surface:#1a1524;--raised:#262035;--text:#fbf8ff;--muted:#c4bad6;--accent:#c6ff3d;--onAccent:#0e0b14;
+  --pop:#ff4fa3;--ink:#0e0b14;--edge:#fbf8ff;--border:#3a3150;--focus:#4de8ff;--danger:#ff7a7a;--rlg:22px;
+  --display:"Bricolage Grotesque",-apple-system,"Segoe UI",sans-serif;--body:-apple-system,"Segoe UI",Roboto,sans-serif;}
+.a .chip{border:2px solid var(--ink);border-radius:999px;box-shadow:3px 3px 0 var(--edge);}
+.a .chip.unscored{border:2px dashed var(--muted);box-shadow:none;}
+.a .btn{border-radius:999px;border:3px solid var(--ink);}
+.a .btn.primary{background:var(--accent);color:var(--onAccent);box-shadow:4px 4px 0 var(--pop);}
+.a .btn.secondary{background:transparent;color:var(--text);border-color:var(--edge);}
+.a .btn.focus{outline:2px solid var(--focus);outline-offset:4px;}
+.a .row.playing{border-left:6px solid var(--accent);box-shadow:6px 6px 0 var(--pop);}
+
+/* Option B: zine collage. */
+.b{--bg:#121010;--surface:#1e1a19;--raised:#2b2523;--text:#f6efe4;--muted:#c9bcab;--accent:#ff5a1f;--onAccent:#121010;
+  --pop:#5b86ff;--ink:#121010;--edge:#f6efe4;--border:#3d3431;--focus:#ffe600;--danger:#ff8a80;--rlg:2px;
+  --display:"Anton",Impact,"Arial Narrow",sans-serif;--body:"Space Mono",Consolas,monospace;}
+.b h2{font-weight:400;text-transform:uppercase;letter-spacing:0;}
+.b .t-display,.b .t-title,.b .t-heading{font-weight:400;text-transform:uppercase;letter-spacing:0;}
+.b .chip{border-radius:0;border:0;box-shadow:none;padding:6px 12px;text-transform:uppercase;font-size:13px;
+  clip-path:polygon(0 8%,4% 0,96% 6%,100% 0,98% 92%,100% 100%,3% 94%,0 100%);}
+.b .chip.unscored{border:2px dashed var(--muted);clip-path:none;}
+.b .btn{border-radius:0;border:3px solid var(--edge);text-transform:uppercase;}
+.b .btn.primary{background:var(--accent);color:var(--onAccent);border-color:var(--ink);box-shadow:-5px 5px 0 var(--edge);}
+.b .btn.secondary{background:transparent;color:var(--text);}
+.b .btn.focus{outline:3px solid var(--focus);outline-offset:4px;}
+.b .row{background:var(--surface) repeating-linear-gradient(0deg,transparent 0 3px,rgba(255,255,255,.03) 3px 4px);}
+.b .row.playing{border:2px solid var(--edge);transform:rotate(-0.8deg);box-shadow:-6px 6px 0 var(--accent);}
+
+/* Option C: y2k chrome. */
+.c{--bg:#0a0c14;--surface:#151a28;--raised:#20283b;--text:#f2f6ff;--muted:#aeb9d0;--accent:#d9e3f5;--onAccent:#0a0c14;
+  --pop:#ff4fd8;--ink:#0a0c14;--edge:#d9e3f5;--border:#2c3550;--focus:#7dfcff;--danger:#ff8fa3;--rlg:28px;
+  --display:"Syne",-apple-system,"Segoe UI",sans-serif;--body:-apple-system,"Segoe UI",Roboto,sans-serif;}
+.c h2 .two{background:linear-gradient(90deg,#ff4fd8,#7dfcff);-webkit-background-clip:text;background-clip:text;color:transparent;}
+.c .chip{border-radius:999px;border:1.5px solid rgba(255,255,255,.7);
+  background-image:linear-gradient(180deg,rgba(255,255,255,.55),rgba(255,255,255,0) 55%);box-shadow:0 0 14px rgba(125,252,255,.35);}
+.c .chip.unscored{border:2px dashed var(--muted);background-image:none;box-shadow:none;}
+.c .btn{border-radius:999px;border:1.5px solid rgba(255,255,255,.8);}
+.c .btn.primary{background:linear-gradient(180deg,#ffffff,#b9c6dc 50%,#8e9cb6 51%,#e6edf8);color:var(--onAccent);
+  box-shadow:0 0 18px rgba(255,79,216,.5);}
+.c .btn.secondary{background:transparent;color:var(--text);}
+.c .btn.focus{outline:2px solid var(--focus);outline-offset:4px;}
+.c .row.playing{border:1.5px solid var(--edge);box-shadow:0 0 24px rgba(125,252,255,.25);}
+footer.page{padding:0 40px 40px;font-size:12px;color:#c4bad6;max-width:2900px;line-height:18px;}
+</style>
+</head>
+<body>
+<header class="page">
+  <h1>Mood Read — design system board (spec 06, chunk 06.1)</h1>
+  <p>Three options inside the owner's direction, full gen z chaotic: clashing saturated hues, oversized display type,
+  sticker-like chips, playful motion and voice. Dark only. Every text pair drawn here clears WCAG 2.2 AA; emotion
+  chips always carry their label. Same fake chapter content as spec 03's boards (invented moods, not real scoring).
+  Option A is Recommended and its values are the ones in <code>src/ui/theme.ts</code>.</p>
+</header>
+<div class="board">
+
+<!-- ============================== A ============================== -->
+<section class="opt a">
+  <div class="rec">Recommended</div>
+  <h2>Acid <span class="two">sticker</span></h2>
+  <p class="tag">Near-black violet ground, acid lime against hot pink, eight loud emotion hues. Chips are die-cut
+  stickers: ink outline, off-white hard shadow, a few degrees of tilt. Solid fills only.</p>
+
+  <h3>Palette</h3>
+  <div class="sw">
+    <div style="background:#0e0b14">background #0e0b14</div>
+    <div style="background:#1a1524">surface #1a1524</div>
+    <div style="background:#262035">raised #262035</div>
+    <div style="background:#fbf8ff;color:#0e0b14">text #fbf8ff</div>
+    <div style="background:#c4bad6;color:#0e0b14">muted #c4bad6</div>
+    <div style="background:#c6ff3d;color:#0e0b14">accent #c6ff3d</div>
+    <div style="background:#ff4fa3;color:#0e0b14">pop #ff4fa3</div>
+    <div style="background:#4de8ff;color:#0e0b14">focus #4de8ff</div>
+    <div style="background:#ff7a7a;color:#0e0b14">danger #ff7a7a</div>
+  </div>
+  <div class="sw emo">
+    <div style="background:#ff6a3d">tension</div><div style="background:#6f93ff">sorrow</div>
+    <div style="background:#4de8ff">wonder</div><div style="background:#ffe03d">joy</div>
+    <div style="background:#c77dff">dread</div><div style="background:#5dffb0">calm</div>
+    <div style="background:#ff6fb5">romance</div><div style="background:#ffb22e">triumph</div>
+  </div>
+
+  <h3>Type: Bricolage Grotesque (OFL 1.1) display, system body</h3>
+  <div class="type">
+    <div class="t-display">Chapter 7 hits<span class="spec">display 44/46 800</span></div>
+    <div class="t-title">Your shelf<span class="spec">title 30/34 800</span></div>
+    <div class="t-heading">Named piece<span class="spec">heading 20/24 800</span></div>
+    <div class="t-body">A plain sentence a listener reads at arm's length, on the move.<span class="spec">body 16/22 400</span></div>
+    <div class="t-label">Speed 1.5x<span class="spec">label 14/18 700</span></div>
+    <div class="t-caption">12 ch · resuming Ch.7<span class="spec">caption 13/18 400</span></div>
+  </div>
+
+  <h3>Chips, buttons, rows</h3>
+  <div class="chips">
+    <span class="chip" style="background:#ff6a3d;transform:rotate(-3deg)">Tension 70%</span>
+    <span class="chip" style="background:#6f93ff;transform:rotate(2deg)">Sorrow 40%</span>
+    <span class="chip" style="background:#4de8ff;transform:rotate(-1.5deg)">Wonder 80%</span>
+    <span class="chip" style="background:#ffe03d;transform:rotate(3deg)">Joy 60%</span>
+    <span class="chip" style="background:#c77dff;transform:rotate(-2deg)">Dread 30%</span>
+    <span class="chip" style="background:#5dffb0;transform:rotate(1deg)">Calm 50%</span>
+    <span class="chip" style="background:#ff6fb5;transform:rotate(-3deg)">Romance 20%</span>
+    <span class="chip" style="background:#ffb22e;transform:rotate(2deg)">Triumph 90%</span>
+    <span class="chip unscored">Unscored</span>
+  </div>
+  <div class="btns" style="margin:18px 0 20px">
+    <span class="btn primary">Import a book</span>
+    <span class="btn secondary">Learn more</span>
+    <span class="btn primary focus">Focused</span>
+  </div>
+  <div class="row"><div class="t">Ch. 6 — Pig and Pepper</div><div class="m">14:02</div>
+    <div class="chips"><span class="chip" style="background:#ff6a3d;transform:rotate(-3deg)">Tension 70%</span>
+    <span class="chip" style="background:#ffe03d;transform:rotate(2deg)">Joy 40%</span></div></div>
+  <div class="row playing"><div class="t">Ch. 7 — A Mad Tea-Party
+    <svg viewBox="0 0 24 24" width="18" height="18" style="fill:#c6ff3d;stroke:#c6ff3d;stroke-width:2.5;stroke-linejoin:round"><polygon points="6 3 20 12 6 21 6 3"/></svg></div>
+    <div class="m">4:12 of 18:40</div>
+    <div class="chips"><span class="chip" style="background:#4de8ff;transform:rotate(-1.5deg)">Wonder 80%</span>
+    <span class="chip" style="background:#ff6fb5;transform:rotate(3deg)">Romance 20%</span>
+    <span class="chip" style="background:#c77dff;transform:rotate(-2deg)">Dread 30%</span></div>
+    <div class="t-heading" style="margin-top:10px">Clockwork Garden</div><div class="m">A. Composer · score</div></div>
+  <div class="row"><div class="t">Ch. 8 — The Queen's Croquet-Ground <span class="chip unscored" style="margin-left:auto">Unscored</span></div></div>
+
+  <h3>Icons: Lucide, stroke 2.5, 24 px</h3>
+  <div class="icons">
+    <div class="ic"><svg viewBox="0 0 24 24"><polygon points="6 3 20 12 6 21 6 3"/></svg>play</div>
+    <div class="ic"><svg viewBox="0 0 24 24"><rect x="14" y="4" width="4" height="16" rx="1"/><rect x="6" y="4" width="4" height="16" rx="1"/></svg>pause</div>
+    <div class="ic"><svg viewBox="0 0 24 24"><path d="m15 18-6-6 6-6"/></svg>chevron-left</div>
+    <div class="ic"><svg viewBox="0 0 24 24"><circle cx="12" cy="12" r="1"/><circle cx="12" cy="5" r="1"/><circle cx="12" cy="19" r="1"/></svg>ellipsis-vertical</div>
+    <div class="ic"><svg viewBox="0 0 24 24"><path d="m19 21-7-4-7 4V5a2 2 0 0 1 2-2h10a2 2 0 0 1 2 2v16z"/></svg>bookmark</div>
+    <div class="ic"><svg viewBox="0 0 24 24"><rect width="18" height="11" x="3" y="11" rx="2" ry="2"/><path d="M7 11V7a5 5 0 0 1 10 0v4"/></svg>lock</div>
+    <div class="ic"><svg viewBox="0 0 24 24"><path d="M5 12h14"/><path d="M12 5v14"/></svg>plus</div>
+  </div>
+
+  <h3>Motion</h3>
+  <div class="motion">Row expand <code>260 ms bounce (0.34,1.56,0.64,1)</code> · state crossfade <code>180 ms standard</code> ·
+  chip pop-in <code>220 ms bounce</code> · press <code>90 ms to 0.94 scale</code> · sheet <code>240 ms</code> ·
+  chapter audio crossfade <code>2000 ms</code>. Reduce motion: every visual duration 0, no bounce.</div>
+
+  <h3>Voice</h3>
+  <div class="voice">
+    <div><b>Library title</b><span>Your shelf</span></div>
+    <div><b>Empty library</b><span>Nothing on the shelf yet. Add an audiobook you own and we'll read the room, chapter by chapter.</span></div>
+    <div><b>Primary button</b><span>Import a book</span></div>
+    <div><b>Unscored chip</b><span class="locked">Unscored</span></div>
+    <div><b>Unscored, expanded</b><span>Not enough is written about this chapter to read its mood. It stays unscored. We never guess.</span></div>
+    <div><b>Cap reached</b><span class="locked">Waiting: this month's scoring budget is spent.</span></div>
+    <div><b>First scoring</b><span class="locked">Only the title, author and chapter titles are sent.</span></div>
+    <div><b>Open error</b><span>That file won't open. Pick an audio file you own: MP3, M4A, M4B, WAV, FLAC or OGG.</span></div>
+    <div><b>Finished</b><span>Finished. That's the whole book.</span></div>
+  </div>
+  <div class="cost">Build cost: lowest. Solid fills, borders and React Native <code>boxShadow</code> with zero blur,
+  plus a static rotate; no images, no gradient library, no new dependency beyond the icon set and one font.
+  Highest contrast of the three (the faintest text pair is 8.46:1).</div>
+</section>
+
+<!-- ============================== B ============================== -->
+<section class="opt b">
+  <h2>Zine <span class="two">collage</span></h2>
+  <p class="tag">Warm black, photocopy cream, safety orange and cobalt, highlighter yellow focus. Labels are torn
+  tape; rows are photocopied strips knocked off square.</p>
+
+  <h3>Palette</h3>
+  <div class="sw">
+    <div style="background:#121010">background #121010</div>
+    <div style="background:#1e1a19">surface #1e1a19</div>
+    <div style="background:#2b2523">raised #2b2523</div>
+    <div style="background:#f6efe4;color:#121010">text #f6efe4</div>
+    <div style="background:#c9bcab;color:#121010">muted #c9bcab</div>
+    <div style="background:#ff5a1f;color:#121010">accent #ff5a1f</div>
+    <div style="background:#5b86ff;color:#121010">pop #5b86ff</div>
+    <div style="background:#ffe600;color:#121010">focus #ffe600</div>
+    <div style="background:#ff8a80;color:#121010">danger #ff8a80</div>
+  </div>
+  <div class="sw emo">
+    <div style="background:#ff5a1f">tension</div><div style="background:#7aa2ff">sorrow</div>
+    <div style="background:#b8f24a">wonder</div><div style="background:#ffe600">joy</div>
+    <div style="background:#d68cff">dread</div><div style="background:#7fe0c2">calm</div>
+    <div style="background:#ff8fc7">romance</div><div style="background:#ffc04d">triumph</div>
+  </div>
+
+  <h3>Type: Anton (OFL 1.1) display, Space Mono (OFL 1.1) body</h3>
+  <div class="type">
+    <div class="t-display">Chapter 7 hits<span class="spec">display 44/46</span></div>
+    <div class="t-title">Your shelf<span class="spec">title 30/34</span></div>
+    <div class="t-heading">Named piece<span class="spec">heading 20/24</span></div>
+    <div class="t-body">A plain sentence a listener reads at arm's length, on the move.<span class="spec">body 16/22</span></div>
+    <div class="t-label">Speed 1.5x<span class="spec">label 14/18 700</span></div>
+    <div class="t-caption">12 ch · resuming Ch.7<span class="spec">caption 13/18</span></div>
+  </div>
+
+  <h3>Chips, buttons, rows</h3>
+  <div class="chips">
+    <span class="chip" style="background:#ff5a1f;transform:rotate(-3deg)">Tension 70%</span>
+    <span class="chip" style="background:#7aa2ff;transform:rotate(2deg)">Sorrow 40%</span>
+    <span class="chip" style="background:#b8f24a;transform:rotate(-1.5deg)">Wonder 80%</span>
+    <span class="chip" style="background:#ffe600;transform:rotate(3deg)">Joy 60%</span>
+    <span class="chip" style="background:#d68cff;transform:rotate(-2deg)">Dread 30%</span>
+    <span class="chip" style="background:#7fe0c2;transform:rotate(1deg)">Calm 50%</span>
+    <span class="chip" style="background:#ff8fc7;transform:rotate(-3deg)">Romance 20%</span>
+    <span class="chip" style="background:#ffc04d;transform:rotate(2deg)">Triumph 90%</span>
+    <span class="chip unscored">Unscored</span>
+  </div>
+  <div class="btns" style="margin:18px 0 20px">
+    <span class="btn primary">Import a book</span>
+    <span class="btn secondary">Learn more</span>
+    <span class="btn primary focus">Focused</span>
+  </div>
+  <div class="row"><div class="t">Ch. 6 — Pig and Pepper</div><div class="m">14:02</div>
+    <div class="chips"><span class="chip" style="background:#ff5a1f;transform:rotate(-3deg)">Tension 70%</span>
+    <span class="chip" style="background:#ffe600;transform:rotate(2deg)">Joy 40%</span></div></div>
+  <div class="row playing"><div class="t">Ch. 7 — A Mad Tea-Party</div><div class="m">4:12 of 18:40</div>
+    <div class="chips"><span class="chip" style="background:#b8f24a;transform:rotate(-1.5deg)">Wonder 80%</span>
+    <span class="chip" style="background:#ff8fc7;transform:rotate(3deg)">Romance 20%</span>
+    <span class="chip" style="background:#d68cff;transform:rotate(-2deg)">Dread 30%</span></div>
+    <div class="t-heading" style="margin-top:10px">Clockwork Garden</div><div class="m">A. Composer · score</div></div>
+  <div class="row"><div class="t">Ch. 8 — The Queen's Croquet-Ground <span class="chip unscored" style="margin-left:auto">Unscored</span></div></div>
+
+  <h3>Icons: Lucide, stroke 2, 24 px</h3>
+  <div class="icons" style="--x:0">
+    <div class="ic"><svg viewBox="0 0 24 24" style="stroke-width:2"><polygon points="6 3 20 12 6 21 6 3"/></svg>play</div>
+    <div class="ic"><svg viewBox="0 0 24 24" style="stroke-width:2"><rect x="14" y="4" width="4" height="16" rx="1"/><rect x="6" y="4" width="4" height="16" rx="1"/></svg>pause</div>
+    <div class="ic"><svg viewBox="0 0 24 24" style="stroke-width:2"><path d="m15 18-6-6 6-6"/></svg>chevron-left</div>
+    <div class="ic"><svg viewBox="0 0 24 24" style="stroke-width:2"><circle cx="12" cy="12" r="1"/><circle cx="12" cy="5" r="1"/><circle cx="12" cy="19" r="1"/></svg>ellipsis-vertical</div>
+    <div class="ic"><svg viewBox="0 0 24 24" style="stroke-width:2"><path d="m19 21-7-4-7 4V5a2 2 0 0 1 2-2h10a2 2 0 0 1 2 2v16z"/></svg>bookmark</div>
+  </div>
+
+  <h3>Motion</h3>
+  <div class="motion">Row expand <code>200 ms</code> stepped (3 frames, a flipbook jerk) · state swap <code>hard cut</code> ·
+  chip slap-in <code>120 ms</code> with a 4 deg overshoot · chapter audio crossfade <code>2000 ms</code>.</div>
+
+  <h3>Voice</h3>
+  <div class="voice">
+    <div><b>Library title</b><span>THE STACK</span></div>
+    <div><b>Empty library</b><span>Nothing pasted in yet. Bring a book you own.</span></div>
+    <div><b>Primary button</b><span>IMPORT A BOOK</span></div>
+    <div><b>Unscored chip</b><span class="locked">UNSCORED</span></div>
+    <div><b>Cap reached</b><span class="locked">Waiting: this month's scoring budget is spent.</span></div>
+    <div><b>First scoring</b><span class="locked">Only the title, author and chapter titles are sent.</span></div>
+    <div><b>Open error</b><span>That file won't open. MP3, M4A, M4B, WAV, FLAC or OGG only.</span></div>
+  </div>
+  <div class="cost">Build cost: medium-high. Torn edges and photocopy grain need image assets or masked views;
+  all-caps condensed display and a monospace body hurt reading at 200% text size and in screen-reader spelling
+  of caps. Body text is a monospace, wider per line.</div>
+</section>
+
+<!-- ============================== C ============================== -->
+<section class="opt c">
+  <h2>Y2K <span class="two">chrome</span></h2>
+  <p class="tag">Blue-black, liquid chrome silver as the accent, holo pink and cyan glows. Bubble pills with a gloss
+  highlight; rows float in a soft halo.</p>
+
+  <h3>Palette</h3>
+  <div class="sw">
+    <div style="background:#0a0c14">background #0a0c14</div>
+    <div style="background:#151a28">surface #151a28</div>
+    <div style="background:#20283b">raised #20283b</div>
+    <div style="background:#f2f6ff;color:#0a0c14">text #f2f6ff</div>
+    <div style="background:#aeb9d0;color:#0a0c14">muted #aeb9d0</div>
+    <div style="background:#d9e3f5;color:#0a0c14">accent #d9e3f5</div>
+    <div style="background:#ff4fd8;color:#0a0c14">pop #ff4fd8</div>
+    <div style="background:#7dfcff;color:#0a0c14">focus #7dfcff</div>
+    <div style="background:#ff8fa3;color:#0a0c14">danger #ff8fa3</div>
+  </div>
+  <div class="sw emo">
+    <div style="background:#ff7a59">tension</div><div style="background:#8fb0ff">sorrow</div>
+    <div style="background:#7dfcff">wonder</div><div style="background:#fff27a">joy</div>
+    <div style="background:#c9a2ff">dread</div><div style="background:#9dffd0">calm</div>
+    <div style="background:#ff9be6">romance</div><div style="background:#ffd36b">triumph</div>
+  </div>
+
+  <h3>Type: Syne (OFL 1.1) display, system body</h3>
+  <div class="type">
+    <div class="t-display">Chapter 7 hits<span class="spec">display 44/46 800</span></div>
+    <div class="t-title">Your shelf<span class="spec">title 30/34 800</span></div>
+    <div class="t-heading">Named piece<span class="spec">heading 20/24 800</span></div>
+    <div class="t-body">A plain sentence a listener reads at arm's length, on the move.<span class="spec">body 16/22 400</span></div>
+    <div class="t-label">Speed 1.5x<span class="spec">label 14/18 700</span></div>
+    <div class="t-caption">12 ch · resuming Ch.7<span class="spec">caption 13/18 400</span></div>
+  </div>
+
+  <h3>Chips, buttons, rows</h3>
+  <div class="chips">
+    <span class="chip" style="background-color:#ff7a59">Tension 70%</span>
+    <span class="chip" style="background-color:#8fb0ff">Sorrow 40%</span>
+    <span class="chip" style="background-color:#7dfcff">Wonder 80%</span>
+    <span class="chip" style="background-color:#fff27a">Joy 60%</span>
+    <span class="chip" style="background-color:#c9a2ff">Dread 30%</span>
+    <span class="chip" style="background-color:#9dffd0">Calm 50%</span>
+    <span class="chip" style="background-color:#ff9be6">Romance 20%</span>
+    <span class="chip" style="background-color:#ffd36b">Triumph 90%</span>
+    <span class="chip unscored">Unscored</span>
+  </div>
+  <div class="btns" style="margin:18px 0 20px">
+    <span class="btn primary">Import a book</span>
+    <span class="btn secondary">Learn more</span>
+    <span class="btn primary focus">Focused</span>
+  </div>
+  <div class="row"><div class="t">Ch. 6 — Pig and Pepper</div><div class="m">14:02</div>
+    <div class="chips"><span class="chip" style="background-color:#ff7a59">Tension 70%</span>
+    <span class="chip" style="background-color:#fff27a">Joy 40%</span></div></div>
+  <div class="row playing"><div class="t">Ch. 7 — A Mad Tea-Party</div><div class="m">4:12 of 18:40</div>
+    <div class="chips"><span class="chip" style="background-color:#7dfcff">Wonder 80%</span>
+    <span class="chip" style="background-color:#ff9be6">Romance 20%</span>
+    <span class="chip" style="background-color:#c9a2ff">Dread 30%</span></div>
+    <div class="t-heading" style="margin-top:10px">Clockwork Garden</div><div class="m">A. Composer · score</div></div>
+  <div class="row"><div class="t">Ch. 8 — The Queen's Croquet-Ground <span class="chip unscored" style="margin-left:auto">Unscored</span></div></div>
+
+  <h3>Icons: Lucide, stroke 1.75, 24 px</h3>
+  <div class="icons">
+    <div class="ic"><svg viewBox="0 0 24 24" style="stroke-width:1.75"><polygon points="6 3 20 12 6 21 6 3"/></svg>play</div>
+    <div class="ic"><svg viewBox="0 0 24 24" style="stroke-width:1.75"><rect x="14" y="4" width="4" height="16" rx="1"/><rect x="6" y="4" width="4" height="16" rx="1"/></svg>pause</div>
+    <div class="ic"><svg viewBox="0 0 24 24" style="stroke-width:1.75"><path d="m15 18-6-6 6-6"/></svg>chevron-left</div>
+    <div class="ic"><svg viewBox="0 0 24 24" style="stroke-width:1.75"><circle cx="12" cy="12" r="1"/><circle cx="12" cy="5" r="1"/><circle cx="12" cy="19" r="1"/></svg>ellipsis-vertical</div>
+    <div class="ic"><svg viewBox="0 0 24 24" style="stroke-width:1.75"><path d="m19 21-7-4-7 4V5a2 2 0 0 1 2-2h10a2 2 0 0 1 2 2v16z"/></svg>bookmark</div>
+  </div>
+
+  <h3>Motion</h3>
+  <div class="motion">Row expand <code>320 ms</code> with a shimmer sweep · state crossfade <code>240 ms</code> ·
+  chip float-in <code>300 ms</code> · chapter audio crossfade <code>2000 ms</code>.</div>
+
+  <h3>Voice</h3>
+  <div class="voice">
+    <div><b>Library title</b><span>my shelf</span></div>
+    <div><b>Empty library</b><span>it's giving empty. add a book you own.</span></div>
+    <div><b>Primary button</b><span>import a book</span></div>
+    <div><b>Unscored chip</b><span class="locked">unscored</span></div>
+    <div><b>Cap reached</b><span class="locked">Waiting: this month's scoring budget is spent.</span></div>
+    <div><b>First scoring</b><span class="locked">Only the title, author and chapter titles are sent.</span></div>
+    <div><b>Open error</b><span>that file won't open. try MP3, M4A, M4B, WAV, FLAC or OGG.</span></div>
+  </div>
+  <div class="cost">Build cost: high. Chrome gloss and glows need a gradient library (a new dependency) and
+  blurred shadows that cost on Android; a silver accent reads as "disabled" beside real greys, and gloss over
+  chip fills lowers label contrast where the highlight lands.</div>
+</section>
+
+</div>
+<footer class="page">Icons drawn on this board are Lucide (ISC licence, Copyright (c) 2026 Lucide Icons and
+Contributors; Feather-derived icons MIT, Copyright (c) 2013-present Cole Bemis), recoloured and resized as the licence
+allows. Fonts named are SIL Open Font License 1.1, loaded from Google Fonts for this board only. Lines marked in the
+accent colour in each voice sheet are fixed copy: truthful wording the playful voice never rewrites.</footer>
+</body>
+</html>
