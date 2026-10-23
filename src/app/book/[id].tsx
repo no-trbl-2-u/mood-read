@@ -80,7 +80,6 @@ export default function BookScreen() {
           book={book}
           currentIndex={chapter?.index}
           position={position}
-          sleep={p.sleep}
           layer={layer}
           onJump={(i) => active && p.jumpToChapter(i)}
           edits={
@@ -102,6 +101,7 @@ export default function BookScreen() {
         book={book}
         chapter={chapter}
         position={position}
+        sleep={active ? p.sleep : null}
         playing={active && p.playing}
         loading={!active || p.loading}
         onToggle={() => active && p.toggle()}

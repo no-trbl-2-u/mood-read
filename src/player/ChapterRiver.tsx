@@ -1,22 +1,22 @@
-// The chapter river: every chapter of the book in one scrolling list, which is also the chapter list. In 01.1 a
-// row shows its title and duration; the playing row is expanded in place and marked with a heavy left rule and a
-// play mark. The expanded row carries the bed's "Layer" line, its soundscape for this chapter (01.3), and the
-// chapter edits (01.6, spec 01 A6): rename, merge with the next chapter, and split at the current position. Emotion
-// chips, the mood card, the mixer and lock marks join from 01.4, 01.5 and 01.7.
+// The chapter river: every chapter of the book in one scrolling list, which is also the chapter list. A row shows
+// its title; the playing row is expanded in place and marked with a heavy left rule and a play mark. The river
+// carries no times: every time readout sits in the mini player (A28). The expanded row carries the bed's "Layer"
+// line, its soundscape for this chapter (01.3), and the chapter edits (01.6, spec 01 A6): rename, merge with the
+// next chapter, and split at the current position. Emotion chips, the mood card, the mixer and lock marks join from
+// 01.4, 01.5 and 01.7.
 import { useEffect, useRef, useState } from "react";
 import { Pressable, ScrollView, StyleSheet, Text, TextInput, View, type ScrollViewInstance } from "react-native";
 
 import { canMergeWithNext, canSplitAt } from "@/lib/chapters";
-import { formatDuration } from "@/lib/format-duration";
-import type { Book, SleepTimer } from "@/lib/types";
+import type { Book } from "@/lib/types";
 import { PlayGlyph } from "@/ui/glyphs";
 import { colors, spacing } from "@/ui/theme";
 
 export function ChapterRiver(props: {
   book: Book;
   currentIndex: number | undefined;
+  /** The playing position in the book, in seconds: where Split cuts. Never shown here (A28). */
   position: number;
-  sleep: SleepTimer | null;
   /** The bed's sound for the playing chapter, by name; null when the layer is off. */
   layer: string | null;
   onJump: (index: number) => void;
@@ -41,7 +41,6 @@ export function ChapterRiver(props: {
     <ScrollView ref={scroll} testID="chapter-river" contentContainerStyle={styles.content}>
       {props.book.chapters.map((c) => {
         const playing = c.index === current;
-        const length = c.end - c.start;
         return (
           <View
             key={c.index}
@@ -73,16 +72,9 @@ export function ChapterRiver(props: {
                   </View>
                 )}
               </View>
-              <Text style={styles.duration}>{formatDuration(length)}</Text>
             </Pressable>
             {playing && (
               <View style={styles.expanded} testID="chapter-expanded">
-                <Text style={styles.muted} testID="chapter-elapsed">
-                  {formatDuration(props.position - c.start)} of {formatDuration(length)}
-                </Text>
-                {props.sleep?.kind === "chapterEnd" && props.sleep.chapterIndex === c.index && (
-                  <Text style={styles.muted}>Sleep timer: stops at the end of this chapter.</Text>
-                )}
                 <View style={styles.layerLine} testID="layer-line">
                   <Text style={styles.label}>Layer</Text>
                   <Text style={styles.layerChip} testID="layer-sound">
@@ -95,7 +87,6 @@ export function ChapterRiver(props: {
                     title={c.title}
                     canMerge={canMergeWithNext(props.book.chapters, c.index)}
                     canSplit={canSplitAt(props.book.chapters, props.position)}
-                    splitLabel={formatDuration(props.position - c.start)}
                     onRename={(t) => props.edits!.rename(c.index, t)}
                     onMerge={() => props.edits!.mergeWithNext(c.index)}
                     onSplit={() => props.edits!.splitAt(props.position)}
@@ -121,7 +112,6 @@ function ChapterEdits(props: {
   title: string;
   canMerge: boolean;
   canSplit: boolean;
-  splitLabel: string;
   onRename: (title: string) => void;
   onMerge: () => void;
   onSplit: () => void;
@@ -155,7 +145,7 @@ function ChapterEdits(props: {
       <EditButton testID="chapter-merge" label="Merge with next" onPress={props.onMerge} disabled={!props.canMerge} />
       <EditButton
         testID="chapter-split"
-        label={`Split at ${props.splitLabel}`}
+        label="Split here"
         a11yLabel="Split this chapter at the current position"
         onPress={props.onSplit}
         disabled={!props.canSplit}
@@ -196,10 +186,8 @@ const styles = StyleSheet.create({
   title: { flexShrink: 1, color: colors.text, fontSize: 15 },
   titlePlaying: { fontWeight: "700" },
   mark: { paddingTop: 1 },
-  duration: { color: colors.textMuted, fontSize: 13, fontVariant: ["tabular-nums"] },
   expanded: { marginTop: spacing.sm, gap: spacing.xs },
-  muted: { color: colors.textMuted, fontSize: 13 },
-  layerLine: { flexDirection: "row", alignItems: "center", gap: spacing.sm, marginTop: spacing.xs },
+  layerLine: { flexDirection: "row", alignItems: "center", gap: spacing.sm },
   label: { color: colors.textMuted, fontSize: 13 },
   layerChip: {
     color: colors.text,

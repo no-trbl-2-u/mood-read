@@ -100,7 +100,7 @@ test.describe("your own books", () => {
     // Split at the current position (30 s in).
     await expect(page.getByTestId("chapter-split")).toBeDisabled();
     await page.getByTestId("mini-fwd-30").click();
-    await expect(page.getByTestId("chapter-split")).toHaveText("Split at 0:30");
+    await expect(page.getByTestId("chapter-split")).toHaveText("Split here");
     await page.getByTestId("chapter-split").click();
     await expect(page.getByText("Ch.2 — The Landing, part 2")).toBeVisible();
     await expect(page.getByTestId("chapter-row-0")).toContainText("0:30");

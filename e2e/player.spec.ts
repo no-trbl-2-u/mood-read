@@ -154,8 +154,10 @@ test.describe("the player", () => {
     await importBook(page);
     await expect(page.getByText("Ch.1 — Test Book - 01")).toBeVisible();
     await expect(page.getByText("Ch.2 — Test Book - 02")).toBeVisible();
-    await expect(page.getByTestId("chapter-row-0")).toContainText("0:35");
-    await expect(page.getByTestId("chapter-row-1")).toContainText("0:40");
+    // A28: the times sit in the mini player, beside its bar; the river carries none.
+    await expect(page.getByTestId("mini-time")).toHaveText("0:00 / 0:35");
+    await expect(page.getByTestId("mini-sleep")).toHaveCount(0);
+    await expect(page.getByTestId("chapter-river")).not.toContainText(/\d:\d\d/);
 
     await page.getByTestId("mini-play-pause").click();
     await expect.poll(async () => (await narration(page)).paused).toBe(false);
@@ -169,9 +171,13 @@ test.describe("the player", () => {
     await expectTime(page, 0);
     await page.getByTestId("mini-fwd-30").click();
     await expectTime(page, 30);
+    await expect(page.getByTestId("mini-time")).toHaveText("0:30 / 0:35");
     await page.getByTestId("mini-fwd-30").click();
     await expectChapter(page, 1);
     await expectTime(page, 60 - CH1);
+    await expect(page.getByTestId("mini-elapsed")).toHaveText(/0:2[45]/);
+    await expect(page.getByTestId("mini-length")).toHaveText("0:40");
+    await expect(page.getByTestId("chapter-river")).not.toContainText(/\d:\d\d/);
     await page.getByTestId("mini-back-30").click();
     await expectChapter(page, 0);
     await expectTime(page, 30);
@@ -224,8 +230,11 @@ test.describe("the player", () => {
     }
     await page.getByTestId("sleep-15").click();
     await expect(page.getByTestId("sleep-status")).toHaveText(/Stops in 1[45]:\d\d\./);
+    // A28: the mini player docked under the sheet reads what is left of the timer.
+    await expect(page.getByTestId("mini-sleep")).toHaveText("Sleep · 15 min");
     await page.getByTestId("sleep-off").click();
     await expect(page.getByTestId("sleep-status")).toHaveCount(0);
+    await expect(page.getByTestId("mini-sleep")).toHaveCount(0);
 
     // End of chapter: 5 s before chapter 1 ends, at 3x, playback stops at the chapter's end, parked on chapter 2.
     await page.getByTestId("speed-3").click();
@@ -236,7 +245,8 @@ test.describe("the player", () => {
     await page.getByTestId("sleep-chapter").click();
     await expect(page.getByTestId("sleep-status")).toHaveText("Stops at the end of Ch.1.");
     await page.getByTestId("sheet-done").click();
-    await expect(page.getByText("Sleep timer: stops at the end of this chapter.")).toBeVisible();
+    await expect(page.getByTestId("mini-sleep")).toHaveText("Sleep · end of chapter");
+    await expect(page.getByTestId("chapter-river")).not.toContainText(/sleep/i);
     await page.getByTestId("mini-play-pause").click();
     await expectChapter(page, 1);
     await expect.poll(async () => (await narration(page)).paused, { timeout: 10_000 }).toBe(true);
