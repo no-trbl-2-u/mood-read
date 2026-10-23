@@ -1,0 +1,183 @@
+/* Mood Read, v2 layout pass (spec 06, chunk 06.2). Shared frame styles for the v2 boards.
+   Option B's frame format (a single horizontal row of 390x844 phone frames, a caption under each), drawn in the
+   design system's option A, acid sticker. Every value below mirrors src/ui/theme.ts; nothing here is new. */
+*{box-sizing:border-box;}
+:root{
+  --bg:#0e0b14;--surface:#1a1524;--raised:#262035;--text:#fbf8ff;--muted:#c4bad6;--accent:#c6ff3d;
+  --onAccent:#0e0b14;--pop:#ff4fa3;--ink:#0e0b14;--edge:#fbf8ff;--border:#3a3150;--focus:#4de8ff;
+  --scrim:rgba(5,4,9,.72);--danger:#ff7a7a;
+  --tension:#ff6a3d;--sorrow:#6f93ff;--wonder:#4de8ff;--joy:#ffe03d;--dread:#c77dff;--calm:#5dffb0;
+  --romance:#ff6fb5;--triumph:#ffb22e;
+  --display:"Bricolage Grotesque",-apple-system,"Segoe UI",sans-serif;
+  --body:-apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,Helvetica,Arial,sans-serif;
+}
+html,body{margin:0;padding:0;background:#050409;color:var(--text);font-family:var(--body);}
+header.page{height:112px;padding:18px 36px;border-bottom:3px solid var(--edge);display:flex;flex-direction:column;
+  justify-content:center;}
+header.page h1{margin:0 0 6px;font-family:var(--display);font-weight:800;font-size:26px;letter-spacing:-.5px;}
+header.page h1 .two{color:var(--pop);}
+header.page p{margin:0;font-size:13px;line-height:19px;color:var(--muted);max-width:1320px;height:38px;overflow:hidden;}
+.board{display:flex;flex-direction:row;flex-wrap:nowrap;gap:36px;padding:36px;align-items:flex-start;width:max-content;}
+figure.frame{margin:0;width:390px;display:flex;flex-direction:column;align-items:center;}
+figcaption{margin-top:12px;height:54px;line-height:18px;font-size:13px;font-weight:700;text-align:center;
+  overflow:hidden;color:var(--text);}
+figcaption .route{display:block;font-family:Consolas,monospace;font-weight:400;color:var(--accent);font-size:12px;}
+
+/* The phone */
+.phone{width:390px;height:844px;border:3px solid var(--edge);border-radius:34px;background:var(--bg);overflow:hidden;
+  position:relative;display:flex;flex-direction:column;}
+.statusbar{flex:0 0 24px;display:flex;align-items:center;justify-content:space-between;padding:0 20px;font-size:11px;
+  font-weight:700;color:var(--text);}
+.body{flex:1 1 auto;position:relative;overflow:hidden;display:flex;flex-direction:column;}
+.scroll{flex:1 1 auto;overflow:hidden;padding:0 16px;}
+.pad{padding:16px;}
+
+/* Top bar: back, title, trailing actions; optional action band (the river's second row) */
+.topbar{flex:0 0 auto;border-bottom:1px solid var(--border);background:var(--bg);}
+.topbar .line{min-height:52px;display:flex;align-items:center;gap:8px;padding:0 10px 0 12px;}
+.topbar .title{flex:1;min-width:0;font-family:var(--display);font-weight:800;font-size:20px;line-height:24px;
+  white-space:nowrap;overflow:hidden;text-overflow:ellipsis;}
+.topbar .title.big{font-size:30px;line-height:34px;letter-spacing:-.5px;}
+.topbar .back{display:flex;align-items:center;gap:2px;font-size:15px;color:var(--text);white-space:nowrap;}
+.iconbtn{width:44px;height:44px;display:flex;align-items:center;justify-content:center;border-radius:999px;
+  position:relative;flex:0 0 44px;}
+.iconbtn.on{outline:2px solid var(--edge);background:var(--raised);}
+.iconbtn .badge{position:absolute;top:4px;right:3px;min-width:18px;height:18px;border-radius:999px;background:var(--pop);
+  color:var(--onAccent);font-size:11px;font-weight:800;display:flex;align-items:center;justify-content:center;
+  border:2px solid var(--ink);padding:0 4px;}
+.textbtn{min-height:44px;display:flex;align-items:center;padding:0 8px;font-size:14px;font-weight:700;white-space:nowrap;}
+.band{padding:10px 14px 12px;display:flex;flex-direction:column;gap:8px;border-top:1px dashed var(--border);}
+.band .lineup{display:flex;align-items:center;gap:10px;}
+
+/* Type */
+.display{font-family:var(--display);font-weight:800;font-size:44px;line-height:46px;letter-spacing:-1px;}
+.display .two,.t-title .two{color:var(--pop);}
+.t-title{font-family:var(--display);font-weight:800;font-size:30px;line-height:34px;letter-spacing:-.5px;}
+.t-heading{font-family:var(--display);font-weight:800;font-size:20px;line-height:24px;}
+.t-body{font-size:16px;line-height:22px;}
+.t-label{font-size:14px;line-height:18px;font-weight:700;}
+.t-caption{font-size:13px;line-height:18px;color:var(--muted);}
+.muted{color:var(--muted);}
+.accent{color:var(--accent);}
+.danger{color:var(--danger);}
+.section{font-size:13px;line-height:18px;font-weight:700;color:var(--muted);margin:18px 0 8px;}
+
+/* Covers: solid blocks, a title word on them (boards only; real covers come from tags or LibriVox) */
+.cover{border-radius:8px;border:2px solid var(--ink);display:flex;align-items:flex-end;padding:4px;
+  font-family:var(--display);font-weight:800;font-size:10px;line-height:11px;color:var(--onAccent);position:relative;
+  flex:0 0 auto;overflow:hidden;}
+.cover.dim{opacity:.45;}
+.cover .mark{position:absolute;top:4px;left:4px;width:20px;height:20px;border-radius:999px;background:var(--accent);
+  border:2px solid var(--ink);display:flex;align-items:center;justify-content:center;}
+
+/* Chips */
+.chips{display:flex;flex-wrap:wrap;gap:8px 8px;padding:2px 2px 4px;}
+.chip{display:inline-flex;align-items:center;gap:4px;padding:4px 11px;font-size:14px;line-height:18px;font-weight:700;
+  color:var(--onAccent);border:2px solid var(--ink);border-radius:999px;box-shadow:3px 3px 0 var(--edge);
+  white-space:nowrap;}
+.chip.sm{font-size:12px;line-height:15px;padding:3px 9px;box-shadow:2px 2px 0 var(--edge);}
+.chip.unscored{background:transparent;color:var(--muted);border:2px dashed var(--muted);box-shadow:none;transform:none!important;}
+.chip.sel{background:var(--surface);color:var(--text);border-color:var(--edge);box-shadow:none;}
+.chip.sel.on{background:var(--accent);color:var(--onAccent);border-color:var(--ink);box-shadow:3px 3px 0 var(--edge);}
+.t0{transform:rotate(-3deg);}.t1{transform:rotate(2deg);}.t2{transform:rotate(-1.5deg);}
+.t3{transform:rotate(3deg);}.t4{transform:rotate(-2deg);}.t5{transform:rotate(1deg);}
+.tension{background:var(--tension);}.sorrow{background:var(--sorrow);}.wonder{background:var(--wonder);}
+.joy{background:var(--joy);}.dread{background:var(--dread);}.calm{background:var(--calm);}
+.romance{background:var(--romance);}.triumph{background:var(--triumph);}
+/* State chips (v2): a book's state on a library or Browse row. Labels always present. */
+.state{display:inline-flex;align-items:center;gap:4px;padding:2px 9px;font-size:12px;line-height:16px;font-weight:700;
+  border-radius:999px;white-space:nowrap;border:2px solid var(--ink);}
+.state.scored{background:var(--accent);color:var(--onAccent);box-shadow:2px 2px 0 var(--edge);}
+.state.finished{background:var(--pop);color:var(--onAccent);box-shadow:2px 2px 0 var(--edge);}
+.state.scoring{background:var(--surface);color:var(--accent);border-color:var(--accent);}
+.state.off{background:transparent;color:var(--muted);border:2px dashed var(--muted);}
+
+/* Buttons */
+.btn{display:flex;align-items:center;justify-content:center;gap:8px;min-height:48px;padding:0 22px;border-radius:999px;
+  font-size:16px;font-weight:800;white-space:nowrap;}
+.btn.primary{background:var(--accent);color:var(--onAccent);border:3px solid var(--ink);box-shadow:4px 4px 0 var(--pop);}
+.btn.secondary{background:transparent;color:var(--text);border:3px solid var(--edge);}
+.btn.small{min-height:44px;padding:0 16px;font-size:14px;}
+.btn.block{width:100%;}
+.btn.disabled{opacity:.45;}
+
+/* Rows */
+.lrow{display:flex;align-items:center;gap:14px;padding:10px 0;border-bottom:1px solid var(--border);}
+.lrow .txt{flex:1;min-width:0;display:flex;flex-direction:column;gap:2px;}
+.lrow .tt{font-size:16px;line-height:21px;font-weight:700;}
+.lrow .au{font-size:14px;line-height:18px;}
+.lrow .meta{display:flex;align-items:center;gap:8px;flex-wrap:wrap;}
+.card{background:var(--surface);border:1px solid var(--border);border-radius:22px;padding:12px 14px;margin-bottom:10px;}
+
+/* The river */
+.rrow{background:var(--surface);border:1px solid var(--border);border-radius:22px;padding:11px 14px;margin:0 0 9px;}
+.rrow .t{display:flex;align-items:center;gap:8px;font-size:15px;line-height:20px;font-weight:700;}
+.rrow .t .grow{flex:1;min-width:0;}
+.rrow.locked .t{color:var(--muted);font-weight:400;}
+.rrow.playing{background:var(--raised);border-left:6px solid var(--accent);box-shadow:6px 6px 0 var(--pop);margin-right:6px;}
+.rrow .chips{margin-top:8px;}
+.rule{border-top:1px solid var(--border);margin:10px 0;}
+
+/* Progress bars */
+.bar{height:8px;border-radius:999px;background:var(--bg);border:2px solid var(--edge);overflow:hidden;}
+.bar.thin{height:6px;border-width:1.5px;}
+.bar .fill{height:100%;background:var(--accent);}
+.bar .fill.pop{background:var(--pop);}
+.bar .fill.paused{background:var(--muted);}
+.bar.split{display:flex;}
+
+/* Docked mini player (DECISION.md "The docked mini player"; A28 puts every time readout here) */
+.mini{flex:0 0 72px;border-top:2px solid var(--edge);display:flex;align-items:center;gap:8px;padding:0 10px;
+  background:var(--surface);}
+.mini .mid{flex:1;min-width:0;display:flex;flex-direction:column;gap:4px;}
+.mini .ct{font-size:14px;font-weight:700;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;}
+.mini .times{font-size:12px;color:var(--muted);}
+.mini .play{width:48px;height:48px;border-radius:999px;background:var(--accent);border:3px solid var(--ink);
+  box-shadow:3px 3px 0 var(--pop);display:flex;align-items:center;justify-content:center;flex:0 0 48px;}
+
+/* Menus (a popover anchored to its button; not a sheet: no handle, no scrim) */
+.menu{position:absolute;z-index:5;background:var(--raised);border:2px solid var(--edge);border-radius:22px;
+  box-shadow:6px 6px 0 var(--pop);padding:6px;min-width:228px;}
+.menu .mi{display:flex;align-items:center;gap:12px;min-height:48px;padding:0 12px;border-radius:14px;font-size:16px;
+  font-weight:700;}
+.menu .mi .sub{font-size:12px;font-weight:400;color:var(--muted);}
+.menu .mi.focus{outline:2px solid var(--focus);outline-offset:-2px;}
+.menu .sep{border-top:1px solid var(--border);margin:4px 8px;}
+.menu .mi.danger{color:var(--danger);}
+
+/* Inputs, switches, settings rows */
+.field{display:flex;align-items:center;gap:10px;min-height:48px;padding:0 14px;border-radius:14px;background:var(--surface);
+  border:2px solid var(--edge);font-size:16px;}
+.field.focused{outline:2px solid var(--focus);outline-offset:2px;}
+.srow{display:flex;align-items:center;gap:12px;min-height:56px;padding:8px 14px;border-bottom:1px solid var(--border);}
+.srow:last-child{border-bottom:0;}
+.srow .txt{flex:1;min-width:0;display:flex;flex-direction:column;gap:2px;}
+.srow .tt{font-size:16px;line-height:21px;font-weight:700;}
+.srow .val{font-size:14px;color:var(--muted);white-space:nowrap;}
+.srow.disabled .tt,.srow.disabled .val{opacity:.55;}
+.group{background:var(--surface);border:1px solid var(--border);border-radius:22px;overflow:hidden;}
+.switch{width:52px;height:32px;border-radius:999px;border:2px solid var(--edge);background:var(--bg);position:relative;
+  flex:0 0 52px;}
+.switch::after{content:"";position:absolute;top:3px;left:3px;width:22px;height:22px;border-radius:999px;background:var(--muted);}
+.switch.on{background:var(--accent);border-color:var(--ink);}
+.switch.on::after{left:23px;background:var(--onAccent);}
+.switch.off-label{font-size:0;}
+
+/* Lines and notes */
+.note{display:flex;align-items:flex-start;gap:10px;background:var(--surface);border:2px solid var(--edge);border-radius:14px;
+  padding:10px 6px 10px 12px;font-size:14px;line-height:19px;}
+.note .grow{flex:1;}
+.scrim{position:absolute;inset:0;background:var(--scrim);z-index:4;}
+svg.i{width:24px;height:24px;stroke:currentColor;fill:none;stroke-width:2.5;stroke-linecap:round;stroke-linejoin:round;flex:0 0 auto;}
+svg.i.s{width:18px;height:18px;}
+svg.i.fill{fill:currentColor;}
+
+/* The options frame: small sketches of a layout choice, one marked as taken */
+.opt{border:2px solid var(--border);border-radius:18px;padding:10px 12px;margin-bottom:12px;background:var(--surface);}
+.opt.taken{border-color:var(--accent);box-shadow:4px 4px 0 var(--pop);}
+.opt h4{margin:0 0 6px;font-size:14px;line-height:18px;}
+.opt p{margin:6px 0 0;font-size:12px;line-height:16px;color:var(--muted);}
+.opt .tag{display:inline-block;font-size:11px;font-weight:800;padding:1px 8px;border-radius:999px;background:var(--accent);
+  color:var(--onAccent);border:2px solid var(--ink);margin-left:6px;transform:rotate(3deg);}
+.sketch{background:var(--bg);border:1px solid var(--border);border-radius:12px;padding:8px;}
+footer.page{padding:0 36px 36px;font-size:12px;line-height:18px;color:var(--muted);max-width:2400px;}

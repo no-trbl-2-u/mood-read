@@ -1,0 +1,368 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<title>Mood Read — v2 layout pass, board 1: the library and the screens off its menu</title>
+<!-- Bricolage Grotesque is SIL OFL 1.1, from Google Fonts, for the board only. Offline, system fonts stand in. -->
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Bricolage+Grotesque:wght@400;700;800&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="./frames.css">
+</head>
+<body>
+<header class="page">
+  <h1>v2 layout pass, board 1: <span class="two">the shelf and its menu</span></h1>
+  <p>Option B, chapter river, drawn in the design system's option A, acid sticker. Two-level stack, no tab bar: the
+  library is the root and its overflow menu is the one home for Browse, Downloads, Settings and Credits. Inline over
+  sheets; menus are popovers, never sheets. Books, readers, moods and pieces are invented for the board, not real data.</p>
+</header>
+<div class="board">
+
+<!-- 1. Library, empty, with Browse -->
+<figure class="frame" id="v2-lib-empty"><div class="phone">
+  <div class="statusbar"><span>9:41</span><span>100%</span></div>
+  <div class="topbar"><div class="line">
+    <div class="title big">Your shelf</div>
+    <div class="iconbtn"><i data-i="ellipsis-vertical"></i></div>
+  </div></div>
+  <div class="body" style="padding:0 28px;justify-content:center;gap:14px;">
+    <div class="display">Nothing on the <span class="two">shelf</span> yet.</div>
+    <div class="t-body muted">Add an audiobook you own, or grab a free one, and we'll read the room, chapter by chapter.</div>
+    <div class="chips" style="margin:6px 0 10px;">
+      <span class="chip wonder t0">Wonder</span><span class="chip joy t1">Joy</span><span class="chip dread t2">Dread</span>
+    </div>
+    <div class="btn primary block"><i data-i="plus"></i>Import a book</div>
+    <div class="btn secondary block"><i data-i="search"></i>Browse free books</div>
+    <div class="t-caption" style="text-align:center;">Free books are public-domain recordings from LibriVox.</div>
+  </div>
+</div><figcaption>Library, empty: "Import a book" beside "Browse free books"<span class="route">/</span></figcaption></figure>
+
+<!-- 2. Library, with books: every row state -->
+<figure class="frame" id="v2-lib-rows"><div class="phone">
+  <div class="statusbar"><span>9:41</span><span>100%</span></div>
+  <div class="topbar"><div class="line">
+    <div class="title big">Your shelf</div>
+    <div class="textbtn"><i data-i="plus" class="s"></i>&nbsp;Import</div>
+    <div class="iconbtn"><i data-i="ellipsis-vertical"></i><span class="badge">2</span></div>
+  </div></div>
+  <div class="scroll">
+    <div class="lrow">
+      <div class="cover" style="width:52px;height:70px;background:var(--wonder);"><span class="mark"><i data-i="play" class="s fill" style="width:10px;height:10px;"></i></span>Alice</div>
+      <div class="txt"><div class="tt">Alice's Adventures in Wonderland</div><div class="au">Lewis Carroll</div>
+        <div class="meta"><span class="t-caption">12 ch · resuming Ch.7</span><span class="state scored">Scored</span></div></div>
+      <div class="iconbtn"><i data-i="ellipsis-vertical"></i></div>
+    </div>
+    <div class="lrow">
+      <div class="cover" style="width:52px;height:70px;background:var(--sorrow);">Ferry</div>
+      <div class="txt"><div class="tt">The Moonlit Ferry</div><div class="au">Ines Calloway</div>
+        <div class="meta"><span class="t-caption">10 ch · not started</span><span class="state scoring">Scoring 40%</span></div></div>
+      <div class="iconbtn"><i data-i="ellipsis-vertical"></i></div>
+    </div>
+    <div class="lrow">
+      <div class="cover" style="width:52px;height:70px;background:var(--joy);">Pride</div>
+      <div class="txt"><div class="tt">Pride and Prejudice</div><div class="au">Jane Austen</div>
+        <div class="meta"><span class="t-caption accent" style="font-weight:700;">Downloading 62%</span><span class="t-caption">412 of 664 MB</span></div>
+        <div class="bar thin" style="margin-top:4px;"><div class="fill" style="width:62%;"></div></div></div>
+      <div class="iconbtn"><i data-i="ellipsis-vertical"></i></div>
+    </div>
+    <div class="lrow">
+      <div class="cover dim" style="width:52px;height:70px;background:var(--dread);">Static</div>
+      <div class="txt"><div class="tt">Static &amp; Marrow</div><div class="au">R. Okonkwo</div>
+        <div class="meta"><span class="t-caption">21 ch · 3% done</span><span class="state off"><i data-i="cloud-off" class="s" style="width:14px;height:14px;"></i>Not on device</span></div></div>
+      <div class="iconbtn"><i data-i="ellipsis-vertical"></i></div>
+    </div>
+    <div class="lrow">
+      <div class="cover" style="width:52px;height:70px;background:var(--calm);">Frank.</div>
+      <div class="txt"><div class="tt">Frankenstein</div><div class="au">Mary Shelley</div>
+        <div class="meta"><span class="t-caption">24 ch</span><span class="state scored">Scored</span><span class="state finished"><i data-i="check" class="s" style="width:14px;height:14px;"></i>Finished</span></div></div>
+      <div class="iconbtn"><i data-i="ellipsis-vertical"></i></div>
+    </div>
+    <div class="t-caption" style="margin-top:14px;">Row states, left to right on the meta line: where the file is (downloading, not on device), then scoring (Scoring 40%, Scored), then Finished. A book with no state shows only its line.</div>
+  </div>
+</div><figcaption>Library, with books: every row state<span class="route">/</span></figcaption></figure>
+
+<!-- 3. Library, overflow menu open -->
+<figure class="frame" id="v2-lib-menu"><div class="phone">
+  <div class="statusbar"><span>9:41</span><span>100%</span></div>
+  <div class="topbar"><div class="line">
+    <div class="title big">Your shelf</div>
+    <div class="textbtn"><i data-i="plus" class="s"></i>&nbsp;Import</div>
+    <div class="iconbtn on"><i data-i="ellipsis-vertical"></i><span class="badge">2</span></div>
+  </div></div>
+  <div class="scroll" style="opacity:.55;">
+    <div class="lrow"><div class="cover" style="width:52px;height:70px;background:var(--wonder);">Alice</div>
+      <div class="txt"><div class="tt">Alice's Adventures in Wonderland</div><div class="au">Lewis Carroll</div>
+      <div class="meta"><span class="t-caption">12 ch · resuming Ch.7</span><span class="state scored">Scored</span></div></div></div>
+    <div class="lrow"><div class="cover" style="width:52px;height:70px;background:var(--sorrow);">Ferry</div>
+      <div class="txt"><div class="tt">The Moonlit Ferry</div><div class="au">Ines Calloway</div>
+      <div class="meta"><span class="t-caption">10 ch · not started</span><span class="state scoring">Scoring 40%</span></div></div></div>
+    <div class="lrow"><div class="cover" style="width:52px;height:70px;background:var(--joy);">Pride</div>
+      <div class="txt"><div class="tt">Pride and Prejudice</div><div class="au">Jane Austen</div>
+      <div class="meta"><span class="t-caption">Downloading 62%</span></div></div></div>
+  </div>
+  <div class="menu" style="top:72px;right:10px;width:250px;">
+    <div class="mi focus"><i data-i="search"></i>Browse free books</div>
+    <div class="mi"><i data-i="download"></i><span style="flex:1">Downloads</span><span class="state scoring">2 running</span></div>
+    <div class="mi"><i data-i="settings"></i>Settings</div>
+    <div class="sep"></div>
+    <div class="mi"><i data-i="heart"></i>Credits</div>
+  </div>
+</div><figcaption>Library, overflow menu: Browse, Downloads, Settings, Credits<span class="route">/ (menu)</span></figcaption></figure>
+
+<!-- 4. Library, a row's menu -->
+<figure class="frame" id="v2-lib-row-menu"><div class="phone">
+  <div class="statusbar"><span>9:41</span><span>100%</span></div>
+  <div class="topbar"><div class="line">
+    <div class="title big">Your shelf</div>
+    <div class="textbtn"><i data-i="plus" class="s"></i>&nbsp;Import</div>
+    <div class="iconbtn"><i data-i="ellipsis-vertical"></i></div>
+  </div></div>
+  <div class="scroll">
+    <div class="lrow" style="background:var(--raised);border-radius:22px;padding:10px;margin:6px -10px 0;">
+      <div class="cover" style="width:52px;height:70px;background:var(--wonder);">Alice</div>
+      <div class="txt"><div class="tt">Alice's Adventures in Wonderland</div><div class="au">Lewis Carroll</div>
+      <div class="meta"><span class="t-caption">12 ch · resuming Ch.7</span><span class="state scored">Scored</span></div></div>
+      <div class="iconbtn on"><i data-i="ellipsis-vertical"></i></div></div>
+    <div style="opacity:.55;">
+    <div class="lrow"><div class="cover" style="width:52px;height:70px;background:var(--sorrow);">Ferry</div>
+      <div class="txt"><div class="tt">The Moonlit Ferry</div><div class="au">Ines Calloway</div></div></div>
+    <div class="lrow"><div class="cover" style="width:52px;height:70px;background:var(--joy);">Pride</div>
+      <div class="txt"><div class="tt">Pride and Prejudice</div><div class="au">Jane Austen</div></div></div>
+    <div class="lrow"><div class="cover dim" style="width:52px;height:70px;background:var(--dread);">Static</div>
+      <div class="txt"><div class="tt">Static &amp; Marrow</div><div class="au">R. Okonkwo</div></div></div>
+    </div>
+  </div>
+  <div class="menu" style="top:170px;right:10px;width:290px;">
+    <div class="mi"><i data-i="cloud-off"></i><div><div>Remove download</div><div class="sub">Frees 188 MB. Keeps your place, bookmarks, moods and mix.</div></div></div>
+    <div class="mi"><i data-i="check"></i>Mark finished</div>
+    <div class="sep"></div>
+    <div class="mi danger"><i data-i="trash-2"></i>Delete book</div>
+    <div style="padding:6px 12px 10px;">
+      <div class="t-label">Delete it for good?</div>
+      <div class="t-caption" style="margin:2px 0 10px;">Its place, bookmarks, moods and mix go too.</div>
+      <div style="display:flex;gap:10px;"><div class="btn primary small" style="background:var(--danger);">Delete book</div><div class="btn secondary small">Keep it</div></div>
+    </div>
+  </div>
+</div><figcaption>Library, a row's menu: Remove download, Mark finished, Delete book (asks once)<span class="route">/ (row menu)</span></figcaption></figure>
+
+<!-- 5. Browse -->
+<figure class="frame" id="v2-browse"><div class="phone">
+  <div class="statusbar"><span>9:41</span><span>100%</span></div>
+  <div class="topbar"><div class="line">
+    <div class="back"><i data-i="chevron-left"></i>Your shelf</div>
+    <div class="title" style="text-align:right;">Browse</div>
+  </div></div>
+  <div class="scroll" style="padding-top:12px;">
+    <div class="field focused"><i data-i="search" class="s muted"></i><span>carroll</span><span style="flex:1"></span><i data-i="x" class="s muted"></i></div>
+    <div class="t-caption" style="margin:8px 2px 4px;">Title, author or genre. Free public-domain recordings from LibriVox.</div>
+    <div class="lrow">
+      <div class="cover" style="width:52px;height:70px;background:var(--wonder);">Alice</div>
+      <div class="txt"><div class="tt">Alice's Adventures in Wonderland</div><div class="t-caption">Lewis Carroll · 2 h 54 min · 12 ch</div>
+        <div class="chips" style="margin-top:4px;"><span class="state scored">Scored</span><span class="chip sm wonder t0">Wonder 80%</span><span class="chip sm joy t1">Joy 60%</span></div>
+        <div class="t-caption"><i data-i="check" class="s" style="width:14px;height:14px;vertical-align:-2px;"></i> On your shelf</div></div>
+    </div>
+    <div class="lrow">
+      <div class="cover" style="width:52px;height:70px;background:var(--romance);">Glass</div>
+      <div class="txt"><div class="tt">Through the Looking-Glass</div><div class="t-caption">Lewis Carroll · 3 h 41 min · 12 ch</div>
+        <div class="chips" style="margin-top:4px;"><span class="state scored">Scored</span><span class="chip sm wonder t2">Wonder 70%</span><span class="chip sm tension t3">Tension 40%</span></div></div>
+    </div>
+    <div class="lrow">
+      <div class="cover" style="width:52px;height:70px;background:var(--triumph);">Snark</div>
+      <div class="txt"><div class="tt">The Hunting of the Snark</div><div class="t-caption">Lewis Carroll · 38 min · 8 ch</div></div>
+    </div>
+    <div class="lrow">
+      <div class="cover" style="width:52px;height:70px;background:var(--calm);">Sylvie</div>
+      <div class="txt"><div class="tt">Sylvie and Bruno</div><div class="t-caption">Lewis Carroll · 9 h 12 min · 25 ch</div></div>
+    </div>
+    <div class="lrow">
+      <div class="cover" style="width:52px;height:70px;background:var(--sorrow);">Phant.</div>
+      <div class="txt"><div class="tt">Phantasmagoria and Other Poems</div><div class="t-caption">Lewis Carroll · 1 h 20 min · 13 ch</div></div>
+    </div>
+  </div>
+</div><figcaption>Browse: search, results, moods on pre-scored rows (the book's, never a chapter's)<span class="route">/browse</span></figcaption></figure>
+
+<!-- 6. A LibriVox book, scored -->
+<figure class="frame" id="v2-book-scored"><div class="phone">
+  <div class="statusbar"><span>9:41</span><span>100%</span></div>
+  <div class="topbar"><div class="line">
+    <div class="back"><i data-i="chevron-left"></i>Browse</div>
+  </div></div>
+  <div class="scroll" style="padding-top:14px;">
+    <div style="display:flex;gap:14px;align-items:flex-end;">
+      <div class="cover" style="width:116px;height:156px;background:var(--romance);font-size:16px;line-height:17px;padding:8px;">Through the Looking-Glass</div>
+      <div style="display:flex;flex-direction:column;gap:4px;min-width:0;">
+        <div class="t-heading" style="font-size:24px;line-height:27px;">Through the Looking-Glass</div>
+        <div class="t-body">Lewis Carroll</div>
+        <div class="t-caption">Read by June Ashby and 6 other volunteers</div>
+        <div class="t-caption">3 h 41 min · 12 chapters · 168 MB</div>
+      </div>
+    </div>
+    <div class="section">The whole book's mood</div>
+    <div class="chips"><span class="state scored">Scored</span><span class="chip wonder t0">Wonder 70%</span><span class="chip tension t1">Tension 40%</span><span class="chip joy t2">Joy 30%</span></div>
+    <div class="t-caption" style="margin-top:4px;">Chapters stay a surprise until you reach them.</div>
+    <div class="btn primary block" style="margin-top:16px;"><i data-i="download"></i>Download</div>
+    <div class="t-caption" style="margin-top:8px;text-align:center;"><i data-i="wifi" class="s" style="width:14px;height:14px;vertical-align:-2px;"></i> Downloads on Wi-Fi only. Change it in Settings.</div>
+    <div class="section">Chapters</div>
+    <div class="card" style="padding:4px 14px;">
+      <div class="srow" style="min-height:44px;padding:6px 0;"><div class="txt"><div class="t-label">1. Looking-Glass House</div></div><span class="t-caption">21:10</span></div>
+      <div class="srow" style="min-height:44px;padding:6px 0;"><div class="txt"><div class="t-label">2. The Garden of Live Flowers</div></div><span class="t-caption">17:42</span></div>
+      <div class="srow" style="min-height:44px;padding:6px 0;"><div class="txt"><div class="t-label">3. Looking-Glass Insects</div></div><span class="t-caption">19:05</span></div>
+      <div class="srow" style="min-height:44px;padding:6px 0;"><div class="txt"><div class="t-label">4. Tweedledum and Tweedledee</div></div><span class="t-caption">22:31</span></div>
+    </div>
+  </div>
+</div><figcaption>A LibriVox book, scored: cover, readers, length, chapters, its overall emotions, "Download"<span class="route">/browse/[id]</span></figcaption></figure>
+
+<!-- 7. A LibriVox book, unscored, downloading -->
+<figure class="frame" id="v2-book-downloading"><div class="phone">
+  <div class="statusbar"><span>9:41</span><span>100%</span></div>
+  <div class="topbar"><div class="line">
+    <div class="back"><i data-i="chevron-left"></i>Browse</div>
+  </div></div>
+  <div class="scroll" style="padding-top:14px;">
+    <div style="display:flex;gap:14px;align-items:flex-end;">
+      <div class="cover" style="width:116px;height:156px;background:var(--triumph);font-size:16px;line-height:17px;padding:8px;">The Hunting of the Snark</div>
+      <div style="display:flex;flex-direction:column;gap:4px;min-width:0;">
+        <div class="t-heading" style="font-size:24px;line-height:27px;">The Hunting of the Snark</div>
+        <div class="t-body">Lewis Carroll</div>
+        <div class="t-caption">Read by Owen Pratt</div>
+        <div class="t-caption">38 min · 8 chapters · 36 MB</div>
+      </div>
+    </div>
+    <div class="section">The whole book's mood</div>
+    <div class="t-body muted">Not scored yet. Once it's on your shelf, "Score this book" reads its mood.</div>
+    <div class="card" style="margin-top:16px;">
+      <div style="display:flex;justify-content:space-between;align-items:baseline;"><span class="t-label accent">Downloading 38%</span><span class="t-caption">14 of 36 MB</span></div>
+      <div class="bar" style="margin:8px 0 12px;"><div class="fill" style="width:38%;"></div></div>
+      <div style="display:flex;gap:10px;"><div class="btn secondary small"><i data-i="pause" class="s"></i>Pause</div><div class="btn secondary small" style="border-color:transparent;text-decoration:underline;">See all downloads</div></div>
+    </div>
+    <div class="section">Chapters</div>
+    <div class="card" style="padding:4px 14px;">
+      <div class="srow" style="min-height:44px;padding:6px 0;"><div class="txt"><div class="t-label">1. The Landing</div></div><span class="t-caption">4:12</span></div>
+      <div class="srow" style="min-height:44px;padding:6px 0;"><div class="txt"><div class="t-label">2. The Bellman's Speech</div></div><span class="t-caption">5:03</span></div>
+      <div class="srow" style="min-height:44px;padding:6px 0;"><div class="txt"><div class="t-label">3. The Baker's Tale</div></div><span class="t-caption">4:47</span></div>
+    </div>
+  </div>
+</div><figcaption>A LibriVox book, unscored, downloading: progress replaces "Download"<span class="route">/browse/[id]</span></figcaption></figure>
+
+<!-- 8. Downloads -->
+<figure class="frame" id="v2-downloads"><div class="phone">
+  <div class="statusbar"><span>9:41</span><span>100%</span></div>
+  <div class="topbar"><div class="line">
+    <div class="back"><i data-i="chevron-left"></i>Your shelf</div>
+    <div class="title" style="text-align:right;">Downloads</div>
+  </div></div>
+  <div class="scroll" style="padding-top:12px;">
+    <div class="card">
+      <div style="display:flex;justify-content:space-between;align-items:baseline;"><span class="t-label">Storage</span><span class="t-caption">1.2 GB used · 21.4 GB free</span></div>
+      <div class="bar split" style="height:14px;margin:10px 0;"><div class="fill" style="width:92%;"></div><div class="fill pop" style="width:8%;"></div></div>
+      <div style="display:flex;gap:16px;" class="t-caption"><span><span class="state scored" style="padding:0 7px;">Books</span> 1.1 GB</span><span><span class="state finished" style="padding:0 7px;">Music</span> 96 MB</span></div>
+    </div>
+    <div class="t-caption" style="margin:2px 2px 0;"><i data-i="wifi" class="s" style="width:14px;height:14px;vertical-align:-2px;"></i> Downloads on Wi-Fi only. Change it in Settings.</div>
+    <div class="section">In the queue</div>
+    <div class="card">
+      <div style="display:flex;align-items:center;gap:10px;"><div style="flex:1;min-width:0;"><div class="t-label">Pride and Prejudice</div><div class="t-caption">Book · 62% · 412 of 664 MB</div></div><div class="btn secondary small"><i data-i="pause" class="s"></i>Pause</div></div>
+      <div class="bar thin" style="margin-top:8px;"><div class="fill" style="width:62%;"></div></div>
+    </div>
+    <div class="card">
+      <div style="display:flex;align-items:center;gap:10px;"><div style="flex:1;min-width:0;"><div class="t-label">Alice's Adventures in Wonderland</div><div class="t-caption">Playlist · 5 of 12 pieces · 41 of 96 MB</div></div><div class="btn secondary small"><i data-i="pause" class="s"></i>Pause</div></div>
+      <div class="bar thin" style="margin-top:8px;"><div class="fill pop" style="width:42%;"></div></div>
+    </div>
+    <div class="card">
+      <div style="display:flex;align-items:center;gap:10px;"><div style="flex:1;min-width:0;"><div class="t-label">The Hunting of the Snark</div><div class="t-caption">Book · paused at 38%</div></div><div class="btn secondary small"><i data-i="play" class="s"></i>Resume</div></div>
+      <div class="bar thin" style="margin-top:8px;"><div class="fill paused" style="width:38%;"></div></div>
+    </div>
+    <div class="card" style="border-color:var(--danger);">
+      <div style="display:flex;align-items:center;gap:10px;"><div style="flex:1;min-width:0;"><div class="t-label">Dracula</div><div class="t-caption danger">The connection dropped. Retry, or it tries again on its own in a minute.</div></div><div class="btn secondary small"><i data-i="rotate-cw" class="s"></i>Retry</div></div>
+    </div>
+    <div class="card"><div class="t-label">Through the Looking-Glass</div><div class="t-caption">Book · queued</div></div>
+  </div>
+</div><figcaption>Downloads: the queue with pause, resume, retry, and the storage meter<span class="route">/downloads</span></figcaption></figure>
+
+<!-- 9. Downloads, empty, web build -->
+<figure class="frame" id="v2-downloads-web"><div class="phone">
+  <div class="statusbar"><span>mood-read.pages.dev</span><span></span></div>
+  <div class="topbar"><div class="line">
+    <div class="back"><i data-i="chevron-left"></i>Your shelf</div>
+    <div class="title" style="text-align:right;">Downloads</div>
+  </div></div>
+  <div class="scroll" style="padding-top:12px;">
+    <div class="card">
+      <div style="display:flex;justify-content:space-between;align-items:baseline;"><span class="t-label">Storage</span><span class="t-caption">219 MB used in this browser</span></div>
+      <div class="bar split" style="height:14px;margin:10px 0;"><div class="fill" style="width:86%;"></div><div class="fill pop" style="width:14%;"></div></div>
+      <div style="display:flex;gap:16px;" class="t-caption"><span><span class="state scored" style="padding:0 7px;">Books</span> 188 MB</span><span><span class="state finished" style="padding:0 7px;">Music</span> 31 MB</span></div>
+    </div>
+    <div class="note" style="margin-top:4px;"><i data-i="hard-drive" class="s"></i><div class="grow">On the web, Mood Read keeps one book and its music offline. The phone app keeps your whole shelf.</div></div>
+    <div style="margin-top:110px;display:flex;flex-direction:column;align-items:center;gap:12px;text-align:center;">
+      <div class="display">All <span class="two">caught up.</span></div>
+      <div class="t-body muted">Nothing downloading. Free books are a search away.</div>
+      <div class="btn secondary"><i data-i="search"></i>Browse free books</div>
+    </div>
+  </div>
+</div><figcaption>Downloads, empty, on the web build: the one-book note<span class="route">/downloads</span></figcaption></figure>
+
+<!-- 10. Credits -->
+<figure class="frame" id="v2-credits"><div class="phone">
+  <div class="statusbar"><span>9:41</span><span>100%</span></div>
+  <div class="topbar"><div class="line">
+    <div class="back"><i data-i="chevron-left"></i>Your shelf</div>
+    <div class="title" style="text-align:right;">Credits</div>
+  </div></div>
+  <div class="scroll" style="padding-top:14px;">
+    <div class="t-title">Thanks, <span class="two">everyone.</span></div>
+    <div class="t-caption" style="margin-top:4px;">Every piece, sound and voice in Mood Read, and the license it plays under.</div>
+    <div class="section">Music</div>
+    <div class="group">
+      <div class="srow"><div class="txt"><div class="tt">Clockwork Garden</div><div class="t-caption">A. Composer · CC BY 4.0</div></div><span class="textbtn accent">Source <i data-i="external-link" class="s"></i></span></div>
+      <div class="srow"><div class="txt"><div class="tt">Low Tide Waltz</div><div class="t-caption">M. Reyes · CC0 1.0</div></div><span class="textbtn accent">Source <i data-i="external-link" class="s"></i></span></div>
+    </div>
+    <div class="section">Soundscapes</div>
+    <div class="group"><div class="srow"><div class="txt"><div class="tt">Rain, Hearth Fire, Night Wind, Tide, Static Hush, Low Café</div><div class="t-caption">Each with its source and license</div></div><i data-i="chevron-right" class="muted"></i></div></div>
+    <div class="section">LibriVox readers</div>
+    <div class="group"><div class="srow"><div class="txt"><div class="tt">Pride and Prejudice</div><div class="t-caption">Read by L. Marsh and 11 other volunteers · public domain</div></div></div></div>
+    <div class="section">Open-source notices</div>
+    <div class="group">
+      <div class="srow"><div class="txt"><div class="tt">Lucide icons · ISC</div>
+        <div class="t-caption" style="margin-top:4px;">Copyright (c) 2026 Lucide Icons and Contributors. Permission to use, copy, modify, and/or distribute this software for any purpose...</div></div><i data-i="chevron-left" class="muted" style="transform:rotate(-90deg);"></i></div>
+      <div class="srow"><div class="txt"><div class="tt">Feather icons · MIT</div></div><i data-i="chevron-right" class="muted"></i></div>
+      <div class="srow"><div class="txt"><div class="tt">All notices</div></div><i data-i="chevron-right" class="muted"></i></div>
+    </div>
+  </div>
+</div><figcaption>Credits: music, soundscapes, readers, notices (a notice opens inline)<span class="route">/credits</span></figcaption></figure>
+
+<!-- 11. Settings -->
+<figure class="frame" id="v2-settings"><div class="phone">
+  <div class="statusbar"><span>9:41</span><span>100%</span></div>
+  <div class="topbar"><div class="line">
+    <div class="back"><i data-i="chevron-left"></i>Your shelf</div>
+    <div class="title" style="text-align:right;">Settings</div>
+  </div></div>
+  <div class="scroll" style="padding-top:2px;">
+    <div class="section">Downloads</div>
+    <div class="group">
+      <div class="srow"><div class="txt"><div class="tt">Downloads on Wi-Fi only</div></div><div class="switch on"></div></div>
+      <div class="srow"><div class="txt"><div class="tt">Storage</div></div><span class="val">1.2 GB</span><i data-i="chevron-right" class="muted"></i></div>
+    </div>
+    <div class="section">Listening</div>
+    <div class="group">
+      <div class="srow"><div class="txt"><div class="tt">Companion mode</div><div class="t-caption">Plays Mood Read's soundscape beside another app. It arrives in a later update; your choice is saved now.</div></div><div class="switch"></div></div>
+      <div class="srow" style="flex-wrap:wrap;"><div class="txt"><div class="tt">Default soundscape</div></div><span class="val">Night Wind</span><i data-i="chevron-left" class="muted" style="transform:rotate(-90deg);"></i>
+        <div class="chips" style="flex-wrap:nowrap;overflow:hidden;width:100%;margin:6px 0 2px;">
+          <span class="chip sel">Off</span><span class="chip sel">Rain</span><span class="chip sel">Hearth Fire</span><span class="chip sel on">Night Wind</span><span class="chip sel">Tide</span></div></div>
+    </div>
+    <div class="section">Connected accounts</div>
+    <div class="group"><div class="srow disabled"><div class="txt"><div class="tt">Spotify</div></div><span class="val">Not available yet</span></div></div>
+    <div class="section">About</div>
+    <div class="group">
+      <div class="srow"><div class="txt"><div class="tt">Credits</div></div><i data-i="chevron-right" class="muted"></i></div>
+      <div class="srow"><div class="txt"><div class="tt">Privacy policy</div></div><i data-i="external-link" class="s muted"></i></div>
+    </div>
+  </div>
+</div><figcaption>Settings: Wi-Fi only, storage, companion mode, default soundscape, accounts, about<span class="route">/settings</span></figcaption></figure>
+
+</div>
+<footer class="page">Board for spec 06, chunk 06.2. Recorded in <code>design/layouts/DECISION.md</code> (the v2 sections).
+Icons: Lucide (ISC, Copyright (c) 2026 Lucide Icons and Contributors; Feather-derived icons MIT, Copyright (c)
+2013-present Cole Bemis), inlined from <code>icons.js</code>. Display face: Bricolage Grotesque, SIL OFL 1.1. Covers
+are solid placeholder blocks; real covers come from a book's tags or LibriVox.</footer>
+<script src="./icons.js"></script>
+</body>
+</html>

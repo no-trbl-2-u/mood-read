@@ -1,0 +1,283 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<title>Mood Read — v2 layout pass, board 2: scoring and "Build playlist" in the river</title>
+<!-- Bricolage Grotesque is SIL OFL 1.1, from Google Fonts, for the board only. Offline, system fonts stand in. -->
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Bricolage+Grotesque:wght@400;700;800&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="./frames.css">
+</head>
+<body>
+<header class="page">
+  <h1>v2 layout pass, board 2: <span class="two">the river's top bar at work</span></h1>
+  <p>Scoring (start, progress, the cap, rescore, the first-run line) and "Build playlist" (start, progress, a
+  downloaded mark per row), all in the river's top bar: its title line, and an action band under it that holds the
+  one book-level action and its progress. The last two frames sketch the options considered. Invented books and moods.</p>
+</header>
+<div class="board">
+
+<!-- R1. Unscored book: "Score this book" -->
+<figure class="frame" id="v2-river-unscored"><div class="phone">
+  <div class="statusbar"><span>9:41</span><span>100%</span></div>
+  <div class="topbar">
+    <div class="line"><div class="iconbtn"><i data-i="chevron-left"></i></div><div class="title">The Moonlit Ferry</div>
+      <div class="textbtn">1.0x</div><div class="iconbtn"><i data-i="bookmark"></i></div><div class="iconbtn"><i data-i="ellipsis-vertical"></i></div></div>
+    <div class="band"><div class="lineup">
+      <div class="btn primary small"><i data-i="sparkles" class="s"></i>Score this book</div>
+      <div class="t-caption" style="flex:1;">Reads the mood of every chapter.</div>
+    </div></div>
+  </div>
+  <div class="scroll" style="padding-top:12px;">
+    <div class="rrow playing">
+      <div class="t"><span class="grow">Ch.1 — The Last Bell</span><i data-i="play" class="s fill accent"></i></div>
+      <div class="t-body muted" style="margin-top:8px;">No moods yet. Score this book to read each chapter's mood.</div>
+      <div class="rule"></div>
+      <div style="display:flex;align-items:center;gap:10px;"><span class="t-label">Layer</span><span class="chip sel on">Night Wind</span></div>
+      <div style="display:flex;gap:8px;margin-top:12px;flex-wrap:wrap;"><span class="btn secondary small" style="min-height:36px;padding:0 12px;font-size:13px;">Rename</span><span class="btn secondary small" style="min-height:36px;padding:0 12px;font-size:13px;">Merge with next</span><span class="btn secondary small" style="min-height:36px;padding:0 12px;font-size:13px;">Split at 0:42</span></div>
+    </div>
+    <div class="rrow locked"><div class="t"><span class="grow">Ch.2 — Lanterns on the Water</span><i data-i="lock" class="s"></i></div></div>
+    <div class="rrow locked"><div class="t"><span class="grow">Ch.3 — A Passenger Without a Ticket</span><i data-i="lock" class="s"></i></div></div>
+    <div class="rrow locked"><div class="t"><span class="grow">Ch.4 — Fog at the Narrows</span><i data-i="lock" class="s"></i></div></div>
+    <div class="rrow locked"><div class="t"><span class="grow">Ch.5 — The Ferryman's Ledger</span><i data-i="lock" class="s"></i></div></div>
+    <div class="rrow locked"><div class="t"><span class="grow">Ch.6 — Low Tide</span><i data-i="lock" class="s"></i></div></div>
+    <div class="rrow locked"><div class="t"><span class="grow">Ch.7 — The Far Pier</span><i data-i="lock" class="s"></i></div></div>
+  </div>
+  <div class="mini"><div class="cover" style="width:44px;height:44px;background:var(--sorrow);font-size:8px;">Ferry</div>
+    <div class="mid"><div class="ct">The Last Bell</div><div class="bar thin"><div class="fill" style="width:4%;"></div></div><div class="times">0:42 / 18:20</div></div>
+    <div class="iconbtn"><i data-i="rotate-ccw"></i></div><div class="play"><i data-i="pause" class="fill"></i></div><div class="iconbtn"><i data-i="rotate-cw"></i></div></div>
+</div><figcaption>River, unscored book: "Score this book" in the top bar's action band<span class="route">/book/[id]</span></figcaption></figure>
+
+<!-- R2. Scoring, first run -->
+<figure class="frame" id="v2-river-scoring"><div class="phone">
+  <div class="statusbar"><span>9:41</span><span>100%</span></div>
+  <div class="topbar">
+    <div class="line"><div class="iconbtn"><i data-i="chevron-left"></i></div><div class="title">The Moonlit Ferry</div>
+      <div class="textbtn">1.0x</div><div class="iconbtn"><i data-i="bookmark"></i></div><div class="iconbtn"><i data-i="ellipsis-vertical"></i></div></div>
+    <div class="band">
+      <div class="lineup"><i data-i="sparkles" class="s accent"></i><span class="t-label accent">Scoring 40%</span><span style="flex:1"></span><span class="t-caption">4 of 10 chapters</span></div>
+      <div class="bar"><div class="fill" style="width:40%;"></div></div>
+      <div class="note"><i data-i="shield-check" class="s accent" style="margin-top:1px;"></i><div class="grow">Only the title, author and chapter titles are sent.</div><div class="iconbtn" style="width:36px;height:36px;flex:0 0 36px;margin:-8px 0;"><i data-i="x" class="s"></i></div></div>
+    </div>
+  </div>
+  <div class="scroll" style="padding-top:12px;">
+    <div class="rrow playing">
+      <div class="t"><span class="grow">Ch.1 — The Last Bell</span><i data-i="play" class="s fill accent"></i></div>
+      <div class="chips"><span class="chip calm t0">Calm 60%</span><span class="chip wonder t1">Wonder 40%</span><span class="chip sorrow t2">Sorrow 20%</span></div>
+      <div class="t-heading" style="margin-top:8px;">Low Tide Waltz</div>
+      <div class="t-caption">M. Reyes · CC0 1.0</div>
+      <div class="rule"></div>
+      <div style="display:flex;align-items:center;gap:10px;"><span class="t-label">Layer</span><span class="chip sel on">Night Wind</span></div>
+    </div>
+    <div class="rrow locked"><div class="t"><span class="grow">Ch.2 — Lanterns on the Water</span><i data-i="lock" class="s"></i></div></div>
+    <div class="rrow locked"><div class="t"><span class="grow">Ch.3 — A Passenger Without a Ticket</span><i data-i="lock" class="s"></i></div></div>
+    <div class="rrow locked"><div class="t"><span class="grow">Ch.4 — Fog at the Narrows</span><i data-i="lock" class="s"></i></div></div>
+    <div class="rrow locked"><div class="t"><span class="grow">Ch.5 — The Ferryman's Ledger</span><i data-i="lock" class="s"></i></div></div>
+  </div>
+  <div class="mini"><div class="cover" style="width:44px;height:44px;background:var(--sorrow);font-size:8px;">Ferry</div>
+    <div class="mid"><div class="ct">The Last Bell</div><div class="bar thin"><div class="fill" style="width:6%;"></div></div><div class="times">1:05 / 18:20</div></div>
+    <div class="iconbtn"><i data-i="rotate-ccw"></i></div><div class="play"><i data-i="pause" class="fill"></i></div><div class="iconbtn"><i data-i="rotate-cw"></i></div></div>
+</div><figcaption>River, scoring (first run): progress, and the one dismissible privacy line<span class="route">/book/[id]</span></figcaption></figure>
+
+<!-- R3. The cap -->
+<figure class="frame" id="v2-river-cap"><div class="phone">
+  <div class="statusbar"><span>9:41</span><span>100%</span></div>
+  <div class="topbar">
+    <div class="line"><div class="iconbtn"><i data-i="chevron-left"></i></div><div class="title">The Moonlit Ferry</div>
+      <div class="textbtn">1.0x</div><div class="iconbtn"><i data-i="bookmark"></i></div><div class="iconbtn"><i data-i="ellipsis-vertical"></i></div></div>
+    <div class="band">
+      <div class="lineup" style="align-items:flex-start;"><i data-i="hourglass" class="s" style="margin-top:1px;"></i><div style="flex:1;"><div class="t-label">Waiting: this month's scoring budget is spent.</div><div class="t-caption">Chapters already scored still play.</div></div></div>
+      <div class="lineup"><div class="bar" style="flex:1;"><div class="fill paused" style="width:40%;"></div></div><span class="t-caption">4 of 10 chapters</span></div>
+    </div>
+  </div>
+  <div class="scroll" style="padding-top:12px;">
+    <div class="rrow"><div class="t"><span class="grow">Ch.1 — The Last Bell</span></div>
+      <div class="chips"><span class="chip calm t0">Calm 60%</span><span class="chip wonder t1">Wonder 40%</span></div></div>
+    <div class="rrow"><div class="t"><span class="grow">Ch.2 — Lanterns on the Water</span></div>
+      <div class="chips"><span class="chip wonder t2">Wonder 70%</span><span class="chip romance t3">Romance 30%</span></div></div>
+    <div class="rrow playing">
+      <div class="t"><span class="grow">Ch.3 — A Passenger Without a Ticket</span><i data-i="play" class="s fill accent"></i></div>
+      <div class="chips"><span class="chip tension t4">Tension 60%</span><span class="chip dread t5">Dread 30%</span></div>
+      <div class="t-heading" style="margin-top:8px;">Quiet Engine</div>
+      <div class="t-caption">K. Lund · CC BY 4.0</div>
+      <div class="rule"></div>
+      <div style="display:flex;align-items:center;gap:10px;"><span class="t-label">Layer</span><span class="chip sel on">Tide</span></div>
+    </div>
+    <div class="rrow locked"><div class="t"><span class="grow">Ch.4 — Fog at the Narrows</span><i data-i="lock" class="s"></i></div></div>
+    <div class="rrow locked"><div class="t"><span class="grow">Ch.5 — The Ferryman's Ledger</span><i data-i="lock" class="s"></i></div></div>
+    <div class="rrow locked"><div class="t"><span class="grow">Ch.6 — Low Tide</span><i data-i="lock" class="s"></i></div></div>
+  </div>
+  <div class="mini"><div class="cover" style="width:44px;height:44px;background:var(--sorrow);font-size:8px;">Ferry</div>
+    <div class="mid"><div class="ct">A Passenger Without a Ticket</div><div class="bar thin"><div class="fill" style="width:30%;"></div></div><div class="times">6:12 / 20:48</div></div>
+    <div class="iconbtn"><i data-i="rotate-ccw"></i></div><div class="play"><i data-i="pause" class="fill"></i></div><div class="iconbtn"><i data-i="rotate-cw"></i></div></div>
+</div><figcaption>River, scoring paused at the monthly cap<span class="route">/book/[id]</span></figcaption></figure>
+
+<!-- R4. River overflow: Rescore, explicit -->
+<figure class="frame" id="v2-river-overflow"><div class="phone">
+  <div class="statusbar"><span>9:41</span><span>100%</span></div>
+  <div class="topbar">
+    <div class="line"><div class="iconbtn"><i data-i="chevron-left"></i></div><div class="title">Alice's Adventures in Wonderland</div>
+      <div class="textbtn">1.5x</div><div class="iconbtn"><i data-i="bookmark"></i></div><div class="iconbtn on"><i data-i="ellipsis-vertical"></i></div></div>
+    <div class="band"><div class="lineup">
+      <div class="btn primary small"><i data-i="list-music" class="s"></i>Build playlist</div>
+      <div class="t-caption" style="flex:1;">A piece for every chapter, 96 MB.</div></div></div>
+  </div>
+  <div class="scroll" style="padding-top:12px;opacity:.55;">
+    <div class="rrow"><div class="t"><span class="grow">Ch.5 — Advice from a Caterpillar</span></div>
+      <div class="chips"><span class="chip wonder t0">Wonder 70%</span><span class="chip calm t1">Calm 50%</span></div></div>
+    <div class="rrow"><div class="t"><span class="grow">Ch.6 — Pig and Pepper</span></div>
+      <div class="chips"><span class="chip tension t2">Tension 70%</span><span class="chip joy t3">Joy 40%</span></div></div>
+    <div class="rrow playing"><div class="t"><span class="grow">Ch.7 — A Mad Tea-Party</span><i data-i="play" class="s fill accent"></i></div>
+      <div class="chips"><span class="chip wonder t2">Wonder 80%</span><span class="chip romance t3">Romance 20%</span><span class="chip dread t4">Dread 30%</span></div>
+      <div class="t-heading" style="margin-top:8px;">Clockwork Garden</div><div class="t-caption">A. Composer · CC BY 4.0</div></div>
+  </div>
+  <div class="menu" style="top:72px;right:10px;width:300px;">
+    <div class="mi focus"><i data-i="sparkles"></i><div><div>Rescore</div><div class="sub">Reads every chapter's mood again.</div></div></div>
+    <div style="padding:4px 12px 12px;">
+      <div class="t-label">Rescore all 12 chapters?</div>
+      <div class="t-caption" style="margin:2px 0 10px;">It uses this month's scoring budget. The moods you see now stay until the new ones land.</div>
+      <div style="display:flex;gap:10px;"><div class="btn primary small">Rescore</div><div class="btn secondary small">Cancel</div></div>
+    </div>
+    <div class="sep"></div>
+    <div class="mi"><i data-i="check"></i>Mark finished</div>
+    <div class="mi"><i data-i="cloud-off"></i>Remove download</div>
+    <div class="sep"></div>
+    <div class="mi danger"><i data-i="trash-2"></i>Delete book</div>
+  </div>
+  <div class="mini" style="opacity:.55;"><div class="cover" style="width:44px;height:44px;background:var(--wonder);font-size:8px;">Alice</div>
+    <div class="mid"><div class="ct">A Mad Tea-Party</div><div class="bar thin"><div class="fill" style="width:38%;"></div></div><div class="times">4:12 / 11:05</div></div>
+    <div class="iconbtn"><i data-i="rotate-ccw"></i></div><div class="play"><i data-i="pause" class="fill"></i></div><div class="iconbtn"><i data-i="rotate-cw"></i></div></div>
+</div><figcaption>River overflow: "Rescore", explicit (asks once), beside the book's management<span class="route">/book/[id] (menu)</span></figcaption></figure>
+
+<!-- R5. Scored book: "Build playlist" -->
+<figure class="frame" id="v2-river-build"><div class="phone">
+  <div class="statusbar"><span>9:41</span><span>100%</span></div>
+  <div class="topbar">
+    <div class="line"><div class="iconbtn"><i data-i="chevron-left"></i></div><div class="title">Alice's Adventures in Wonderland</div>
+      <div class="textbtn">1.5x</div><div class="iconbtn"><i data-i="bookmark"></i></div><div class="iconbtn"><i data-i="ellipsis-vertical"></i></div></div>
+    <div class="band"><div class="lineup">
+      <div class="btn primary small"><i data-i="list-music" class="s"></i>Build playlist</div>
+      <div class="t-caption" style="flex:1;">A piece for every chapter, 96 MB, so it plays offline.</div></div></div>
+  </div>
+  <div class="scroll" style="padding-top:12px;">
+    <div class="rrow"><div class="t"><span class="grow">Ch.4 — The Rabbit Sends in a Little Bill</span><span class="chip unscored sm">Unscored</span></div></div>
+    <div class="rrow"><div class="t"><span class="grow">Ch.5 — Advice from a Caterpillar</span></div>
+      <div class="chips"><span class="chip wonder t0">Wonder 70%</span><span class="chip calm t1">Calm 50%</span></div></div>
+    <div class="rrow"><div class="t"><span class="grow">Ch.6 — Pig and Pepper</span></div>
+      <div class="chips"><span class="chip tension t2">Tension 70%</span><span class="chip joy t3">Joy 40%</span></div></div>
+    <div class="rrow playing"><div class="t"><span class="grow">Ch.7 — A Mad Tea-Party</span><i data-i="play" class="s fill accent"></i></div>
+      <div class="chips"><span class="chip wonder t2">Wonder 80%</span><span class="chip romance t3">Romance 20%</span><span class="chip dread t4">Dread 30%</span></div>
+      <div class="t-heading" style="margin-top:8px;">Clockwork Garden</div><div class="t-caption">A. Composer · CC BY 4.0</div>
+      <div class="t-caption">Alternates: Backwards Waltz, Marmalade Static</div>
+      <div class="rule"></div>
+      <div style="display:flex;align-items:center;gap:10px;"><span class="t-label">Layer</span><span class="chip sel on">Night Wind</span></div></div>
+    <div class="rrow locked"><div class="t"><span class="grow">Ch.8 — The Queen's Croquet-Ground</span><i data-i="lock" class="s"></i></div></div>
+    <div class="rrow locked"><div class="t"><span class="grow">Ch.9 — The Mock Turtle's Story</span><i data-i="lock" class="s"></i></div></div>
+  </div>
+  <div class="mini"><div class="cover" style="width:44px;height:44px;background:var(--wonder);font-size:8px;">Alice</div>
+    <div class="mid"><div class="ct">A Mad Tea-Party</div><div class="bar thin"><div class="fill" style="width:38%;"></div></div><div class="times">4:12 / 11:05</div></div>
+    <div class="iconbtn"><i data-i="rotate-ccw"></i></div><div class="play"><i data-i="pause" class="fill"></i></div><div class="iconbtn"><i data-i="rotate-cw"></i></div></div>
+</div><figcaption>River, scored book: "Build playlist" in the action band<span class="route">/book/[id]</span></figcaption></figure>
+
+<!-- R6. Building the playlist -->
+<figure class="frame" id="v2-river-building"><div class="phone">
+  <div class="statusbar"><span>9:41</span><span>100%</span></div>
+  <div class="topbar">
+    <div class="line"><div class="iconbtn"><i data-i="chevron-left"></i></div><div class="title">Alice's Adventures in Wonderland</div>
+      <div class="textbtn">1.5x</div><div class="iconbtn"><i data-i="bookmark"></i></div><div class="iconbtn"><i data-i="ellipsis-vertical"></i></div></div>
+    <div class="band">
+      <div class="lineup"><i data-i="list-music" class="s" style="color:var(--pop);"></i><span class="t-label">Building playlist</span><span style="flex:1"></span><span class="t-caption">5 of 12 pieces</span></div>
+      <div class="lineup"><div class="bar" style="flex:1;"><div class="fill pop" style="width:42%;"></div></div><div class="btn secondary small" style="min-height:40px;"><i data-i="pause" class="s"></i>Pause</div></div>
+    </div>
+  </div>
+  <div class="scroll" style="padding-top:12px;">
+    <div class="rrow"><div class="t"><span class="grow">Ch.4 — The Rabbit Sends in a Little Bill</span><span class="chip unscored sm">Unscored</span></div></div>
+    <div class="rrow"><div class="t"><span class="grow">Ch.5 — Advice from a Caterpillar</span><i data-i="circle-check" class="s accent"></i></div>
+      <div class="chips"><span class="chip wonder t0">Wonder 70%</span><span class="chip calm t1">Calm 50%</span></div></div>
+    <div class="rrow"><div class="t"><span class="grow">Ch.6 — Pig and Pepper</span><i data-i="circle-check" class="s accent"></i></div>
+      <div class="chips"><span class="chip tension t2">Tension 70%</span><span class="chip joy t3">Joy 40%</span></div></div>
+    <div class="rrow playing"><div class="t"><span class="grow">Ch.7 — A Mad Tea-Party</span><i data-i="circle-check" class="s accent"></i><i data-i="play" class="s fill accent"></i></div>
+      <div class="chips"><span class="chip wonder t2">Wonder 80%</span><span class="chip romance t3">Romance 20%</span><span class="chip dread t4">Dread 30%</span></div>
+      <div class="t-heading" style="margin-top:8px;">Clockwork Garden</div><div class="t-caption">A. Composer · CC BY 4.0 · <span class="accent">On this phone</span></div>
+      <div class="rule"></div>
+      <div style="display:flex;align-items:center;gap:10px;"><span class="t-label">Layer</span><span class="chip sel on">Night Wind</span></div></div>
+    <div class="rrow locked"><div class="t"><span class="grow">Ch.8 — The Queen's Croquet-Ground</span><i data-i="lock" class="s"></i></div></div>
+    <div class="rrow locked"><div class="t"><span class="grow">Ch.9 — The Mock Turtle's Story</span><i data-i="arrow-down-to-line" class="s muted"></i><i data-i="lock" class="s"></i></div></div>
+  </div>
+  <div class="mini"><div class="cover" style="width:44px;height:44px;background:var(--wonder);font-size:8px;">Alice</div>
+    <div class="mid"><div class="ct">A Mad Tea-Party</div><div class="bar thin"><div class="fill" style="width:40%;"></div></div><div class="times">4:26 / 11:05</div></div>
+    <div class="iconbtn"><i data-i="rotate-ccw"></i></div><div class="play"><i data-i="pause" class="fill"></i></div><div class="iconbtn"><i data-i="rotate-cw"></i></div></div>
+</div><figcaption>River, building the playlist: progress in the band, a downloaded mark per row<span class="route">/book/[id]</span></figcaption></figure>
+
+<!-- R7. Playlist ready -->
+<figure class="frame" id="v2-river-ready"><div class="phone">
+  <div class="statusbar"><span>9:41</span><span>100%</span></div>
+  <div class="topbar">
+    <div class="line"><div class="iconbtn"><i data-i="chevron-left"></i></div><div class="title">Alice's Adventures in Wonderland</div>
+      <div class="textbtn">1.5x</div><div class="iconbtn"><i data-i="bookmark"></i></div><div class="iconbtn"><i data-i="ellipsis-vertical"></i></div></div>
+    <div class="band"><div class="lineup"><i data-i="circle-check" class="s accent"></i><span class="t-label" style="flex:1;">Playlist ready. Every chapter plays offline.</span><div class="iconbtn" style="width:36px;height:36px;flex:0 0 36px;margin:-6px 0;"><i data-i="x" class="s"></i></div></div></div>
+  </div>
+  <div class="scroll" style="padding-top:12px;">
+    <div class="rrow"><div class="t"><span class="grow">Ch.4 — The Rabbit Sends in a Little Bill</span><span class="chip unscored sm">Unscored</span></div></div>
+    <div class="rrow"><div class="t"><span class="grow">Ch.5 — Advice from a Caterpillar</span><i data-i="circle-check" class="s accent"></i></div>
+      <div class="chips"><span class="chip wonder t0">Wonder 70%</span><span class="chip calm t1">Calm 50%</span></div></div>
+    <div class="rrow"><div class="t"><span class="grow">Ch.6 — Pig and Pepper</span><i data-i="circle-check" class="s accent"></i></div>
+      <div class="chips"><span class="chip tension t2">Tension 70%</span><span class="chip joy t3">Joy 40%</span></div></div>
+    <div class="rrow playing"><div class="t"><span class="grow">Ch.7 — A Mad Tea-Party</span><i data-i="circle-check" class="s accent"></i><i data-i="play" class="s fill accent"></i></div>
+      <div class="chips"><span class="chip wonder t2">Wonder 80%</span><span class="chip romance t3">Romance 20%</span><span class="chip dread t4">Dread 30%</span></div>
+      <div class="t-heading" style="margin-top:8px;">Clockwork Garden</div><div class="t-caption">A. Composer · CC BY 4.0 · <span class="accent">On this phone</span></div>
+      <div class="rule"></div>
+      <div style="display:flex;align-items:center;gap:10px;"><span class="t-label">Layer</span><span class="chip sel on">Night Wind</span></div></div>
+    <div class="rrow locked"><div class="t"><span class="grow">Ch.8 — The Queen's Croquet-Ground</span><i data-i="circle-check" class="s accent"></i><i data-i="lock" class="s"></i></div></div>
+    <div class="rrow locked"><div class="t"><span class="grow">Ch.9 — The Mock Turtle's Story</span><i data-i="circle-check" class="s accent"></i><i data-i="lock" class="s"></i></div></div>
+  </div>
+  <div class="mini"><div class="cover" style="width:44px;height:44px;background:var(--wonder);font-size:8px;">Alice</div>
+    <div class="mid"><div class="ct">A Mad Tea-Party</div><div class="bar thin"><div class="fill" style="width:46%;"></div></div><div class="times">5:06 / 11:05</div></div>
+    <div class="iconbtn"><i data-i="rotate-ccw"></i></div><div class="play"><i data-i="pause" class="fill"></i></div><div class="iconbtn"><i data-i="rotate-cw"></i></div></div>
+</div><figcaption>River, playlist ready: the band says so once, the marks stay<span class="route">/book/[id]</span></figcaption></figure>
+
+<!-- R8. Options: where the book-level action and its progress sit -->
+<figure class="frame" id="v2-options-band"><div class="phone">
+  <div class="statusbar"><span>Options</span><span></span></div>
+  <div class="scroll" style="padding-top:12px;">
+    <div class="t-heading" style="margin-bottom:10px;">Where "Score this book", "Build playlist" and their progress sit</div>
+    <div class="opt taken"><h4>A. An action band under the title line<span class="tag">Taken</span></h4>
+      <div class="sketch"><div style="display:flex;gap:6px;align-items:center;font-size:11px;"><span>&lt;</span><b style="flex:1;">Book title</b><span>1.0x</span><span>B</span><span>:</span></div>
+        <div style="border-top:1px dashed var(--border);margin-top:6px;padding-top:6px;display:flex;gap:6px;align-items:center;"><span class="state scored">Score this book</span><div class="bar thin" style="flex:1;"><div class="fill" style="width:40%;"></div></div></div></div>
+      <p>Still the top bar, never scrolls away, room for a full label, a progress bar, the cap line and the privacy line. Costs about 60 px while it shows; it closes when there is nothing to do.</p></div>
+    <div class="opt"><h4>B. One icon button in the title line</h4>
+      <div class="sketch"><div style="display:flex;gap:6px;align-items:center;font-size:11px;"><span>&lt;</span><b style="flex:1;">Book ti...</b><span style="border:2px solid var(--accent);border-radius:999px;padding:0 4px;">*</span><span>1.0x</span><span>B</span><span>:</span></div></div>
+      <p>No extra height, but the title loses another 44 px, the label shrinks to an icon, and progress has to be a ring: no room for the cap line or the privacy line.</p></div>
+    <div class="opt"><h4>C. A banner as the river's first row</h4>
+      <div class="sketch"><div style="font-size:11px;"><b>Book title</b></div><div style="margin-top:6px;border:1px solid var(--edge);border-radius:10px;padding:4px 6px;font-size:11px;">Score this book · 40%</div><div style="margin-top:4px;font-size:11px;" class="muted">Ch.1 ...</div></div>
+      <p>Roomy, but it scrolls out of view, and the river opens on the playing row (DECISION.md default), so it is usually off screen.</p></div>
+  </div>
+</div><figcaption>Options: the river's book-level action and its progress (A taken)</figcaption></figure>
+
+<!-- R9. Options: a library row's download progress; the playlist's progress -->
+<figure class="frame" id="v2-options-progress"><div class="phone">
+  <div class="statusbar"><span>Options</span><span></span></div>
+  <div class="scroll" style="padding-top:12px;">
+    <div class="t-heading" style="margin-bottom:10px;">A library row, downloading</div>
+    <div class="opt taken"><h4>A. A thin bar under the row's text<span class="tag">Taken</span></h4>
+      <div class="sketch"><div style="display:flex;gap:8px;align-items:center;"><div class="cover" style="width:24px;height:32px;background:var(--joy);"></div><div style="flex:1;font-size:11px;"><b>Pride and Prejudice</b><div class="accent">Downloading 62%</div><div class="bar thin" style="margin-top:3px;"><div class="fill" style="width:62%;"></div></div></div></div></div>
+      <p>Reads in words and as a bar; the cover and title stay clean. The same bar as Downloads.</p></div>
+    <div class="opt"><h4>B. A ring over the cover</h4>
+      <div class="sketch"><div style="display:flex;gap:8px;align-items:center;"><div class="cover" style="width:24px;height:32px;background:var(--joy);border:3px solid var(--accent);"></div><div style="font-size:11px;"><b>Pride and Prejudice</b></div></div></div>
+      <p>Compact, but a ring on a 52 px cover is hard to read and clashes with the playing mark.</p></div>
+    <div class="t-heading" style="margin:14px 0 10px;">"Build playlist", while it runs</div>
+    <div class="opt taken"><h4>A. The band's bar, and a mark on each row as its piece lands<span class="tag">Taken</span></h4>
+      <p>Progress where the button was; each row shows it is ready; Downloads lists it as one "Playlist" item.</p></div>
+    <div class="opt"><h4>B. Only in Downloads</h4>
+      <p>One place for every download, but the listener leaves the book to see whether it can go offline.</p></div>
+  </div>
+</div><figcaption>Options: download progress on a library row, and playlist progress (A taken in both)</figcaption></figure>
+
+</div>
+<footer class="page">Board for spec 06, chunk 06.2. Recorded in <code>design/layouts/DECISION.md</code> (the v2 sections).
+Icons: Lucide (ISC, Copyright (c) 2026 Lucide Icons and Contributors; Feather-derived icons MIT, Copyright (c)
+2013-present Cole Bemis), inlined from <code>icons.js</code>. Display face: Bricolage Grotesque, SIL OFL 1.1. Every
+time readout sits in the mini player (spec 01 A28); river rows carry none.</footer>
+<script src="./icons.js"></script>
+</body>
+</html>
