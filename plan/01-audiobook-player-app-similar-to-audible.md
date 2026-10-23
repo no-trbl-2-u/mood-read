@@ -130,8 +130,13 @@ just name the pieces/scores/songs/instrumentals (It's important that there's no 
 - **A22** No AI or search key ships in the app. Scoring goes through the proxy, which receives only title, author
   and chapter titles, stops starting new research runs at the monthly cap, and returns a book already scored for
   any listener from its cache without a new run (Open questions 6).
+- **A24** Each chapter's mood card links out to its named piece on Spotify, YouTube / YouTube Music and
+  Apple Music, and Mood Read plays none of it; a listener can save a book's pieces as a playlist in their own
+  YouTube or Apple Music account.
 
-## Open questions (owner decisions)
+## Owner decisions (all answered)
+
+Every question below is answered; none is open. Elsewhere in the plan, "Open questions N" means item N here.
 
 1. **Platform and stack.** *Answered by the owner (2026-10-22):* a cross-platform phone app first (background
    audio and lock-screen controls matter most there), with the web for development. 01.1 builds it as an Expo
@@ -210,7 +215,7 @@ just name the pieces/scores/songs/instrumentals (It's important that there's no 
    no emotions on its card (A21).
 
 ## Chunks
-Measure: 22 open · 1 closed · next A24
+Measure: 23 open · 1 closed · next A25
 
 Build order follows the owner's two-part v1, and the lines below are in that order. **Part 1, the player:** 01.1,
 01.6, 01.3, 01.5, 01.7: the player, then real books in it, then the second layer, its mixer and the soundscapes it
@@ -258,3 +263,7 @@ pieces). Ids keep the order they were written in. The app itself (Expo at the re
   - The pick, else auto, loops for the whole chapter through the layer and mixer, from a licensed source: the
     royalty-free catalog. 01.9 found no compliant path for a connected paid account (`docs/streaming-sources.md`).
   - A named piece with no licensed recording gets the closest licensed match, and never one with vocals.
+- [ ] **01.11** Mood-card link-outs and playlist saving · M · closes A24 · needs 01.10
+  - As `docs/streaming-sources.md` sets them: each service's branding rules; Spotify gets plain links only (its
+    Developer Policy III.5, until the owner revisits it after v1); YouTube playlists through the Data API within
+    its daily quota; Apple Music playlists only once the Apple Developer Program is joined (after v1).

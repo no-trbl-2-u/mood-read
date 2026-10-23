@@ -17,16 +17,15 @@
 - default taken: neither workflow changed. Recommended: keep one (`march.yml`, the kit's dispatcher) and
   `gh workflow disable next`; to run 02.1 by hand first, also `gh workflow disable march` until it lands.
 
-### [needs-user-call] What the streaming study asks of the owner
+### [needs-user-call] After the v1 MVP: Spotify III.5, iOS and the Apple Developer Program
 - category: product
-- logged: 2026-10-23 (01.9, `docs/streaming-sources.md` section 5)
-- what: (a) seek direct licenses from rights-holders to play a service's music under the narration (cost unknown,
-  quotes needed); (b) make mood-card link-outs and playlist saving a chunk of their own; (c) ask Spotify in writing
-  about Developer Policy III.5 (no integrating with another service's streams) before Spotify sits beside other
-  services; (d) enrol in the Apple Developer Program ($99 a year), needed for Apple Music playlist saving and iOS.
-- default taken: (a) no, not for now; (b) yes, a small chunk after 01.10's catalog playback, plotted when 01.10
-  lands; (c) link-outs only, which play nothing in the app, until Spotify answers; (d) yes, when iOS distribution
-  comes up. 01.10 plays the royalty-free catalog only.
+- logged: 2026-10-23 (the owner's answers to the streaming study, `docs/streaming-sources.md` section 5)
+- what: the owner asked to be reminded after the v1 MVP to revisit (1) Spotify Developer Policy III.5 (no
+  integrating with another service's streams): ask Spotify in writing, or keep Spotify to plain links; and (2) iOS:
+  the Apple Developer Program ($99 a year), which App Store builds and Apple Music playlist saving need.
+- default taken: until then Spotify gets plain links only (01.11), Android preview APKs come first
+  (spec 04), and nothing iOS-only is built. Answered the same day: no direct licenses from rights-holders, and
+  link-outs with playlist saving plotted after 01.10.
 
 ### [needs-user-call] Cloudflare Pages project and token scope
 - category: ops
