@@ -1,0 +1,11 @@
+// The scoring proxy's Worker (plan/02-bootstrap.md, 02.4). Today it answers GET /health and nothing else; 01.2
+// builds the real proxy here. Its secrets arrive through `pnpm secrets:sync` (scripts/secrets-sync.mjs).
+// Deploy (the owner, once): node scripts/secrets.mjs run --only CLOUDFLARE_API_TOKEN,CLOUDFLARE_ACCOUNT_ID --
+//   pnpm exec wrangler deploy --config proxy/wrangler.jsonc
+{
+  "$schema": "../node_modules/wrangler/config-schema.json",
+  "name": "mood-read-proxy",
+  "main": "src/index.ts",
+  "compatibility_date": "2026-10-19",
+  "observability": { "enabled": true }
+}
