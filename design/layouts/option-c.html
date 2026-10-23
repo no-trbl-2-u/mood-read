@@ -1,0 +1,227 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<title>Mood Read — layout option C</title>
+<style>
+*{box-sizing:border-box;}
+html,body{margin:0;padding:0;background:#f2f2f2;
+  font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,Helvetica,Arial,sans-serif;
+  color:#111;}
+header.page{height:96px;padding:14px 32px;border-bottom:2px solid #111;
+  display:flex;flex-direction:column;justify-content:center;background:#fff;}
+header.page h1{margin:0 0 4px;font-size:21px;letter-spacing:.2px;}
+header.page p{margin:0;font-size:12.5px;color:#555;max-width:1000px;line-height:16px;
+  height:32px;overflow:hidden;}
+.board{display:flex;flex-direction:row;flex-wrap:nowrap;gap:36px;padding:32px;
+  align-items:flex-start;width:max-content;}
+figure.frame{margin:0;width:390px;display:flex;flex-direction:column;align-items:center;}
+figcaption{margin-top:10px;height:36px;line-height:18px;font-size:12.5px;font-weight:600;
+  text-align:center;overflow:hidden;color:#111;}
+.phone{width:390px;height:844px;border:3px solid #111;border-radius:34px;background:#fff;
+  overflow:hidden;position:relative;display:flex;flex-direction:column;}
+.statusbar{flex:0 0 22px;height:22px;display:flex;align-items:center;justify-content:space-between;
+  padding:0 18px;font-size:10.5px;font-weight:600;border-bottom:1px solid #111;}
+.screen{flex:1 1 auto;position:relative;overflow:hidden;display:flex;flex-direction:column;background:#fff;}
+.pad{padding:14px 16px;}
+h2.scr-title{margin:0 0 10px;font-size:15px;font-weight:700;}
+h3.scr-sub{margin:0 0 8px;font-size:12px;font-weight:700;color:#444;text-transform:uppercase;letter-spacing:.5px;}
+.muted{color:#777;}
+.cover{background:repeating-linear-gradient(135deg,#ddd 0 6px,#f3f3f3 6px 12px);
+  border:1.5px solid #111;border-radius:6px;display:flex;align-items:center;justify-content:center;
+  text-align:center;font-size:10px;font-weight:700;color:#222;padding:4px;}
+.row{display:flex;align-items:center;gap:10px;}
+.hr{border-top:1px solid #ccc;}
+.btn{border:1.5px solid #111;border-radius:8px;padding:8px 12px;font-size:12px;font-weight:700;
+  text-align:center;background:#fff;}
+.btn.primary{background:#111;color:#fff;}
+.chip{display:inline-block;border:1.3px solid #111;border-radius:14px;padding:3px 9px;font-size:10.5px;
+  font-weight:600;margin:0 4px 4px 0;background:#fff;}
+.chip.ghost{border-style:dashed;color:#999;border-color:#aaa;}
+.bar-track{height:8px;border:1px solid #111;border-radius:4px;background:#eee;overflow:hidden;}
+.bar-fill{height:100%;background:#111;}
+.navtabs{flex:0 0 54px;border-top:1px solid #111;display:flex;}
+.navtabs div{flex:1;display:flex;align-items:center;justify-content:center;font-size:10px;font-weight:700;}
+.navtabs div.active{color:#111;}
+.navtabs div:not(.active){color:#999;}
+.topbar{flex:0 0 44px;display:flex;align-items:center;gap:8px;padding:0 14px;border-bottom:1px solid #111;font-size:13px;font-weight:700;}
+.list-row{display:flex;align-items:center;gap:10px;padding:8px 0;border-bottom:1px solid #e5e5e5;}
+.lock-time{font-size:46px;font-weight:300;text-align:center;margin:30px 0 4px;}
+.lock-date{font-size:12px;text-align:center;color:#444;margin-bottom:26px;}
+.backdrop-dim{position:absolute;inset:0;background:rgba(0,0,0,.35);}
+.sheet{position:absolute;left:0;right:0;bottom:0;background:#fff;border-top:2px solid #111;
+  border-radius:18px 18px 0 0;display:flex;flex-direction:column;}
+.sheet .handle{width:40px;height:4px;background:#bbb;border-radius:2px;margin:8px auto 4px;}
+.collage-card{position:absolute;border:1.6px solid #111;border-radius:12px;background:#fff;
+  box-shadow:3px 4px 0 rgba(0,0,0,0.08);}
+.dots{display:flex;gap:5px;align-items:center;justify-content:center;}
+.dots span{width:6px;height:6px;border-radius:50%;background:#ccc;display:inline-block;}
+.dots span.on{background:#111;}
+.lock-ico{display:inline-block;width:9px;height:8px;border:1.4px solid #111;border-radius:1.5px;
+  position:relative;vertical-align:middle;margin-right:2px;background:#fff;}
+.lock-ico::before{content:"";position:absolute;left:0.5px;top:-6px;width:5.5px;height:6px;
+  border:1.4px solid #111;border-bottom:none;border-radius:5px 5px 0 0;}
+.pause-ico{display:inline-block;width:11px;height:13px;position:relative;vertical-align:middle;}
+.pause-ico::before,.pause-ico::after{content:"";position:absolute;top:0;width:3.5px;height:13px;background:#111;}
+.pause-ico::before{left:0;}
+.pause-ico::after{right:0;}
+.mini-player{flex:0 0 64px;border-top:1.5px solid #111;display:flex;align-items:center;gap:10px;padding:0 12px;}
+.river-row{border-bottom:1px solid #e3e3e3;padding:10px 14px;}
+.river-row.expanded{background:#fafafa;border-left:4px solid #111;padding-left:10px;}
+</style>
+</head>
+<body>
+<header class="page">
+  <h1>Option C — Collage</h1>
+  <p>The playing book as a loose, asymmetric board of overlapping cards — cover, moods as chips, the named piece, a mixer dial, the transport — swiped between chapters. Leans toward “gen z chaotic” while staying one-handed; secondary screens fall back to plain utility lists so the collage budget stays spent on the one screen that matters.</p>
+</header>
+<div class="board">
+<figure class="frame" id="c-lib-empty"><div class="phone">
+    <div class="statusbar"><span>9:41</span><span>Mood Read</span><span>100%</span></div>
+    <div class="topbar">Library</div>
+    <div class="pad" style="flex:1;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:10px;text-align:center;">
+      <div class="cover" style="width:80px;height:80px;font-size:10px;">+</div>
+      <div style="font-size:13px;font-weight:700;">No books yet</div>
+      <div class="muted" style="font-size:11.5px;max-width:240px;">Import a book to build its first collage board.</div>
+      <div class="btn primary" style="margin-top:8px;">Import a book</div>
+    </div>
+    </div><figcaption>Library — empty</figcaption></figure>
+<figure class="frame" id="c-lib-books"><div class="phone"><div class="statusbar"><span>9:41</span><span>Mood Read</span><span>100%</span></div><div class="topbar">Library</div>
+    <div class="pad" style="flex:1;display:flex;flex-wrap:wrap;gap:14px;align-items:flex-start;overflow:hidden;"><div class="collage-card" style="position:static;width:150px;height:190px;padding:8px;transform:rotate(-3deg);margin:0 0 0 0;"><div class="cover" style="width:100%;height:120px;font-size:9px;">▶ COVER</div><div style="font-size:10.5px;font-weight:700;margin-top:6px;">Alice’s Adventures in Wonderland</div><div class="muted" style="font-size:9.5px;">12 ch · resuming Ch.7</div></div><div class="collage-card" style="position:static;width:150px;height:190px;padding:8px;transform:rotate(2deg);margin:20px 0 0 0;"><div class="cover" style="width:100%;height:120px;font-size:9px;">COVER</div><div style="font-size:10.5px;font-weight:700;margin-top:6px;">The Moonlit Ferry</div><div class="muted" style="font-size:9.5px;">9 ch · not started</div></div><div class="collage-card" style="position:static;width:150px;height:190px;padding:8px;transform:rotate(-1deg);margin:-10px 0 0 0;"><div class="cover" style="width:100%;height:120px;font-size:9px;">COVER</div><div style="font-size:10.5px;font-weight:700;margin-top:6px;">Static &amp; Marrow</div><div class="muted" style="font-size:9.5px;">21 ch · 3% done</div></div></div></div><figcaption>Library — with books (loose stack)</figcaption></figure>
+<figure class="frame" id="c-player"><div class="phone">
+    <div class="statusbar"><span>9:41</span><span>Mood Read</span><span>100%</span></div>
+    <div class="screen" style="background:#fafafa;">
+      <div class="collage-card" style="top:14px;left:18px;width:150px;height:190px;transform:rotate(-4deg);display:flex;align-items:center;justify-content:center;font-size:10px;">COVER</div>
+      <div class="collage-card" style="top:30px;left:160px;width:200px;height:120px;transform:rotate(3deg);padding:10px;">
+        <div style="font-size:10px;font-weight:700;">Ch.7 moods</div>
+        <div style="margin-top:6px;"><span class="chip">Whimsical 80%</span><span class="chip">Absurd 60%</span><span class="chip">Anxious 30%</span></div>
+      </div>
+      <div class="collage-card" style="top:170px;left:190px;width:170px;height:90px;transform:rotate(-2deg);padding:10px;">
+        <div style="font-size:9.5px;color:#777;">Named piece</div>
+        <div style="font-size:12px;font-weight:700;">Clockwork Teacups</div>
+      </div>
+      <div class="collage-card" style="top:290px;left:30px;width:140px;height:140px;border-radius:50%;transform:rotate(0deg);display:flex;flex-direction:column;align-items:center;justify-content:center;">
+        <div style="font-size:9px;color:#777;">Mixer</div>
+        <div style="width:60px;height:60px;border:3px solid #111;border-radius:50%;margin-top:6px;"></div>
+      </div>
+      <div class="collage-card" style="top:300px;left:200px;width:170px;height:110px;transform:rotate(4deg);padding:10px;">
+        <div style="font-size:9.5px;color:#777;">Alternates</div>
+        <div style="font-size:10.5px;">Backwards Waltz</div>
+        <div style="font-size:10.5px;">Marmalade Static</div>
+      </div>
+      <div class="collage-card" style="bottom:90px;left:60px;width:270px;height:70px;transform:rotate(-1deg);display:flex;align-items:center;justify-content:space-around;font-size:20px;">
+        <span>◀◀</span><span class="pause-ico"></span><span>▶▶</span>
+      </div>
+      <div style="position:absolute;bottom:20px;left:0;right:0;" class="dots">
+        <span class="on"></span><span></span><span></span><span></span><span></span>
+      </div>
+      <div class="muted" style="position:absolute;bottom:40px;left:0;right:0;text-align:center;font-size:10px;">swipe for next chapter</div>
+    </div>
+    </div><figcaption>Playing board — mid-chapter collage</figcaption></figure>
+<figure class="frame" id="c-chapters"><div class="phone">
+    <div class="statusbar"><span>9:41</span><span>Mood Read</span><span>100%</span></div>
+    <div class="topbar">Chapters</div>
+    <div class="pad" style="flex:1;overflow:hidden;"><div class="list-row"><div style="width:20px;font-size:11px;font-weight:700;">1</div><div style="flex:1;font-size:12px;">Down the Rabbit-Hole</div><div style="text-align:right;max-width:150px;"><span class="chip">Curious 70%</span><span class="chip">Wonder 80%</span></div></div><div class="list-row"><div style="width:20px;font-size:11px;font-weight:700;">2</div><div style="flex:1;font-size:12px;">The Pool of Tears</div><div style="text-align:right;max-width:150px;"><span class="chip">Melancholy 60%</span><span class="chip">Overwhelmed 50%</span></div></div><div class="list-row"><div style="width:20px;font-size:11px;font-weight:700;">3</div><div style="flex:1;font-size:12px;">A Caucus-Race and a Long Tale</div><div style="text-align:right;max-width:150px;"><span class="chip">Playful 60%</span><span class="chip">Dizzy 40%</span></div></div><div class="list-row"><div style="width:20px;font-size:11px;font-weight:700;">4</div><div style="flex:1;font-size:12px;">The Rabbit Sends in a Little Bill</div><div style="text-align:right;max-width:150px;"><span class="chip ghost">Unscored</span></div></div><div class="list-row"><div style="width:20px;font-size:11px;font-weight:700;">5</div><div style="flex:1;font-size:12px;">Advice from a Caterpillar</div><div style="text-align:right;max-width:150px;"><span class="chip">Puzzled 70%</span><span class="chip">Calm 50%</span></div></div><div class="list-row"><div style="width:20px;font-size:11px;font-weight:700;">6</div><div style="flex:1;font-size:12px;">Pig and Pepper</div><div style="text-align:right;max-width:150px;"><span class="chip">Chaotic 80%</span><span class="chip">Amused 50%</span></div></div><div class="list-row" style="background:#f3f3f3;"><div style="width:20px;font-size:11px;font-weight:700;">7</div><div style="flex:1;font-size:12px;">A Mad Tea-Party ▶</div><div style="text-align:right;max-width:150px;"><span class="chip">Whimsical 80%</span><span class="chip">Absurd 60%</span></div></div><div class="list-row"><div style="width:20px;font-size:11px;font-weight:700;">8</div><div style="flex:1;font-size:12px;">The Queen’s Croquet-Ground</div><div style="text-align:right;max-width:150px;"><span class="muted" style="font-size:11px;"><span class="lock-ico"></span>moods hidden</span></div></div><div class="list-row"><div style="width:20px;font-size:11px;font-weight:700;">9</div><div style="flex:1;font-size:12px;">The Mock Turtle’s Story</div><div style="text-align:right;max-width:150px;"><span class="muted" style="font-size:11px;"><span class="lock-ico"></span>moods hidden</span></div></div><div class="list-row"><div style="width:20px;font-size:11px;font-weight:700;">10</div><div style="flex:1;font-size:12px;">The Lobster Quadrille</div><div style="text-align:right;max-width:150px;"><span class="muted" style="font-size:11px;"><span class="lock-ico"></span>moods hidden</span></div></div><div class="list-row"><div style="width:20px;font-size:11px;font-weight:700;">11</div><div style="flex:1;font-size:12px;">Who Stole the Tarts?</div><div style="text-align:right;max-width:150px;"><span class="muted" style="font-size:11px;"><span class="lock-ico"></span>moods hidden</span></div></div><div class="list-row"><div style="width:20px;font-size:11px;font-weight:700;">12</div><div style="flex:1;font-size:12px;">Alice’s Evidence</div><div style="text-align:right;max-width:150px;"><span class="muted" style="font-size:11px;"><span class="lock-ico"></span>moods hidden</span></div></div></div>
+    </div><figcaption>Chapters (utility list, not collaged)</figcaption></figure>
+<figure class="frame" id="c-speed-sleep"><div class="phone">
+    <div class="statusbar"><span>9:41</span><span>Mood Read</span><span>100%</span></div>
+    <div class="topbar">Speed &amp; Sleep</div>
+    <div class="pad" style="flex:1;overflow:hidden;">
+            <h3 class="scr-sub">Speed</h3>
+            <div class="row" style="gap:6px;flex-wrap:wrap;margin-bottom:14px;">
+              <span class="chip">0.5x</span><span class="chip">0.8x</span>
+              <span class="chip" style="background:#111;color:#fff;">1.0x</span>
+              <span class="chip">1.5x</span><span class="chip">2.0x</span><span class="chip">3.0x</span>
+            </div>
+            <h3 class="scr-sub">Sleep timer</h3>
+            <div class="row" style="gap:6px;flex-wrap:wrap;">
+              <span class="chip">15 min</span><span class="chip" style="background:#111;color:#fff;">30 min</span>
+              <span class="chip">45 min</span><span class="chip">60 min</span><span class="chip">Off</span>
+            </div>
+        </div>
+    </div><figcaption>Speed &amp; sleep (utility sheet)</figcaption></figure>
+<figure class="frame" id="c-bookmarks"><div class="phone">
+    <div class="statusbar"><span>9:41</span><span>Mood Read</span><span>100%</span></div>
+    <div class="topbar">Bookmarks</div>
+    <div class="pad" style="flex:1;overflow:hidden;"><div class="list-row"><div style="flex:1;"><b style="font-size:12px;">Ch. 2</b> — 04:12<div class="muted" style="font-size:11px;">“tears flood the hall”</div></div></div><div class="list-row"><div style="flex:1;"><b style="font-size:12px;">Ch. 6</b> — 09:50<div class="muted" style="font-size:11px;">“pepper sneeze”</div></div></div><div class="list-row"><div style="flex:1;"><b style="font-size:12px;">Ch. 7</b> — 02:30<div class="muted" style="font-size:11px;">“mad hatter enters”</div></div></div></div>
+    </div><figcaption>Bookmarks (utility list)</figcaption></figure>
+<figure class="frame" id="c-mixer"><div class="phone">
+            <div class="statusbar"><span>9:41</span><span>Mood Read</span><span>100%</span></div><div class="topbar">Mixer</div>
+            <div class="pad" style="flex:1;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:16px;">
+              <div style="width:140px;height:140px;border:4px solid #111;border-radius:50%;"></div>
+              <div style="width:100%;">
+                <h3 class="scr-sub">Duck under voice</h3>
+                <div class="row"><span class="chip" style="background:#111;color:#fff;">On</span><span class="chip">Off</span></div>
+                <h3 class="scr-sub" style="margin-top:12px;">Layer</h3>
+                <div class="row" style="gap:6px;flex-wrap:wrap;"><span class="chip" style="">Off</span><span class="chip" style="">Rain</span><span class="chip" style="">Hearth Fire</span><span class="chip" style="background:#111;color:#fff;">Night Wind</span><span class="chip" style="">Tide</span><span class="chip" style="">Static Hush</span><span class="chip" style="">Low Café</span></div>
+              </div>
+            </div>
+        </div><figcaption>Mixer card (expanded full-screen)</figcaption></figure>
+<figure class="frame" id="c-mood-reached"><div class="phone">
+            <div class="statusbar"><span>9:41</span><span>Mood Read</span><span>100%</span></div><div class="topbar">Ch.7 moods</div>
+            <div class="pad" style="flex:1;">
+              <span class="chip">Whimsical 80%</span><span class="chip">Absurd 60%</span><span class="chip">Anxious 30%</span>
+              <h3 class="scr-sub" style="margin-top:14px;">Named piece</h3>
+              <div style="font-size:13px;font-weight:700;">Clockwork Teacups</div>
+              <h3 class="scr-sub" style="margin-top:12px;">Alternates</h3>
+              <div class="muted" style="font-size:12px;">Backwards Waltz<br>Marmalade Static</div>
+            </div>
+        </div><figcaption>Mood card — reached (Ch.7 card, zoomed)</figcaption></figure>
+<figure class="frame" id="c-mood-unreached"><div class="phone">
+            <div class="statusbar"><span>9:41</span><span>Mood Read</span><span>100%</span></div><div class="topbar">Ch.11</div>
+            <div class="pad" style="flex:1;display:flex;align-items:center;justify-content:center;">
+              <div class="collage-card" style="position:static;width:220px;height:200px;border-style:dashed;
+                   color:#999;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:8px;">
+                <div><span class="lock-ico" style="width:20px;height:16px;border-width:3px;"></span></div>
+                <div style="font-size:12px;font-weight:700;">Card locked</div>
+                <div class="muted" style="font-size:11px;text-align:center;padding:0 14px;">No emotions shown until you reach this chapter.</div>
+              </div>
+            </div>
+        </div><figcaption>Mood card — not yet reached (Ch.11, ghost card)</figcaption></figure>
+<figure class="frame" id="c-unscored"><div class="phone">
+            <div class="statusbar"><span>9:41</span><span>Mood Read</span><span>100%</span></div><div class="topbar">Ch.4 — The Rabbit Sends in a Little Bill</div>
+            <div class="pad" style="flex:1;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:10px;">
+              <span class="chip ghost" style="font-size:12px;padding:5px 12px;">Unscored</span>
+              <div class="muted" style="font-size:11px;text-align:center;max-width:260px;">Not enough has been written about this chapter to score it. Never guessed.</div>
+            </div>
+        </div><figcaption>Unscored chapter (Ch.4, ghost tag)</figcaption></figure>
+<figure class="frame" id="c-import"><div class="phone"><div class="statusbar"><span>9:41</span><span>Mood Read</span><span>100%</span></div><div class="topbar">Import</div>
+    <div class="pad" style="flex:1;display:flex;flex-direction:column;justify-content:center;gap:14px;">
+      <div class="cover" style="width:72px;height:72px;margin:0 auto;font-size:9px;">AAX</div>
+      <h2 class="scr-title" style="text-align:center;">Can’t open this file</h2>
+      <p style="font-size:12.5px;line-height:17px;text-align:center;">
+        <b>Alice’s Adventures in Wonderland.aax</b> is Audible-encrypted (AAX/AAXC).
+        Mood Read never decrypts Audible files and never asks for your
+        Audible password — so it can’t open this one.
+      </p>
+      <p class="muted" style="font-size:11.5px;text-align:center;">
+        Convert your own purchase to M4B/M4A first, then import that file instead.
+      </p>
+      <div class="btn primary" style="text-align:center;">Choose another file</div>
+      <div class="btn" style="text-align:center;">Learn more</div>
+    </div>
+    </div><figcaption>Import note — AAX/AAXC file</figcaption></figure>
+<figure class="frame" id="c-lock"><div class="phone">
+    <div class="pad" style="flex:1;display:flex;flex-direction:column;background:#efefef;">
+      <div class="lock-time">9:41</div>
+      <div class="lock-date">Friday, October 23</div>
+      <div class="row" style="justify-content:center;margin-top:30px;">
+        <div class="cover" style="width:48px;height:48px;font-size:8px;">COVER</div>
+        <div style="margin-left:10px;">
+          <div style="font-size:12px;font-weight:700;">A Mad Tea-Party</div>
+          <div class="muted" style="font-size:11px;">Alice’s Adventures in Wonderland</div>
+        </div>
+      </div>
+      <div class="bar-track" style="margin:22px 24px 4px;"><div class="bar-fill" style="width:38%;"></div></div>
+      <div class="row" style="justify-content:space-between;padding:0 24px;font-size:10.5px;color:#555;">
+        <span>12:47</span><span>18:30</span>
+      </div>
+      <div class="row" style="justify-content:space-around;margin-top:22px;font-size:22px;">
+        <span>⊢◀</span><span class="pause-ico"></span><span>▶⊣</span>
+      </div>
+      <div class="muted" style="text-align:center;font-size:10.5px;margin-top:14px;">OS lock-screen controls (system-drawn)</div>
+    </div>
+    </div><figcaption>Lock-screen controls</figcaption></figure>
+</div>
+</body>
+</html>
