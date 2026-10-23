@@ -90,8 +90,6 @@ Decisions made upfront (do not ask):
 
 ## Acceptance
 
-- **A1** `pnpm install` then `pnpm web` serves the app shell (the library route and a book route) locally, and
-  `pnpm typecheck`, `pnpm lint` and `pnpm test:run` pass with at least one unit test.
 - **A2** `pnpm verify` runs every leg in Design, the e2e leg included: it boots the web build on port 4173 with no
   network and walks every route in the contract with no console error, and it is green.
 - **A3** A push to `main` deploys the web build to Cloudflare Pages, and `pnpm deploy:check` exits 0 against
@@ -109,11 +107,9 @@ Decisions made upfront (do not ask):
   keep them as the owner set them (pushed), and revisit when 01.2 decides the proxy's storage.
 
 ## Chunks
-Measure: 5 open · 0 closed · next A6
+Measure: 4 open · 1 closed · next A6
 
-- [ ] **02.1** The Expo app shell at the repo root on pnpm, with typecheck, lint and unit tests in the gate · M ·
-  closes A1 · needs —
-- [ ] **02.2** The hermetic e2e on the web build, green in `pnpm verify` · M · closes A2 · needs 02.1
+- [ ] **02.2** The hermetic e2e on the web build, green in `pnpm verify` · M · closes A2 · needs —
 - [ ] **02.3** Cloudflare Pages deploy from Actions and a green deploy gate · M · closes A3 · needs 02.2 ·
   secrets CLOUDFLARE_API_TOKEN, CLOUDFLARE_ACCOUNT_ID
   - Iterate within this chunk until `pnpm deploy:check` is green; a red first deploy is expected.
