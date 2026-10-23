@@ -54,17 +54,14 @@
 - default taken: left as they are (names only, already working). Fill in `for` and `where` through the GUI's Vault or
   by hand when convenient.
 
-### [needs-user-call] Android caps playback speed at 2x (spec 01 A2)
-- category: product
-- logged: 2026-10-23 (01.1, heads-down)
-- what: spec 01 A2 asks for 0.5x to 3x. The installed expo-audio 58.0.10 clamps the rate to 2.0x on Android
-  (`AudioPlayer.kt:149`, `rate.coerceIn(0.1f, 2.0f)`) and on iOS (`AudioModule.swift:237`), silently. The web build
-  runs 3x with pitch kept. Choices: accept 2x on native, patch expo-audio (a pnpm patch), or switch the narration
-  engine (e.g. react-native-track-player).
-- default taken: native speed chips stop at 2.0x (`PLATFORM_MAX_SPEED`), web offers 3x; A2 stays partial and moves
-  to 01.1's device-pass follow-up, which settles it with your answer.
-
 ## Pending — findings
+
+### [5.5] settle leaves a closed chunk in a need that wraps onto a second line
+- category: tooling
+- impact: 5 (a done chunk still reads as a need; order and readers may hold the dependent chunk back)
+- ease: 6 (scripts/plan/settle.mjs dropNeeds: match `needs <ids> ·` when the chunk line continues on the next line)
+- seen: 2026-10-23, settling 01.1: 04.1 kept `needs 01.1 ·` before its wrapped `secrets EXPO_TOKEN` line, while 05's single-line needs were tidied; fixed by hand in bca090c
+- next: /iterate, with a red-first test in scripts/__tests__
 
 ### [5.6] heartbeat.yml reads a secret in a job-level env
 - category: ops
