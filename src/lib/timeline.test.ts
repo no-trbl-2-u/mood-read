@@ -9,6 +9,7 @@ import {
   locate,
   resumeStart,
   skipTarget,
+  sleepAfterMove,
   sleepDue,
   speedPresets,
   stepSpeed,
@@ -101,6 +102,26 @@ test("sleep timer at chapter end is due when the position reaches the end", () =
   assert.equal(sleepDue(t, 0, 149.9), false);
   assert.equal(sleepDue(t, 0, 149.96), true);
   assert.equal(sleepDue(t, 0, 152), true);
+});
+
+test("an End of chapter timer follows a seek or jump to the chapter now playing", () => {
+  const chapters = [
+    { index: 0, start: 0, end: 10 },
+    { index: 1, start: 10, end: 20 },
+    { index: 2, start: 20, end: 30 },
+  ];
+  const t = { kind: "chapterEnd" as const, chapterIndex: 0, end: 10 };
+  // A jump to the start of Ch.3 retargets the timer to Ch.3's end, so it is not due there.
+  const jumped = sleepAfterMove(t, chapters, 20);
+  assert.deepEqual(jumped, { kind: "chapterEnd", chapterIndex: 2, end: 30 });
+  assert.equal(sleepDue(jumped, 0, 20), false);
+  // A skip back into an earlier chapter follows it too; a move inside the chapter changes nothing.
+  assert.deepEqual(sleepAfterMove(jumped, chapters, 12), { kind: "chapterEnd", chapterIndex: 1, end: 20 });
+  assert.deepEqual(sleepAfterMove(t, chapters, 4), t);
+  // Minutes timers and no timer are untouched.
+  const m = { kind: "minutes" as const, minutes: 15, endsAt: 100 };
+  assert.equal(sleepAfterMove(m, chapters, 25), m);
+  assert.equal(sleepAfterMove(null, chapters, 25), null);
 });
 
 test("speed presets run 0.5x to 3x and cap at the platform maximum", () => {

@@ -105,6 +105,21 @@ export function sleepDue(
   return position >= timer.end - CHAPTER_END_SLACK;
 }
 
+/**
+ * After a seek, skip or jump: an End of chapter timer follows the chapter now playing, so it stops at that
+ * chapter's end rather than at the end of the chapter where it was set. Other timers are unchanged.
+ */
+export function sleepAfterMove<T extends { kind: "minutes" } | { kind: "chapterEnd"; chapterIndex: number; end: number }>(
+  timer: T | null,
+  chapters: ChapterLike[],
+  position: number,
+): T | null {
+  if (!timer || timer.kind !== "chapterEnd") return timer;
+  const c = chapterAt(chapters, position);
+  if (!c || (c.index === timer.chapterIndex && c.end === timer.end)) return timer;
+  return { ...timer, chapterIndex: c.index, end: c.end };
+}
+
 /** The speed chips this platform can play. */
 export function speedPresets(platformMax: number): number[] {
   return SPEED_PRESETS.filter((s) => s <= platformMax);

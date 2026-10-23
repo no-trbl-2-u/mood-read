@@ -18,6 +18,7 @@ import {
   resumeStart,
   SKIP_SECONDS,
   skipTarget,
+  sleepAfterMove,
   sleepDue,
 } from "@/lib/timeline";
 import type { Book, Chapter, SleepTimer } from "@/lib/types";
@@ -195,6 +196,14 @@ export function PlayerProvider({ children }: { children: ReactNode }) {
     [player, bindRemote],
   );
 
+  // A user's seek, skip or jump moves an End of chapter timer to the chapter it lands in.
+  const followSleep = useCallback((b: Book, to: number) => {
+    const next = sleepAfterMove(sleepRef.current, b.chapters, to);
+    if (next === sleepRef.current) return;
+    sleepRef.current = next;
+    setSleep(next);
+  }, []);
+
   const stopForSleep = useCallback(() => {
     sleepRef.current = null;
     setSleep(null);
@@ -346,7 +355,9 @@ export function PlayerProvider({ children }: { children: ReactNode }) {
       const b = bookRef.current;
       if (!b) return;
       pendingEvent.current = "seek";
-      goTo(b, skipTarget(livePosition(), d, b.duration), isPlaying());
+      const to = skipTarget(livePosition(), d, b.duration);
+      followSleep(b, to);
+      goTo(b, to, isPlaying());
     };
     return {
       book,
@@ -366,7 +377,9 @@ export function PlayerProvider({ children }: { children: ReactNode }) {
         const b = bookRef.current;
         if (!b || !Number.isFinite(s)) return;
         pendingEvent.current = "seek";
-        goTo(b, clamp(s, 0, b.duration), isPlaying());
+        const to = clamp(s, 0, b.duration);
+        followSleep(b, to);
+        goTo(b, to, isPlaying());
       },
       skip,
       jumpToChapter: (i) => {
@@ -375,6 +388,7 @@ export function PlayerProvider({ children }: { children: ReactNode }) {
         if (!b || !c) return;
         library.markPlayed(b.id);
         pendingEvent.current = "seek";
+        followSleep(b, c.start);
         goTo(b, c.start, true);
       },
       setSpeed: (rate) => {
@@ -393,7 +407,7 @@ export function PlayerProvider({ children }: { children: ReactNode }) {
       },
       cancelSleep: () => setSleep(null),
     };
-  }, [book, chapter, position, playing, target, error, speed, sleep, clock, open, goTo, persist, player, livePosition]);
+  }, [book, chapter, position, playing, target, error, speed, sleep, clock, open, goTo, persist, player, livePosition, followSleep]);
 
   useEffect(() => {
     remote.current = { play: api.play, pause: api.pause, skip: api.skip };

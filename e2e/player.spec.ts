@@ -215,6 +215,32 @@ test.describe("the player", () => {
     expect((await narration(page)).playbackRate).toBe(3);
   });
 
+  test("A2: an End of chapter timer follows a chapter jump instead of stopping at the old chapter's end", async ({
+    page,
+  }) => {
+    await importBook(page);
+    // Set on Ch.1 (ends at 35 s), then jump to Ch.2: it plays from Ch.2's start and the timer moves to Ch.2.
+    await page.getByTestId("open-speed-sleep").click();
+    await page.getByTestId("sleep-chapter").click();
+    await expect(page.getByTestId("sleep-status")).toHaveText("Stops at the end of Ch.1.");
+    await page.getByTestId("sheet-done").click();
+    await page.getByTestId("chapter-1").click();
+    await expectChapter(page, 1);
+    await expect.poll(async () => (await narration(page)).currentTime).toBeGreaterThan(1.5);
+    expect((await narration(page)).paused).toBe(false);
+    await expectChapter(page, 1);
+    await page.getByTestId("open-speed-sleep").click();
+    await expect(page.getByTestId("sleep-status")).toHaveText("Stops at the end of Ch.2.");
+    await page.getByTestId("sheet-done").click();
+    // A skip back across into Ch.1 follows it back.
+    await page.getByTestId("mini-back-30").click();
+    await expectChapter(page, 0);
+    await page.getByTestId("open-speed-sleep").click();
+    await expect(page.getByTestId("sleep-status")).toHaveText("Stops at the end of Ch.1.");
+    await page.getByTestId("sheet-done").click();
+    await pause(page);
+  });
+
   test("A3: bookmarks are added, named and jumped to", async ({ page }) => {
     await importBook(page);
     await page.getByTestId("mini-fwd-30").click();
