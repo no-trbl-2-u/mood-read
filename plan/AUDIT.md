@@ -17,6 +17,17 @@
 - default taken: neither workflow changed. Recommended: keep one (`march.yml`, the kit's dispatcher) and
   `gh workflow disable next`; to run 02.1 by hand first, also `gh workflow disable march` until it lands.
 
+### [needs-user-call] What the streaming study asks of the owner
+- category: product
+- logged: 2026-10-23 (01.9, `docs/streaming-sources.md` section 5)
+- what: (a) seek direct licenses from rights-holders to play a service's music under the narration (cost unknown,
+  quotes needed); (b) make mood-card link-outs and playlist saving a chunk of their own; (c) ask Spotify in writing
+  about Developer Policy III.5 (no integrating with another service's streams) before Spotify sits beside other
+  services; (d) enrol in the Apple Developer Program ($99 a year), needed for Apple Music playlist saving and iOS.
+- default taken: (a) no, not for now; (b) yes, a small chunk after 01.10's catalog playback, plotted when 01.10
+  lands; (c) link-outs only, which play nothing in the app, until Spotify answers; (d) yes, when iOS distribution
+  comes up. 01.10 plays the royalty-free catalog only.
+
 ### [needs-user-call] Cloudflare Pages project and token scope
 - category: ops
 - logged: 2026-10-22, at adoption

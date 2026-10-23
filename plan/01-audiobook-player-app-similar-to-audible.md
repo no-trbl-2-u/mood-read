@@ -130,9 +130,6 @@ just name the pieces/scores/songs/instrumentals (It's important that there's no 
 - **A22** No AI or search key ships in the app. Scoring goes through the proxy, which receives only title, author
   and chapter titles, stops starting new research runs at the monthly cap, and returns a book already scored for
   any listener from its cache without a new run (Open questions 6).
-- **A23** (01.9.) The owner has a written report on Spotify, YouTube / YouTube Music and Apple Music: each compliant
-  way to use them in Mood Read, its cost, and whether a listener's own paid account opens a path, before 01.10 is
-  built.
 
 ## Open questions (owner decisions)
 
@@ -162,9 +159,13 @@ just name the pieces/scores/songs/instrumentals (It's important that there's no 
    - **YouTube: blocked as the developer terms read today.** YouTube's Developer Policies forbid separating or
      modifying a video's audio (III.I.7) and playing from a background player (III.I.9). YouTube Music has no
      public playback API.
-   - **"music" (read as Apple Music, or YouTube Music if that was meant): unverified.** MusicKit plays Apple Music
-     for subscribers. Whether its terms allow mixing under other audio is not yet checked.
-   - 01.9 (below) studies a compliant way to bring these services in, and reports back before any of it is built.
+   - **Apple Music: blocked as its terms read today** (checked 2026-10-23). MusicKit content "cannot be
+     synchronized with any other content" (Apple Developer Program License Agreement 3.3.6(D)), and a song at a
+     set moment needs the rights-holders' sync license (App Review Guidelines 4.5.2(ii)).
+   - **The study (01.9, `docs/streaming-sources.md`, 2026-10-23):** no service allows its music under the
+     narration, and a listener's paid account changes nothing. Every service allows a link out from the mood card;
+     Apple Music and YouTube allow saving a playlist to the listener's account, and Spotify allows it only past its
+     5-user development quota. The royalty-free catalog stays the only source played under the voice.
 4. **How a chapter is read for its mood.** *Answered by the owner (2026-10-22):* "An AI agent should be able to
    determine the types of emotions a book's chapter would invoke based on the events posted in sites like
    sparknotes, reviews of books, and all other types of research." So scoring researches the book instead of
@@ -209,7 +210,7 @@ just name the pieces/scores/songs/instrumentals (It's important that there's no 
    no emotions on its card (A21).
 
 ## Chunks
-Measure: 23 open · 0 closed · next A24
+Measure: 22 open · 1 closed · next A24
 
 Build order follows the owner's two-part v1, and the lines below are in that order. **Part 1, the player:** 01.1,
 01.6, 01.3, 01.5, 01.7: the player, then real books in it, then the second layer, its mixer and the soundscapes it
@@ -252,14 +253,8 @@ pieces). Ids keep the order they were written in. The app itself (Expo at the re
     answered).
   - The card is the expanded chapter row, inline in the river; an unreached row never expands (`plan/bearings.md`
     Layout).
-- [ ] **01.9** Streaming sources study (Open questions 3) · S · closes A23 · needs —
-  - Check the current terms of Spotify, YouTube / YouTube Music and Apple Music for any compliant way to use them
-    in Mood Read. Examples: a licensing deal, music played only between chapters rather than under the voice, or
-    the mood card linking out to a matching playlist in the listener's own app.
-  - Include whether the listener's own paid Spotify or YouTube account (Open questions 5) opens any path. Report
-    the options and their costs to the owner. Builds nothing; it feeds 01.10.
 - [ ] **01.10** After v1: play the chapter's piece, looped under the narration · M · closes A17, A18 ·
-  needs 01.2, 01.3, 01.5, 01.9
+  needs 01.2, 01.3, 01.5
   - The pick, else auto, loops for the whole chapter through the layer and mixer, from a licensed source: the
-    royalty-free catalog by default, or a connected paid account if 01.9 finds a compliant path.
+    royalty-free catalog. 01.9 found no compliant path for a connected paid account (`docs/streaming-sources.md`).
   - A named piece with no licensed recording gets the closest licensed match, and never one with vocals.
