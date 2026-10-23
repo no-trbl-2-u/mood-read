@@ -104,7 +104,6 @@ Decisions made upfront (do not ask):
 
 ## Open questions
 
-(None. A spec that leaves open questions fails its job; move an answer into Design the moment it exists.)
 - Should the R2 / S3 credentials (`CLOUDFLARE_S3_ACCESS_KEY_ID`, `CLOUDFLARE_S3_SECRET_ACCESS_KEY`,
   `S3_API_ENDPOINT`) be Worker secrets at all? A Worker usually reaches R2 through a binding, not keys. Default:
   keep them as the owner set them (pushed), and revisit when 01.2 decides the proxy's storage.
