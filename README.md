@@ -22,3 +22,8 @@ pnpm build           # the web build, into dist/ (expo export -p web)
 pnpm e2e             # the hermetic smoke walk over dist/ on localhost:4173
 pnpm verify          # the nexus gates, typecheck, lint, unit tests, build and e2e
 ```
+
+An Android preview APK is built on demand through EAS Build (`eas.json`, profile `preview`), never on push and
+never in `pnpm verify`: run `node scripts/secrets.mjs run --only EXPO_TOKEN -- pnpm build:android:preview`, or
+start the `android-preview` workflow by hand on main in GitHub Actions. Either waits for the build and prints the
+build page; open it on an Android phone to install Mood Read.

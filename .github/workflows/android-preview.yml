@@ -1,0 +1,47 @@
+name: android-preview
+
+# On demand only: a manual run builds an Android preview APK from main
+# through EAS Build (eas.json, profile `preview`: an installable APK,
+# internal distribution) and prints the install link. Never on push and
+# never part of `pnpm verify`. Chunk 04.1; plan/04-android-preview.md.
+#
+# The same command runs locally:
+#   node scripts/secrets.mjs run --only EXPO_TOKEN -- pnpm build:android:preview
+#
+# Secrets (GitHub Actions, pushed from the vault with
+# `node scripts/secrets.mjs push EXPO_TOKEN --to github-actions`):
+#   EXPO_TOKEN   an Expo access token for the account that owns the project
+
+on:
+  workflow_dispatch:
+
+concurrency:
+  group: android-preview
+  cancel-in-progress: false
+
+permissions:
+  contents: read
+
+jobs:
+  build:
+    # Preview APKs come from main only.
+    if: github.ref == 'refs/heads/main'
+    runs-on: ubuntu-latest
+    timeout-minutes: 120
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Set up toolchain
+        uses: ./.github/actions/setup
+
+      # eas-cli is a pinned devDependency, so this runs the same CLI as the
+      # local command. --wait (in the script) holds the job until EAS is done
+      # and prints the build page and the APK link.
+      - name: Build the preview APK on EAS
+        env:
+          EXPO_TOKEN: ${{ secrets.EXPO_TOKEN }}
+        run: |
+          # --silent keeps pnpm's command echo out of the JSON; EAS logs go to stderr.
+          pnpm --silent build:android:preview --json > build.json
+          node scripts/eas-build-summary.mjs build.json

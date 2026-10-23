@@ -37,6 +37,12 @@
         }
       ],
       "expo-sqlite"
-    ]
+    ],
+    "extra": {
+      "eas": {
+        "projectId": "90c02664-ad75-4ddd-9195-4d385e34be8f"
+      }
+    },
+    "owner": "no.trbl.2.u"
   }
 }

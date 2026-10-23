@@ -2,3 +2,6 @@ allowBuilds:
   esbuild: true
   unrs-resolver: true
   workerd: true
+  # eas-cli's transitive install scripts: not needed to run the CLI.
+  dtrace-provider: false
+  protobufjs: false
