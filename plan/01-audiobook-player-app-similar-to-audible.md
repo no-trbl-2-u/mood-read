@@ -12,8 +12,10 @@ during certain chapters within the audiobook."
 
 ## What exists
 
-Nothing yet. The repository holds a README and this plan; the stack is a cross-platform phone app with the web for
-development (Open questions 1, answered). Every chunk below is new, and no other spec owns any of it.
+Verified 2026-10-22: main holds the README, this plan and the nexus overlay, and no app code. The stack is a
+cross-platform phone app with the web for development (Open questions 1, answered); spec 02 builds the app shell and
+its gates. A first build of 01.1 sits on the local branch `chunk-01.1-player` (never pushed). No other spec owns
+any of the chunks below.
 
 ## v1 MVP: two parts
 
@@ -89,8 +91,6 @@ just name the pieces/scores/songs/instrumentals (It's important that there's no 
 
 ## Acceptance
 
-Measure: 22 open · 0 closed · next A23
-
 - **A1** A book in the library plays, pauses, skips ±30 s and jumps to any chapter from the chapter list.
 - **A2** Speed runs 0.5× to 3× without pitch change; a sleep timer stops playback after N minutes or at chapter end.
 - **A3** Closing and reopening the app resumes the book within 1 s of where it stopped; bookmarks can be added, named
@@ -130,6 +130,9 @@ Measure: 22 open · 0 closed · next A23
 - **A22** No AI or search key ships in the app. Scoring goes through the proxy, which receives only title, author
   and chapter titles, stops starting new research runs at the monthly cap, and returns a book already scored for
   any listener from its cache without a new run (Open questions 6).
+- **A23** (01.9.) The owner has a written report on Spotify, YouTube / YouTube Music and Apple Music: each compliant
+  way to use them in Mood Read, its cost, and whether a listener's own paid account opens a path, before 01.10 is
+  built.
 
 ## Open questions (owner decisions)
 
@@ -204,40 +207,50 @@ Measure: 22 open · 0 closed · next A23
    no emotions on its card (A21).
 
 ## Chunks
+Measure: 23 open · 0 closed · next A24
 
-Build order follows the owner's two-part v1. **Part 1, the player:** 01.1, 01.6, 01.3, 01.5, 01.7. That is the
-player, then real books in it, then the second layer, its mixer and the soundscapes it plays. **Part 2, moods and
-named pieces:** 01.2, then 01.4. **After v1:** 01.9 (a study), then 01.10 (play the pieces). Ids keep the order
-they were written in.
+Build order follows the owner's two-part v1, and the lines below are in that order. **Part 1, the player:** 01.1,
+01.6, 01.3, 01.5, 01.7: the player, then real books in it, then the second layer, its mixer and the soundscapes it
+plays. **Part 2, moods and named pieces:** 01.2, then 01.4. **After v1:** 01.9 (a study), then 01.10 (play the
+pieces). Ids keep the order they were written in. The app itself (Expo at the repo root, the gates) is spec 02.
 
-- **01.1** · L · The player: library view, playback, chapters, speed, sleep timer, bookmarks, resume, background
-  and lock-screen controls; opens one local file to have something to play. Closes A1, A2, A3, A4.
+- [ ] **01.1** The player: library, playback, chapters, speed, sleep timer, bookmarks, resume, background and
+  lock-screen controls · L · closes A1, A2, A3, A4 · needs 02.2
+  - Opens one local file to have something to play; 01.6 brings real imports.
   - Open questions 1 is answered: a cross-platform phone app, with the web for development.
-- **01.6** · L · Your own books: import DRM-free files and folders, tags and covers, chapter detection and editing,
-  and Audible's path as Open questions 2 settled it: (a) and (c), a clear import note for AAX/AAXC, no decryption
-  and no Audible integration in v1. Closes A5, A6, A7. Needs 01.1.
-- **01.3** · M · The second audio layer: on the narration's clock, chapter-boundary crossfades, looping, and
-  independent of the narration's speed. It plays a test loop until 01.7's soundscapes exist. Closes A8, A9.
-  Needs 01.1.
-- **01.5** · S · The mixer: balance, master volume, per-book save, duck under voice. Closes A10, A11. Needs 01.3.
-- **01.7** · M · Ambient soundscapes: six or more licensed seamless loops, per book or per chapter, through the
-  layer and mixer. Closes A12, partial A18. Needs 01.3.
-- **01.2** · L · Chapter moods and named pieces (v1 part 2): a research agent reads what is written about the
-  book (Open questions 4) and names each chapter's emotions with intensities and sources. It then names one
-  no-vocals piece per chapter plus alternates; nothing is played. It runs as a background job, stored per chapter.
-  Scoring goes through the proxy that holds the key, caps spend and caches each book (Open questions 6, answered).
-  Closes A13, A14, A15, A19, A20, A22. Needs 01.6, and the owner to name the AI provider and the cap.
-- **01.4** · S · The chapter mood card: emotions, the named piece and alternates, and a saved pick over auto; no
-  preview in v1. No events, only emotions, shown once the listener reaches the chapter (Open questions 7,
-  answered). Closes A16, A21. Needs 01.2.
-- **01.9** · S · Streaming sources study (Open questions 3): check the current terms of Spotify, YouTube / YouTube
-  Music and Apple Music for any compliant way to use them in Mood Read. Examples: a licensing deal, music played only
-  between chapters rather than under the voice, or the mood card linking out to a matching playlist in the
-  listener's own app. Include whether the listener's own paid Spotify or YouTube account (Open questions 5) opens
-  any path. Report the options and their costs to the owner. Builds nothing and closes no acceptance ID; it feeds
-  01.10.
-- **01.10** · M · After v1: play the chapter's piece. The pick, else auto, loops for the whole chapter under the
-  narration, through the layer and mixer. It comes from a licensed source: the royalty-free catalog by default, or
-  a connected paid account if 01.9 finds a compliant path. A named piece with no licensed recording gets the
-  closest licensed match, and never one with vocals. Closes A17 and the rest of A18. Needs 01.2, 01.3 and 01.5;
-  01.9's report.
+  - Prior work: the local branch `chunk-01.1-player` (unpushed, npm) holds a first build of this chunk. Start
+    from it: take its `src/` onto spec 02's app, on pnpm, rather than writing the player again.
+- [ ] **01.6** Your own books: DRM-free imports, tags and covers, chapter detection and editing · L ·
+  closes A5, A6, A7 · needs 01.1
+  - Files and folders; Audible's path as Open questions 2 settled it: (a) and (c), a clear import note for
+    AAX/AAXC, no decryption and no Audible integration in v1.
+- [ ] **01.3** The second audio layer on the narration's clock · M · closes A8, A9 · needs 01.1
+  - Chapter-boundary crossfades, looping, independent of the narration's speed. It plays a test loop until 01.7's
+    soundscapes exist.
+- [ ] **01.5** The mixer: balance, master volume, per-book save, duck under voice · S · closes A10, A11 ·
+  needs 01.3
+- [ ] **01.7** Ambient soundscapes: six or more licensed seamless loops · M · closes A12 · partial A18 ·
+  needs 01.3
+  - Per book or per chapter, through the layer and mixer.
+- [ ] **01.2** Chapter moods and named pieces through the scoring proxy · L ·
+  closes A13, A14, A15, A19, A20, A22 · needs 01.6
+  - v1 part 2: a research agent reads what is written about the book (Open questions 4) and names each chapter's
+    emotions with intensities and sources, then one no-vocals piece per chapter plus alternates; nothing is
+    played. It runs as a background job, stored per chapter.
+  - Scoring goes through the proxy that holds the key, caps spend and caches each book (Open questions 6,
+    answered). Held until the owner names the AI provider and the monthly cap (plan/README.md, Held).
+- [ ] **01.4** The chapter mood card: emotions, the named piece and alternates, a saved pick over auto · S ·
+  closes A16, A21 · needs 01.2
+  - No preview in v1. No events, only emotions, shown once the listener reaches the chapter (Open questions 7,
+    answered).
+- [ ] **01.9** Streaming sources study (Open questions 3) · S · closes A23 · needs —
+  - Check the current terms of Spotify, YouTube / YouTube Music and Apple Music for any compliant way to use them
+    in Mood Read. Examples: a licensing deal, music played only between chapters rather than under the voice, or
+    the mood card linking out to a matching playlist in the listener's own app.
+  - Include whether the listener's own paid Spotify or YouTube account (Open questions 5) opens any path. Report
+    the options and their costs to the owner. Builds nothing; it feeds 01.10.
+- [ ] **01.10** After v1: play the chapter's piece, looped under the narration · M · closes A17, A18 ·
+  needs 01.2, 01.3, 01.5, 01.9
+  - The pick, else auto, loops for the whole chapter through the layer and mixer, from a licensed source: the
+    royalty-free catalog by default, or a connected paid account if 01.9 finds a compliant path.
+  - A named piece with no licensed recording gets the closest licensed match, and never one with vocals.

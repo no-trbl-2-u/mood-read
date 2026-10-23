@@ -1,0 +1,27 @@
+{
+  "name": "mood-read",
+  "version": "0.0.0",
+  "private": true,
+  "type": "module",
+  "description": "Mood Read: an audiobook player that scores each chapter.",
+  "packageManager": "pnpm@12.8.1",
+  "scripts": {
+    "plan:check": "node scripts/plan-check.mjs --since HEAD",
+    "secrets:scan": "node scripts/secrets.mjs scan --staged",
+    "test:scripts": "node --test \"scripts/__tests__/*.test.mjs\"",
+    "verify": "pnpm plan:check && pnpm secrets:scan && pnpm test:scripts",
+    "deploy:check": "node scripts/deploy-check.mjs",
+    "pulse": "node scripts/pulse.mjs",
+    "settle": "node scripts/plan/settle.mjs",
+    "claims": "node scripts/claims.mjs",
+    "progress": "node scripts/plan/progress.mjs",
+    "order": "node scripts/plan/order.mjs",
+    "announce": "node scripts/announce.mjs",
+    "ledger": "node scripts/ledger.mjs",
+    "worktree": "node scripts/worktree.mjs",
+    "secrets": "node scripts/secrets.mjs"
+  },
+  "engines": {
+    "node": ">=20"
+  }
+}

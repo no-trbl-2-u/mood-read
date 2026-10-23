@@ -2,3 +2,19 @@
 .nexus/
 # The nexus secrets vault: values and their record stay on this machine
 .env
+.env.workspace
+.env.local
+.env.*.local
+# Owner mode: untracked on the owner's checkout only (playbooks/owner-mode.md)
+.owner
+.announcements.md
+# Claude Code: per-machine settings
+.claude/settings.local.json
+# Node and Expo
+node_modules/
+.expo/
+dist/
+web-build/
+expo-env.d.ts
+# Local Playwright MCP captures
+.playwright-mcp/
