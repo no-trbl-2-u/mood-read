@@ -90,8 +90,6 @@ Decisions made upfront (do not ask):
 
 ## Acceptance
 
-- **A2** `pnpm verify` runs every leg in Design, the e2e leg included: it boots the web build on port 4173 with no
-  network and walks every route in the contract with no console error, and it is green.
 - **A3** A push to `main` deploys the web build to Cloudflare Pages, and `pnpm deploy:check` exits 0 against
   https://mood-read.pages.dev for that commit.
 - **A4** The Worker `mood-read-proxy` exists on the Cloudflare account, configured in
@@ -107,10 +105,9 @@ Decisions made upfront (do not ask):
   keep them as the owner set them (pushed), and revisit when 01.2 decides the proxy's storage.
 
 ## Chunks
-Measure: 4 open · 1 closed · next A6
+Measure: 3 open · 2 closed · next A6
 
-- [ ] **02.2** The hermetic e2e on the web build, green in `pnpm verify` · M · closes A2 · needs —
-- [ ] **02.3** Cloudflare Pages deploy from Actions and a green deploy gate · M · closes A3 · needs 02.2 ·
+- [ ] **02.3** Cloudflare Pages deploy from Actions and a green deploy gate · M · closes A3 · needs — ·
   secrets CLOUDFLARE_API_TOKEN, CLOUDFLARE_ACCOUNT_ID
   - Iterate within this chunk until `pnpm deploy:check` is green; a red first deploy is expected.
 - [ ] **02.4** One command syncs the vault's Cloudflare secrets to the proxy Worker · S ·
