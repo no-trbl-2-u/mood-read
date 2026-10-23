@@ -69,7 +69,7 @@ bare `pnpm add`, so versions match the SDK.
 | 02 | Cloudflare Pages | the web build's deploys (02.3), project `mood-read` | `CLOUDFLARE_API_TOKEN`, `CLOUDFLARE_ACCOUNT_ID` | live |
 | 06 | Cloudflare Workers | the scoring proxy's home, Worker `mood-read-proxy` (`proxy/wrangler.jsonc`, 02.4); today `GET /health` only | `CLOUDFLARE_S3_ACCESS_KEY_ID`, `CLOUDFLARE_S3_SECRET_ACCESS_KEY`, `S3_API_ENDPOINT` (pushed by `pnpm secrets:sync`) | live |
 | 03 | AI provider + web search | the scoring proxy's research agent (01.2) | `OPENAI_API_KEY`, `BRAVE_SEARCH_API_KEY` are in the vault; the provider is not chosen | held (spec 01, Open questions 6) |
-| 04 | Expo / EAS | native builds, later | `EXPO_TOKEN` | not used in v1's specs |
+| 04 | Expo / EAS | Android preview APKs on demand (04.1: `pnpm build:android:preview`, `android-preview.yml`) | `EXPO_TOKEN` | live: project `@no.trbl.2.u/mood-read`, keystore held by EAS |
 | 05 | Sentry | error tracking, later | `SENTRY_AUTH_TOKEN` | not used in v1's specs |
 
 No `setup/` runbooks yet: GitHub and Cloudflare are live, and the Operational notes below are Cloudflare's runbook. The first chunk that needs a
