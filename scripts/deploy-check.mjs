@@ -31,7 +31,7 @@ if (fs.existsSync('.env')) {
 }
 
 // Mood Read deploys to the Cloudflare Pages project `mood-read` from
-// .github/workflows/deploy.yml (chunk 02.3, plan/02-bootstrap.md).
+// .github/workflows/deploy.yml (chunk 02.3, plan/bearings.md).
 // From a checkout with no .env (a worktree), supply the two names through the vault:
 //   node scripts/secrets.mjs run --only CLOUDFLARE_API_TOKEN,CLOUDFLARE_ACCOUNT_ID -- pnpm deploy:check
 const PROVIDER = process.env.DEPLOY_PROVIDER ?? 'cloudflare-pages'

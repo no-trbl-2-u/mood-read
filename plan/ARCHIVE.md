@@ -21,3 +21,5 @@ identity · deleted in <sha>`; recover its text with
 - 2026-10-23 · 01.13 · Workarounds study: CC, generated music, companion mode, DRM-free stores · 4ef5173d..0db06502
 - 2026-10-23 · 02.2 · pnpm verify builds the web app and walks it hermetically · 79f6ee10..32b20f36
 - 2026-10-23 · 02.3 · A push to main deploys to mood-read.pages.dev · eccba633..eccba633
+- 2026-10-23 · 02.4 · pnpm secrets:sync fills the live mood-read-proxy Worker · 14aeba4c..ecb04b50
+- 2026-10-23 · 02 · spec complete: Bootstrap · absorbed into plan/bearings.md Stack, External services, Verify gate and Operational notes · deleted in "plan: settle 02.4"

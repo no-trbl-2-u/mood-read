@@ -5,7 +5,7 @@
 // `wrangler pages deploy ... --commit-hash "$GITHUB_SHA"`; that hash lands in
 // `deployment_trigger.metadata.commit_hash`, which is what a deploy is matched by here.
 //
-// Exit codes (plan/02-bootstrap.md, Contracts): 0 ready, 1 error, 2 timeout, 3 config or auth.
+// Exit codes (plan/bearings.md, Verify gate): 0 ready, 1 error, 2 timeout, 3 config or auth.
 
 export const EXIT = { ready: 0, error: 1, timeout: 2, config: 3 };
 

@@ -151,7 +151,7 @@ All answered; none is open.
 Measure: 17 open · 0 closed · next A18
 
 - [ ] **05.1** The music catalog: manifest, R2 hosting, and `catalog:add` through the rights-checker · M ·
-  closes A1 · needs 02.4 · secrets CLOUDFLARE_S3_ACCESS_KEY_ID, CLOUDFLARE_S3_SECRET_ACCESS_KEY, S3_API_ENDPOINT
+  closes A1 · needs — · secrets CLOUDFLARE_S3_ACCESS_KEY_ID, CLOUDFLARE_S3_SECRET_ACCESS_KEY, S3_API_ENDPOINT
   - Contract first: `CatalogPiece` and `catalog.json` are pinned here; every later chunk reads them.
 - [ ] **05.2** Seed the catalog across every emotion and intensity · L · closes A2 · needs 05.1
   - Sources the 01.13 study ranks, and D7's hand-picked CC-BY / CC-BY-SA tracks; every one through `catalog:add`.

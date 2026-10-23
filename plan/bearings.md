@@ -35,8 +35,10 @@ v1 has no accounts and no sign-in (spec 01, Open questions 5): `reader` walks th
 
 ## Stack (locked — do not re-litigate)
 
-Pinned in spec 02 (`plan/02-bootstrap.md`) from the first build on the local branch `chunk-01.1-player`. Revisit only
-if a chunk genuinely cannot ship without changing one; then stop and log a `[needs-user-call]`.
+Pinned by the bootstrap (spec 02, complete; `git log --diff-filter=D -- plan/02-bootstrap.md`) from the first build
+on the local branch `chunk-01.1-player`; `package.json` holds the exact versions. Take a newer patch through
+`pnpm expo install`, never by hand. Revisit only if a chunk genuinely cannot ship without changing one; then stop
+and log a `[needs-user-call]`.
 
 | Layer | Choice | Why |
 |---|---|---|
@@ -64,12 +66,13 @@ bare `pnpm add`, so versions match the SDK.
 | # | Service | Used for | Secrets (by name, in `nexus.secrets.json`) | Status |
 |---|---|---|---|---|
 | 01 | GitHub | the repo, the cloud loop (`march.yml`, `next.yml`, `heartbeat.yml`), Actions secrets | `GH_TOKEN` | live |
-| 02 | Cloudflare Pages | the web build's deploys (02.3) | `CLOUDFLARE_API_TOKEN`, `CLOUDFLARE_ACCOUNT_ID` | Pages project not created yet (02.3 creates it) |
+| 02 | Cloudflare Pages | the web build's deploys (02.3), project `mood-read` | `CLOUDFLARE_API_TOKEN`, `CLOUDFLARE_ACCOUNT_ID` | live |
+| 06 | Cloudflare Workers | the scoring proxy's home, Worker `mood-read-proxy` (`proxy/wrangler.jsonc`, 02.4); today `GET /health` only | `CLOUDFLARE_S3_ACCESS_KEY_ID`, `CLOUDFLARE_S3_SECRET_ACCESS_KEY`, `S3_API_ENDPOINT` (pushed by `pnpm secrets:sync`) | live |
 | 03 | AI provider + web search | the scoring proxy's research agent (01.2) | `OPENAI_API_KEY`, `BRAVE_SEARCH_API_KEY` are in the vault; the provider is not chosen | held (spec 01, Open questions 6) |
 | 04 | Expo / EAS | native builds, later | `EXPO_TOKEN` | not used in v1's specs |
 | 05 | Sentry | error tracking, later | `SENTRY_AUTH_TOKEN` | not used in v1's specs |
 
-No `setup/` runbooks yet: GitHub is live and 02.3's Design is Cloudflare's runbook. The first chunk that needs a
+No `setup/` runbooks yet: GitHub and Cloudflare are live, and the Operational notes below are Cloudflare's runbook. The first chunk that needs a
 dashboard click it cannot make writes `setup/NN_<service>.md` (`nexus/customization/external-services.md`).
 
 ## Auth provider
@@ -237,15 +240,7 @@ Every commit's first line is `<verb>: <subject>` (or `<verb>(<scope>): <subject>
 
 ### Pre-commit: `pnpm verify`
 
-Today (adoption):
-
-```
-pnpm plan:check      # node scripts/plan-check.mjs --since HEAD
-pnpm secrets:scan    # refuses a staged diff that adds a vault value
-pnpm test:scripts    # the nexus scripts' own suites (node --test)
-```
-
-From 02.1 and 02.2 (spec 02's Design), in order:
+In order (the pre-commit hook runs it):
 
 ```
 plan:check → secrets:scan → typecheck → lint → test:run → test:scripts → build (expo export -p web) → e2e
@@ -259,15 +254,21 @@ Polls Cloudflare Pages for the deploy whose commit hash is HEAD. Exits 0 ready, 
 Implementation: `scripts/deploy-check.mjs`; it reads `CLOUDFLARE_API_TOKEN` and `CLOUDFLARE_ACCOUNT_ID` (or `CF_*`)
 and the Pages project `mood-read`.
 
-**Until chunk 02.3 ships, the project does not deploy:** `deploy-check.mjs` defaults to `DEPLOY_PROVIDER=none` and
-exits 0 with a note. 02.3 creates the Pages project and flips the default to `cloudflare-pages`.
+`deploy-check.mjs` defaults to `DEPLOY_PROVIDER=cloudflare-pages` (02.3). From a checkout with no local vault file,
+run it through the vault: `node scripts/secrets.mjs run --only CLOUDFLARE_API_TOKEN,CLOUDFLARE_ACCOUNT_ID -- pnpm
+deploy:check`.
 
 **Red deploy = blocked tick.** Read the log, patch the root cause, push again. Up to 3 same-root-cause iterations;
 otherwise stop per the skill's failure modes.
 
 ## Operational notes
 
-- **Auto-deploys** (from 02.3): every push to `main` runs `deploy.yml`, which deploys the web build.
+- **Auto-deploys** (from 02.3): every push to `main` runs `deploy.yml`: `pnpm build`, then `wrangler pages deploy dist
+  --project-name mood-read --branch main --commit-hash "$GITHUB_SHA"`, the hash `pnpm deploy:check` matches. Its
+  `CLOUDFLARE_*` secrets come from GitHub Actions, pushed from the vault.
+- **The proxy Worker** (from 02.4): `node scripts/secrets.mjs run --only CLOUDFLARE_API_TOKEN,CLOUDFLARE_ACCOUNT_ID --
+  pnpm exec wrangler deploy --config proxy/wrangler.jsonc`. `CLOUDFLARE_API_TOKEN` and `CLOUDFLARE_ACCOUNT_ID` are
+  wrangler's own credentials, never the Worker's secrets.
 - **Two cloud workflows** run the loop today, `march.yml` and `next.yml` (see `plan/AUDIT.md`); `heartbeat.yml`
   watches them. Operator's guide: `.github/CLOUD_LOOP.md`.
 - **Operational secrets** live in the vault: `node scripts/secrets.mjs status` lists every name and where it is set;

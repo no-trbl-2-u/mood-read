@@ -23,7 +23,7 @@ runs:
       shell: bash
       run: pnpm install --frozen-lockfile
 
-    # The Playwright e2e leg arrives with chunk 02.2 (plan/02-bootstrap.md):
+    # The Playwright e2e leg arrives with chunk 02.2 (chunk 02.2):
     # one root package, its config at playwright.config.ts. Both steps
     # skip until that file exists.
     - name: Cache Playwright browsers

@@ -3,7 +3,7 @@ name: deploy
 # A push to main deploys the web build to the Cloudflare Pages project
 # `mood-read` (https://mood-read.pages.dev). The commit hash is what
 # `pnpm deploy:check` matches (scripts/deploy-check.mjs), so it is passed
-# to wrangler explicitly. Spec: plan/02-bootstrap.md, chunk 02.3.
+# to wrangler explicitly. Chunk 02.3; plan/bearings.md, Operational notes.
 #
 # Secrets (GitHub Actions, pushed from the vault with
 # `node scripts/secrets.mjs push NAME --to github-actions`):
