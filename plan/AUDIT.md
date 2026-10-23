@@ -17,6 +17,17 @@
 - default taken: neither workflow changed. Recommended: keep one (`march.yml`, the kit's dispatcher) and
   `gh workflow disable next`; to run 02.1 by hand first, also `gh workflow disable march` until it lands.
 
+### [needs-user-call] What the workarounds study asks of the owner
+- category: product
+- logged: 2026-10-23 (01.13, `docs/workarounds.md` section 7)
+- what: (a) spec 01 and `spec.md` said Mood Read plays "converted" Audible downloads, which Audible's Conditions of
+  Use (iv) forbid the listener too; (c) AIVA Pro (EUR 33 a month) or a commissioned composer for the catalog;
+  (d) a Feed.fm quote for licensed mainstream music; (e) Libro.fm affiliate links in the app and Amazon Associates
+  app approval.
+- default taken: (a) the wording is gone and the import note points to DRM-free stores and companion mode;
+  (c) decide at 01.10, starting from free CC music; (d) no, not before v1; (e) not now, plain links only. Companion
+  mode is plotted after 01.7 (01.14); CC BY credits are 05.5.
+
 ### [needs-user-call] After the v1 MVP: Spotify III.5, iOS and the Apple Developer Program
 - category: product
 - logged: 2026-10-23 (the owner's answers to the streaming study, `docs/streaming-sources.md` section 5)

@@ -165,7 +165,7 @@ Measure: 17 open · 0 closed · next A18
 - [ ] **05.9** Score public-domain books from their own text · M · closes A10 · needs 01.2, 05.8
 - [ ] **05.10** Pre-scored books and their moods in Browse · M · closes A11 · needs 05.9
 - [ ] **05.11** Split a one-file book into chapter files on the device · M · closes A13 · needs 01.6, 04.1
-- [ ] **05.12** Spotify chapter playlists: the rights check · S · closes A14 · needs 01.13
+- [ ] **05.12** Spotify chapter playlists: the rights check · S · closes A14 · needs —
   - A study, same shape as 01.9: builds nothing; `unclear` counts as no and leaves 05.13 waiting.
 - [ ] **05.13** Spotify chapter playlists, sized to each chapter · M · closes A15 · needs 05.12, 01.11, 05.3
 - [ ] **05.14** Google Play release · M · closes A16 · needs 04.1 · secrets EXPO_TOKEN

@@ -4,7 +4,8 @@
 AI reads the emotions a chapter evokes and picks scores, instrumentals and ambient pieces to match. The listener
 hears that music under the narration, picks among several choices per chapter, sets the balance between music and
 voice, or swaps the music for an ambient soundscape (rain, fireplace, cityscape). It plays audiobooks the listener
-already owns as DRM-free audio files on their device, their own converted Audible downloads included.
+already owns as DRM-free audio files on their device (from a store like Libro.fm, or public domain); Audible's own
+downloads stay locked, and a companion mode can play beside the Audible app instead (`docs/workarounds.md`).
 
 From the owner's words (2026-10-22): "Mood read will be an application similar in nature to audible, except it will
 use AI to determine playlists of music scores, instrumentals, and ambient pieces based off of the emotions evoked
@@ -101,8 +102,9 @@ just name the pieces/scores/songs/instrumentals (It's important that there's no 
 - **A6** Chapters come from embedded markers, else one per file, else detected silences; the listener can rename,
   merge and split them.
 - **A7** Audible-owned books reach the library only as DRM-free files the listener brings (Open questions 2, (a)).
-  Picking an AAX/AAXC file shows a clear import note instead of failing silently, Mood Read decrypts nothing, and it
-  never asks for or stores an Audible password.
+  Picking an AAX/AAXC file shows a clear import note instead of failing silently: it points to DRM-free stores and
+  companion mode and never suggests converting. Mood Read decrypts nothing, and it never asks for or stores an
+  Audible password.
 - **A8** The second layer plays under the narration (a soundscape in v1), pauses and seeks with it, and changes to
   the next chapter's sound at the chapter boundary with a crossfade.
 - **A9** Changing the narration's speed never changes the layer's speed or pitch.
@@ -133,10 +135,10 @@ just name the pieces/scores/songs/instrumentals (It's important that there's no 
 - **A24** Each chapter's mood card links out to its named piece on Spotify, YouTube / YouTube Music and
   Apple Music, and Mood Read plays none of it; a listener can save a book's pieces as a playlist in their own
   YouTube or Apple Music account.
-- **A26** The owner has a written report of compliant workarounds for what Spotify, YouTube, Apple Music
-  and Audible won't allow: for each, the alternatives that give the listener the same thing (music under the
-  narration, or their Audible books in Mood Read), each with the rights-checker's verdict on its license or terms,
-  its cost, the build it would take and how close it comes, ranked, before 01.10 picks its source.
+- **A27** A listener can turn on companion mode: Mood Read plays only its own soundscape or piece, no
+  narration, mixed with the audio another app plays (Audible, Libby, Chirp or a music app). It follows chapters by
+  the listener's tap or a timer, and never captures, controls, reads or ducks the other app. It is checked with
+  Audible on a real iOS and Android phone, and the narration's lock-screen controls are unchanged when it is off.
 
 ## Owner decisions (all answered)
 
@@ -150,7 +152,10 @@ Every question below is answered; none is open. Elsewhere in the plan, "Open que
    AAX/AAXC files locked by Audible's DRM, and Audible offers no public API to play them in another app. Removing
    the DRM, even for a book you own, has legal risk (for example the DMCA's anti-circumvention rule in the US).
    Options were: (a) import only DRM-free files and tell listeners to bring their own converted copies; (b) decrypt
-   with the listener's own activation bytes on their device; (c) leave Audible out of v1.
+   with the listener's own activation bytes on their device; (c) leave Audible out of v1. *Revised 2026-10-23
+   (01.13):* Audible's Conditions of Use forbid the listener circumventing its DRM too (Content Restrictions (iv)),
+   so Mood Read never suggests converting; the AAX/AAXC note points to DRM-free stores and companion mode
+   (`docs/workarounds.md`).
 3. **Where the music comes from.** *Answered by the owner (2026-10-22):* "I would love to figure out a way to play
    music from spotify, youtube, music, and the royalty free catalog." The question was which source Mood Read may
    legally play under the narration: a licensed royalty-free catalog, a streaming service's API, AI-generated
@@ -224,7 +229,7 @@ Every question below is answered; none is open. Elsewhere in the plan, "Open que
    no emotions on its card (A21).
 
 ## Chunks
-Measure: 24 open · 2 closed · next A27
+Measure: 24 open · 3 closed · next A28
 
 Build order follows the owner's two-part v1, and the lines below are in that order. **Part 1, the player:** 01.1,
 01.6, 01.3, 01.5, 01.7: the player, then real books in it, then the second layer, its mixer and the soundscapes it
@@ -268,27 +273,20 @@ pieces). Ids keep the order they were written in. The app itself (Expo at the re
   - The card is the expanded chapter row, inline in the river; an unreached row never expands (`plan/bearings.md`
     Layout).
 - [ ] **01.10** After v1: play the chapter's piece, looped under the narration · M · closes A17, A18 ·
-  needs 01.2, 01.3, 01.5, 01.13
+  needs 01.2, 01.3, 01.5
   - The pick, else auto, loops for the whole chapter through the layer and mixer, from a licensed source: the
     royalty-free catalog. 01.9 found no compliant path for a connected paid account (`docs/streaming-sources.md`).
   - A named piece with no licensed recording gets the closest licensed match, and never one with vocals.
+  - Sources, best first (`docs/workarounds.md`): Kevin MacLeod's CC BY catalog and hand-picked CC0 / CC BY /
+    CC BY-SA tracks (D7), each cleared by the rights-checker; AIVA Pro or a commissioned composer only on the
+    owner's word. Any CC BY track needs the Credits screen (05.5).
 - [ ] **01.11** Mood-card link-outs and playlist saving · M · closes A24 · needs 01.10
   - As `docs/streaming-sources.md` sets them: each service's branding rules; Spotify gets plain links only (its
     Developer Policy III.5, until the owner revisits it after v1); YouTube playlists through the Data API within
     its daily quota; Apple Music playlists only once the Apple Developer Program is joined (after v1); SoundCloud
     gets a plain soundcloud.com link, no API.
-- [ ] **01.13** Workarounds for the blocked services: a study · M · closes A26 · needs —
-  - The owner asked (2026-10-23): "Find potential workarounds for not being able to use youtube, spotify, apple
-    player, and audible." Same shape as 01.9 and 01.12: the `rights-checker` reads each candidate's live terms,
-    the report joins `docs/streaming-sources.md` (or a sibling it links), and it builds nothing.
-  - Only compliant routes count (agents.md rule 6, A7, A18): never decrypting AAX/AAXC or using activation bytes,
-    ripping or recording a stream, scraping, or an unofficial API; "unclear" counts as no.
-  - Music to check: licensed catalogs and libraries that allow in-app use under other audio, B2B music services
-    licensed for apps, public-domain recordings, music commissioned or generated under a license that allows it,
-    and a companion mode where the listener plays their own service in its own app while Mood Read plays alongside
-    (each OS's audio mixing and each service's terms).
-  - Audible to check: DRM-free audiobook stores and public-domain libraries the listener can import (01.6), a
-    companion mode where Audible plays in Audible's app and Mood Read plays only the bed and follows chapters, and
-    linking out to Audible.
-  - Already planned, so linked, not redone: mood-card link-outs (01.11), DRM-free imports with the AAX/AAXC note
-    (01.6, A7), CC-BY / CC-BY-SA tracks in the catalog (D7).
+- [ ] **01.14** Companion mode: Mood Read's bed beside another app · M · closes A27 · needs 01.7
+  - As `docs/workarounds.md` (Companion mode) sets it: iOS `.playback` with `mixWithOthers`; Android requests no
+    `AUDIOFOCUS_GAIN`; Expo needs `doNotMix` for lock-screen controls, so this is a mode the listener turns on,
+    never the default. Automatic chapter following is out (iOS has no API; Android's notification access is unclear).
+  - Music apps join only through plain links (01.11): no SDK, MusicKit or remote control.
