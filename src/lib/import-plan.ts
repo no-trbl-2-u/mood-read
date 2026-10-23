@@ -29,9 +29,14 @@ export async function inspectFiles<F extends PickedFile>(files: F[]): Promise<In
 
 const byName = (a: string, b: string) => a.localeCompare(b, undefined, { numeric: true, sensitivity: "base" });
 
-/** Book order: by disc and track number when every file has a track number, else by file name. */
+/**
+ * Book order: by disc and track number when every file has one and no two files share a (disc, track) pair,
+ * else by file name. A CD rip whose track numbers restart on each disc without disc tags repeats its pairs,
+ * so its names ("Disc 1 - 01", "Disc 2 - 01") order it instead of interleaving the discs.
+ */
 export function orderFiles<F extends PickedFile>(list: Inspected<F>[]): Inspected<F>[] {
-  const numbered = list.length > 1 && list.every((x) => x.meta.track !== undefined);
+  const keys = new Set(list.map((x) => `${x.meta.disc ?? 1}/${x.meta.track}`));
+  const numbered = list.length > 1 && list.every((x) => x.meta.track !== undefined) && keys.size === list.length;
   return [...list].sort((a, b) => {
     if (numbered) {
       const d = (a.meta.disc ?? 1) - (b.meta.disc ?? 1) || a.meta.track! - b.meta.track!;

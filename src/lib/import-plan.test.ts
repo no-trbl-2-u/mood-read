@@ -2,7 +2,7 @@
 import assert from "node:assert/strict";
 import { test } from "node:test";
 
-import { bookTags, checkImport, inspectFiles, UNKNOWN_AUTHOR, type PickedFile } from "./import-plan.ts";
+import { bookTags, checkImport, inspectFiles, orderFiles, UNKNOWN_AUTHOR, type PickedFile } from "./import-plan.ts";
 import { memorySource } from "./meta/bytes.ts";
 import {
   aaxFile,
@@ -88,4 +88,20 @@ test("nothing that is audio is named; nothing at all is empty", async () => {
     fileName: "notes.txt",
   });
   assert.deepEqual(await plan([]), { kind: "empty" });
+});
+
+test("A5 a multi-disc rip whose track numbers restart on each disc, with no disc tags, keeps name order", () => {
+  const f = (name: string, track: number, disc?: number) => ({
+    file: picked(name, new Uint8Array(1)),
+    meta: { format: "mp3" as const, chapters: [], drm: null, track, disc },
+  });
+  const names = (l: ReturnType<typeof f>[]) => orderFiles(l).map((x) => x.file.name);
+  assert.deepEqual(names([f("Disc 2 - 01.mp3", 1), f("Disc 1 - 02.mp3", 2), f("Disc 1 - 01.mp3", 1), f("Disc 2 - 02.mp3", 2)]), [
+    "Disc 1 - 01.mp3",
+    "Disc 1 - 02.mp3",
+    "Disc 2 - 01.mp3",
+    "Disc 2 - 02.mp3",
+  ]);
+  // With disc tags the numbers are unique again, and they still beat the names.
+  assert.deepEqual(names([f("a.mp3", 1, 2), f("b.mp3", 1, 1), f("c.mp3", 2, 1)]), ["b.mp3", "c.mp3", "a.mp3"]);
 });
