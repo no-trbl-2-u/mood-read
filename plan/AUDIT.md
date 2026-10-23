@@ -54,6 +54,18 @@
 - default taken: left as they are (names only, already working). Fill in `for` and `where` through the GUI's Vault or
   by hand when convenient.
 
+### [needs-user-call] Install the preview APK and check it on your Android phone (04.1 A2, spec 01 A4)
+- category: product
+- logged: 2026-10-23 (04.1, heads-down)
+- what: preview APKs are built on EAS. Open the build page on the phone and install: build 12bde103 (from 4ec32fb,
+  the 04.1 commit main holds) at https://expo.dev/accounts/no.trbl.2.u/projects/mood-read/builds/12bde103-52a3-4263-b2be-8a25e22b61bc
+  or, if that one failed, build 6cd8e27f at https://expo.dev/accounts/no.trbl.2.u/projects/mood-read/builds/6cd8e27f-eee9-4e49-8d63-7862ecbe44d7
+  Then: import a book, play it, turn the screen off (does it keep playing?), and use the lock-screen controls
+  (play, pause, 30 s back and forward). Speed should run 0.5x to 2x with the pitch kept. A newer build from main:
+  `node scripts/secrets.mjs run --only EXPO_TOKEN -- pnpm build:android:preview`, or run `android-preview` in Actions.
+- default taken: 04.1 lands A1 and stays open (claimed) until you report; your report closes 04.1 (A2) and 01.15
+  (spec 01 A2, A4).
+
 ## Pending — findings
 
 ### [5.5] settle leaves a closed chunk in a need that wraps onto a second line
