@@ -1,6 +1,7 @@
-// The library's state on the device: books, positions, bookmarks and per-book speed, over a key-value store.
+// The library's state on the device: books, positions, bookmarks, per-book speed and mix, over a key-value store.
 // Pure: the store is handed its key-value backend (expo-sqlite's kv-store on native, localStorage on web, a Map
 // in tests), so `node --test` exercises the same code the app runs. Screens reach it through ./library.ts.
+import { normalizeMix, type Mix } from "./mix.ts";
 import { clamp, MAX_SPEED, MIN_SPEED, newId } from "./timeline.ts";
 import type { Book, Bookmark, Chapter } from "./types.ts";
 
@@ -20,6 +21,7 @@ const BOOKS = "books";
 const posKey = (id: string) => `pos:${id}`;
 const marksKey = (id: string) => `bookmarks:${id}`;
 const speedKey = (id: string) => `speed:${id}`;
+const mixKey = (id: string) => `mix:${id}`;
 
 /** Most recently played first, then never-played books by title. */
 export function sortBooks(books: Book[]): Book[] {
@@ -96,6 +98,7 @@ export function createLibraryStore(kv: Kv, now: () => number = Date.now, makeId:
       kv.removeItem(posKey(id));
       kv.removeItem(marksKey(id));
       kv.removeItem(speedKey(id));
+      kv.removeItem(mixKey(id));
       const { [id]: _removed, ...bookmarks } = state.bookmarks;
       state = { ...state, bookmarks };
       saveBooks(state.books.filter((b) => b.id !== id));
@@ -130,6 +133,12 @@ export function createLibraryStore(kv: Kv, now: () => number = Date.now, makeId:
     },
     saveSpeed(id: string, speed: number): void {
       kv.setItem(speedKey(id), JSON.stringify(clamp(speed, MIN_SPEED, MAX_SPEED)));
+    },
+
+    /** The book's mixer setting (A10), or the default for a book never mixed. */
+    getMix: (id: string): Mix => normalizeMix(read<unknown>(mixKey(id), null)),
+    saveMix(id: string, mix: Mix): void {
+      kv.setItem(mixKey(id), JSON.stringify(normalizeMix(mix)));
     },
 
     bookmarks: bookmarksOf,

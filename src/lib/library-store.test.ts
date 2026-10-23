@@ -1,6 +1,7 @@
 import assert from "node:assert/strict";
 import { test } from "node:test";
 
+import { DEFAULT_MIX } from "./mix.ts";
 import { createLibraryStore, sortBooks, type Kv } from "./library-store.ts";
 import type { Book } from "./types.ts";
 
@@ -67,6 +68,18 @@ test("speed is saved per book and kept within 0.5x to 3x", () => {
   assert.equal(store.getSpeed("b2"), 3);
 });
 
+test("A10: the mix is saved per book, restored on reopen, and a broken one falls back to the default", () => {
+  const kv = memoryKv();
+  const store = createLibraryStore(kv);
+  assert.deepEqual(store.getMix("b1"), DEFAULT_MIX);
+  store.saveMix("b1", { balance: 0.2, master: 0.7, duck: true });
+  store.saveMix("b2", { balance: -9, master: 4, duck: false });
+  assert.deepEqual(createLibraryStore(kv).getMix("b1"), { balance: 0.2, master: 0.7, duck: true });
+  assert.deepEqual(store.getMix("b2"), { balance: -1, master: 1, duck: false });
+  kv.setItem("mix:b3", "not json");
+  assert.deepEqual(store.getMix("b3"), DEFAULT_MIX);
+});
+
 test("bookmarks are added, named, sorted by position, jumped to and kept across a reopen", () => {
   const kv = memoryKv();
   const store = createLibraryStore(kv, tick, nextId);
@@ -117,17 +130,19 @@ test("the snapshot is stable between changes (useSyncExternalStore needs that)",
   assert.equal(store.bookmarks("b1"), store.bookmarks("b1"));
 });
 
-test("removing a book drops its position, speed and bookmarks", () => {
+test("removing a book drops its position, speed, mix and bookmarks", () => {
   const kv = memoryKv();
   const store = createLibraryStore(kv);
   store.addBook(book("b1", "Dune"));
   store.savePosition("b1", 3);
   store.saveSpeed("b1", 2);
+  store.saveMix("b1", { balance: 0, master: 0.5, duck: true });
   store.addBookmark("b1", 3, "a");
   store.removeBook("b1");
   assert.equal(store.getBook("b1"), undefined);
   assert.equal(kv.data.has("pos:b1"), false);
   assert.equal(kv.data.has("speed:b1"), false);
+  assert.equal(kv.data.has("mix:b1"), false);
   assert.equal(kv.data.has("bookmarks:b1"), false);
   assert.deepEqual(store.bookmarks("b1"), []);
 });
