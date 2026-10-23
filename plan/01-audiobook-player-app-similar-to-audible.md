@@ -103,9 +103,6 @@ just name the pieces/scores/songs/instrumentals (It's important that there's no 
   Picking an AAX/AAXC file shows a clear import note instead of failing silently: it points to DRM-free stores and
   companion mode and never suggests converting. Mood Read decrypts nothing, and it never asks for or stores an
   Audible password.
-- **A8** The second layer plays under the narration (a soundscape in v1), pauses and seeks with it, and changes to
-  the next chapter's sound at the chapter boundary with a crossfade.
-- **A9** Changing the narration's speed never changes the layer's speed or pitch.
 - **A10** One balance control and a master volume set narration against the layer; the setting is saved per book.
 - **A11** "Duck under voice" dips the layer while the narrator speaks and brings it back in the pauses.
 - **A12** At least six ambient soundscapes loop without an audible seam and can play under a whole book or one
@@ -146,6 +143,8 @@ just name the pieces/scores/songs/instrumentals (It's important that there's no 
 - **A30** An unscored book's river offers "Score this book"; scoring shows its progress, says
   plainly when the monthly cap has paused it, and "Rescore" is an explicit action; the first scoring says once
   that only the title, author and chapter titles are sent.
+- **A31** A pause pressed while the next chapter's file is still loading holds, and the web play
+  button never flickers while audio buffers.
 
 ## Owner decisions (all answered)
 
@@ -236,7 +235,7 @@ Every question below is answered; none is open. Elsewhere in the plan, "Open que
    no emotions on its card (A21).
 
 ## Chunks
-Measure: 25 open · 5 closed · next A31
+Measure: 24 open · 7 closed · next A32
 
 Build order follows the owner's two-part v1, and the lines below are in that order. **Part 1, the player:** 01.1,
 01.6, 01.3, 01.5, 01.7: the player, then real books in it, then the second layer, its mixer and the soundscapes it
@@ -252,15 +251,11 @@ pieces). Ids keep the order they were written in. The app itself (Expo at the re
     keep the book" (05.7) comes later.
   - Chapter editing is an "Edit chapters" mode from the river's overflow: rename inline, merge with the next row,
     split at the current position. 01.6 draws it to this default and records it in `design/layouts/DECISION.md`.
-- [ ] **01.3** The second audio layer on the narration's clock · M · closes A8, A9 · needs —
-  - Chapter-boundary crossfades, looping, independent of the narration's speed. It plays a test loop until 01.7's
-    soundscapes exist.
-  - Its soundscape line sits in the playing chapter's expanded row (`plan/bearings.md` Layout).
 - [ ] **01.5** The mixer: balance, master volume, per-book save, duck under voice · S · closes A10, A11 ·
-  needs 01.3
+  needs —
   - Inline in the playing chapter's expanded row, never a sheet (`plan/bearings.md` Layout).
 - [ ] **01.7** Ambient soundscapes: six or more licensed seamless loops · M · closes A12 · partial A18 ·
-  needs 01.3
+  needs —
   - Per book or per chapter, through the layer and mixer; picked from the mixer's layer chips
     (`plan/bearings.md` Layout).
 - [ ] **01.2** Chapter moods and named pieces through the scoring proxy · L ·
@@ -277,7 +272,7 @@ pieces). Ids keep the order they were written in. The app itself (Expo at the re
   - The card is the expanded chapter row, inline in the river; an unreached row never expands (`plan/bearings.md`
     Layout).
 - [ ] **01.10** After v1: play the chapter's piece, looped under the narration · M · closes A17, A18 ·
-  needs 01.2, 01.3, 01.5, 05.3
+  needs 01.2, 01.5, 05.3
   - The pick, else auto, loops for the whole chapter through the layer and mixer, from a licensed source: the
     royalty-free catalog. 01.9 found no compliant path for a connected paid account (`docs/streaming-sources.md`).
   - It plays the catalog piece 05.3 picks for the chapter (D8), with no closest-match search of its own, so it
@@ -303,6 +298,8 @@ pieces). Ids keep the order they were written in. The app itself (Expo at the re
     closes A4, and its 0.5x to 2x speed with pitch kept closes A2 (native caps at 2x, D11).
   - Native lock-screen seeks run inside expo-audio and skip the player's sleep retarget; once 01.6 brings in-file
     chapters, retarget an End of chapter timer on those seeks too.
+  - Listen to 01.3's bed on the phone: loop seams, the crossfade's volume ramp, and two bed players sharing the
+    audio session with the narration.
 - [ ] **01.16** Time readouts move from the river to the mini player · S · closes A28 · needs —
   - The owner asked (2026-10-23), over a screenshot of the river: "Move all the time related information down
     to the bottom near the player."
@@ -317,3 +314,7 @@ pieces). Ids keep the order they were written in. The app itself (Expo at the re
 - [ ] **01.17** Scoring in the river: start, progress, cap paused, rescore · S ·
   closes A30 · needs 01.2, 06.2
   - As 06.2 draws it: "Score this book" and its progress in the river's top bar, "Rescore" in its overflow.
+- [ ] **01.18** Pause holds through a file handoff; no play-button flicker on web · S ·
+  closes A31 · needs —
+  - Seen in 01.3: `goTo` loads the next file with play on even after a pause; the mini player reads the web
+    status flag, which reads paused whenever the element is short of data (the clock no longer does).

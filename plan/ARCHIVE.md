@@ -24,3 +24,4 @@ identity · deleted in <sha>`; recover its text with
 - 2026-10-23 · 02.4 · pnpm secrets:sync fills the live mood-read-proxy Worker · 14aeba4c..ecb04b50
 - 2026-10-23 · 02 · spec complete: Bootstrap · absorbed into plan/bearings.md Stack, External services, Verify gate and Operational notes · deleted in "plan: settle 02.4"
 - 2026-10-23 · 01.1 · The player: library, river, transport, speed, sleep, bookmarks, resume · e01c0ee7..5d0a7fb3
+- 2026-10-23 · 01.3 · A soundscape bed follows the narration, crossfades at chapters · 73b9a942..766b13b3
