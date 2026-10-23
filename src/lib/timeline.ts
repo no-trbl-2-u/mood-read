@@ -13,6 +13,8 @@ export const SPEED_PRESETS = [0.5, 1, 1.5, 2, 3] as const;
 export const SLEEP_MINUTES = [15, 30, 45] as const;
 /** How close to the end counts as "finished" (seconds). */
 export const END_SLACK = 0.25;
+/** A forward skip stops this far short of the book's end (seconds), so the last moment still plays. */
+const SKIP_END_MARGIN = 1;
 /** How close to a chapter's end the end-of-chapter sleep timer fires (seconds). */
 const CHAPTER_END_SLACK = 0.05;
 
@@ -79,10 +81,10 @@ export function chaptersFromFiles(bookId: string, files: (FileLike & { name: str
   }));
 }
 
-/** Where a skip of `delta` seconds lands, kept inside the book (and just short of its end). */
+/** Where a skip of `delta` seconds lands, kept inside the book and a second short of its end. */
 export function skipTarget(position: number, delta: number, duration: number): number {
   const from = Number.isFinite(position) ? position : 0;
-  return clamp(from + delta, 0, Math.max(0, duration - END_SLACK));
+  return clamp(from + delta, 0, Math.max(0, duration - SKIP_END_MARGIN));
 }
 
 /** Where to start a book on opening it: the saved position, or the start if it was finished or is unreadable. */

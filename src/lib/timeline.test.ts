@@ -64,12 +64,17 @@ test("chapterAt finds the chapter holding a position", () => {
   assert.equal(chapterAt([], 10), undefined);
 });
 
-test("skipTarget moves 30 s and clamps inside the book", () => {
+test("skipTarget moves 30 s and clamps inside the book, a second short of the end", () => {
   assert.equal(skipTarget(50, 30, 175), 80);
   assert.equal(skipTarget(50, -30, 175), 20);
   assert.equal(skipTarget(10, -30, 175), 0);
-  assert.equal(skipTarget(160, 30, 175), 174.75);
+  assert.equal(skipTarget(160, 30, 175), 174);
+  assert.equal(skipTarget(0.5, 30, 0.5), 0);
   assert.equal(skipTarget(Number.NaN, 30, 175), 30);
+});
+
+test("a forward skip to the end never counts as finished", () => {
+  assert.ok(resumeStart(skipTarget(170, 30, 175), 175) > 0);
 });
 
 test("resumeStart returns the saved position, and starts a finished book over", () => {

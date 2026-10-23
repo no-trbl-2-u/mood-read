@@ -1,7 +1,7 @@
 import assert from "node:assert/strict";
 import { test } from "node:test";
 
-import { bookStateLine, chapterTimeLabel, speedLabel } from "./labels.ts";
+import { bookStateLine, chapterTimeLabel, guessTitle, speedLabel } from "./labels.ts";
 
 const chapters = [
   { bookId: "b", index: 0, title: "One", fileIndex: 0, start: 0, end: 100 },
@@ -38,4 +38,12 @@ test("speeds read with one decimal and an x", () => {
   assert.equal(speedLabel(0.5), "0.5x");
   assert.equal(speedLabel(1.3), "1.3x");
   assert.equal(speedLabel(3), "3.0x");
+});
+
+test("a book's title comes from its file names", () => {
+  assert.equal(guessTitle(["Dune - 01.mp3", "Dune - 02.mp3"]), "Dune");
+  assert.equal(guessTitle(["Emma Chapter 1.m4a", "Emma Chapter 2.m4a"]), "Emma");
+  assert.equal(guessTitle(["walden.m4b"]), "walden");
+  assert.equal(guessTitle(["a.mp3", "b.mp3"]), "a");
+  assert.equal(guessTitle([]), "Untitled");
 });

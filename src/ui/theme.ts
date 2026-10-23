@@ -15,6 +15,12 @@ export const colors = {
   accent: "#f2865e",
   /** A hairline border, subtle against the ground. */
   border: "#2d2736",
+  /** Text and glyphs drawn on the accent (the play button, a selected chip). */
+  onAccent: "#1a1015",
+  /** The dim laid over the river while a bottom sheet is open. */
+  scrim: "rgba(8, 6, 12, 0.6)",
+  /** One plain colour for an error line. */
+  danger: "#ff8a8a",
 } as const;
 
 /** A 4-point spacing scale. */

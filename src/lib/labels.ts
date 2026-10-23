@@ -1,6 +1,6 @@
 // Pure text for the library rows, bookmarks and the speed control, so the wording is tested where it is made.
 import { formatDuration } from "./format-duration.ts";
-import { chapterAt, END_SLACK } from "./timeline.ts";
+import { chapterAt, END_SLACK, stripExtension } from "./timeline.ts";
 import type { Book } from "./types.ts";
 
 /**
@@ -30,4 +30,15 @@ export function chapterTimeLabel(chapters: Book["chapters"], position: number): 
 /** A speed as its chip reads: "1.0x", "1.5x", "3.0x". */
 export function speedLabel(speed: number): string {
   return `${speed.toFixed(1)}x`;
+}
+
+/** A book's title from its file names: their common prefix ("Dune - 01.mp3", "Dune - 02.mp3" give "Dune"), else the first name. */
+export function guessTitle(names: string[]): string {
+  const bases = names.map(stripExtension);
+  if (bases.length === 0) return "Untitled";
+  if (bases.length === 1) return bases[0].trim() || "Untitled";
+  let prefix = bases[0];
+  for (const b of bases) while (!b.startsWith(prefix)) prefix = prefix.slice(0, -1);
+  const cleaned = prefix.replace(/[\s\-_.([]*(part|chapter|ch|disc|cd)?[\s\-_.]*\d*$/i, "").trim();
+  return cleaned.length >= 2 ? cleaned : bases[0].trim() || "Untitled";
 }
