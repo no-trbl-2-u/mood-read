@@ -102,7 +102,6 @@ export function utf16(b: Uint8Array, bigEndian = false): string {
 
 /** Strips the NULs and whitespace tags pad their text with. */
 export function clean(s: string): string {
-  // eslint-disable-next-line no-control-regex
   return s.replace(/\u0000+$/g, "").replace(/^﻿/, "").trim();
 }
 
