@@ -40,7 +40,8 @@ lock-screen controls (A4), which only a native build shows. The vault already na
 
 ## Open questions
 
-- None now. The Play Store, iOS and the Apple Developer Program come back after v1 (`plan/AUDIT.md`).
+- None open. *Answered by the owner (2026-10-23):* the Play Store, the iOS build and the Apple Developer Program
+  wait until after v1; this spec stays Android APKs only (`plan/AUDIT.md`).
 
 ## Chunks
 Measure: 2 open · 0 closed · next A3

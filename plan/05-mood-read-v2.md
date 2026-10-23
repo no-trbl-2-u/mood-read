@@ -136,14 +136,16 @@ Decisions made upfront (do not ask):
 
 ## Open questions
 
+All answered; none is open.
+
 - **Why chapter files?** Mood Read's player already plays chapter by chapter from markers in a single file
-  (01.6). Default: 05.11 builds the split anyway, as the owner asked; if the reason was only Spotify timing, the
-  owner can drop it, since 05.13 times playlists from chapter durations alone.
-- **Instrumental tracks on Spotify.** Spotify's API offers no instrumental flag to new apps. Default: the scorer
-  names tracks it judges instrumental, each checked before it joins a playlist; a track it can't confirm is left
-  out.
-- **Play Store developer account.** Google's one-time fee and an account in the owner's name. Default: 05.14 parks
-  in the `/oversight` queue until the owner has one.
+  (01.6). *Answered by the owner (2026-10-23):* 05.11 builds the split anyway, as the owner asked; if the reason
+  was only Spotify timing, the owner can drop it, since 05.13 times playlists from chapter durations alone.
+- **Instrumental tracks on Spotify.** Spotify's API offers no instrumental flag to new apps. *Answered by the
+  owner (2026-10-23):* the scorer names tracks it judges instrumental, each checked before it joins a playlist; a
+  track it can't confirm is left out.
+- **Play Store developer account.** Google's one-time fee and an account in the owner's name. *Answered by the
+  owner (2026-10-23):* 05.14 parks in the `/oversight` queue until the owner has one.
 
 ## Chunks
 Measure: 17 open · 0 closed · next A18
