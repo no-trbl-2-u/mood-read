@@ -21,6 +21,7 @@ under the narration.
 
 | # | Initiative | Spec | Status | Progress |
 |---|---|---|---|---|
+| 5 | Mood Read v2: browse and download free LibriVox books, manage the library (remove a download, keep the book), a royalty-free music catalog, one button that builds and pre-downloads a book's chapter playlist, credits, Spotify chapter playlists, and the Play Store and App Store | [05-mood-read-v2.md](05-mood-read-v2.md) | planned | 15 left |
 | 4 | Android preview APKs: Mood Read installed on a real phone from a preview APK built from main, before any store; iOS after v1 | [04-android-preview.md](04-android-preview.md) | planned | 1 left |
 | 2 | Bootstrap: the Expo app shell at the repo root on pnpm, the verify gate with a hermetic e2e on the web build, and Cloudflare Pages deploys with a green deploy gate | [02-bootstrap.md](02-bootstrap.md) | planned · priority 1 | 3 left |
 | 1 | Mood Read v1 in two parts. Part 1, the player: your own audiobooks (01.1, 01.6) with an ambient soundscape under the narration (01.3, 01.7) and a mixer (01.5). Part 2: each chapter's moods researched by AI, with one named no-vocals piece per chapter, named but not played in v1 (01.2, 01.4). After v1: a streaming study, then playing the pieces (01.10) | [01-audiobook-player-app-similar-to-audible.md](01-audiobook-player-app-similar-to-audible.md) | planned · priority 2 | 10 left |
