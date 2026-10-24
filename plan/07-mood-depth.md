@@ -118,9 +118,6 @@ Decisions made upfront (do not ask):
 
 ## Acceptance
 
-- **A2** Playback crossfades to the next scene's piece when the clock crosses a scene boundary, and back on a seek
-  back; a chapter-wide pick plays for every scene; the mood card shows the playing scene's emotions and nothing for
-  a scene not yet reached.
 - **A6** Verdicts reach the proxy only as `{pieceId, emotions, verdict}` rows with no book, chapter, device or
   time, at most daily, never when "Share what fits" is off; the proxy stores counts only and orders alternates by
   them, demoting a piece with misfits two to one over at least ten verdicts; the privacy policy says so.
@@ -139,13 +136,8 @@ All answered; none is open.
   could keep; a daily batch with no time is not (decided here, 2026-10-24).
 
 ## Chunks
-Measure: 3 open · 6 closed · next A10
+Measure: 2 open · 7 closed · next A10
 
-- [ ] **07.2** The bed follows scenes; the mood card shows the playing scene · M · closes A2 · needs —
-  - `src/lib/bed.ts`: `sceneAt(positionInChapter, chapterLength, scenes)` and the boundary crossfade;
-    `src/player/bed-engine.ts` drives it from the clock; `src/player/MoodCard.tsx` adds the scene band; reached
-    scenes extend `src/lib/reached.ts` with the furthest position within the playing chapter. Until 01.10 plays
-    pieces, the scene change is logged and the card band moves; the bed's soundscape is unchanged.
 - [ ] **07.5** Verdicts as daily aggregates to the proxy, which orders alternates by them · M · closes A6 ·
   needs —
   - `POST /v1/verdicts` in `proxy/src/http.ts` with counts in `proxy/src/store.ts`, rate-limited like `/v1/score`
