@@ -7,6 +7,16 @@
 
 ## Pending — [needs-user-call]
 
+### [needs-user-call] The app now asks librivox.org's API for a book's Gutenberg number (05.9)
+- category: product
+- logged: 2026-10-24 (05.9, /loop)
+- what: archive.org's metadata has no Gutenberg link, so a LibriVox download makes one librivox.org API call to
+  find it. 05.8 had kept the app off that API because its terms were unclear; the rights-checker now finds it
+  allowed (a LibriVox post of 2026-09-16 invites third-party apps and asks for requests spaced several seconds
+  apart). Unverified: whether librivox.org answers cross-site requests from the web build.
+- default taken: keep the app's lookup (best effort, never fails a download); if the web build gets no number,
+  those books stay web-scored. Alternative: move the lookup into the proxy, which also removes the CORS risk.
+
 ### [needs-user-call] After the v1 MVP: Spotify III.5, iOS and the Apple Developer Program
 - category: product
 - logged: 2026-10-23 (the owner's answers to the streaming study, `docs/streaming-sources.md` section 5)

@@ -127,8 +127,6 @@ Decisions made upfront (do not ask):
   a LibriVox book downloads again in one tap, an imported one asks for its file again.
 - **A8** Removing or deleting a book deletes each of its pieces unless another book still on the device has that
   piece in its playlist.
-- **A10** A public-domain book from Browse is scored from its own text; the proxy keeps no copy of the text, and the
-  app sends no audio.
 - **A11** Browse shows a pre-scored book's overall emotions, never a chapter's, and pre-scoring stays within half of
   the monthly cap.
 - **A13** A book in one long file can be split on the device into one file per chapter, keeping its chapters,
@@ -163,7 +161,7 @@ All answered; none is open.
   and 05.15 wait in the Held lane.
 
 ## Chunks
-Measure: 16 open · 5 closed · next A22
+Measure: 15 open · 6 closed · next A22
 
 - [ ] **05.2** Seed the catalog across every emotion and intensity · L · closes A2 · needs 05.19
   - Sources the 01.13 study ranks, and D7's hand-picked CC-BY / CC-BY-SA tracks; every one through `catalog:add`.
@@ -172,9 +170,8 @@ Measure: 16 open · 5 closed · next A22
 - [ ] **05.4** One button builds and pre-downloads a book's playlist · M · closes A4, A5 · needs 01.10, 05.3
 - [ ] **05.7** Library management: remove a download, keep the book; shared pieces survive deletion · M ·
   closes A7, A8 · needs 05.4
-- [ ] **05.9** Score public-domain books from their own text · M · closes A10 · needs —
-  - Update the privacy policy (`src/app/privacy.tsx`) for the LibriVox / Gutenberg ids the proxy now receives.
-- [ ] **05.10** Pre-scored books and their moods in Browse · M · closes A11 · needs 05.9
+- [ ] **05.10** Pre-scored books and their moods in Browse · M · closes A11 · needs —
+  - Throttle pre-scoring: Gutenberg's terms flag more than about 100 downloads a day (seen in 05.9).
 - [ ] **05.11** Split a one-file book into chapter files on the device · M · closes A13 · needs 04.1
 - [ ] **05.13** Spotify chapter playlists, sized to each chapter · M · closes A15 · needs 01.11, 05.3
   - Rewrite the privacy policy's Spotify section (`src/app/privacy.tsx`) to say what a connected account shares.
