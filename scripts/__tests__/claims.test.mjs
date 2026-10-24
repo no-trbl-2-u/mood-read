@@ -49,6 +49,7 @@ beforeEach(() => {
   dirs.push(dir);
   origin = path.join(dir, 'origin.git');
   git(dir, 'init', '-q', '--bare', '-b', 'main', origin);
+  git(origin, 'config', 'receive.autogc', 'false'); // no detached maintenance after a push: it holds the pipe and hangs the gate on Windows
   const seed = path.join(dir, 'seed');
   git(dir, 'init', '-q', '-b', 'main', seed);
   fs.mkdirSync(path.join(seed, 'plan', 'pending'), { recursive: true });

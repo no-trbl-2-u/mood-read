@@ -33,6 +33,7 @@ before(() => {
   dir = fs.mkdtempSync(path.join(os.tmpdir(), 'nexus-push-policy-'));
   const origin = path.join(dir, 'origin.git');
   git(dir, 'init', '-q', '--bare', '-b', 'main', origin);
+  git(origin, 'config', 'receive.autogc', 'false'); // no detached maintenance after a push: it holds the pipe and hangs the gate on Windows
   work = path.join(dir, 'work');
   git(dir, 'init', '-q', '-b', 'main', work);
   git(work, 'config', 'user.name', 'alex');
@@ -41,6 +42,7 @@ before(() => {
   for (const name of ['upstream', 'fork']) {
     const bare = path.join(dir, `${name}.git`);
     git(dir, 'init', '-q', '--bare', '-b', 'main', bare);
+    git(bare, 'config', 'receive.autogc', 'false'); // no detached maintenance after a push: it holds the pipe and hangs the gate on Windows
     git(work, 'remote', 'add', name, bare);
   }
   for (const f of ['install-hooks.mjs', 'owner.mjs', 'claims-codec.mjs', 'git/push-policy.mjs']) {
