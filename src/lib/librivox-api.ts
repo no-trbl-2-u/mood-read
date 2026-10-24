@@ -192,8 +192,14 @@ export function chapterTitle(fileTitle: string | null, index: number): string {
  * null when no clear pattern is there, rather than guessing (05.8 scope: never block on this).
  */
 export function readersLine(description: string | null): string | null {
-  const m = description ? /read by ([^.<\n]{3,160})/i.exec(description) : null;
-  if (!m) return null;
-  const names = m[1]!.trim().replace(/\s+/g, " ");
+  const names = readerNames(description);
   return names ? `Read by ${names}` : null;
+}
+
+/** The readers' names alone ("June Ashby and 6 other volunteers"), the part `readersLine` reads; null when unclear.
+ *  A downloaded book keeps them as its narrator, so Credits thanks them by name (05.5, A12). */
+export function readerNames(description: string | null): string | null {
+  const m = description ? /read by ([^.<\n]{3,160})/i.exec(description) : null;
+  const names = m ? m[1]!.trim().replace(/\s+/g, " ") : "";
+  return names || null;
 }

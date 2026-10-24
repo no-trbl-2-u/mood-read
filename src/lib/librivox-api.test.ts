@@ -9,6 +9,7 @@ import {
   downloadUrl,
   getItem,
   parseLength,
+  readerNames,
   readersLine,
   readItem,
   readSearchResponse,
@@ -147,4 +148,10 @@ test("readersLine parses a clear \"Read by\" pattern; anything else is omitted r
   assert.equal(readersLine("Read by June Ashby and 6 other volunteers. A fantasy novel."), "Read by June Ashby and 6 other volunteers");
   assert.equal(readersLine("A fantasy novel with no reader credit."), null);
   assert.equal(readersLine(null), null);
+});
+
+test("readerNames keeps just the names, the narrator a downloaded LibriVox book carries (05.5)", () => {
+  assert.equal(readerNames("Read by  June Ashby and 6 other volunteers. A fantasy novel."), "June Ashby and 6 other volunteers");
+  assert.equal(readerNames("A fantasy novel with no reader credit."), null);
+  assert.equal(readerNames(null), null);
 });

@@ -8,7 +8,7 @@
 // and calls `library.addBook`, exactly where `importFiles` does for a listener's own file (src/lib/library.ts).
 import { getItem, removeItem, setItem } from "./kv";
 import { library } from "./library";
-import { chapterFiles, chapterTitle, coverFile, downloadUrl, parseLength, type LibriVoxItem } from "./librivox-api";
+import { chapterFiles, chapterTitle, coverFile, downloadUrl, parseLength, readerNames, type LibriVoxItem } from "./librivox-api";
 import { downloadFileInto, probeDuration, resolveFile } from "./media";
 import { extension } from "./meta/read";
 import type { Transfer } from "./download-queue";
@@ -21,6 +21,9 @@ export type PendingLibriVoxBook = {
   /** In track order already (src/lib/librivox-api.ts chapterFiles); `length` is the fallback duration (seconds). */
   files: { name: string; title: string; length: number | null }[];
   cover: { name: string } | null;
+  /** The volunteers who read it, from the item's "Read by ..." line: the book's narrator, thanked on /credits
+   *  (05.5). Absent on a download stashed before 05.5. */
+  readers?: string | null;
 };
 
 const REGISTRY_KEY = "librivox-pending";
@@ -47,7 +50,14 @@ export function pendingBookFrom(item: LibriVoxItem): PendingLibriVoxBook {
     length: parseLength(f.length),
   }));
   const cover = coverFile(item.files);
-  return { identifier: item.identifier, title: item.title, author: item.creator || "Unknown author", files, cover: cover ? { name: cover.name } : null };
+  return {
+    identifier: item.identifier,
+    title: item.title,
+    author: item.creator || "Unknown author",
+    files,
+    cover: cover ? { name: cover.name } : null,
+    readers: readerNames(item.description),
+  };
 }
 
 /** Stashes what a soon-to-be-enqueued download id means; the Transfer reads it back by id when the queue runs it. */
@@ -132,7 +142,7 @@ export const librivoxTransfer: Transfer = async (download, onProgress, signal) =
     id: bookId,
     title: pending.title,
     author: pending.author,
-    narrator: "",
+    narrator: pending.readers ?? "",
     cover: coverRef,
     files,
     chapters,
