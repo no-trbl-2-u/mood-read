@@ -1,10 +1,11 @@
 // The app's side of the scoring proxy (01.2): the only request Mood Read makes about a book. It sends the book's
 // title, author and chapter titles, and for a LibriVox book whose text is on Project Gutenberg its public LibriVox
 // and Gutenberg catalog numbers (05.9), and nothing more (agents.md rule 6): never audio. One configured base URL, no
-// key (A22). Pure: `fetch` is handed in, so tests run it against a fake proxy. The one other request (07.5, spec 07 A6) is
-// the listener's verdicts as aggregate rows (src/lib/verdict-sync.ts builds them): a piece id, an emotion set and a
-// verdict each, never a book, chapter, device or time, with no header but the content type.
-import { EMOTIONS, MAX_SCENES, type Book, type JobView, type RemoteChapter, type ResearchCoverage, type Scene, type VerdictBatch, type VerdictRow } from "./types.ts";
+// key (A22). A 429 is the proxy's "try later" and comes back as such (01.25, A38). Pure: `fetch` is handed in, so
+// tests run it against a fake proxy. The one other request (07.5, spec 07 A6) is the listener's verdicts as aggregate
+// rows (src/lib/verdict-sync.ts builds them): a piece id, an emotion set and a verdict each, never a book, chapter,
+// device or time, with no header but the content type.
+import { EMOTIONS, MAX_SCENES, type Book, type BusyReason, type JobView, type RemoteChapter, type ResearchCoverage, type Scene, type VerdictBatch, type VerdictRow } from "./types.ts";
 
 export type ScoringRequest = { title: string; author: string; chapters: string[]; librivoxId?: string; gutenbergId?: string };
 
@@ -87,17 +88,56 @@ export function readJobView(body: unknown): JobView {
   return out;
 }
 
-export function createScoringApi(baseUrl: string, fetchImpl: Fetch) {
+/** The reasons a 429 names (proxy/src/limiter.ts RefusalReason; held in step by scoring-contract.test.ts). */
+export const BUSY_REASONS: readonly BusyReason[] = ["client-limit", "global-limit", "rescore-too-soon"];
+
+/** How long a 429 that names no usable wait asks the app to hold off: the proxy's limits run by the hour. */
+export const DEFAULT_RETRY_SECONDS = 3600;
+
+/**
+ * The proxy's "try later" (01.21, 01.25, A38): it answered 429 because a limit refuses a new run now. Not a failure:
+ * the proxy was reached and said when it will take the book.
+ */
+export type TryLater = { tryLater: true; reason: BusyReason; retryAfterSeconds: number };
+
+/** A Retry-After value in whole seconds: delta-seconds, or an HTTP date counted from `now`; null when unreadable. */
+function retryAfterHeader(raw: string | null, now: number): number | null {
+  const v = raw?.trim();
+  if (!v) return null;
+  if (/^\d+$/.test(v)) return Number(v);
+  const at = Date.parse(v);
+  return Number.isFinite(at) ? Math.max(0, Math.ceil((at - now) / 1000)) : null;
+}
+
+/** Reads a 429: the reason from its body, the wait from Retry-After, else the body's retryAfterSeconds. */
+async function readTryLater(res: Response, now: number): Promise<TryLater> {
+  let body: { reason?: unknown; retryAfterSeconds?: unknown } = {};
+  try {
+    body = ((await res.json()) ?? {}) as typeof body;
+  } catch {
+    body = {};
+  }
+  const reason = BUSY_REASONS.includes(body.reason as BusyReason) ? (body.reason as BusyReason) : "global-limit";
+  const fromBody = typeof body.retryAfterSeconds === "number" && Number.isFinite(body.retryAfterSeconds) && body.retryAfterSeconds >= 0 ? Math.ceil(body.retryAfterSeconds) : null;
+  const retryAfterSeconds = retryAfterHeader(res.headers.get("retry-after"), now) ?? fromBody ?? DEFAULT_RETRY_SECONDS;
+  return { tryLater: true, reason, retryAfterSeconds };
+}
+
+export function createScoringApi(baseUrl: string, fetchImpl: Fetch, now: () => number = Date.now) {
   const base = baseUrl.replace(/\/+$/, "");
-  async function call(path: string, init?: RequestInit): Promise<JobView | null> {
+  async function call(path: string, init?: RequestInit): Promise<JobView | TryLater | null> {
     const res = await fetchImpl(`${base}${path}`, init);
     if (res.status === 404) return null;
+    if (res.status === 429) return readTryLater(res, now());
     if (!res.ok) throw new Error(`the scoring proxy answered ${res.status}`);
     return readJobView(await res.json());
   }
   return {
-    /** Starts scoring a book (or gets its cached result); `rescore` asks for a new run explicitly. */
-    async start(book: Scorable, rescore = false): Promise<JobView> {
+    /**
+     * Starts scoring a book (or gets its cached result); `rescore` asks for a new run explicitly. A 429 comes back as
+     * TryLater, never thrown, so it is not mistaken for an unreachable proxy (A38).
+     */
+    async start(book: Scorable, rescore = false): Promise<JobView | TryLater> {
       const v = await call(rescore ? "/v1/rescore" : "/v1/score", {
         method: "POST",
         headers: { "content-type": "application/json" },
@@ -113,8 +153,11 @@ export function createScoringApi(baseUrl: string, fetchImpl: Fetch) {
       if (!res.ok) throw new Error(`the scoring proxy answered ${res.status}`);
     },
     /** The job's progress; null when the proxy no longer knows it. */
-    status(jobId: string): Promise<JobView | null> {
-      return call(`/v1/jobs/${encodeURIComponent(jobId)}`);
+    async status(jobId: string): Promise<JobView | null> {
+      const v = await call(`/v1/jobs/${encodeURIComponent(jobId)}`);
+      // The status route starts nothing, so the proxy never refuses it; a 429 here is an error like any other.
+      if (v && "tryLater" in v) throw new Error("the scoring proxy answered 429");
+      return v;
     },
   };
 }

@@ -8,10 +8,12 @@ import { fileURLToPath } from "node:url";
 
 import * as proxy from "../../proxy/src/contract.ts";
 import { parseBookRequest, parseVerdictBatch } from "../../proxy/src/validate.ts";
-import { createScoringApi, RESEARCH_COVERAGE, scoringRequest, type ScoringRequest } from "./scoring-api.ts";
+import type { RefusalReason } from "../../proxy/src/limiter.ts";
+import { BUSY_REASONS, createScoringApi, RESEARCH_COVERAGE, scoringRequest, type ScoringRequest } from "./scoring-api.ts";
 import { EMOTIONS as PROXY_EMOTIONS, PIECE_KINDS } from "../../proxy/src/contract.ts";
 import { EMOTIONS as THEME_EMOTIONS } from "../ui/theme.ts";
 import {
+  type BusyReason,
   EMOTIONS,
   MAX_SCENES,
   MAX_VERDICT_ROWS,
@@ -43,6 +45,15 @@ test("the proxy accepts exactly what the app sends, catalog numbers included (05
   assert.deepEqual(parseBookRequest(requestToApp(requestToProxy(sent))), { ok: true, book: sent });
   const imported = scoringRequest({ title: "Alice", author: "", chapters, source: { kind: "import" } });
   assert.deepEqual(parseBookRequest(imported), { ok: true, book: imported });
+});
+
+// A 429's reasons (01.21, 01.25): the proxy's refusals and the app's "try later" reasons, typechecked both ways.
+const busyToApp = (r: RefusalReason): BusyReason => r;
+const busyToProxy = (r: BusyReason): RefusalReason => r;
+
+test("a 429's reasons agree: the app reads every refusal the proxy names (A38)", () => {
+  const all: RefusalReason[] = ["client-limit", "global-limit", "rescore-too-soon"];
+  assert.deepEqual([...BUSY_REASONS].sort(), all.map(busyToApp).map(busyToProxy).sort());
 });
 
 test("piece kinds agree", () => {

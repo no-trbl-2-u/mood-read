@@ -1,7 +1,9 @@
 import assert from "node:assert/strict";
 import { test } from "node:test";
 
-import { createScoringApi, readJobView, scoringRequest } from "./scoring-api.ts";
+import { route } from "../../proxy/src/http.ts";
+import type { RefusalReason } from "../../proxy/src/limiter.ts";
+import { BUSY_REASONS, createScoringApi, readJobView, scoringRequest } from "./scoring-api.ts";
 import type { Book, JobView } from "./types.ts";
 
 const book = {
@@ -71,6 +73,36 @@ test("start posts to /v1/score (or /v1/rescore) at the base URL; status reads /v
     ],
   );
   assert.equal(new Headers(calls[0].init?.headers).get("authorization"), null, "no key, no auth header (A22)");
+});
+
+// ---- "try later" (01.25, A38): a 429 from the proxy is an answer, not a failure ----
+
+const refusing = (reason: string, retryAfterMs: number) =>
+  createScoringApi("https://proxy.example", (url, init) =>
+    route(new Request(url, init), () => ({ start: async () => ({ refused: { reason: reason as RefusalReason, retryAfterMs } }), status: async () => null })),
+  );
+
+test("A38: the proxy's own 429 reads as try later, with its reason and the wait from Retry-After", async () => {
+  for (const reason of BUSY_REASONS) {
+    const out = await refusing(reason, 125_500).start(book, reason === "rescore-too-soon");
+    assert.deepEqual(out, { tryLater: true, reason, retryAfterSeconds: 126 });
+  }
+});
+
+test("A38: Retry-After wins over the body; without it the body's retryAfterSeconds; an HTTP date counts from now", async () => {
+  const answer = (headers: Record<string, string>, body: unknown) =>
+    createScoringApi("https://proxy.example", async () => new Response(JSON.stringify(body), { status: 429, headers }), () => Date.UTC(2026, 9, 24, 15, 0, 0));
+  const body = { error: "busy", reason: "client-limit", retryAfterSeconds: 900 };
+  assert.deepEqual(await answer({ "retry-after": "60" }, body).start(book), { tryLater: true, reason: "client-limit", retryAfterSeconds: 60 });
+  assert.deepEqual(await answer({}, body).start(book), { tryLater: true, reason: "client-limit", retryAfterSeconds: 900 });
+  assert.deepEqual(await answer({ "retry-after": "Sat, 24 Oct 2026 15:40:00 GMT" }, body).start(book), { tryLater: true, reason: "client-limit", retryAfterSeconds: 2400 });
+});
+
+test("A38: a 429 that says too little still reads as busy for an hour, never as unreachable", async () => {
+  const api = createScoringApi("https://proxy.example", async () => new Response("slow down", { status: 429 }));
+  assert.deepEqual(await api.start(book), { tryLater: true, reason: "global-limit", retryAfterSeconds: 3600 });
+  const odd = createScoringApi("https://proxy.example", async () => Response.json({ reason: "something-new", retryAfterSeconds: -4 }, { status: 429, headers: { "retry-after": "soon" } }));
+  assert.deepEqual(await odd.start(book), { tryLater: true, reason: "global-limit", retryAfterSeconds: 3600 });
 });
 
 test("an error status throws", async () => {

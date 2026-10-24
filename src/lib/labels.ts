@@ -52,3 +52,25 @@ export function stickerLabel(emotion: string, intensity?: number): string {
   if (intensity === undefined || !Number.isFinite(intensity)) return emotion;
   return `${emotion} ${intensityPercent(intensity)}%`;
 }
+
+/** A clock time as the scoring band says it, in the device's own time zone: "3:40 pm", "12:05 am" (01.25). */
+export function clockTimeLabel(at: number): string {
+  const d = new Date(at);
+  const h = d.getHours();
+  return `${h % 12 === 0 ? 12 : h % 12}:${String(d.getMinutes()).padStart(2, "0")} ${h < 12 ? "am" : "pm"}`;
+}
+
+const MONTHS = ["Jan", "Feb", "Mar", "Apr", "May", "Jun", "Jul", "Aug", "Sep", "Oct", "Nov", "Dec"];
+
+/** A day as the scoring band says it: "31 Oct" (01.25). */
+export function dayLabel(at: number): string {
+  const d = new Date(at);
+  return `${d.getDate()} ${MONTHS[d.getMonth()]}`;
+}
+
+/** True when two times fall on the same calendar day on this device. */
+export function sameDay(a: number, b: number): boolean {
+  const x = new Date(a);
+  const y = new Date(b);
+  return x.getFullYear() === y.getFullYear() && x.getMonth() === y.getMonth() && x.getDate() === y.getDate();
+}

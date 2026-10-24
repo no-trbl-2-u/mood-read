@@ -6,6 +6,7 @@ import { test } from "node:test";
 import { fakeModel, fakeSearch } from "../../proxy/src/fakes.ts";
 import { route, type Jobs } from "../../proxy/src/http.ts";
 import { createBookJob, type BookJob } from "../../proxy/src/job.ts";
+import type { Refusal } from "../../proxy/src/limiter.ts";
 import { createMeter, monthOf } from "../../proxy/src/meter.ts";
 import { memoryStore } from "../../proxy/src/store.ts";
 import type { Kv } from "./library-store.ts";
@@ -22,18 +23,21 @@ function mapKv(): Kv & { map: Map<string, string> } {
 }
 
 /** The proxy in memory. Each request is answered by the real handler; steps run when the test says so. */
-function proxy(cap = 20) {
+function proxy(cap = 20, rescoreMinAgeMs = 0) {
   const meter = createMeter(memoryStore());
   const jobs = new Map<string, BookJob>();
   const search = fakeSearch();
   const model = fakeModel({ thin: ["Opening Credits"] });
   const jobFor = (key: string) => {
-    // No rescore minimum age here: these tests rescore at once; the proxy's own tests hold the limits (A34).
-    if (!jobs.has(key)) jobs.set(key, createBookJob({ store: memoryStore(), meter, capUsd: cap, search, model, rescoreMinAgeMs: 0 }));
+    // No rescore minimum age by default: these tests rescore at once; the proxy's own tests hold the limits (A34).
+    if (!jobs.has(key)) jobs.set(key, createBookJob({ store: memoryStore(), meter, capUsd: cap, search, model, rescoreMinAgeMs }));
     return jobs.get(key)!;
   };
+  // A limit the test switches on: the next starts are refused as the limiter would (client-limit, global-limit).
+  let refuse: Refusal | null = null;
   const api: Jobs = {
     start: async (key, b, rescore, client) => {
+      if (refuse) return { refused: refuse };
       const out = await jobFor(key).start(key, b, rescore, { client });
       return "refused" in out ? out : out.view;
     },
@@ -52,6 +56,7 @@ function proxy(cap = 20) {
     meter,
     search,
     setDown: (d: boolean) => (down = d),
+    setRefuse: (r: Refusal | null) => (refuse = r),
     async finishAll() {
       for (const j of jobs.values()) while ((await j.step()).more);
     },
@@ -93,11 +98,12 @@ const book: Book = {
   onDevice: true,
 };
 
-function app(p: ReturnType<typeof proxy>, kv = mapKv()) {
+function app(p: ReturnType<typeof proxy>, kv = mapKv(), clock = { t: 1000 }) {
   const store = createScoringStore(kv);
   const timers = manualTimers();
-  const runner = createScoringRunner({ api: createScoringApi(BASE, p.fetchImpl), store, timers, now: () => 1000 });
-  return { kv, store, timers, runner };
+  const now = () => clock.t;
+  const runner = createScoringRunner({ api: createScoringApi(BASE, p.fetchImpl, now), store, timers, now });
+  return { kv, store, timers, runner, clock };
 }
 
 test("starting sends only the title, author and chapter titles; progress is stored; done stores each chapter (A13, A15)", async () => {
@@ -243,4 +249,86 @@ test("a rescore that waits at the cap still hands over the proxy's cached result
   await new Promise((r) => setTimeout(r, 0));
   assert.equal(later.store.job(book.id)?.state, "capped");
   assert.equal(later.store.scores(book.id)?.chapters.length, 3, "a status poll hands it over too");
+});
+
+// ---- "try later" (01.25, A38) ----
+
+test("A38: a busy proxy (429) leaves the book waiting until Retry-After, not unreachable, and nothing polls", async () => {
+  const p = proxy();
+  const a = app(p);
+  p.setRefuse({ reason: "client-limit", retryAfterMs: 40 * 60_000 });
+  await a.runner.start(book);
+  const job = a.store.job(book.id)!;
+  assert.equal(job.state, "waiting");
+  assert.equal(job.waitReason, "client-limit");
+  assert.equal(job.waitUntil, 1000 + 40 * 60_000);
+  assert.equal(job.rescore, false);
+  assert.equal(a.timers.queue.size, 0, "a waiting book is not polled");
+  assert.equal(p.bodies.length, 1);
+});
+
+test("A38: starting again before the time waits instead of calling the proxy, also after a reload; after it, it goes", async () => {
+  const p = proxy();
+  const kv = mapKv();
+  const clock = { t: 1000 };
+  const first = app(p, kv, clock);
+  p.setRefuse({ reason: "global-limit", retryAfterMs: 10 * 60_000 });
+  await first.runner.start(book);
+  p.setRefuse(null);
+  const waiting = first.store.job(book.id);
+
+  clock.t += 5 * 60_000;
+  await first.runner.start(book);
+  assert.equal(p.bodies.length, 1, "no second request before the time");
+  assert.deepEqual(first.store.job(book.id), waiting, "still waiting, unchanged");
+
+  const second = app(p, kv, clock); // the app opens again
+  assert.equal(second.store.job(book.id)?.state, "waiting", "the wait survives a reload");
+  second.runner.resumeAll([book]);
+  await second.runner.start(book);
+  await new Promise((r) => setTimeout(r, 0));
+  assert.equal(p.bodies.length, 1, "nor after a reload");
+
+  clock.t = waiting!.waitUntil!;
+  await second.runner.start(book);
+  assert.equal(p.bodies.length, 2, "at the time, it goes");
+  assert.equal(second.store.job(book.id)?.state, "running");
+  assert.equal(second.store.job(book.id)?.waitUntil, undefined);
+});
+
+test("A38: a rescore of a result still too young waits with rescore-too-soon; the scores stay and a plain start still works", async () => {
+  const p = proxy(20, 7 * 86_400_000);
+  const a = app(p);
+  await a.runner.start(book);
+  await p.finishAll();
+  await a.timers.fire();
+  const scores = a.store.scores(book.id);
+  assert.ok(scores);
+
+  await a.runner.start(book, true);
+  const job = a.store.job(book.id)!;
+  assert.equal(job.state, "waiting");
+  assert.equal(job.waitReason, "rescore-too-soon");
+  assert.equal(job.rescore, true);
+  assert.ok(job.waitUntil! > 1000 + 6 * 86_400_000, "about a week out");
+  assert.deepEqual(a.store.scores(book.id), scores, "the moods stay");
+
+  const sent = p.bodies.length;
+  await a.runner.start(book, true);
+  assert.equal(p.bodies.length, sent, "a rescore before the time is not sent");
+});
+
+test("A38: a book waiting on an earlier run keeps that run's id and progress", async () => {
+  const p = proxy();
+  const a = app(p);
+  await a.runner.start(book);
+  const id = a.store.job(book.id)!.jobId;
+  a.runner.stop(book.id);
+  p.setRefuse({ reason: "client-limit", retryAfterMs: 60_000 });
+  a.clock.t += 1;
+  // An unreachable job the listener retries: the proxy says try later.
+  a.store.saveJob(book.id, { ...a.store.job(book.id)!, state: "unreachable" });
+  await a.runner.start(book);
+  assert.equal(a.store.job(book.id)?.state, "waiting");
+  assert.equal(a.store.job(book.id)?.jobId, id);
 });

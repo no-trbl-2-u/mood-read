@@ -237,15 +237,27 @@ export type JobView = {
   result?: { key: string; chapters: RemoteChapter[]; model: string; version: string; scoredAt: number; costUsd: number };
 };
 
+/**
+ * Why the proxy said "try later" with a 429 (01.21, A34; proxy/src/limiter.ts RefusalReason): too many new runs from
+ * this connection this hour, too many from everyone this hour, or a rescore of a result still too young.
+ */
+export type BusyReason = "client-limit" | "global-limit" | "rescore-too-soon";
+
 /** The scoring job as the device remembers it per book, so it resumes after the app closes (A15). */
 export type ScoringJob = {
   jobId: string | null;
-  /** `unreachable`: the proxy could not be reached; the listener may try again. */
-  state: JobState | "unreachable";
+  /**
+   * `unreachable`: the proxy could not be reached; the listener may try again. `waiting`: the proxy said try later
+   * (a 429, A38); nothing is sent for this book before `waitUntil`.
+   */
+  state: JobState | "unreachable" | "waiting";
   progress: JobProgress;
   rescore: boolean;
   startedAt: number;
   updatedAt: number;
+  /** While `waiting`: when the proxy takes the book again (epoch ms, from Retry-After), and why it said no. */
+  waitUntil?: number;
+  waitReason?: BusyReason;
 };
 
 // ---- the download queue (spec 05, 05.6, A6): one queue for a whole book and a catalog piece alike ----

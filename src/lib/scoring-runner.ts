@@ -1,8 +1,9 @@
 // The scoring job from the app's side (01.2, A13, A15): start it, remember its id per book, poll it while the app is
 // open, and pick it up again after a restart. The work itself runs on the proxy, so it carries on while the app is
-// closed. Playback never waits on any of this: an unscored chapter plays as it always did.
+// closed. Playback never waits on any of this: an unscored chapter plays as it always did. When the proxy says "try
+// later" (a 429, 01.25, A38) the book waits on the device until the time it named, and nothing is sent before then.
 // Pure: the api, the store, the clock and the timer are handed in.
-import type { ScoringApi } from "./scoring-api.ts";
+import type { ScoringApi, TryLater } from "./scoring-api.ts";
 import { toBookScores, type ScoringStore } from "./scoring-store.ts";
 import type { Book, JobView, ScoringJob } from "./types.ts";
 
@@ -67,6 +68,21 @@ export function createScoringRunner(deps: { api: Pick<ScoringApi, "start" | "sta
     else if (view.state === "capped") schedule(book, MAX_POLL_MS);
   }
 
+  /** The proxy said try later: the book waits until then, kept on the device so a reload still waits (A38). */
+  function waiting(book: Book, out: TryLater, rescore: boolean) {
+    const prev = store.job(book.id);
+    store.saveJob(book.id, {
+      jobId: prev?.jobId ?? null,
+      state: "waiting",
+      progress: prev?.progress ?? { step: 0, steps: 0, chaptersDone: 0, chapters: book.chapters.length },
+      rescore,
+      startedAt: prev?.startedAt ?? now(),
+      updatedAt: now(),
+      waitUntil: now() + out.retryAfterSeconds * 1000,
+      waitReason: out.reason,
+    });
+  }
+
   function unreachable(book: Book, rescore: boolean) {
     const prev = store.job(book.id);
     store.saveJob(book.id, {
@@ -97,16 +113,27 @@ export function createScoringRunner(deps: { api: Pick<ScoringApi, "start" | "sta
   }
 
   async function start(book: Book, rescore = false): Promise<void> {
+    // Before the time the proxy named, starting again waits: no request leaves the device (A38).
+    if (waitingUntil(book.id) > now()) return;
     stopPolling(book.id);
     try {
-      apply(book, await api.start(book, rescore), rescore);
+      const out = await api.start(book, rescore);
+      if ("tryLater" in out) waiting(book, out, rescore);
+      else apply(book, out, rescore);
     } catch {
       unreachable(book, rescore);
     }
   }
 
+  /** When a waiting book may be sent again (epoch ms); 0 when it is not waiting. */
+  function waitingUntil(bookId: string): number {
+    const job = store.job(bookId);
+    return job?.state === "waiting" ? (job.waitUntil ?? 0) : 0;
+  }
+
   return {
     start,
+    waitingUntil,
     /** Picks a remembered job up again: after a restart, or when its book opens. */
     resume(book: Book): void {
       const job = store.job(book.id);
