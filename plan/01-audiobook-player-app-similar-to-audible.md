@@ -76,8 +76,8 @@ just name the pieces/scores/songs/instrumentals (It's important that there's no 
   title, composer or artist, kind: `score` | `instrumental` | `ambient`, vocals: always `none`, mood tags; from
   01.10 also a licensed source, duration and license), `ChapterPlaylist` (chapter, one named piece that loops for
   the chapter, two or more alternates, the listener's pick or `auto`), `Soundscape` (id, name, loop file), `Mix`
-  (book, narration level, bed level, duck on/off, layer: `soundscape` | `music` (from 01.10) | `off`, soundscape
-  id).
+  (book, balance and master volume, from which the narration and bed levels follow, duck on/off, layer:
+  `soundscape` | `music` (from 01.10) | `off`, soundscape id).
 - **One audio engine, two layers:** narration and the bed are separate players behind one clock owned by the
   narration, so seek, pause, speed and chapter change drive the bed; the bed never drives the narration.
 - **Scoring is a job, not a play-time call:** scoring a book runs once in the background (with progress), and the
@@ -95,8 +95,6 @@ just name the pieces/scores/songs/instrumentals (It's important that there's no 
 - **A2** Speed runs 0.5× to 3× without pitch change (0.5× to 2× on Android and iOS, where the audio engine caps it);
   a sleep timer stops playback after N minutes or at chapter end.
 - **A4** Playback continues in the background and answers lock-screen / media-key controls.
-- **A10** One balance control and a master volume set narration against the layer; the setting is saved per book.
-- **A11** "Duck under voice" dips the layer while the narrator speaks and brings it back in the pauses.
 - **A12** At least six ambient soundscapes loop without an audible seam and can play under a whole book or one
   chapter, through the same layer and mixer.
 - **A13** Scoring a book names each chapter's emotions with intensities and stores them; rescoring is explicit.
@@ -221,16 +219,13 @@ Every question below is answered; none is open. Elsewhere in the plan, "Open que
    no emotions on its card (A21).
 
 ## Chunks
-Measure: 19 open · 12 closed · next A32
+Measure: 17 open · 14 closed · next A32
 
 Build order follows the owner's two-part v1, and the lines below are in that order. **Part 1, the player:** 01.1,
 01.6, 01.3, 01.5, 01.7: the player, then real books in it, then the second layer, its mixer and the soundscapes it
 plays. **Part 2, moods and named pieces:** 01.2, then 01.4. **After v1:** 01.9 (a study), then 01.10 (play the
 pieces). Ids keep the order they were written in. The app itself (Expo at the repo root, the gates) is spec 02.
 
-- [ ] **01.5** The mixer: balance, master volume, per-book save, duck under voice · S · closes A10, A11 ·
-  needs —
-  - Inline in the playing chapter's expanded row, never a sheet (`plan/bearings.md` Layout).
 - [ ] **01.7** Ambient soundscapes: six or more licensed seamless loops · M · closes A12 · partial A18 ·
   needs —
   - Per book or per chapter, through the layer and mixer; picked from the mixer's layer chips
@@ -252,7 +247,7 @@ pieces). Ids keep the order they were written in. The app itself (Expo at the re
   - The card is the expanded chapter row, inline in the river; an unreached row never expands (`plan/bearings.md`
     Layout).
 - [ ] **01.10** After v1: play the chapter's piece, looped under the narration · M · closes A17, A18 ·
-  needs 01.2, 01.5, 05.3
+  needs 01.2, 05.3
   - The pick, else auto, loops for the whole chapter through the layer and mixer, from a licensed source: the
     royalty-free catalog. 01.9 found no compliant path for a connected paid account (`docs/streaming-sources.md`).
   - It plays the catalog piece 05.3 picks for the chapter (D8), with no closest-match search of its own, so it
@@ -284,6 +279,9 @@ pieces). Ids keep the order they were written in. The app itself (Expo at the re
     the APK and check each.
   - Listen to 01.3's bed on the phone: loop seams, the crossfade's volume ramp, and two bed players sharing the
     audio session with the narration.
+  - 01.5's duck under voice: on iOS it samples the narration through expo-audio's tap (untried on a device); on
+    Android it is a no-op, since expo-audio samples only with RECORD_AUDIO and Mood Read asks for no microphone.
+    Check iOS, and decide whether Android needs another path.
 - [ ] **01.17** Scoring in the river: start, progress, cap paused, rescore · S ·
   closes A30 · needs 01.2
   - As 06.2 draws it: "Score this book" and its progress in the river's top bar, "Rescore" in its overflow.
