@@ -73,3 +73,27 @@ test("containment matches whole words only", () => {
   assert.equal(matchChapters([f("Homecoming", 0)], ["Home"], [0]).size, 0);
   assert.equal(matchChapters([f("The Storm Breaks", 0)], ["Chapter 4: The Storm"], [0]).get(0)?.sourceTitle, "The Storm Breaks");
 });
+
+test("parts, books, discs, tracks and file numbers never take the sources' chapter of that number (A19)", () => {
+  const ch2 = [f("Chapter 2: The Letter", 2)];
+  for (const titles of [
+    ["Part 1", "Part 2", "Part 3"],
+    ["Book 1", "Book 2"],
+    ["Section 1", "Section 2"],
+    ["Disc 2", "Track 2", "02 - Track"],
+    ["01", "02", "03"],
+    ["I", "II", "III"],
+  ]) {
+    const m = matchChapters(ch2, titles, titles.map((_, i) => i));
+    assert.equal(m.size, 0, `${titles.join(", ")}: no chapter number, so unscored`);
+  }
+});
+
+test("a chapter numbered as a chapter still matches by order, in digits, roman numerals or words (A19)", () => {
+  const titles = ["Opening Credits", "Ch. 1", "Chapter II", "Chapter Three"];
+  const m = matchChapters([f("Chapter 3", 3), f("Chapter 1", 1), f("Chapter 2", 2)], titles, [0, 1, 2, 3]);
+  assert.equal(m.get(1)?.sourceNumber, 1);
+  assert.equal(m.get(2)?.sourceNumber, 2);
+  assert.equal(m.get(3)?.sourceNumber, 3);
+  assert.equal(m.has(0), false);
+});

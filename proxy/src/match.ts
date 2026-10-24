@@ -19,6 +19,17 @@ export function titleWords(title: string): string[] {
     .filter(Boolean);
 }
 
+/**
+ * The number a title gives as a chapter number: "Chapter 3", "Ch. 3", "Chapter III", "Chapter Three", with or
+ * without a name after it. A part, book, section, disc or track number, a file's leading "02 -" or a bare "3" is not
+ * a chapter number (parts and omnibus books number apart from chapters; file numbers count credits tracks), so such
+ * a title is never matched by order (A19).
+ */
+export function chapterOrdinal(title: string): number | null {
+  const head = /^\s*(?:chapter|ch\.?)\s*(\d+|[ivxlcdm]+|[a-z]+)\b/i.exec(title);
+  return head ? titleNumber(`chapter ${head[1]}`) : null;
+}
+
 /** A title reduced for comparison: its words run together. */
 export const titleKey = (title: string): string => titleWords(title).join("");
 
@@ -66,10 +77,11 @@ export function matchChapters(found: FoundChapter[], titles: string[], indices: 
     const ws = titleWords(titles[i]);
     if (!out.has(i) && ws.length) take(i, words.findIndex((fw, j) => !used.has(j) && containsWords(ws, fw)));
   }
-  // Last, order: a chapter numbered in its title takes the found chapter with that number in the sources' numbering.
-  // An audiobook chapter with no number in its title is never matched by its position.
+  // Last, order: a chapter numbered as a chapter in its title takes the found chapter with that number in the
+  // sources' numbering. An audiobook chapter with no chapter number ("Part 2", "02 - Track", "The Storm") is never
+  // matched by its number or position.
   for (const i of indices) {
-    const n = titleNumber(titles[i]);
+    const n = chapterOrdinal(titles[i]);
     if (!out.has(i) && n !== null) take(i, found.findIndex((f, j) => !used.has(j) && f.sourceNumber > 0 && f.sourceNumber === n));
   }
   return out;
