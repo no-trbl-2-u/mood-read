@@ -14,8 +14,8 @@ test.describe("settings", () => {
     await expect(more).toHaveAttribute("aria-expanded", "false");
     await more.click();
     await expect(page.getByRole("menu")).toBeVisible();
-    // Only entries whose route exists: Browse and Credits join when spec 05 ships them.
-    await expect(page.getByRole("menuitem")).toHaveText(["Downloads", "Settings"]);
+    // Only entries whose route exists: Credits joins when 05.5 ships it.
+    await expect(page.getByRole("menuitem")).toHaveText(["Browse free books", "Downloads", "Settings"]);
     await page.getByRole("menuitem", { name: "Settings" }).click();
     await expect(page).toHaveURL(/\/settings$/);
 

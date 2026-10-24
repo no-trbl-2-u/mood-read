@@ -109,6 +109,7 @@ export async function downloadFileInto(
   const res = await fetch(url, { signal });
   if (!res.ok) throw new Error(`Could not download ${url} (${res.status})`);
   const total = Number(res.headers.get('content-length')) || null;
+  const type = res.headers.get('content-type') ?? undefined;
   let blob: Blob;
   if (res.body) {
     const reader = res.body.getReader();
@@ -121,7 +122,7 @@ export async function downloadFileInto(
       bytes += value.length;
       onProgress(bytes, total);
     }
-    blob = new Blob(chunks as BlobPart[]);
+    blob = new Blob(chunks as BlobPart[], { type });
   } else {
     blob = await res.blob();
     onProgress(blob.size, blob.size);

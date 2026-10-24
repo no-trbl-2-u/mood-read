@@ -3,7 +3,8 @@
 // empty on the web build), the licenses, a book that is not on the device, and a real book's river with the
 // playing row expanded (the mixer inline), its Speed & Sleep sheet and its Bookmarks sheet, and a scored book
 // (01.4): the playing row's mood card (emotion stickers, the named piece, alternates and the pick chips), a
-// reached row's stickers and a locked row. On each one:
+// reached row's stickers and a locked row, and Browse and a LibriVox book's page (05.8, archive.org stubbed by
+// e2e/librivox-fixtures.ts, same as e2e/browse.spec.ts). On each one:
 //   - axe (WCAG 2.0, 2.1 and 2.2, A and AA) finds no serious or critical issue;
 //   - every control (button, link, switch, checkbox, slider, tab, menu item, and any other focusable element, which
 //     is what a Pressable is on the web) is at least 44 x 44 CSS px (A5, `sizes.touch`; WCAG 2.5.5);
@@ -16,6 +17,7 @@ import { toneAndSilence, wavFile } from "../src/lib/meta/test-fixtures";
 import { sizes } from "../src/ui/theme";
 
 import { guard } from "./guard";
+import { IDENTIFIER, stubArchiveOrg } from "./librivox-fixtures";
 import { scoredBook } from "./scored-book";
 
 /** The smallest touch target, in CSS px: 44, the size A5 holds (WCAG 2.5.5; 2.5.8's AA floor is 24). */
@@ -110,6 +112,31 @@ const STATES: State[] = [
     open: async (page) => {
       await page.goto("/downloads");
       await expect(page.getByTestId("downloads-empty")).toBeVisible();
+    },
+  },
+  {
+    name: "/browse (05.8): the pre-query prompt",
+    open: async (page) => {
+      await stubArchiveOrg(page);
+      await page.goto("/browse");
+      await expect(page.getByTestId("browse-prompt")).toBeVisible();
+    },
+  },
+  {
+    name: "/browse (05.8): a search's results",
+    open: async (page) => {
+      await stubArchiveOrg(page);
+      await page.goto("/browse");
+      await page.getByTestId("browse-query").fill("Wind in the Willows");
+      await expect(page.getByTestId(`browse-result-${IDENTIFIER}`)).toBeVisible();
+    },
+  },
+  {
+    name: "/browse/[id] (05.8): a LibriVox book",
+    open: async (page) => {
+      await stubArchiveOrg(page);
+      await page.goto(`/browse/${IDENTIFIER}`);
+      await expect(page.getByTestId("browse-book-download")).toBeVisible();
     },
   },
   {

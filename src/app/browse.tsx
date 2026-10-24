@@ -169,7 +169,7 @@ const styles = StyleSheet.create({
     borderRadius: radii.md,
     backgroundColor: colors.surface,
   },
-  input: { flex: 1, ...typography.body, paddingVertical: spacing.sm },
+  input: { flex: 1, minHeight: sizes.touch, ...typography.body, paddingVertical: spacing.sm },
   clear: { minWidth: sizes.touch, minHeight: sizes.touch, alignItems: "center", justifyContent: "center", marginRight: -spacing.sm },
   fieldCaption: typography.caption,
   centered: { flex: 1, alignItems: "center", justifyContent: "center", gap: spacing.sm, paddingTop: spacing.xl },
