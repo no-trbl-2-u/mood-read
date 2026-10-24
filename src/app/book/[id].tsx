@@ -7,18 +7,20 @@ import { speedLabel } from "@/lib/labels";
 import { chapterEdits, reached, useBook, useFurthestReached } from "@/lib/library";
 import { moodCardView } from "@/lib/mood-card";
 import { isReached } from "@/lib/reached";
+import { notes, useNoteDismissed } from "@/lib/notes";
 import { scoring, scoringStore, useBookScores, useScoringJob } from "@/lib/scoring";
 import { BookmarksSheet } from "@/player/BookmarksSheet";
 import { ChapterRiver } from "@/player/ChapterRiver";
 import { CompanionBand } from "@/player/CompanionBand";
 import { LayerPicker } from "@/player/LayerPicker";
 import { MiniPlayer } from "@/player/MiniPlayer";
-import { ScoringBand } from "@/player/ScoringBand";
+import { RescoreConfirm, RESCORE_MENU, ScoringBand } from "@/player/ScoringBand";
 import { Mixer } from "@/player/Mixer";
 import { usePlayer } from "@/player/PlayerProvider";
 import { SOUNDSCAPE_IDS } from "@/player/soundscapes";
 import { SpeedSleepSheet } from "@/player/SpeedSleepSheet";
 import { Button } from "@/ui/Button";
+import { OverflowMenu } from "@/ui/OverflowMenu";
 import { colors, spacing, typography } from "@/ui/theme";
 import { TopBar, TopBarButton } from "@/ui/TopBar";
 
@@ -41,6 +43,8 @@ export default function BookScreen() {
   const book = useBook(id);
   const p = usePlayer();
   const [sheet, setSheet] = useState<"speed" | "bookmarks" | null>(null);
+  const [confirmRescore, setConfirmRescore] = useState(false);
+  const noteDismissed = useNoteDismissed("scoring-sent");
   const { open } = p;
   const job = useScoringJob(id ?? "");
   const scores = useBookScores(id ?? "");
@@ -107,14 +111,32 @@ export default function BookScreen() {
               icon="bookmark"
               onPress={() => setSheet(sheet === "bookmarks" ? null : "bookmarks")}
             />
+            {scores && job?.state !== "running" && (
+              <OverflowMenu
+                testID="open-river-menu"
+                items={[{ key: "rescore", label: RESCORE_MENU.label, icon: "sparkles", caption: RESCORE_MENU.caption, onPress: () => setConfirmRescore(true) }]}
+              />
+            )}
           </>
         }
       />
       {active && p.companion && <CompanionBand timer={p.companionTimer} onTimer={p.setCompanionTimer} />}
+      {confirmRescore && scores && (
+        <RescoreConfirm
+          chapters={book.chapters.length}
+          onConfirm={() => {
+            setConfirmRescore(false);
+            void scoring.start(book, true);
+          }}
+          onCancel={() => setConfirmRescore(false)}
+        />
+      )}
       <ScoringBand
         chapters={book.chapters.length}
         job={job}
         scores={scores}
+        noteDismissed={noteDismissed}
+        onDismissNote={() => notes.dismiss("scoring-sent")}
         onStart={() => void scoring.start(book)}
         onRescore={() => void scoring.start(book, true)}
       />

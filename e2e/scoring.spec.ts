@@ -118,10 +118,11 @@ test.describe("scoring a book", () => {
   test("A13, A19, A22: Score this book sends only the title, author and chapter titles, shows progress, and stores each chapter", async ({ page }) => {
     const proxy = await fakeProxy(page);
     await importBook(page);
-    await expect(page.getByText("Only the title, author and chapter titles are sent.")).toBeVisible();
     await expect(page.getByTestId("unscored-0")).toHaveCount(0);
 
     await page.getByTestId("score-book").click();
+    // The first scoring on this device says once what is sent; dismissed, it stays gone (A30).
+    await expect(page.getByText("Only the title, author and chapter titles are sent.")).toBeVisible();
     await expect(page.getByTestId("scoring-progress")).toHaveText(/^Scoring \d+%$/);
     expect(proxy.posts).toHaveLength(1);
     expect(proxy.posts[0].path).toBe("/v1/score");
@@ -156,9 +157,19 @@ test.describe("scoring a book", () => {
     expect(proxy.posts).toHaveLength(1);
 
     // Rescore is explicit and goes to its own endpoint.
-    await page.getByTestId("rescore").click();
+    await expect(page.getByTestId("rescore")).toHaveCount(0);
+    await page.getByTestId("open-river-menu").click();
+    await page.getByTestId("menu-rescore").click();
+    await expect(page.getByText("Rescore all 2 chapters?")).toBeVisible();
+    await page.getByTestId("rescore-confirm-yes").click();
     await expect.poll(() => proxy.posts.length).toBe(2);
     expect(proxy.posts[1].path).toBe("/v1/rescore");
+    await expect(page.getByTestId("scoring-note")).toBeVisible();
+    await page.getByTestId("scoring-note-dismiss").click();
+    await expect(page.getByTestId("scoring-note")).toHaveCount(0);
+    await page.reload();
+    await expect(page.getByTestId("scoring-band")).toBeVisible();
+    await expect(page.getByTestId("scoring-note")).toHaveCount(0);
     await page.waitForLoadState("networkidle");
   });
 

@@ -102,9 +102,6 @@ just name the pieces/scores/songs/instrumentals (It's important that there's no 
 - **A24** Each chapter's mood card links out to its reference piece ("In the spirit of") on Spotify, YouTube /
   YouTube Music and Apple Music, and Mood Read plays none of it; a listener can save a book's reference pieces as
   a playlist in their own YouTube or Apple Music account.
-- **A30** An unscored book's river offers "Score this book"; scoring shows its progress, says
-  plainly when the monthly cap has paused it, and "Rescore" is an explicit action; the first scoring says once
-  that only the title, author and chapter titles are sent.
 - **A31** A pause pressed while the next chapter's file is still loading holds, and the web play
   button never flickers while audio buffers.
 - **A32** A chapter's own soundscape stays with that chapter when chapters are merged or split.
@@ -210,7 +207,7 @@ Every question below is answered; none is open. Elsewhere in the plan, "Open que
    no emotions on its card (A21).
 
 ## Chunks
-Measure: 13 open · 24 closed · next A38
+Measure: 12 open · 25 closed · next A38
 
 Build order follows the owner's two-part v1, and the lines below are in that order. **Part 1, the player:** 01.1,
 01.6, 01.3, 01.5, 01.7: the player, then real books in it, then the second layer, its mixer and the soundscapes it
@@ -250,9 +247,6 @@ pieces). Ids keep the order they were written in. The app itself (Expo at the re
     Check iOS, and decide whether Android needs another path.
   - Listen to 01.7's six synthesized soundscapes under narration (nobody has heard them yet): the wrap of each
     loop, and whether Low Café reads as a distant room rather than a crowd. Swap any that sound wrong.
-- [ ] **01.17** Scoring in the river: start, progress, cap paused, rescore · S ·
-  closes A30 · needs —
-  - As 06.2 draws it: "Score this book" and its progress in the river's top bar, "Rescore" in its overflow.
 - [ ] **01.18** Pause holds through a file handoff; no play-button flicker on web · S ·
   closes A31 · needs —
   - Seen in 01.3: `goTo` loads the next file with play on even after a pause; the mini player reads the web

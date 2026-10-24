@@ -4,7 +4,7 @@ import { Modal, Pressable, StyleSheet, Text, useWindowDimensions, View } from "r
 import { Icon, type IconName } from "./Icon";
 import { colors, hardShadow, radii, shadows, sizes, spacing, strokes, typography } from "./theme";
 
-export type MenuItem = { key: string; label: string; icon?: IconName; onPress: () => void; ruleBefore?: boolean };
+export type MenuItem = { key: string; label: string; icon?: IconName; caption?: string; onPress: () => void; ruleBefore?: boolean };
 
 type Anchor = { top: number; right: number };
 
@@ -63,7 +63,10 @@ export function OverflowMenu(props: {
                   }}
                 >
                   {item.icon && <Icon name={item.icon} />}
-                  <Text style={styles.itemText}>{item.label}</Text>
+                  <View style={styles.itemBody}>
+                    <Text style={styles.itemText}>{item.label}</Text>
+                    {item.caption && <Text style={typography.caption}>{item.caption}</Text>}
+                  </View>
                 </Pressable>
               </View>
             ))}
@@ -97,9 +100,11 @@ const styles = StyleSheet.create({
     flexDirection: "row",
     alignItems: "center",
     gap: spacing.md,
+    paddingVertical: spacing.xs,
     paddingHorizontal: spacing.md,
     borderRadius: radii.md,
   },
+  itemBody: { flex: 1 },
   itemText: { ...typography.label, fontSize: typography.body.fontSize },
   rule: { borderTopWidth: strokes.hairline, borderTopColor: colors.border, marginVertical: spacing.xs, marginHorizontal: spacing.sm },
 });
