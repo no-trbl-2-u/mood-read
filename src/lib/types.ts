@@ -56,4 +56,6 @@ export type Soundscape = {
   loop: number | string;
   /** The loop's length in seconds, so the bed can sit at the right place in it. */
   loopSeconds: number;
+  /** What allows Mood Read to play it (A18). */
+  license: string;
 };

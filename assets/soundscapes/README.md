@@ -3,7 +3,8 @@
 The bed's ambient soundscapes (01.7), in the mixer's chip order. Every one is synthesized from seeded noise,
 filters and simple tones by `scripts/make-soundscapes.mjs` (the recipes are `scripts/soundscapes/synth.mjs`): nothing
 is sampled, recorded or downloaded, so no third-party material and no third-party license is involved. Each is
-this project's own work, owned by the project, and may be played in the app (agents.md rule 6, spec 01 A18).
+this project's own work, owned by the project, and may be played in the app (agents.md rule 6, spec 01 A18). The
+same license sits on each loop's record in `src/lib/soundscapes.ts` (`OWNED_LICENSE`).
 
 | File | Soundscape | Provenance | License |
 |---|---|---|---|
@@ -27,5 +28,4 @@ to the start. `scripts/__tests__/soundscapes.test.mjs` checks each file's wrap (
 loop's own) and that the files are byte for byte what the script writes. To rebuild:
 `node scripts/make-soundscapes.mjs`.
 
-`test-low-hum.wav` and `test-drift.wav` are the bed's placeholder loops (01.3): quiet sine tones made by
-`scripts/make-test-loops.mjs`, also this project's own work. The six above replace them.
+The placeholder test loops of 01.3 (`test-low-hum.wav`, `test-drift.wav`) and their script are retired.

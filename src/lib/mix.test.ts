@@ -1,7 +1,7 @@
 import assert from "node:assert/strict";
 import { test } from "node:test";
 
-import { crossfadeGains } from "./bed.ts";
+import { crossfadeGains, DEFAULT_BED } from "./bed.ts";
 import {
   balanceText,
   bedVolume,
@@ -22,16 +22,16 @@ import {
 } from "./mix.ts";
 
 test("the default mix: the bed under the narration at 60%, master full, duck off", () => {
-  assert.deepEqual(DEFAULT_MIX, { balance: -0.4, master: 1, duck: false });
+  assert.deepEqual(DEFAULT_MIX, { balance: -0.4, master: 1, duck: false, ...DEFAULT_BED });
   assert.deepEqual(mixLevels(DEFAULT_MIX), { narration: 1, bed: 0.6 });
 });
 
 test("a stored mix is normalized: broken or missing fields take the default, numbers are clamped", () => {
   assert.deepEqual(normalizeMix(null), DEFAULT_MIX);
   assert.deepEqual(normalizeMix("x"), DEFAULT_MIX);
-  assert.deepEqual(normalizeMix({ balance: 5, master: -2, duck: true }), { balance: 1, master: 0, duck: true });
+  assert.deepEqual(normalizeMix({ balance: 5, master: -2, duck: true }), { ...DEFAULT_MIX, balance: 1, master: 0, duck: true });
   assert.deepEqual(normalizeMix({ balance: Number.NaN, master: "1", duck: "yes" }), DEFAULT_MIX);
-  assert.deepEqual(normalizeMix({ balance: 0.12345, master: 0.98765 }), { balance: 0.123, master: 0.988, duck: false });
+  assert.deepEqual(normalizeMix({ balance: 0.12345, master: 0.98765 }), { ...DEFAULT_MIX, balance: 0.123, master: 0.988 });
 });
 
 test("A10: the balance turns one side down and master scales both", () => {

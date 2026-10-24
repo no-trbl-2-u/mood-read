@@ -5,9 +5,13 @@
 //
 // The narration's audio is only measured here, never kept or sent anywhere (agents.md rule 6): a level in, a
 // gain out.
+import { DEFAULT_BED, normalizeBed, type BedSetting } from "./bed.ts";
 
-/** A book's mixer setting, saved per book (A10). 01.7 adds the layer and its soundscape (src/lib/bed.ts BedChoice). */
-export type Mix = {
+/**
+ * A book's mixer setting, saved per book (A10): the levels, and (01.7, A12) the layer: the book's soundscape or off,
+ * and any chapter's own (src/lib/bed.ts BedSetting).
+ */
+export type Mix = BedSetting & {
   /** -1 narration only, 0 both at full, +1 the bed only. */
   balance: number;
   /** 0 silent to 1 full, over both layers. */
@@ -16,8 +20,14 @@ export type Mix = {
   duck: boolean;
 };
 
-/** The bed sits under the narration at 60% until the listener moves the balance; master full; duck off (opt-in). */
-export const DEFAULT_MIX: Mix = { balance: -0.4, master: 1, duck: false };
+/** The part of a Mix that sets the two layers' volumes. */
+export type MixLevels = Pick<Mix, "balance" | "master" | "duck">;
+
+/**
+ * The bed sits under the narration at 60% until the listener moves the balance; master full; duck off (opt-in); Night
+ * Wind under every chapter.
+ */
+export const DEFAULT_MIX: Mix = { balance: -0.4, master: 1, duck: false, ...DEFAULT_BED };
 
 /** One step of the balance and master sliders (keyboard and screen-reader increments). */
 export const MIX_STEP = 0.1;
@@ -34,6 +44,7 @@ export function normalizeMix(raw: unknown): Mix {
     balance: num(r.balance, DEFAULT_MIX.balance, -1, 1),
     master: num(r.master, DEFAULT_MIX.master, 0, 1),
     duck: typeof r.duck === "boolean" ? r.duck : DEFAULT_MIX.duck,
+    ...normalizeBed(raw),
   };
 }
 
@@ -41,7 +52,7 @@ export function normalizeMix(raw: unknown): Mix {
  * The narration's and the bed's levels (0 to 1) for a Mix. The balance only ever turns one side down: left of
  * centre lowers the bed, right of centre lowers the narration, and the centre leaves both at full. Master scales both.
  */
-export function mixLevels(mix: Mix): { narration: number; bed: number } {
+export function mixLevels(mix: MixLevels): { narration: number; bed: number } {
   const m = normalizeMix(mix);
   const narration = m.balance > 0 ? 1 - m.balance : 1;
   const bed = m.balance < 0 ? 1 + m.balance : 1;
@@ -55,7 +66,7 @@ export function bedVolume(level: number, crossfadeGain: number, duckGain: number
 }
 
 /** The balance as a screen reader reads it: "Narration 100%, layer 60%". */
-export function balanceText(mix: Mix): string {
+export function balanceText(mix: MixLevels): string {
   const { balance } = normalizeMix(mix);
   const narration = Math.round((balance > 0 ? 1 - balance : 1) * 100);
   const bed = Math.round((balance < 0 ? 1 + balance : 1) * 100);

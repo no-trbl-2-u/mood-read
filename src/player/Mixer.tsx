@@ -1,6 +1,7 @@
 // The mixer, inline in the playing chapter's expanded row (01.5; design/layouts/DECISION.md "Mixer (inline, in the
 // expanded row)"), never a sheet: Balance between narration and the layer, Master volume, and Duck under voice
-// (On / Off). The Layer line sits under it; its chips are 01.7's. The setting is the book's, saved per book (A10).
+// (On / Off), then the Layer chips (01.7, ./LayerPicker.tsx). The setting is the book's, saved per book (A10).
+import type { ReactNode } from "react";
 import { StyleSheet, Text, View } from "react-native";
 
 import { balanceText, MIX_STEP, percentText, type Mix } from "@/lib/mix";
@@ -22,7 +23,7 @@ const COPY = {
   duckUnsupported: "This device can't hear the narrator yet, so the layer stays level.",
 };
 
-export function Mixer({ mix, onChange }: { mix: Mix; onChange: (patch: Partial<Mix>) => void }) {
+export function Mixer({ mix, onChange, layer }: { mix: Mix; onChange: (patch: Partial<Mix>) => void; layer?: ReactNode }) {
   return (
     <View style={styles.mixer} testID="mixer">
       <Text style={styles.heading}>{COPY.heading}</Text>
@@ -78,6 +79,7 @@ export function Mixer({ mix, onChange }: { mix: Mix; onChange: (patch: Partial<M
         </View>
       </View>
       {mix.duck && !VOICE_LEVEL_SUPPORTED && <Text style={styles.note}>{COPY.duckUnsupported}</Text>}
+      {layer}
     </View>
   );
 }

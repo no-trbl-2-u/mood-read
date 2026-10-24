@@ -1,6 +1,7 @@
 import assert from "node:assert/strict";
 import { test } from "node:test";
 
+import { pickLayer, setChapterOnly } from "./bed.ts";
 import { DEFAULT_MIX } from "./mix.ts";
 import { createLibraryStore, sortBooks, type Kv } from "./library-store.ts";
 import type { Book } from "./types.ts";
@@ -72,10 +73,10 @@ test("A10: the mix is saved per book, restored on reopen, and a broken one falls
   const kv = memoryKv();
   const store = createLibraryStore(kv);
   assert.deepEqual(store.getMix("b1"), DEFAULT_MIX);
-  store.saveMix("b1", { balance: 0.2, master: 0.7, duck: true });
-  store.saveMix("b2", { balance: -9, master: 4, duck: false });
-  assert.deepEqual(createLibraryStore(kv).getMix("b1"), { balance: 0.2, master: 0.7, duck: true });
-  assert.deepEqual(store.getMix("b2"), { balance: -1, master: 1, duck: false });
+  store.saveMix("b1", { ...DEFAULT_MIX, balance: 0.2, master: 0.7, duck: true });
+  store.saveMix("b2", { ...DEFAULT_MIX, balance: -9, master: 4, duck: false });
+  assert.deepEqual(createLibraryStore(kv).getMix("b1"), { ...DEFAULT_MIX, balance: 0.2, master: 0.7, duck: true });
+  assert.deepEqual(store.getMix("b2"), { ...DEFAULT_MIX, balance: -1, master: 1, duck: false });
   kv.setItem("mix:b3", "not json");
   assert.deepEqual(store.getMix("b3"), DEFAULT_MIX);
 });
@@ -130,13 +131,30 @@ test("the snapshot is stable between changes (useSyncExternalStore needs that)",
   assert.equal(store.bookmarks("b1"), store.bookmarks("b1"));
 });
 
+test("A12: the layer is saved per book with any chapter's own; a mix saved before 01.7 plays the default", () => {
+  const kv = memoryKv();
+  const store = createLibraryStore(kv);
+  assert.equal(store.getMix("b1").soundscapeId, "night-wind");
+  let mix = { ...store.getMix("b1"), ...pickLayer(store.getMix("b1"), 0, "rain") };
+  mix = { ...mix, ...pickLayer(setChapterOnly(mix, 1, true), 1, "off") };
+  store.saveMix("b1", mix);
+  const back = createLibraryStore(kv).getMix("b1");
+  assert.equal(back.soundscapeId, "rain");
+  assert.deepEqual(back.chapterBeds, { "1": { layer: "off", soundscapeId: null } });
+  assert.equal(store.getMix("b2").soundscapeId, "night-wind", "another book keeps its own");
+  kv.setItem("mix:b3", JSON.stringify({ balance: 0.1, master: 0.9, duck: true }));
+  assert.deepEqual(store.getMix("b3"), { ...DEFAULT_MIX, balance: 0.1, master: 0.9, duck: true });
+  kv.setItem("mix:b4", JSON.stringify({ ...DEFAULT_MIX, layer: "loud", chapterBeds: "x" }));
+  assert.deepEqual(store.getMix("b4"), DEFAULT_MIX);
+});
+
 test("removing a book drops its position, speed, mix and bookmarks", () => {
   const kv = memoryKv();
   const store = createLibraryStore(kv);
   store.addBook(book("b1", "Dune"));
   store.savePosition("b1", 3);
   store.saveSpeed("b1", 2);
-  store.saveMix("b1", { balance: 0, master: 0.5, duck: true });
+  store.saveMix("b1", { ...DEFAULT_MIX, balance: 0, master: 0.5, duck: true });
   store.addBookmark("b1", 3, "a");
   store.removeBook("b1");
   assert.equal(store.getBook("b1"), undefined);

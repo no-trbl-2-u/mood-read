@@ -1,10 +1,9 @@
 // The chapter river: every chapter of the book in one scrolling list, which is also the chapter list. A row shows
 // its title; the playing row is expanded in place and marked with a heavy left rule and a play mark. The river
 // carries no times: every time readout sits in the mini player (A28). The expanded row carries the inline mixer
-// (01.5: balance, master volume, duck under voice), the bed's "Layer" line, its soundscape for this chapter (01.3),
-// and the chapter edits (01.6, spec 01 A6): rename, merge with the
-// next chapter, and split at the current position. Emotion chips, the mood card, the layer chips and lock marks join
-// from 01.4 and 01.7.
+// (01.5: balance, master volume, duck under voice; 01.7: the Layer chips) and the chapter edits (01.6, spec 01 A6):
+// rename, merge with the next chapter, and split at the current position. Emotion chips, the mood card and lock
+// marks join from 01.4.
 import { useEffect, useRef, useState, type ReactNode } from "react";
 import { Pressable, ScrollView, StyleSheet, Text, TextInput, View, type ScrollViewInstance } from "react-native";
 
@@ -18,9 +17,7 @@ export function ChapterRiver(props: {
   currentIndex: number | undefined;
   /** The playing position in the book, in seconds: where Split cuts. Never shown here (A28). */
   position: number;
-  /** The bed's sound for the playing chapter, by name; null when the layer is off. */
-  layer: string | null;
-  /** The inline mixer, shown in the playing row above the Layer line; absent until the book is open in the player. */
+  /** The inline mixer with its Layer chips, shown in the playing row; absent until the book is open in the player. */
   mixer?: ReactNode;
   onJump: (index: number) => void;
   /** Chapter edits; absent until the book is open in the player. */
@@ -79,12 +76,6 @@ export function ChapterRiver(props: {
             {playing && (
               <View style={styles.expanded} testID="chapter-expanded">
                 {props.mixer}
-                <View style={styles.layerLine} testID="layer-line">
-                  <Text style={styles.label}>Layer</Text>
-                  <Text style={styles.layerChip} testID="layer-sound">
-                    {props.layer ?? "Off"}
-                  </Text>
-                </View>
                 {props.edits && (
                   <ChapterEdits
                     key={`${c.index}:${c.title}`}
@@ -191,18 +182,6 @@ const styles = StyleSheet.create({
   titlePlaying: { fontWeight: "700" },
   mark: { paddingTop: 1 },
   expanded: { marginTop: spacing.sm, gap: spacing.xs },
-  layerLine: { flexDirection: "row", alignItems: "center", gap: spacing.sm },
-  label: { color: colors.textMuted, fontSize: 13 },
-  layerChip: {
-    color: colors.text,
-    fontSize: 13,
-    paddingHorizontal: spacing.sm,
-    paddingVertical: spacing.xs,
-    borderRadius: 14,
-    borderWidth: 1,
-    borderColor: colors.border,
-    overflow: "hidden",
-  },
   editRow: { flexDirection: "row", flexWrap: "wrap", alignItems: "center", gap: spacing.sm, marginTop: spacing.sm },
   editButton: {
     minHeight: 36,

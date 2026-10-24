@@ -3,12 +3,23 @@
 // never drives the narration back. The bed's decisions are src/lib/bed.ts; its players are ./bed-engine.ts.
 // The mixer (01.5) sets both layers' volumes from the book's Mix (src/lib/mix.ts), saved per book, and ducks the bed
 // under the narrator's voice from a level measured on the device (./voice-level.ts); the audio goes nowhere.
+// The book's Mix also carries its layer (01.7): a soundscape or off for the book, and any chapter's own; the bed
+// plays the chapter's own, else the book's, and a pick crossfades to it while playing.
 import { setAudioModeAsync, useAudioPlayer, useAudioPlayerStatus, type AudioPlayer } from "expo-audio";
 import { createContext, useCallback, useContext, useEffect, useMemo, useRef, useState, type ReactNode } from "react";
 import { AppState, Platform } from "react-native";
 
-import { bedSoundFor, DEFAULT_BED, IDLE_BED, planBed, type BedChoice, type BedState } from "@/lib/bed";
-import { createClock, type Clock, type ClockEvent } from "@/lib/clock";
+import {
+  bedSoundFor,
+  IDLE_BED,
+  pickLayer,
+  planBed,
+  setChapterOnly,
+  type BedSetting,
+  type BedState,
+  type LayerPick,
+} from "@/lib/bed";
+import { createClock, type Clock, type ClockEvent, type ClockState } from "@/lib/clock";
 import { createDucker, DEFAULT_MIX, mixLevels, normalizeMix, type Mix } from "@/lib/mix";
 import { library, useBooks } from "@/lib/library";
 import { resolveFile } from "@/lib/media";
@@ -56,8 +67,8 @@ export type PlayerApi = {
   sleep: SleepTimer | null;
   /** The narration's clock, which the bed follows (01.3). */
   clock: Clock;
-  /** What the bed plays (until 01.7 makes it the book's choice, each chapter's test loop). */
-  bed: BedChoice;
+  /** What the bed plays: the open book's layer, and any chapter's own (01.7, A12); part of its mix. */
+  bed: BedSetting;
   /** The open book's mixer setting (01.5, A10): balance, master and duck under voice. */
   mix: Mix;
   open: (bookId: string) => Promise<void>;
@@ -73,6 +84,10 @@ export type PlayerApi = {
   cancelSleep: () => void;
   /** Changes the open book's mix and saves it for that book. */
   setMix: (patch: Partial<Mix>) => void;
+  /** A layer chip: sets the playing chapter's own layer if it has one, else the book's; saved with the mix. */
+  pickLayer: (pick: LayerPick) => void;
+  /** "This chapter only": gives the playing chapter its own layer, or drops it to follow the book's. */
+  setChapterOnly: (on: boolean) => void;
 };
 
 /** A file being loaded: where to land in it and whether to play once it is ready. */
@@ -103,7 +118,6 @@ export function PlayerProvider({ children }: { children: ReactNode }) {
   const status = useAudioPlayerStatus(player);
   const books = useBooks();
   const clock = useMemo(() => createClock(), []);
-  const bed = DEFAULT_BED;
 
   const [bookId, setBookId] = useState<string | null>(null);
   const [fileIndex, setFileIndex] = useState(0);
@@ -122,6 +136,9 @@ export function PlayerProvider({ children }: { children: ReactNode }) {
   const narrationLevel = useRef(mixLevels(DEFAULT_MIX).narration);
   const bedLevel = useRef(mixLevels(DEFAULT_MIX).bed);
   const engineRef = useRef<BedEngine | null>(null);
+  const bedRef = useRef<BedSetting>(DEFAULT_MIX);
+  // Re-plans the bed against the clock as it stands, after a layer pick (set by the bed's effect).
+  const replanBed = useRef<() => void>(() => {});
   const ducker = useMemo(() => createDucker(), []);
   const lastSave = useRef(0);
   const loadToken = useRef(0);
@@ -377,22 +394,31 @@ export function PlayerProvider({ children }: { children: ReactNode }) {
     engine.setLevel(bedLevel.current * ducker.gain());
     engineRef.current = engine;
     let state: BedState = IDLE_BED;
-    const off = clock.subscribe((s, event) => {
+    const follow = (s: ClockState, event: ClockEvent) => {
       const chapters = bookRef.current?.id === s.bookId ? (bookRef.current?.chapters ?? []) : [];
       const plan = planBed(state, s, event, {
         chapterStart: chapters.find((c) => c.index === s.chapterIndex)?.start ?? 0,
-        soundFor: (i) => bedSoundFor(i, bed, SOUNDSCAPE_IDS),
+        soundFor: (i) => bedSoundFor(i, bedRef.current, SOUNDSCAPE_IDS),
         loopSeconds: (id) => soundscape(id)?.loopSeconds ?? 0,
       });
       state = plan.state;
       plan.commands.forEach(engine.apply);
-    });
+    };
+    const off = clock.subscribe(follow);
+    replanBed.current = () => follow(clock.current(), "tick");
     return () => {
       off();
+      replanBed.current = () => {};
       engineRef.current = null;
       engine.dispose();
     };
-  }, [clock, bed, ducker]);
+  }, [clock, ducker]);
+
+  // A layer pick (or the open book's mix) moves the bed now, crossfading if it is heard (A12).
+  useEffect(() => {
+    bedRef.current = mix;
+    replanBed.current();
+  }, [mix]);
 
   // The mix sets both layers: the narration's volume, and the bed's level under its crossfades (A10).
   useEffect(() => {
@@ -437,6 +463,17 @@ export function PlayerProvider({ children }: { children: ReactNode }) {
       else player.play();
     };
     const isPlaying = () => player.playing || !!targetRef.current?.play;
+    // Changes the open book's layer for the playing chapter and saves it with the mix.
+    const updateBed = (change: (bed: BedSetting, chapterIndex: number | null) => BedSetting) => {
+      const b = bookRef.current;
+      if (!b) return;
+      const index = chapterAt(b.chapters, livePosition())?.index ?? null;
+      setMixState((prev) => {
+        const next = normalizeMix({ ...prev, ...change(prev, index) });
+        library.saveMix(b.id, next);
+        return next;
+      });
+    };
     const skip = (d: number) => {
       const b = bookRef.current;
       if (!b) return;
@@ -455,7 +492,7 @@ export function PlayerProvider({ children }: { children: ReactNode }) {
       speed,
       sleep,
       clock,
-      bed,
+      bed: mix,
       open,
       play,
       pause,
@@ -502,8 +539,10 @@ export function PlayerProvider({ children }: { children: ReactNode }) {
           return next;
         });
       },
+      pickLayer: (pick) => updateBed((bed, i) => pickLayer(bed, i, pick)),
+      setChapterOnly: (on) => updateBed((bed, i) => setChapterOnly(bed, i, on)),
     };
-  }, [book, chapter, position, playing, target, error, speed, sleep, clock, bed, mix, open, goTo, persist, player, livePosition, followSleep]);
+  }, [book, chapter, position, playing, target, error, speed, sleep, clock, mix, open, goTo, persist, player, livePosition, followSleep]);
 
   useEffect(() => {
     remote.current = { play: api.play, pause: api.pause, skip: api.skip };

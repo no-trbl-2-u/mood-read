@@ -9,18 +9,26 @@ import {
   CROSSFADE_MS,
   DEFAULT_BED,
   IDLE_BED,
+  normalizeBed,
+  pickFor,
+  pickLayer,
   planBed,
+  setChapterOnly,
   type BedContext,
+  type BedSetting,
   type BedState,
 } from "./bed.ts";
 import { createClock, type ClockEvent, type ClockState } from "./clock.ts";
+import { OWNED_LICENSE, SOUNDSCAPE_IDS, SOUNDSCAPE_INFO, soundscapeInfo } from "./soundscapes.ts";
 
 const CATALOG = ["hum", "drift"] as const;
+// The book plays hum; chapter 1 has its own, drift, so its boundary is heard as a crossfade (A8).
+const SETTING: BedSetting = { layer: "soundscape", soundscapeId: "hum", chapterBeds: { "1": { layer: "soundscape", soundscapeId: "drift" } } };
 // Two chapters: 0 to 100 s and 100 to 220 s; both loops 4 s long.
 const STARTS = [0, 100];
 const ctxAt = (clock: ClockState): BedContext => ({
   chapterStart: STARTS[clock.chapterIndex ?? 0] ?? 0,
-  soundFor: (i) => bedSoundFor(i, DEFAULT_BED, CATALOG),
+  soundFor: (i) => bedSoundFor(i, SETTING, CATALOG),
   loopSeconds: () => 4,
 });
 const at = (position: number, extra: Partial<ClockState> = {}): ClockState => ({
@@ -33,16 +41,83 @@ const at = (position: number, extra: Partial<ClockState> = {}): ClockState => ({
 });
 const step = (prev: BedState, clock: ClockState, event: ClockEvent) => planBed(prev, clock, event, ctxAt(clock));
 
-test("each chapter takes the catalog in turn; a book-wide soundscape wins; off and music play nothing", () => {
-  assert.equal(bedSoundFor(0, DEFAULT_BED, CATALOG), "hum");
-  assert.equal(bedSoundFor(1, DEFAULT_BED, CATALOG), "drift");
-  assert.equal(bedSoundFor(2, DEFAULT_BED, CATALOG), "hum");
-  assert.equal(bedSoundFor(3, { layer: "soundscape", soundscapeId: "hum" }, CATALOG), "hum");
-  assert.equal(bedSoundFor(1, { layer: "soundscape", soundscapeId: "gone" }, CATALOG), "drift");
-  assert.equal(bedSoundFor(0, { layer: "off", soundscapeId: null }, CATALOG), null);
-  assert.equal(bedSoundFor(0, { layer: "music", soundscapeId: null }, CATALOG), null);
-  assert.equal(bedSoundFor(null, DEFAULT_BED, CATALOG), null);
+test("A12: a chapter's own layer wins over the book's; the book's covers the rest; off and music play nothing", () => {
+  const cat = ["rain", "night-wind", "tide"];
+  const book: BedSetting = { layer: "soundscape", soundscapeId: "rain", chapterBeds: { "2": { layer: "soundscape", soundscapeId: "tide" }, "3": { layer: "off", soundscapeId: null } } };
+  assert.equal(bedSoundFor(0, book, cat), "rain");
+  assert.equal(bedSoundFor(2, book, cat), "tide");
+  assert.equal(bedSoundFor(3, book, cat), null);
+  assert.equal(bedSoundFor(2, { ...book, layer: "off", soundscapeId: null }, cat), "tide");
+  assert.equal(bedSoundFor(0, { ...book, layer: "off", soundscapeId: null }, cat), null);
+  assert.equal(bedSoundFor(0, { layer: "music", soundscapeId: null, chapterBeds: {} }, cat), null);
+});
+
+test("A12: a new book plays Night Wind under every chapter; a loop no longer bundled falls back to it, then to the first", () => {
+  assert.equal(DEFAULT_BED.soundscapeId, "night-wind");
+  assert.ok(SOUNDSCAPE_IDS.includes(DEFAULT_BED.soundscapeId!));
+  assert.equal(bedSoundFor(0, DEFAULT_BED, SOUNDSCAPE_IDS), "night-wind");
+  assert.equal(bedSoundFor(7, DEFAULT_BED, SOUNDSCAPE_IDS), "night-wind");
+  const gone: BedSetting = { layer: "soundscape", soundscapeId: "test-low-hum", chapterBeds: {} };
+  assert.equal(bedSoundFor(0, gone, SOUNDSCAPE_IDS), "night-wind");
+  assert.equal(bedSoundFor(0, gone, ["rain", "tide"]), "rain");
+  assert.equal(bedSoundFor(null, DEFAULT_BED, SOUNDSCAPE_IDS), null);
   assert.equal(bedSoundFor(0, DEFAULT_BED, []), null);
+});
+
+test("A12: a pick sets the book's layer, or the chapter's own while This chapter only is on", () => {
+  let s = pickLayer(DEFAULT_BED, 1, "rain");
+  assert.deepEqual(s, { layer: "soundscape", soundscapeId: "rain", chapterBeds: {} });
+  s = setChapterOnly(s, 1, true);
+  assert.deepEqual(s.chapterBeds, { "1": { layer: "soundscape", soundscapeId: "rain" } });
+  assert.equal(bedSoundFor(1, s, SOUNDSCAPE_IDS), "rain", "turning it on changes nothing heard");
+  s = pickLayer(s, 1, "tide");
+  assert.equal(bedSoundFor(1, s, SOUNDSCAPE_IDS), "tide");
+  assert.equal(bedSoundFor(0, s, SOUNDSCAPE_IDS), "rain");
+  s = pickLayer(s, 1, "off");
+  assert.equal(bedSoundFor(1, s, SOUNDSCAPE_IDS), null);
+  assert.equal(pickFor(1, s, SOUNDSCAPE_IDS), "off");
+  assert.equal(pickFor(0, s, SOUNDSCAPE_IDS), "rain");
+  s = pickLayer(s, 0, "low-cafe");
+  assert.equal(bedSoundFor(0, s, SOUNDSCAPE_IDS), "low-cafe");
+  assert.equal(bedSoundFor(1, s, SOUNDSCAPE_IDS), null, "the chapter keeps its own");
+  s = setChapterOnly(s, 1, false);
+  assert.deepEqual(s.chapterBeds, {});
+  assert.equal(bedSoundFor(1, s, SOUNDSCAPE_IDS), "low-cafe", "off again, it follows the book");
+  assert.equal(setChapterOnly(s, 1, false), s);
+  assert.equal(setChapterOnly(s, null, true), s);
+  assert.equal(pickFor(0, { layer: "music", soundscapeId: null, chapterBeds: {} }, SOUNDSCAPE_IDS), null);
+});
+
+test("A12: a stored bed is normalized: broken parts take the default, broken chapters are dropped", () => {
+  assert.deepEqual(normalizeBed(undefined), DEFAULT_BED);
+  assert.deepEqual(normalizeBed({ balance: 0 }), DEFAULT_BED, "a mix saved before 01.7");
+  assert.deepEqual(normalizeBed({ layer: "loud", soundscapeId: "rain" }), DEFAULT_BED);
+  assert.deepEqual(normalizeBed({ layer: "off", soundscapeId: "rain" }), { layer: "off", soundscapeId: null, chapterBeds: {} });
+  assert.deepEqual(normalizeBed({ layer: "soundscape", soundscapeId: 4 }), DEFAULT_BED);
+  assert.deepEqual(
+    normalizeBed({
+      layer: "soundscape",
+      soundscapeId: "tide",
+      chapterBeds: { "0": { layer: "off" }, "02": { layer: "soundscape", soundscapeId: "rain" }, x: { layer: "off" }, "-1": { layer: "off" }, "5": "rain", "6": null },
+    }),
+    { layer: "soundscape", soundscapeId: "tide", chapterBeds: { "0": { layer: "off", soundscapeId: null }, "2": { layer: "soundscape", soundscapeId: "rain" } } },
+  );
+});
+
+test("A18: every bundled soundscape carries a license that lets the app play it, and the catalog has six or more", () => {
+  assert.ok(SOUNDSCAPE_INFO.length >= 6);
+  assert.deepEqual(
+    SOUNDSCAPE_INFO.map((s) => s.name),
+    ["Rain", "Hearth Fire", "Night Wind", "Tide", "Static Hush", "Low Café"],
+  );
+  for (const s of SOUNDSCAPE_INFO) {
+    assert.equal(s.license, OWNED_LICENSE);
+    assert.match(s.license, /^Owned by the project/);
+    assert.equal(s.loopSeconds, 24);
+  }
+  assert.equal(new Set(SOUNDSCAPE_IDS).size, SOUNDSCAPE_IDS.length);
+  assert.equal(soundscapeInfo("tide")?.name, "Tide");
+  assert.equal(soundscapeInfo(null), undefined);
 });
 
 test("the loop offset is the time into the chapter, wrapped by the loop's length", () => {

@@ -1,7 +1,8 @@
 // The player on the web build (01.1, spec 01 A1-A4): a book opened from two local WAV files made here (two
 // chapters), then play and pause, +/-30 s with clamps, a chapter jump from the river, speed without pitch change,
 // the sleep timer, bookmarks, resume after a reload, and the browser's Media Session; then the bed (01.3, A8, A9)
-// under it, and the mixer (01.5, A10, A11) setting both. The narration's and the bed's HTMLAudioElements are read directly (page.evaluate) so nothing waits
+// under it, the mixer (01.5, A10, A11) setting both, and the soundscapes picked from its Layer chips per book or per
+// chapter (01.7, A12). The narration's and the bed's HTMLAudioElements are read directly (page.evaluate) so nothing waits
 // on real time it does not need; the bed's are the looping ones.
 import { expect, test, type Page } from "@playwright/test";
 
@@ -104,7 +105,7 @@ async function bedDecks(page: Page): Promise<BedDeck[]> {
     (window as unknown as { __audios: HTMLAudioElement[] }).__audios
       .filter((a) => a.ontimeupdate && a.loop)
       .map((a) => ({
-        sound: a.src.includes("test-drift") ? "drift" : a.src.includes("test-low-hum") ? "hum" : a.src,
+        sound: /soundscapes\/([a-z-]+)\./.exec(a.src)?.[1] ?? a.src,
         currentTime: a.currentTime,
         paused: a.paused,
         volume: a.volume,
@@ -383,26 +384,41 @@ test.describe("the player", () => {
     page,
   }) => {
     await importBook(page);
-    // The playing row's Layer line names its chapter's sound; chapters take the test loops in turn.
+    // A new book plays Night Wind under every chapter; the playing row's Layer line names it.
     await expect(page.getByTestId("chapter-row-0").getByTestId("layer-line")).toContainText("Layer");
-    await expect(page.getByTestId("chapter-row-0").getByTestId("layer-sound")).toHaveText("Low Hum (test loop)");
+    await expect(page.getByTestId("chapter-row-0").getByTestId("layer-sound")).toHaveText("Night Wind");
     await expect(page.getByTestId("chapter-row-1").getByTestId("layer-line")).toHaveCount(0);
-    await expect.poll(async () => (await bedDecks(page)).map((d) => d.sound)).toContain("hum");
-    expect((await bedDecks(page)).every((d) => d.paused)).toBe(true);
+    await expect.poll(async () => (await bedDecks(page)).map((d) => d.sound)).toContain("night-wind");
+    // Ch.2 gets its own sound (01.7), so its boundary is heard as a crossfade.
+    await page.getByTestId("chapter-1").click();
+    await expectChapter(page, 1);
+    await page.getByTestId("layer-chapter-only").click();
+    await page.getByTestId("layer-chip-tide").click();
+    await expect(page.getByTestId("chapter-row-1").getByTestId("layer-sound")).toHaveText("Tide");
+    await expect.poll(() => bedPlaying(page), { timeout: 10_000 }).toBe("tide");
+    await pause(page);
+    await page.getByTestId("chapter-0").click();
+    await expectChapter(page, 0);
+    await expect.poll(() => bedPlaying(page), { timeout: 10_000 }).toBe("night-wind");
+    await pause(page);
+    await page.getByTestId("mini-back-30").click();
+    await expectTime(page, 0);
+    await expect.poll(async () => (await bedDecks(page)).every((d) => d.paused)).toBe(true);
+    await expect.poll(async () => (await bedDecks(page)).map((d) => d.sound)).toContain("night-wind");
 
     // Play and pause with the narration.
     await page.getByTestId("mini-play-pause").click();
-    await expect.poll(() => bedPlaying(page)).toBe("hum");
+    await expect.poll(() => bedPlaying(page)).toBe("night-wind");
     await pause(page);
     await expect.poll(async () => (await bedDecks(page)).every((d) => d.paused)).toBe(true);
 
-    // A seek moves the bed within its 4 s loop: 30 s into the chapter is 2 s into the loop.
+    // A seek moves the bed within its 24 s loop: 30 s into the chapter is 6 s into the loop.
     await page.getByTestId("mini-fwd-30").click();
     await expectTime(page, 30);
     await expect
-      .poll(async () => (await bedDecks(page)).find((d) => d.sound === "hum")?.currentTime ?? -1)
-      .toBeGreaterThan(1.5);
-    expect((await bedDecks(page)).find((d) => d.sound === "hum")!.currentTime).toBeLessThan(2.5);
+      .poll(async () => (await bedDecks(page)).find((d) => d.sound === "night-wind")?.currentTime ?? -1)
+      .toBeGreaterThan(5.5);
+    expect((await bedDecks(page)).find((d) => d.sound === "night-wind")!.currentTime).toBeLessThan(6.5);
 
     // A9: the narration at 2x and 3x, the bed still at 1x.
     await page.getByTestId("open-speed-sleep").click();
@@ -436,8 +452,8 @@ test.describe("the player", () => {
     await page.getByTestId("mini-play-pause").click();
     expect(await fade).toBe(true);
     await expectChapter(page, 1);
-    await expect(page.getByTestId("chapter-row-1").getByTestId("layer-sound")).toHaveText("Drift (test loop)");
-    await expect.poll(() => bedPlaying(page), { timeout: 10_000 }).toBe("drift");
+    await expect(page.getByTestId("chapter-row-1").getByTestId("layer-sound")).toHaveText("Tide");
+    await expect.poll(() => bedPlaying(page), { timeout: 10_000 }).toBe("tide");
     expect((await bedDecks(page)).every((d) => d.playbackRate === 1)).toBe(true);
     await pause(page);
     await expect.poll(async () => (await bedDecks(page)).every((d) => d.paused)).toBe(true);
@@ -445,7 +461,7 @@ test.describe("the player", () => {
     // A jump back to Ch.1 while paused brings its sound back.
     await page.getByTestId("chapter-0").click();
     await expectChapter(page, 0);
-    await expect.poll(() => bedPlaying(page)).toBe("hum");
+    await expect.poll(() => bedPlaying(page)).toBe("night-wind");
     await pause(page);
   });
 
@@ -454,7 +470,7 @@ test.describe("the player", () => {
   }) => {
     await importBook(page);
     const row = page.getByTestId("chapter-row-0");
-    // Inline in the playing row, above the Layer line; nothing opens a sheet.
+    // Inline in the playing row, with the Layer chips; nothing opens a sheet.
     for (const id of ["mixer", "mix-balance", "mix-master", "mix-duck-on", "mix-duck-off", "layer-line"]) {
       await expect(row.getByTestId(id)).toBeVisible();
     }
@@ -467,33 +483,33 @@ test.describe("the player", () => {
 
     // The defaults reach both layers.
     await expect.poll(async () => (await narration(page)).volume).toBe(1);
-    await expect.poll(() => bedVolume(page, "hum")).toBe(BED_DEFAULT);
+    await expect.poll(() => bedVolume(page, "night-wind")).toBe(BED_DEFAULT);
 
     // Balance three quarters of the way to the layer: the narration down to 50%, the layer at full.
     await clickSlider(page, "mix-balance", 0.75);
     await expect(balance).toHaveAttribute("aria-valuenow", "0.5");
     await expect(page.getByTestId("mix-balance-value")).toHaveText("Narration 50%, layer 100%");
     await expect.poll(async () => (await narration(page)).volume).toBe(0.5);
-    await expect.poll(() => bedVolume(page, "hum")).toBe(1);
+    await expect.poll(() => bedVolume(page, "night-wind")).toBe(1);
 
     // Master at half scales both.
     await clickSlider(page, "mix-master", 0.5);
     await expect(master).toHaveAttribute("aria-valuenow", "0.5");
     await expect.poll(async () => (await narration(page)).volume).toBe(0.25);
-    await expect.poll(() => bedVolume(page, "hum")).toBe(0.5);
+    await expect.poll(() => bedVolume(page, "night-wind")).toBe(0.5);
 
     // The keyboard steps a focused slider by 10%.
     await master.focus();
     await page.keyboard.press("ArrowRight");
     await expect(master).toHaveAttribute("aria-valuenow", "0.6");
     await expect(page.getByTestId("mix-master-value")).toHaveText("60%");
-    await expect.poll(() => bedVolume(page, "hum")).toBe(0.6);
+    await expect.poll(() => bedVolume(page, "night-wind")).toBe(0.6);
 
     // Playing keeps the mix, across the chapter's new file too.
     await page.getByTestId("chapter-1").click();
     await expectChapter(page, 1);
     await expect.poll(async () => (await narration(page)).volume).toBe(0.3);
-    await expect.poll(() => bedPlaying(page, 0.6), { timeout: 10_000 }).toBe("drift");
+    await expect.poll(() => bedPlaying(page, 0.6), { timeout: 10_000 }).toBe("night-wind");
     await pause(page);
 
     // Saved for this book: a reload brings it back.
@@ -512,15 +528,76 @@ test.describe("the player", () => {
     await page.getByTestId("mix-duck-on").click();
     await expect(page.getByTestId("mix-duck-on")).toHaveAttribute("aria-pressed", "true");
     // Paused, nothing is heard: the layer is level.
-    await expect.poll(() => bedVolume(page, "hum")).toBe(BED_DEFAULT);
+    await expect.poll(() => bedVolume(page, "night-wind")).toBe(BED_DEFAULT);
     // The test narration is a steady tone, a narrator who never pauses: the layer dips under it.
     await page.getByTestId("mini-play-pause").click();
     await expect.poll(async () => (await narration(page)).paused).toBe(false);
-    await expect.poll(() => bedVolume(page, "hum"), { timeout: 5_000 }).toBeLessThan(BED_DEFAULT * 0.5);
-    expect(await bedVolume(page, "hum")).toBeGreaterThan(0);
+    await expect.poll(() => bedVolume(page, "night-wind"), { timeout: 5_000 }).toBeLessThan(BED_DEFAULT * 0.5);
+    expect(await bedVolume(page, "night-wind")).toBeGreaterThan(0);
     // Duck off: straight back to the mix's level.
     await page.getByTestId("mix-duck-off").click();
-    await expect.poll(() => bedVolume(page, "hum")).toBe(BED_DEFAULT);
+    await expect.poll(() => bedVolume(page, "night-wind")).toBe(BED_DEFAULT);
+    await pause(page);
+  });
+
+  test("A12: a layer chip sets the book's soundscape, saved across a reload; This chapter only sets one chapter's", async ({
+    page,
+  }) => {
+    await importBook(page);
+    const row0 = page.getByTestId("chapter-row-0");
+    // Inline in the playing row with the mixer: Off and the six, Night Wind on for a new book.
+    const names = ["Off", "Rain", "Hearth Fire", "Night Wind", "Tide", "Static Hush", "Low Café"];
+    await expect(row0.getByTestId("layer-chips").getByRole("button")).toHaveText(names);
+    await expect(row0.getByTestId("layer-chip-night-wind")).toHaveAttribute("aria-pressed", "true");
+    await expect(row0.getByTestId("layer-chapter-only")).toHaveAttribute("aria-pressed", "false");
+
+    // Picking Rain moves the bed to the rain loop, crossfading while it plays.
+    await page.getByTestId("mini-play-pause").click();
+    await expect.poll(() => bedPlaying(page)).toBe("night-wind");
+    await row0.getByTestId("layer-chip-rain").click();
+    await expect(row0.getByTestId("layer-chip-rain")).toHaveAttribute("aria-pressed", "true");
+    await expect(row0.getByTestId("layer-sound")).toHaveText("Rain");
+    await expect.poll(() => bedPlaying(page), { timeout: 10_000 }).toBe("rain");
+    // Off silences the bed; a chip brings it back.
+    await row0.getByTestId("layer-chip-off").click();
+    await expect.poll(async () => (await bedDecks(page)).every((d) => d.paused), { timeout: 10_000 }).toBe(true);
+    await row0.getByTestId("layer-chip-hearth-fire").click();
+    await expect.poll(() => bedPlaying(page), { timeout: 10_000 }).toBe("hearth-fire");
+
+    // The book's pick covers every chapter.
+    await page.getByTestId("chapter-1").click();
+    await expectChapter(page, 1);
+    const row1 = page.getByTestId("chapter-row-1");
+    await expect(row1.getByTestId("layer-sound")).toHaveText("Hearth Fire");
+    await expect.poll(() => bedPlaying(page), { timeout: 10_000 }).toBe("hearth-fire");
+
+    // This chapter only: Ch.2 gets Low Café; Ch.1 keeps the book's Hearth Fire.
+    await row1.getByTestId("layer-chapter-only").click();
+    await expect(row1.getByTestId("layer-chapter-only")).toHaveAttribute("aria-pressed", "true");
+    await row1.getByTestId("layer-chip-low-cafe").click();
+    await expect.poll(() => bedPlaying(page), { timeout: 10_000 }).toBe("low-cafe");
+    await pause(page);
+    await page.getByTestId("chapter-0").click();
+    await expectChapter(page, 0);
+    await expect(row0.getByTestId("layer-sound")).toHaveText("Hearth Fire");
+    await expect(row0.getByTestId("layer-chapter-only")).toHaveAttribute("aria-pressed", "false");
+    await expect.poll(() => bedPlaying(page), { timeout: 10_000 }).toBe("hearth-fire");
+    await pause(page);
+
+    // Saved for this book: after a reload Ch.1 plays Hearth Fire and Ch.2 its own Low Café.
+    await page.reload();
+    await readyToPlay(page);
+    await expect(row0.getByTestId("layer-chip-hearth-fire")).toHaveAttribute("aria-pressed", "true");
+    await expect.poll(async () => (await bedDecks(page)).map((d) => d.sound)).toContain("hearth-fire");
+    await page.getByTestId("chapter-1").click();
+    await expectChapter(page, 1);
+    await expect(row1.getByTestId("layer-sound")).toHaveText("Low Café");
+    await expect.poll(() => bedPlaying(page), { timeout: 10_000 }).toBe("low-cafe");
+
+    // This chapter only off: Ch.2 follows the book's Hearth Fire again.
+    await row1.getByTestId("layer-chapter-only").click();
+    await expect(row1.getByTestId("layer-sound")).toHaveText("Hearth Fire");
+    await expect.poll(() => bedPlaying(page), { timeout: 10_000 }).toBe("hearth-fire");
     await pause(page);
   });
 });

@@ -1,11 +1,13 @@
 // The bed: the second audio layer under the narration (spec 01, Contracts: one audio engine, two layers). Pure
-// decisions only, so `node --test` runs them: which sound a chapter gets, what the bed does on each clock event,
-// where in its loop it sits, and the crossfade's gain curve. src/player/bed-engine.ts carries them out.
+// decisions only, so `node --test` runs them: which sound a chapter gets (01.7: the chapter's own pick, else the
+// book's), what the bed does on each clock event, where in its loop it sits, and the crossfade's gain curve.
+// src/player/bed-engine.ts carries them out.
 //
 // The narration owns the clock: play, pause, seek and chapter change drive the bed; nothing here reports back.
 // The narration's speed is read only to be ignored: the bed always plays at BED_RATE, never sped up or
 // pitch-shifted (A9).
 import type { ClockEvent, ClockState } from "./clock.ts";
+import { DEFAULT_SOUNDSCAPE_ID } from "./soundscapes.ts";
 
 /** The bed's playback rate, whatever the narration's speed (A9). */
 export const BED_RATE = 1;
@@ -15,23 +17,112 @@ export const CROSSFADE_MS = 2000;
 /** What the bed carries: a soundscape (v1), the chapter's piece (01.10, plays nothing yet) or nothing. */
 export type BedLayer = "soundscape" | "music" | "off";
 
-/** The part of a book's Mix (spec 01, Contracts) the bed reads; the mixer (01.5) adds the levels. */
+/** One choice of what the bed plays (spec 01, Contracts: Mix's layer and soundscape id). */
 export type BedChoice = {
   layer: BedLayer;
-  /** One soundscape for the whole book, or null for each chapter's own (until 01.7, a rotation of test loops). */
+  /** The soundscape when the layer is one; null otherwise. */
   soundscapeId: string | null;
 };
 
-export const DEFAULT_BED: BedChoice = { layer: "soundscape", soundscapeId: null };
+/**
+ * A book's bed, saved in its Mix (01.7, A12): the book's choice, and the chapters that have their own, keyed by
+ * chapter index. A chapter's own choice wins over the book's.
+ */
+export type BedSetting = BedChoice & { chapterBeds: Record<string, BedChoice> };
+
+/** A new book: Night Wind under every chapter, no chapter of its own. */
+export const DEFAULT_BED: BedSetting = { layer: "soundscape", soundscapeId: DEFAULT_SOUNDSCAPE_ID, chapterBeds: {} };
+
+/** A pick from the mixer's layer chips: "off", or a soundscape id. */
+export type LayerPick = "off" | string;
+
+const LAYERS: readonly BedLayer[] = ["soundscape", "music", "off"];
+
+/** A BedChoice from anything stored, or null when it is not one. */
+export function normalizeBedChoice(raw: unknown): BedChoice | null {
+  if (!raw || typeof raw !== "object") return null;
+  const r = raw as Partial<Record<keyof BedChoice, unknown>>;
+  if (!LAYERS.includes(r.layer as BedLayer)) return null;
+  const layer = r.layer as BedLayer;
+  if (layer !== "soundscape") return { layer, soundscapeId: null };
+  return { layer, soundscapeId: typeof r.soundscapeId === "string" && r.soundscapeId ? r.soundscapeId : DEFAULT_SOUNDSCAPE_ID };
+}
+
+/** A BedSetting from anything stored (a mix saved before 01.7 has none): broken parts take the default. */
+export function normalizeBed(raw: unknown): BedSetting {
+  const r = (raw && typeof raw === "object" ? raw : {}) as Partial<Record<keyof BedSetting, unknown>>;
+  const book = normalizeBedChoice(r) ?? DEFAULT_BED;
+  const chapterBeds: Record<string, BedChoice> = {};
+  if (r.chapterBeds && typeof r.chapterBeds === "object") {
+    for (const [key, value] of Object.entries(r.chapterBeds as Record<string, unknown>)) {
+      const choice = normalizeBedChoice(value);
+      if (choice && /^\d+$/.test(key)) chapterBeds[String(Number(key))] = choice;
+    }
+  }
+  return { layer: book.layer, soundscapeId: book.soundscapeId, chapterBeds };
+}
+
+/** The chapter's own choice, or null when it follows the book's. */
+export function chapterBed(setting: BedSetting, chapterIndex: number | null): BedChoice | null {
+  if (chapterIndex === null) return null;
+  return setting.chapterBeds?.[String(chapterIndex)] ?? null;
+}
+
+/** The choice that applies to a chapter: its own, else the book's. */
+export function choiceFor(chapterIndex: number | null, setting: BedSetting | BedChoice): BedChoice {
+  const own = "chapterBeds" in setting ? chapterBed(setting, chapterIndex) : null;
+  return own ?? { layer: setting.layer, soundscapeId: setting.soundscapeId };
+}
 
 /**
- * The sound for a chapter, or null for silence. A book-wide soundscape wins; otherwise chapters take the
- * catalog in turn, so neighbouring chapters differ and a boundary is heard as a crossfade (A8).
+ * The sound for a chapter, or null for silence: the chapter's own choice, else the book's (A12). A soundscape no
+ * longer bundled falls back to the default one, then to the catalog's first; off and music (until 01.10) play nothing.
  */
-export function bedSoundFor(chapterIndex: number | null, choice: BedChoice, catalog: readonly string[]): string | null {
-  if (choice.layer !== "soundscape" || catalog.length === 0 || chapterIndex === null) return null;
+export function bedSoundFor(
+  chapterIndex: number | null,
+  setting: BedSetting | BedChoice,
+  catalog: readonly string[],
+): string | null {
+  if (catalog.length === 0 || chapterIndex === null) return null;
+  const choice = choiceFor(chapterIndex, setting);
+  if (choice.layer !== "soundscape") return null;
   if (choice.soundscapeId && catalog.includes(choice.soundscapeId)) return choice.soundscapeId;
-  return catalog[((chapterIndex % catalog.length) + catalog.length) % catalog.length];
+  return catalog.includes(DEFAULT_SOUNDSCAPE_ID) ? DEFAULT_SOUNDSCAPE_ID : catalog[0];
+}
+
+/** The chip that is on for a chapter: "off", a soundscape id, or null (the music layer has no chip until 01.10). */
+export function pickFor(chapterIndex: number | null, setting: BedSetting, catalog: readonly string[]): LayerPick | null {
+  const choice = choiceFor(chapterIndex, setting);
+  if (choice.layer === "off") return "off";
+  if (choice.layer === "music") return null;
+  return bedSoundFor(chapterIndex ?? 0, setting, catalog);
+}
+
+const choiceOf = (pick: LayerPick): BedChoice =>
+  pick === "off" ? { layer: "off", soundscapeId: null } : { layer: "soundscape", soundscapeId: pick };
+
+/**
+ * A pick from the layer chips: it sets the chapter's own choice when that chapter has one ("This chapter only" on),
+ * otherwise the book's, which every chapter without its own follows.
+ */
+export function pickLayer(setting: BedSetting, chapterIndex: number | null, pick: LayerPick): BedSetting {
+  const choice = choiceOf(pick);
+  if (chapterBed(setting, chapterIndex)) {
+    return { ...setting, chapterBeds: { ...setting.chapterBeds, [String(chapterIndex)]: choice } };
+  }
+  return { ...setting, ...choice };
+}
+
+/**
+ * "This chapter only": on gives the chapter its own choice, starting as what it plays now (nothing changes until
+ * the next pick); off drops it, so the chapter follows the book's again.
+ */
+export function setChapterOnly(setting: BedSetting, chapterIndex: number | null, on: boolean): BedSetting {
+  if (chapterIndex === null || on === !!chapterBed(setting, chapterIndex)) return setting;
+  const chapterBeds = { ...setting.chapterBeds };
+  if (on) chapterBeds[String(chapterIndex)] = choiceFor(chapterIndex, setting);
+  else delete chapterBeds[String(chapterIndex)];
+  return { ...setting, chapterBeds };
 }
 
 /** Where the loop sits for a narration position: the time into the chapter, wrapped by the loop's length. */

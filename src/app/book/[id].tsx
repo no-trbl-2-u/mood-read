@@ -2,15 +2,16 @@ import { router, useLocalSearchParams } from "expo-router";
 import { useEffect, useState } from "react";
 import { Pressable, StyleSheet, Text, View } from "react-native";
 
-import { bedSoundFor } from "@/lib/bed";
+import { chapterBed, pickFor } from "@/lib/bed";
 import { speedLabel } from "@/lib/labels";
 import { chapterEdits, useBook } from "@/lib/library";
 import { BookmarksSheet } from "@/player/BookmarksSheet";
 import { ChapterRiver } from "@/player/ChapterRiver";
+import { LayerPicker } from "@/player/LayerPicker";
 import { MiniPlayer } from "@/player/MiniPlayer";
 import { Mixer } from "@/player/Mixer";
 import { usePlayer } from "@/player/PlayerProvider";
-import { soundscape, SOUNDSCAPE_IDS } from "@/player/soundscapes";
+import { SOUNDSCAPE_IDS } from "@/player/soundscapes";
 import { SpeedSleepSheet } from "@/player/SpeedSleepSheet";
 import { colors, radii, spacing } from "@/ui/theme";
 import { TopBar, TopBarButton } from "@/ui/TopBar";
@@ -47,7 +48,7 @@ export default function BookScreen() {
   const active = p.book?.id === book.id;
   const position = active ? p.position : 0;
   const chapter = active ? p.chapter : book.chapters[0];
-  const layer = soundscape(bedSoundFor(chapter?.index ?? null, p.bed, SOUNDSCAPE_IDS))?.name ?? null;
+  const chapterIndex = chapter?.index ?? null;
   const speedButton = p.sleep ? `${speedLabel(p.speed)} · Sleep` : speedLabel(p.speed);
 
   return (
@@ -81,8 +82,22 @@ export default function BookScreen() {
           book={book}
           currentIndex={chapter?.index}
           position={position}
-          layer={layer}
-          mixer={active ? <Mixer mix={p.mix} onChange={p.setMix} /> : undefined}
+          mixer={
+            active ? (
+              <Mixer
+                mix={p.mix}
+                onChange={p.setMix}
+                layer={
+                  <LayerPicker
+                    pick={pickFor(chapterIndex, p.bed, SOUNDSCAPE_IDS)}
+                    chapterOnly={!!chapterBed(p.bed, chapterIndex)}
+                    onPick={p.pickLayer}
+                    onChapterOnly={p.setChapterOnly}
+                  />
+                }
+              />
+            ) : undefined
+          }
           onJump={(i) => active && p.jumpToChapter(i)}
           edits={
             active
