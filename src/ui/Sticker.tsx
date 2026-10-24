@@ -1,19 +1,24 @@
 import { StyleSheet, Text, View } from "react-native";
 
+import { stickerLabel } from "@/lib/labels";
+
 import { colors, emotionHues, hardShadow, radii, shadows, spacing, strokes, tilts, typography, type Emotion } from "./theme";
 
 /**
  * An emotion sticker (design/system/DECISION.md, Components): the emotion's hue as fill, its label in `onAccent`
  * (never colour alone), an `ink` outline, the `edge` hard shadow, and a tilt cycled by `index`. Tilt is shape, not
- * motion, so it stays under reduce motion.
+ * motion, so it stays under reduce motion. A scored sticker shows its intensity with its label ("Tension 80%"), and
+ * a screen reader reads exactly that text, so what is seen and what is heard never differ (06.5); a decorative one
+ * (the empty shelf's) is hidden from screen readers.
  */
 export function Sticker(props: {
   emotion: Emotion;
+  /** The emotion's name ("Tension"). */
   label: string;
   index: number;
+  /** 0 to 1, once the chapter is scored. */
+  intensity?: number;
   decorative?: boolean;
-  /** What a screen reader says, when it differs from the label ("Tension, 80 percent" for "Tension 80%"). */
-  a11yLabel?: string;
   testID?: string;
 }) {
   const tilt = tilts[props.index % tilts.length];
@@ -21,11 +26,9 @@ export function Sticker(props: {
     <View
       testID={props.testID}
       aria-hidden={props.decorative || undefined}
-      role={props.a11yLabel && !props.decorative ? "img" : undefined}
-      aria-label={props.decorative ? undefined : props.a11yLabel}
       style={[styles.sticker, { backgroundColor: emotionHues[props.emotion], transform: [{ rotate: `${tilt}deg` }] }]}
     >
-      <Text style={styles.label}>{props.label}</Text>
+      <Text style={styles.label}>{stickerLabel(props.label, props.intensity)}</Text>
     </View>
   );
 }

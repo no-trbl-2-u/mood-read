@@ -5,7 +5,7 @@
 // a source's text: the card draws only emotions and pieces. A row not yet reached never gets here (A21).
 import { StyleSheet, Text, View } from "react-native";
 
-import { alternatesLine, emotionChipA11y, emotionChipLabel, pieceLine, strongest, type MoodCardView } from "@/lib/mood-card";
+import { alternatesLine, EMOTION_NAMES, pieceLine, strongest, type MoodCardView } from "@/lib/mood-card";
 import type { EmotionScore } from "@/lib/types";
 import { Chip } from "@/ui/Chip";
 import { Sticker } from "@/ui/Sticker";
@@ -31,7 +31,13 @@ export function EmotionChips(props: { emotions: readonly EmotionScore[]; limit?:
     <View style={styles.chips} testID={props.testID} role="list" aria-label={COPY.emotions}>
       {shown.map((e, i) => (
         <View key={e.emotion} role="listitem">
-          <Sticker emotion={e.emotion} label={emotionChipLabel(e)} a11yLabel={emotionChipA11y(e)} index={i} testID={`emotion-${e.emotion}`} />
+          <Sticker
+            emotion={e.emotion}
+            label={EMOTION_NAMES[e.emotion]}
+            intensity={e.intensity}
+            index={i}
+            testID={`emotion-${e.emotion}`}
+          />
         </View>
       ))}
     </View>

@@ -65,9 +65,9 @@ export function LayerPicker(props: {
 
 const styles = StyleSheet.create({
   layer: { gap: spacing.xs },
-  captionRow: { flexDirection: "row", justifyContent: "space-between", alignItems: "baseline" },
+  captionRow: { flexDirection: "row", justifyContent: "space-between", alignItems: "baseline", gap: spacing.sm },
   label: typography.label,
-  value: typography.caption,
+  value: { ...typography.caption, flexShrink: 1, textAlign: "right" },
   chips: { flexDirection: "row", gap: spacing.sm, paddingVertical: spacing.xxs, paddingRight: spacing.xs },
   chapterRow: { flexDirection: "row" },
 });

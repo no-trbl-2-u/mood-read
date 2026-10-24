@@ -1,5 +1,6 @@
 // Pure text for the library rows, bookmarks and the speed control, so the wording is tested where it is made.
 import { formatDuration } from "./format-duration.ts";
+import { intensityPercent } from "./mood-card.ts";
 import { chapterAt, END_SLACK, stripExtension } from "./timeline.ts";
 import type { Book } from "./types.ts";
 
@@ -41,4 +42,13 @@ export function guessTitle(names: string[]): string {
   for (const b of bases) while (!b.startsWith(prefix)) prefix = prefix.slice(0, -1);
   const cleaned = prefix.replace(/[\s\-_.([]*(part|chapter|ch|disc|cd)?[\s\-_.]*\d*$/i, "").trim();
   return cleaned.length >= 2 ? cleaned : bases[0].trim() || "Untitled";
+}
+
+/**
+ * An emotion sticker's words, read aloud as shown: the emotion and, once scored, its intensity ("Wonder 80%").
+ * Colour never carries either alone (spec 06, A5).
+ */
+export function stickerLabel(emotion: string, intensity?: number): string {
+  if (intensity === undefined || !Number.isFinite(intensity)) return emotion;
+  return `${emotion} ${intensityPercent(intensity)}%`;
 }

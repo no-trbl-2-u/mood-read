@@ -12,6 +12,7 @@ export function Sheet(props: { title: string; onClose: () => void; children: Rea
     <View style={StyleSheet.absoluteFill}>
       <Pressable
         testID="sheet-scrim"
+        role="button"
         aria-label="Close"
         style={[StyleSheet.absoluteFill, styles.scrim]}
         onPress={props.onClose}
@@ -22,7 +23,7 @@ export function Sheet(props: { title: string; onClose: () => void; children: Rea
           <Text style={styles.title} role="heading">
             {props.title}
           </Text>
-          <Pressable role="button" onPress={props.onClose} hitSlop={spacing.sm} testID="sheet-done" style={styles.doneHit}>
+          <Pressable role="button" onPress={props.onClose} testID="sheet-done" style={styles.doneHit}>
             <Text style={styles.done}>Done</Text>
           </Pressable>
         </View>
@@ -64,7 +65,13 @@ const styles = StyleSheet.create({
     paddingTop: spacing.sm,
   },
   title: typography.heading,
-  doneHit: { minHeight: sizes.touch, justifyContent: "center", paddingHorizontal: spacing.xs },
+  doneHit: {
+    minHeight: sizes.touch,
+    minWidth: sizes.touch,
+    alignItems: "center",
+    justifyContent: "center",
+    paddingHorizontal: spacing.xs,
+  },
   done: { ...typography.label, color: colors.accent },
   body: { padding: spacing.md, gap: spacing.md },
 });

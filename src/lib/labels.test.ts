@@ -1,7 +1,7 @@
 import assert from "node:assert/strict";
 import { test } from "node:test";
 
-import { bookStateLine, chapterTimeLabel, guessTitle, speedLabel } from "./labels.ts";
+import { bookStateLine, chapterTimeLabel, guessTitle, speedLabel, stickerLabel } from "./labels.ts";
 
 const chapters = [
   { bookId: "b", index: 0, title: "One", fileIndex: 0, start: 0, end: 100 },
@@ -46,4 +46,12 @@ test("a book's title comes from its file names", () => {
   assert.equal(guessTitle(["walden.m4b"]), "walden");
   assert.equal(guessTitle(["a.mp3", "b.mp3"]), "a");
   assert.equal(guessTitle([]), "Untitled");
+});
+
+test("a sticker reads its emotion, and its intensity once scored (06.5)", () => {
+  assert.equal(stickerLabel("Wonder"), "Wonder");
+  assert.equal(stickerLabel("Wonder", 0.8), "Wonder 80%");
+  assert.equal(stickerLabel("Dread", 0.333), "Dread 33%");
+  assert.equal(stickerLabel("Joy", 1.4), "Joy 100%");
+  assert.equal(stickerLabel("Calm", Number.NaN), "Calm");
 });

@@ -180,7 +180,7 @@ title, author and duration, spec 05.7).
 
 ### Library, overflow menu (`v2-lib-menu`, route `/`)
 
-The menu under the top bar's overflow button, the list behind it dimmed to 55% (no scrim). Items, top to bottom:
+The menu under the top bar's overflow button, the list behind it dimmed to 85% (no scrim; 06.5 raised it from 55% so the text behind still meets AA). Items, top to bottom:
 **"Browse free books"** (`search`), **"Downloads"** (`download`, with a "2 running" chip while any run),
 **"Settings"** (`settings`), a hairline, **"Credits"** (`heart`). Credits sits last, under a rule, "a little off to
 the side" (spec 05).

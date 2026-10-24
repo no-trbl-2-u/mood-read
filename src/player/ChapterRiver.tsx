@@ -56,6 +56,7 @@ export function ChapterRiver(props: {
         const playing = c.index === current;
         const mood: MoodCardView = props.moods?.[c.index] ?? { kind: "none" };
         const locked = mood.kind === "locked";
+        const label = `Ch.${c.index + 1} — ${c.title}`;
         return (
           <View
             key={c.index}
@@ -73,14 +74,12 @@ export function ChapterRiver(props: {
             <Pressable
               testID={`chapter-${c.index}`}
               role="button"
-              aria-label={`Play chapter ${c.index + 1}, ${c.title}${locked ? COPY.notReached : ""}`}
+              aria-label={`Play ${label}${locked ? COPY.notReached : ""}${mood.kind === "unscored" ? COPY.unscored : ""}`}
               onPress={() => props.onJump(c.index)}
               style={styles.titleLine}
             >
               <View style={styles.titleWrap}>
-                <Text style={[styles.title, locked && styles.titleLocked]} numberOfLines={2}>
-                  Ch.{c.index + 1} — {c.title}
-                </Text>
+                <Text style={[styles.title, locked && styles.titleLocked]}>{label}</Text>
                 {locked && (
                   <View testID={`locked-${c.index}`}>
                     <Icon name="lock" size="small" color={colors.textMuted} />
@@ -129,6 +128,8 @@ export function ChapterRiver(props: {
 
 const COPY = {
   notReached: ", not reached yet",
+  /** The row's visible "Unscored" chip, in its name too (06.5: what is seen is heard). */
+  unscored: ", Unscored",
 };
 
 export type ChapterEditsApi = {
@@ -176,7 +177,7 @@ function ChapterEdits(props: {
       <EditButton
         testID="chapter-split"
         label="Split here"
-        a11yLabel="Split this chapter at the current position"
+        a11yLabel="Split here, at the current position"
         onPress={props.onSplit}
         disabled={!props.canSplit}
       />

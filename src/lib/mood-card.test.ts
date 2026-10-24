@@ -6,13 +6,12 @@ import type { Kv } from "./library-store.ts";
 import {
   alternatesLine,
   EMOTION_NAMES,
-  emotionChipA11y,
-  emotionChipLabel,
   intensityPercent,
   moodCardView,
   pieceLine,
   strongest,
 } from "./mood-card.ts";
+import { stickerLabel } from "./labels.ts";
 import { createScoringStore } from "./scoring-store.ts";
 import { EMOTIONS, type BookScores, type ChapterScore, type Piece } from "./types.ts";
 
@@ -55,9 +54,9 @@ test("the emotion set in the types and in the theme stay in step, and every emot
 });
 
 test("A16: an emotion chip reads its name and intensity", () => {
-  assert.equal(emotionChipLabel({ emotion: "tension", intensity: 0.8 }), "Tension 80%");
-  assert.equal(emotionChipLabel({ emotion: "wonder", intensity: 0.704 }), "Wonder 70%");
-  assert.equal(emotionChipA11y({ emotion: "calm", intensity: 0.5 }), "Calm, 50 percent");
+  // Seen and heard alike (06.5): the sticker's text is its screen-reader name.
+  assert.equal(stickerLabel(EMOTION_NAMES.tension, 0.8), "Tension 80%");
+  assert.equal(stickerLabel(EMOTION_NAMES.wonder, 0.704), "Wonder 70%");
   assert.equal(intensityPercent(1.7), 100);
   assert.equal(intensityPercent(-1), 0);
   assert.equal(intensityPercent(Number.NaN), 0);

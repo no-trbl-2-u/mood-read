@@ -25,6 +25,15 @@ export function contrastRatio(a: string, b: string): number {
   return (hi + 0.05) / (lo + 0.05);
 }
 
+/** `hex` drawn at `opacity` over `ground`, as one opaque "#rrggbb" colour (a dimmed screen's colours). */
+export function blend(hex: string, ground: string, opacity: number): string {
+  luminance(hex);
+  luminance(ground);
+  const rgb = (h: string) => [1, 3, 5].map((i) => parseInt(h.slice(i, i + 2), 16));
+  const [a, b] = [rgb(hex), rgb(ground)];
+  return `#${a.map((c, i) => Math.round(opacity * c + (1 - opacity) * b[i]).toString(16).padStart(2, "0")).join("")}`;
+}
+
 /** The AA minimum for a pair: 4.5 for body text, 3 for large text and UI components. */
 export function aaMinimum(kind: "text" | "large" | "ui"): number {
   return kind === "text" ? 4.5 : 3;

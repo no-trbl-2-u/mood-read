@@ -63,14 +63,11 @@ export function BookmarksSheet(props: {
             <Pressable
               testID="bookmark-jump"
               role="button"
-              aria-label={`Jump to ${m.name}`}
-              style={styles.main}
+              style={[styles.main, styles.jump]}
               onPress={() => props.onJump(m.position)}
             >
               <Text style={styles.where}>{chapterTimeLabel(book.chapters, m.position)}</Text>
-              <Text style={styles.muted} numberOfLines={2}>
-                &ldquo;{m.name}&rdquo;
-              </Text>
+              <Text style={styles.muted}>&ldquo;{m.name}&rdquo;</Text>
             </Pressable>
           )}
           {editing !== m.id && (
@@ -78,21 +75,21 @@ export function BookmarksSheet(props: {
               <Pressable
                 role="button"
                 testID="bookmark-rename"
+                aria-label={`Rename “${m.name}”`}
                 onPress={() => {
                   setEditing(m.id);
                   setDraft(m.name);
                 }}
                 style={styles.actionHit}
-                hitSlop={spacing.xs}
               >
                 <Text style={styles.action}>Rename</Text>
               </Pressable>
               <Pressable
                 role="button"
                 testID="bookmark-delete"
+                aria-label={`Delete “${m.name}”`}
                 onPress={() => library.deleteBookmark(book.id, m.id)}
                 style={styles.actionHit}
-                hitSlop={spacing.xs}
               >
                 <Text style={styles.action}>Delete</Text>
               </Pressable>
@@ -115,6 +112,7 @@ const styles = StyleSheet.create({
     borderBottomColor: colors.border,
   },
   main: { flex: 1, gap: spacing.xxs },
+  jump: { minHeight: sizes.touch, justifyContent: "center" },
   where: { ...typography.label, fontVariant: ["tabular-nums"] },
   muted: typography.caption,
   input: {
@@ -124,6 +122,12 @@ const styles = StyleSheet.create({
     paddingVertical: spacing.xs,
   },
   actions: { flexDirection: "row", gap: spacing.sm },
-  actionHit: { minHeight: sizes.touch, justifyContent: "center", paddingHorizontal: spacing.xs },
+  actionHit: {
+    minHeight: sizes.touch,
+    minWidth: sizes.touch,
+    alignItems: "center",
+    justifyContent: "center",
+    paddingHorizontal: spacing.xs,
+  },
   action: { ...typography.label, color: colors.textMuted },
 });

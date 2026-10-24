@@ -30,13 +30,13 @@ test.describe("settings", () => {
     await wifi.click();
     await expect(wifi).toHaveAttribute("aria-checked", "false");
     await companion.click();
-    await page.getByRole("button", { name: "Default soundscape, Night Wind" }).click();
+    await page.getByRole("button", { name: "Default soundscape Night Wind" }).click();
     await page.getByRole("button", { name: "Default soundscape: Off" }).click();
 
     await page.reload();
     await expect(page.getByRole("switch", { name: "Downloads on Wi-Fi only" })).toHaveAttribute("aria-checked", "false");
     await expect(page.getByRole("switch", { name: "Companion mode" })).toHaveAttribute("aria-checked", "true");
-    await expect(page.getByRole("button", { name: "Default soundscape, Off" })).toBeVisible();
+    await expect(page.getByRole("button", { name: "Default soundscape Off" })).toBeVisible();
     await page.waitForLoadState("networkidle");
     expect(problems).toEqual([]);
   });

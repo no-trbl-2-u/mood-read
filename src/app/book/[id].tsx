@@ -97,7 +97,7 @@ export default function BookScreen() {
             <TopBarButton
               testID="open-speed-sleep"
               label={speedButton}
-              a11yLabel={COPY.speedSleep}
+              a11yLabel={`${COPY.speedSleep}, ${speedButton}`}
               onPress={() => setSheet(sheet === "speed" ? null : "speed")}
             />
             <TopBarButton

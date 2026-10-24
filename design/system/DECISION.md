@@ -102,7 +102,9 @@ the scale draws in the display face: `fonts.display` is `BricolageGrotesque_800E
 | `caption` | 13 / 18 | 400 | system, `textMuted` | Metadata, times. |
 | `meta` | 12 / 16 | 400 | system, `textMuted` | The mini player's times; the 12 px state chips (06.4, from the v2 boards). |
 
-Every size follows the OS text size (06.5 holds the 200% bar); nothing sets `allowFontScaling={false}`.
+Every size follows the OS text size to 200% without clipping (06.5: rows and titles wrap and grow, nothing sets
+`numberOfLines` on a label, `allowFontScaling={false}` or a `maxFontSizeMultiplier` under 2, guarded by
+`src/lib/a11y-guard.test.ts` and checked at 200% by `e2e/a11y.spec.ts`).
 
 ### Spacing, radius, strokes, shadows
 
@@ -119,7 +121,9 @@ Every size follows the OS text size (06.5 holds the 200% bar); nothing sets `all
   (`coverWidth`, `coverHeight`), `miniCover` 44, `coverMark` 20, the import note's file tile 72 x 88, the sheet
   handle 40 x 4, `track` 6 (progress bars, the slider track), `thumb` 24 (the slider's), `readout` 48 (the
   speed between Slower and Faster), `inputMin` 160.
-- **Opacities:** `disabled` 0.55 (an unavailable row, a disabled button), `behindMenu` 0.55.
+- **Opacities:** `disabled` 0.55 (an unavailable row, a disabled button: inactive, so exempt from contrast),
+  `behindMenu` 0.85 (06.5 raised it from 0.55, which dimmed the shelf's text under 4.5:1; at 0.85 every text pair
+  still clears AA through it, asserted by `src/lib/contrast.test.ts`).
 - **Tilt:** chips rotate by `tilts` (-3, 2, -1.5, 3, -2, 1 degrees), cycled by index so a row never lines up.
   Buttons, rows and text never tilt. Tilt is static and stays under reduce motion (it is shape, not motion).
 
@@ -134,7 +138,9 @@ Every size follows the OS text size (06.5 holds the 200% bar); nothing sets `all
   at least 44 px tall. **Secondary:** transparent, 3 px `edge` outline, `text` label.
 - **Rows:** `surface`, `lg` radius, hairline `border`. The playing row is `raised`, with the 6 px `accent` left
   rule and the card shadow in `pop`.
-- **Focus:** a 2 px `focus` outline, offset 2 px, on every focusable control.
+- **Focus:** a 2 px `focus` outline, offset 2 px, on every focusable control. As built (06.5): on the web one
+  `:focus-visible` rule from `focusRing` (`src/ui/focus-ring.ts`), so a keyboard focus shows it and a tap does not;
+  on a phone the OS draws its own focus highlight.
 
 ## Iconography
 

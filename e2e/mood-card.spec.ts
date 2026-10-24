@@ -139,7 +139,9 @@ test.describe("the chapter mood card", () => {
     await expect(card.getByTestId("mood-emotions")).toContainText("Tension 80%");
     await expect(card.getByTestId("mood-emotions")).toContainText("Wonder 70%");
     await expect(card.getByTestId("mood-emotions")).toContainText("Dread 30%");
-    await expect(card.getByTestId("emotion-tension")).toHaveAttribute("aria-label", "Tension, 80 percent");
+    // One labelling model (06.5): the sticker is read as it is shown, with no separate name.
+    await expect(card.getByTestId("emotion-tension")).toHaveText("Tension 80%");
+    await expect(card.getByTestId("emotion-tension")).not.toHaveAttribute("aria-label", /.*/);
     await expect(card.getByTestId("mood-piece")).toContainText("Theme 1");
     await expect(card.getByTestId("mood-piece")).toContainText("Composer 1 · Score");
     await expect(card.getByTestId("mood-alternates")).toContainText("Theme 2 (Composer 2) · Theme 3 (Composer 3)");

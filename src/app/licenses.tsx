@@ -22,7 +22,8 @@ export default function LicensesScreen() {
   return (
     <View style={styles.screen}>
       <TopBar title={COPY.title} back={{ label: COPY.back, a11yLabel: COPY.backA11y, onPress: goBack }} />
-      <ScrollView contentContainerStyle={styles.body}>
+      {/* Nothing in the notices takes focus, so the list itself does: a keyboard can scroll it (06.5). */}
+      <ScrollView contentContainerStyle={styles.body} tabIndex={0} role="region" aria-label={COPY.title}>
         <Text style={styles.intro}>{COPY.intro}</Text>
         {NOTICES.map((n) => (
           <View key={n.id} style={styles.notice} testID={`license-${n.id}`}>

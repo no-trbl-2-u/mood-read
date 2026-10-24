@@ -1,6 +1,6 @@
 // The chapter mood card's content (01.4, spec 01 A16, A21), pure so its rules and wording are tested where they are
-// made: which emotions a row shows (none before the chapter is reached), how a chip reads ("Tension 80%"), the named
-// piece and its alternates, and the listener's pick over auto. Never a chapter's events, never a source's text: a
+// made: which emotions a row shows (none before the chapter is reached), each one's intensity (a chip reads
+// "Tension 80%", through labels.ts stickerLabel), the named piece and its alternates, and the listener's pick over auto. Never a chapter's events, never a source's text: a
 // ChapterMood holds neither, and the card shows only emotions, intensities and pieces.
 import type { ChapterScore, Emotion, EmotionScore, Piece } from "./types.ts";
 
@@ -25,16 +25,6 @@ const KIND_NAMES: Record<Piece["kind"], string> = {
 export function intensityPercent(intensity: number): number {
   if (!Number.isFinite(intensity)) return 0;
   return Math.round(Math.min(1, Math.max(0, intensity)) * 100);
-}
-
-/** An emotion chip's text: "Tension 80%". */
-export function emotionChipLabel(e: EmotionScore): string {
-  return `${EMOTION_NAMES[e.emotion]} ${intensityPercent(e.intensity)}%`;
-}
-
-/** An emotion chip as a screen reader says it: "Tension, 80 percent". */
-export function emotionChipA11y(e: EmotionScore): string {
-  return `${EMOTION_NAMES[e.emotion]}, ${intensityPercent(e.intensity)} percent`;
 }
 
 /** Strongest first, at most `limit` (all when omitted). */

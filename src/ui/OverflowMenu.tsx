@@ -46,7 +46,7 @@ export function OverflowMenu(props: {
         <Icon name="more" />
       </Pressable>
       <Modal transparent visible={anchor !== null} onRequestClose={close} animationType="none">
-        <Pressable style={StyleSheet.absoluteFill} onPress={close} aria-label="Close menu" />
+        <Pressable role="button" style={StyleSheet.absoluteFill} onPress={close} aria-label="Close menu" />
         {anchor && (
           <View role="menu" style={[styles.menu, { top: anchor.top, right: anchor.right }]}>
             {props.items.map((item) => (

@@ -95,21 +95,16 @@ function BookRow({ book, resuming }: { book: Book; resuming: boolean }) {
     <Pressable
       testID={`book-${book.id}`}
       role="link"
-      aria-label={book.title}
       style={styles.row}
       onPress={() => router.push(`/book/${book.id}`)}
     >
       <Cover book={book} width={sizes.coverWidth} height={sizes.coverHeight} marked={resuming && position > 0} />
       <View style={styles.rowText}>
-        <Text style={styles.rowTitle} numberOfLines={2}>
-          {book.title}
-        </Text>
-        <Text style={styles.author} numberOfLines={1} testID="book-author">
+        <Text style={styles.rowTitle}>{book.title}</Text>
+        <Text style={styles.author} testID="book-author">
           {book.author}
         </Text>
-        <Text style={styles.meta} numberOfLines={1}>
-          {bookStateLine(book, position, resuming)}
-        </Text>
+        <Text style={styles.meta}>{bookStateLine(book, position, resuming)}</Text>
       </View>
     </Pressable>
   );

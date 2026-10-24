@@ -27,13 +27,12 @@ export function TopBar(props: {
             aria-label={props.back.a11yLabel ?? props.back.label}
             onPress={props.back.onPress}
             style={styles.back}
-            hitSlop={spacing.sm}
           >
             <Icon name="back" />
             {!props.back.iconOnly && <Text style={styles.backText}>{props.back.label}</Text>}
           </Pressable>
         )}
-        <Text style={[styles.title, props.large && styles.titleLarge]} numberOfLines={1} role="heading">
+        <Text style={[styles.title, props.large && styles.titleLarge]} role="heading">
           {props.title}
         </Text>
         {props.trailing && <View style={styles.trailing}>{props.trailing}</View>}
@@ -57,7 +56,6 @@ export function TopBarButton(props: {
       aria-label={props.a11yLabel ?? props.label}
       onPress={props.onPress}
       style={styles.action}
-      hitSlop={spacing.xs}
     >
       {props.icon ? <Icon name={props.icon} /> : <Text style={styles.actionText}>{props.label}</Text>}
     </Pressable>

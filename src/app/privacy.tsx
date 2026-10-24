@@ -1,7 +1,7 @@
 import { router } from "expo-router";
-import { Linking, ScrollView, StyleSheet, Text, View } from "react-native";
+import { Linking, Pressable, ScrollView, StyleSheet, Text, View } from "react-native";
 
-import { colors, spacing, typography } from "@/ui/theme";
+import { colors, sizes, spacing, typography } from "@/ui/theme";
 import { TopBar } from "@/ui/TopBar";
 
 // The privacy policy (spec 06, 06.6, A6): `/privacy` on the web build and a screen in the app. It is what the
@@ -88,14 +88,14 @@ export default function PrivacyScreen() {
             ))}
           </View>
         ))}
-        <Text
+        <Pressable
           testID="privacy-contact"
           role="link"
-          style={styles.link}
+          style={styles.linkHit}
           onPress={() => Linking.openURL(ISSUES_URL)}
         >
-          {ISSUES_URL}
-        </Text>
+          <Text style={styles.link}>{ISSUES_URL}</Text>
+        </Pressable>
       </ScrollView>
     </View>
   );
@@ -108,5 +108,6 @@ const styles = StyleSheet.create({
   heading: typography.heading,
   text: typography.body,
   caption: typography.caption,
+  linkHit: { alignSelf: "flex-start", maxWidth: "100%", minHeight: sizes.touch, justifyContent: "center" },
   link: { ...typography.body, color: colors.accent, textDecorationLine: "underline" },
 });

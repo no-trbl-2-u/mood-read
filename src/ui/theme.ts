@@ -119,8 +119,12 @@ export const sizes = {
   inputMin: 160,
 } as const;
 
-/** Opacities: a row that is not available yet (and a disabled control), and the list behind an open menu. */
-export const opacities = { disabled: 0.55, behindMenu: 0.55 } as const;
+/**
+ * Opacities: a row that is not available yet (and a disabled control, both exempt from contrast as inactive), and
+ * the screen behind an open menu, which stays readable: every text pair still clears AA through it (06.5,
+ * src/lib/contrast.test.ts).
+ */
+export const opacities = { disabled: 0.55, behindMenu: 0.85 } as const;
 
 /** Outline and rule widths. */
 export const strokes = {

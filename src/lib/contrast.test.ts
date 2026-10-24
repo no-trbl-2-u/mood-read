@@ -1,8 +1,8 @@
 import assert from "node:assert/strict";
 import { test } from "node:test";
 
-import { colors, contrastPairs, EMOTIONS, emotionHues } from "../ui/theme.ts";
-import { aaMinimum, contrastRatio, luminance } from "./contrast.ts";
+import { colors, contrastPairs, EMOTIONS, emotionHues, opacities } from "../ui/theme.ts";
+import { aaMinimum, blend, contrastRatio, luminance } from "./contrast.ts";
 
 test("contrast ratio runs from 1 (same colour) to 21 (black on white)", () => {
   assert.equal(contrastRatio("#ffffff", "#ffffff"), 1);
@@ -48,4 +48,19 @@ test("the v2 boards' two dark-on-colour pairs are checked: Finished on pop, Dele
   }
   assert.equal(Math.round(contrastRatio(colors.onAccent, colors.pop) * 100) / 100, 6.41);
   assert.equal(Math.round(contrastRatio(colors.onAccent, colors.danger) * 100) / 100, 7.72);
+});
+
+test("blend draws a colour at an opacity over a ground", () => {
+  assert.equal(blend("#ffffff", "#000000", 1), "#ffffff");
+  assert.equal(blend("#ffffff", "#000000", 0), "#000000");
+  assert.equal(blend("#ffffff", "#000000", 0.5), "#808080");
+});
+
+test("06.5: the screen dimmed behind an open menu still clears AA for every text pair", () => {
+  for (const p of contrastPairs.filter((q) => q.kind === "text")) {
+    const fg = blend(p.fg, colors.background, opacities.behindMenu);
+    const bg = blend(p.bg, colors.background, opacities.behindMenu);
+    const ratio = contrastRatio(fg, bg);
+    assert.ok(ratio >= aaMinimum(p.kind), `${p.name} behind the menu: ${ratio.toFixed(2)} < ${aaMinimum(p.kind)}`);
+  }
 });

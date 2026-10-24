@@ -69,7 +69,6 @@ export function LinkRow(props: {
     <Pressable
       testID={props.testID}
       role={inPlace ? "button" : "link"}
-      aria-label={props.value ? `${props.title}, ${props.value}` : props.title}
       aria-expanded={props.expanded}
       onPress={props.onPress}
       style={styles.row}

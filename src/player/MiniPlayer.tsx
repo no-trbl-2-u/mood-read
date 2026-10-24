@@ -6,6 +6,7 @@ import { useEffect, useState } from "react";
 import { ActivityIndicator, Pressable, StyleSheet, Text, View, type GestureResponderEvent } from "react-native";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
 
+import { formatDuration } from "@/lib/format-duration";
 import { chapterClock, sleepReadout } from "@/lib/readouts";
 import { clamp, SKIP_SECONDS } from "@/lib/timeline";
 import type { Book, Chapter, SleepTimer } from "@/lib/types";
@@ -36,7 +37,7 @@ export function MiniPlayer(props: {
     <View style={[styles.bar, { paddingBottom: Math.max(insets.bottom, spacing.sm) }]} testID="mini-player">
       <Cover book={props.book} width={sizes.miniCover} />
       <View style={styles.middle}>
-        <Text style={styles.title} numberOfLines={1} testID="mini-chapter-title">
+        <Text style={styles.title} testID="mini-chapter-title">
           {props.chapter?.title ?? props.book.title}
         </Text>
         <Scrubber start={start} end={end} position={props.position} onSeek={props.onSeek} onDrag={setDragged} />
@@ -47,7 +48,7 @@ export function MiniPlayer(props: {
             <Text testID="mini-length">{clock.length}</Text>
           </Text>
           {sleep && (
-            <Text style={styles.sleep} numberOfLines={1} testID="mini-sleep">
+            <Text style={styles.sleep} testID="mini-sleep">
               {sleep}
             </Text>
           )}
@@ -129,6 +130,7 @@ function Scrubber(props: {
       aria-valuemin={0}
       aria-valuemax={Math.round(len)}
       aria-valuenow={Math.round(shown * len)}
+      aria-valuetext={`${formatDuration(shown * len)} of ${formatDuration(len)}`}
       style={styles.track}
       onLayout={(e) => setWidth(e.nativeEvent.layout.width)}
       onStartShouldSetResponder={() => true}
@@ -162,7 +164,14 @@ const styles = StyleSheet.create({
   },
   middle: { flex: 1, gap: spacing.xxs, minWidth: 0 },
   title: typography.label,
-  track: { paddingTop: spacing.sm, paddingBottom: spacing.xs },
+  // A 44 px touch target (06.5) over the same 18 px of layout the bar had (its 6 px track, 8 above, 4 below), drawn
+  // over the title and times beside it, which take no touches.
+  track: {
+    minHeight: sizes.touch,
+    justifyContent: "center",
+    marginVertical: (sizes.track + spacing.sm + spacing.xs - sizes.touch) / 2,
+    zIndex: 1,
+  },
   readouts: { flexDirection: "row", flexWrap: "wrap", alignItems: "center", columnGap: spacing.sm },
   time: { ...typography.meta, color: colors.text, fontVariant: ["tabular-nums"] },
   sleep: { ...typography.meta, fontVariant: ["tabular-nums"], flexShrink: 1 },
@@ -176,8 +185,8 @@ const styles = StyleSheet.create({
   },
   trackFill: { height: "100%", backgroundColor: colors.accent },
   skip: {
-    width: sizes.touch,
-    height: sizes.touch,
+    minWidth: sizes.touch,
+    minHeight: sizes.touch,
     borderRadius: radii.pill,
     alignItems: "center",
     justifyContent: "center",

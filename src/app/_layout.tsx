@@ -8,7 +8,11 @@ import { library } from "@/lib/library";
 import { scoring } from "@/lib/scoring";
 
 import { PlayerProvider } from "@/player/PlayerProvider";
+import { installFocusRing } from "@/ui/focus-ring";
 import { colors, fonts } from "@/ui/theme";
+
+// A keyboard focus draws the theme's focus ring on the web (06.5).
+installFocusRing();
 
 // A two-level stack with no tab bar: the library ("Your shelf"), then a book's chapter river, the Import screen or
 // Settings (design/layouts/DECISION.md). Each screen draws its own top bar, so the stack's header is off.
