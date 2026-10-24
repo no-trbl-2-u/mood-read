@@ -40,3 +40,4 @@ identity · deleted in <sha>`; recover its text with
 - 2026-10-24 · 06 · spec complete: Design system, the undrawn screens, Settings, accessibility and a privacy policy · absorbed into plan/bearings.md Visual & tonal defaults, the route contract and standing decisions, and design/system/DECISION.md and design/layouts/DECISION.md · deleted in "plan: settle 06.5"
 - 2026-10-24 · 01.14 · Companion mode plays the bed beside another app, no narration · 103fa672..ca7361bf
 - 2026-10-24 · 05.6 · Downloads: queue, pause, resume, retry and a storage meter · b992bcb2..6cc5d7cd
+- 2026-10-24 · 01.17 · Score, progress, cap and Rescore live in the river's top bar · af58facc..af58facc
