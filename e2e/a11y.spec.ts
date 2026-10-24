@@ -4,7 +4,8 @@
 // with the playing row expanded (the mixer inline), its Speed & Sleep sheet and its Bookmarks sheet, and a scored book
 // (01.4): the playing row's mood card (emotion stickers, the named piece, alternates and the pick chips), a
 // reached row's stickers and a locked row; the shelf with a scored book's fingerprint and a mood lit (07.7); 07.4's verdict targets with "Fits" lit, and with "Doesn't fit" lit and the
-// other pieces offered in place; and Browse and a LibriVox book's page (05.8, archive.org stubbed by
+// other pieces offered in place; 07.6's "Set the mood" sheet open with emotions lit, and a seeded chapter's card
+// ("Your mood", its matched piece); and Browse and a LibriVox book's page (05.8, archive.org stubbed by
 // e2e/librivox-fixtures.ts, same as e2e/browse.spec.ts). On each one:
 //   - axe (WCAG 2.0, 2.1 and 2.2, A and AA) finds no serious or critical issue;
 //   - every control (button, link, switch, checkbox, slider, tab, menu item, and any other focusable element, which
@@ -19,7 +20,7 @@ import { sizes } from "../src/ui/theme";
 
 import { guard } from "./guard";
 import { IDENTIFIER, stubArchiveOrg } from "./librivox-fixtures";
-import { scoredBook } from "./scored-book";
+import { scoredBook, unscoredBook } from "./scored-book";
 
 /** The smallest touch target, in CSS px: 44, the size A5 holds (WCAG 2.5.5; 2.5.8's AA floor is 24). */
 const TOUCH = sizes.touch;
@@ -281,6 +282,39 @@ const STATES: State[] = [
       await row0.getByTestId("verdict-misfit").click();
       await expect(row0.getByTestId("verdict-misfit")).toHaveAttribute("aria-pressed", "true");
       await expect(row0.getByTestId("mood-misfit-offers")).toBeVisible();
+      const play = page.getByTestId("mini-play-pause");
+      if ((await play.getAttribute("aria-label")) === "Pause") await play.click();
+      await expect(play).toHaveAttribute("aria-label", "Play");
+    },
+  },
+  {
+    name: "/book/<id> unscored: the \"Set the mood\" sheet, one emotion low and one high (07.6)",
+    open: async (page) => {
+      await unscoredBook(page, { tooLittle: true });
+      await page.getByTestId("chapter-1").click();
+      await page.getByTestId("chapter-row-1").getByTestId("set-mood").click();
+      const sheet = page.getByTestId("set-mood-sheet");
+      await sheet.getByTestId("seed-sorrow").click();
+      await sheet.getByTestId("seed-calm").click();
+      await sheet.getByTestId("seed-calm").click();
+      await expect(sheet.getByTestId("seed-calm")).toHaveAttribute("aria-pressed", "true");
+      const play = page.getByTestId("mini-play-pause");
+      if ((await play.getAttribute("aria-label")) === "Pause") await play.click();
+      await expect(play).toHaveAttribute("aria-label", "Play");
+    },
+  },
+  {
+    name: "/book/<id> seeded: the card's \"Your mood\" and its matched piece (07.6)",
+    open: async (page) => {
+      await unscoredBook(page, { tooLittle: true });
+      await page.getByTestId("chapter-1").click();
+      await page.getByTestId("chapter-row-1").getByTestId("set-mood").click();
+      await page.getByTestId("seed-sorrow").click();
+      await page.getByTestId("seed-apply-book").click();
+      const card = page.getByTestId("chapter-row-1").getByTestId("mood-card");
+      await expect(card.getByTestId("mood-yours")).toBeVisible();
+      await expect(card.getByTestId("mood-piece")).toContainText("Theme 2");
+      await expect(page.getByTestId("row-emotions-2")).toBeVisible();
       const play = page.getByTestId("mini-play-pause");
       if ((await play.getAttribute("aria-label")) === "Pause") await play.click();
       await expect(play).toHaveAttribute("aria-label", "Play");

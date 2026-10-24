@@ -37,6 +37,8 @@ export function ChapterRiver(props: {
   verdicts?: readonly PieceVerdict[];
   /** The listener taps "Fits" or "Doesn't fit" on a chapter's playing piece (A5). */
   onVerdict?: (index: number, pieceId: string, tapped: Verdict) => void;
+  /** Opens "Set the mood" for a chapter (07.6, A7), from its card when it is unscored or the listener's own seed. */
+  onSetMood?: (index: number) => void;
   onJump: (index: number) => void;
   /** Chapter edits; absent until the book is open in the player. */
   edits?: ChapterEditsApi;
@@ -76,14 +78,16 @@ export function ChapterRiver(props: {
               }
             }}
           >
-            <Pressable
-              testID={`chapter-${c.index}`}
-              role="button"
-              aria-label={`Play ${label}${locked ? COPY.notReached : ""}${mood.kind === "unscored" ? COPY.unscored : ""}`}
-              onPress={() => props.onJump(c.index)}
-              style={styles.titleLine}
-            >
-              <View style={styles.titleWrap}>
+            {/* The "Unscored" chip sits beside the title's button, not in it, so the button's visible text stays
+                inside its name (WCAG 2.5.3); the name still says it (06.5: what is seen is heard). */}
+            <View style={styles.titleLine}>
+              <Pressable
+                testID={`chapter-${c.index}`}
+                role="button"
+                aria-label={`Play ${label}${locked ? COPY.notReached : ""}${mood.kind === "unscored" ? COPY.unscored : ""}`}
+                onPress={() => props.onJump(c.index)}
+                style={styles.titleWrap}
+              >
                 <Text style={[styles.title, locked && styles.titleLocked]}>{label}</Text>
                 {locked && (
                   <View testID={`locked-${c.index}`}>
@@ -95,16 +99,21 @@ export function ChapterRiver(props: {
                     <Icon name="play" size="small" color={colors.accent} filled />
                   </View>
                 )}
-                {mood.kind === "unscored" && (
-                  <View style={styles.unscored} testID={`unscored-${c.index}`}>
-                    <Text style={styles.unscoredText}>Unscored</Text>
-                  </View>
-                )}
-              </View>
-            </Pressable>
+              </Pressable>
+              {mood.kind === "unscored" && (
+                <View style={styles.unscored} testID={`unscored-${c.index}`}>
+                  <Text style={styles.unscoredText}>Unscored</Text>
+                </View>
+              )}
+            </View>
             {!playing && mood.kind === "scored" && mood.emotions.length > 0 && (
               <View style={styles.rowChips}>
-                <EmotionChips emotions={mood.emotions} limit={2} testID={`row-emotions-${c.index}`} />
+                <EmotionChips
+                  emotions={mood.emotions}
+                  limit={2}
+                  testID={`row-emotions-${c.index}`}
+                  label={mood.listener ? COPY.yours : undefined}
+                />
               </View>
             )}
             {playing && !locked && (
@@ -118,6 +127,7 @@ export function ChapterRiver(props: {
                       : null
                   }
                   onVerdict={props.onVerdict ? (pieceId, tapped) => props.onVerdict!(c.index, pieceId, tapped) : undefined}
+                  onSetMood={props.onSetMood ? () => props.onSetMood!(c.index) : undefined}
                 />
                 {props.mixer}
                 {props.edits && (
@@ -144,6 +154,8 @@ const COPY = {
   notReached: ", not reached yet",
   /** The row's visible "Unscored" chip, in its name too (06.5: what is seen is heard). */
   unscored: ", Unscored",
+  /** A seeded row's chips (07.6): the listener's own mood, shown at once. */
+  yours: "Your mood for this chapter",
 };
 
 export type ChapterEditsApi = {
@@ -231,7 +243,7 @@ const styles = StyleSheet.create({
     boxShadow: hardShadow(shadows.card),
   },
   titleLine: { flexDirection: "row", alignItems: "center", gap: spacing.md, minHeight: sizes.touch },
-  titleWrap: { flex: 1, flexDirection: "row", alignItems: "center", gap: spacing.sm },
+  titleWrap: { flex: 1, flexDirection: "row", alignItems: "center", gap: spacing.sm, minHeight: sizes.touch },
   title: { ...typography.body, flexShrink: 1, fontWeight: typography.label.fontWeight },
   titleLocked: { color: colors.textMuted },
   rowChips: { paddingBottom: spacing.sm },

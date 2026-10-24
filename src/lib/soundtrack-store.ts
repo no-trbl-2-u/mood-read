@@ -129,7 +129,7 @@ export type SoundtrackGroup = { bookId: string; title: string; author: string; p
 export function soundtrackView(
   entries: readonly SoundtrackEntry[],
   books: readonly Pick<Book, "id" | "title" | "author">[],
-  scoresOf: (bookId: string) => BookScores | null,
+  scoresOf: (bookId: string) => Pick<BookScores, "chapters"> | null,
 ): SoundtrackGroup[] {
   const groups: SoundtrackGroup[] = [];
   for (const book of books) {

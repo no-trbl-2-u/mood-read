@@ -84,7 +84,7 @@ export default function LibraryScreen() {
   // Each book's fingerprint; the playing chapter of the open book counts as reached, as on its river.
   const prints = books.map((b) => ({
     item: b,
-    print: fingerprint(b, scoringStore.scores(b.id), reached.furthest(b.id), player.book?.id === b.id ? player.chapter : null),
+    print: fingerprint(b, { chapters: scoringStore.chapters(b.id) }, reached.furthest(b.id), player.book?.id === b.id ? player.chapter : null),
   }));
   const printOf = new Map(prints.map((p) => [p.item.id, p.print]));
   const offered = filterEmotions(

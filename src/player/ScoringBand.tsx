@@ -27,6 +27,8 @@ const COPY = {
   rescoreAsk: (n: number) => `Rescore all ${n} chapters?`,
   rescoreBody: "It uses this month's scoring budget. The moods you see now stay until the new ones land.",
   cancel: "Cancel",
+  setMood: "Set the mood",
+  setMoodCaption: "Or seed it yourself; nothing is sent.",
 } as const;
 
 /** The Rescore item's caption in the river's overflow menu (design/layouts/DECISION.md, "Rescore"). */
@@ -41,7 +43,15 @@ export function ScoringBand(props: {
   onDismissNote: () => void;
   onStart: () => void;
   onRescore: () => void;
+  /** "Set the mood" (07.6, A7): offered while no chapter of the book is scored, so the listener can seed it. */
+  onSetMood?: () => void;
 }) {
+  const setMood = props.onSetMood && (
+    <View style={styles.row}>
+      <Button testID="band-set-mood" label={COPY.setMood} onPress={props.onSetMood} />
+      <Text style={styles.caption}>{COPY.setMoodCaption}</Text>
+    </View>
+  );
   const { job, scores } = props;
 
   if (job?.state === "running" || job?.state === "capped") {
@@ -101,6 +111,7 @@ export function ScoringBand(props: {
         <Text style={styles.text} testID="scoring-done">
           {COPY.scored(scored, props.chapters)}
         </Text>
+        {setMood}
       </View>
     );
   }
@@ -111,6 +122,7 @@ export function ScoringBand(props: {
         <Button testID="score-book" label={COPY.start} icon="sparkles" onPress={props.onStart} primary />
         <Text style={styles.caption}>{COPY.startCaption}</Text>
       </View>
+      {setMood}
     </View>
   );
 }

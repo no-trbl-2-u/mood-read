@@ -559,7 +559,7 @@ export function PlayerProvider({ children }: { children: ReactNode }) {
       // The playing chapter's scene (07.2): its stored score, while the chapter keeps the title it was scored under.
       const c = chapters.find((ch) => ch.index === s.chapterIndex);
       const score =
-        b && c ? (scoringStore.scores(b.id)?.chapters.find((x) => x.mood.chapterIndex === c.index && x.mood.chapterTitle === c.title) ?? null) : null;
+        b && c ? (scoringStore.chapters(b.id).find((x) => x.mood.chapterIndex === c.index && x.mood.chapterTitle === c.title) ?? null) : null;
       const next = planScene(scene, s, b && c ? sceneContextFor(score, { start: c.start, end: Math.min(c.end, b.duration) }) : null);
       scene = next.spot;
       if (next.command) engine.apply(next.command);

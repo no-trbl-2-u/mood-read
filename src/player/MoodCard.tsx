@@ -7,12 +7,16 @@
 // previewed or played (v1). 07.2 (spec 07 A2) adds the scene band under the chapter's chips: the playing scene's
 // emotions, a thin band that changes as the clock crosses a scene boundary and shows nothing for a scene not yet
 // reached (src/lib/mood-card.ts sceneBand). Never a chapter's events and never
-// a source's text: the card draws only emotions and pieces. A row not yet reached never gets here (A21).
+// a source's text: the card draws only emotions and pieces. A row not yet reached never gets here (A21). 07.6 (spec 07
+// A7): an unscored chapter's card offers "Set the mood" (src/player/SetMoodSheet.tsx); a seeded chapter's card says
+// "Your mood", names the matched piece or says the chapter plays its soundscape, and takes no verdict, so the
+// listener's own emotions never leave the device.
 import { StyleSheet, Text, View } from "react-native";
 
 import { alternatesLine, EMOTION_NAMES, misfitOffers, pieceLine, strongest, type MoodCardView } from "@/lib/mood-card";
 import type { EmotionScore, Piece } from "@/lib/types";
 import type { Verdict } from "@/lib/verdict-store";
+import { Button } from "@/ui/Button";
 import { Chip } from "@/ui/Chip";
 import { Sticker } from "@/ui/Sticker";
 import { colors, spacing, strokes, typography } from "@/ui/theme";
@@ -37,6 +41,14 @@ const COPY = {
   offerA11y: (title: string, artist: string) => `Try ${title} by ${artist} for this chapter instead`,
   noOffers: "No other piece is named for this chapter.",
   unscored: "Not enough has been written about this chapter to score it. Shown unscored, never guessed.",
+  yours: "Your mood",
+  yoursEmotions: "Your mood for this chapter",
+  matched: "Matched piece",
+  soundscape: "No piece on this device matches your mood, so this chapter plays its soundscape.",
+  setMood: "Set the mood",
+  setMoodA11y: "Set the mood for this chapter yourself",
+  changeMood: "Change your mood",
+  changeMoodA11y: "Change your mood for this chapter",
 };
 
 /**
@@ -77,20 +89,29 @@ export function MoodCard(props: {
   verdict?: Verdict | null;
   /** A tap on "Fits" or "Doesn't fit" for the playing piece; the screen decides what it does to the kept verdict. */
   onVerdict?: (pieceId: string, tapped: Verdict) => void;
+  /** Opens "Set the mood" for this chapter (07.6, A7): offered on an unscored chapter and on the listener's own seed. */
+  onSetMood?: () => void;
 }) {
   const v = props.view;
   if (v.kind === "unscored") {
     return (
       <View style={styles.card} testID="mood-card">
         <Text style={styles.muted}>{COPY.unscored}</Text>
+        {props.onSetMood && <SetMoodButton label={COPY.setMood} a11yLabel={COPY.setMoodA11y} onPress={props.onSetMood} />}
         <View style={styles.rule} />
       </View>
     );
   }
   if (v.kind !== "scored") return null;
+  const yours = v.listener === true;
   return (
     <View style={styles.card} testID="mood-card">
-      <EmotionChips emotions={v.emotions} testID="mood-emotions" />
+      {yours && (
+        <Text style={styles.heading} testID="mood-yours">
+          {COPY.yours}
+        </Text>
+      )}
+      <EmotionChips emotions={v.emotions} testID="mood-emotions" label={yours ? COPY.yoursEmotions : undefined} />
       {v.scene && v.scene.length > 0 && (
         <View style={styles.sceneBand} testID="mood-scene">
           <Text style={styles.heading}>{COPY.scene}</Text>
@@ -100,11 +121,11 @@ export function MoodCard(props: {
       {v.piece ? (
         <>
           <View style={styles.block} testID="mood-piece">
-            <Text style={styles.heading}>{COPY.piece}</Text>
+            <Text style={styles.heading}>{yours ? COPY.matched : COPY.piece}</Text>
             <Text style={styles.pieceTitle}>{v.piece.title}</Text>
             <Text style={styles.muted}>{pieceLine(v.piece)}</Text>
           </View>
-          {v.playing && props.onVerdict && (
+          {v.playing && props.onVerdict && !yours && (
             <VerdictTargets
               playing={v.playing}
               verdict={props.verdict ?? null}
@@ -144,10 +165,23 @@ export function MoodCard(props: {
             </>
           )}
         </>
+      ) : yours ? (
+        <Text style={styles.muted} testID="mood-soundscape">
+          {COPY.soundscape}
+        </Text>
       ) : (
         <Text style={styles.muted}>{COPY.noPiece}</Text>
       )}
+      {yours && props.onSetMood && <SetMoodButton label={COPY.changeMood} a11yLabel={COPY.changeMoodA11y} onPress={props.onSetMood} />}
       <View style={styles.rule} />
+    </View>
+  );
+}
+
+function SetMoodButton(props: { label: string; a11yLabel: string; onPress: () => void }) {
+  return (
+    <View style={styles.action}>
+      <Button testID="set-mood" kind="secondary" small label={props.label} a11yLabel={props.a11yLabel} onPress={props.onPress} />
     </View>
   );
 }
@@ -211,6 +245,7 @@ const styles = StyleSheet.create({
   card: { gap: spacing.sm, marginTop: spacing.xs },
   chips: { flexDirection: "row", flexWrap: "wrap", alignItems: "center", gap: spacing.sm },
   block: { gap: spacing.xxs },
+  action: { flexDirection: "row" },
   sceneBand: {
     gap: spacing.xxs,
     paddingLeft: spacing.sm,

@@ -5,7 +5,7 @@
 // own emotions and its own piece (scenePieces: Theme 1, 2, 3), so a scene boundary is crossed in a few seconds of play.
 import { expect, type Page } from "@playwright/test";
 
-function wav(seconds: number, rate = 8000): Buffer {
+export function wav(seconds: number, rate = 8000): Buffer {
   const samples = Math.round(seconds * rate);
   const data = Buffer.alloc(samples * 2);
   for (let i = 0; i < samples; i++) data.writeInt16LE(Math.round(Math.sin((2 * Math.PI * 220 * i) / rate) * 800), i * 2);
@@ -114,3 +114,60 @@ export async function scoredBook(page: Page, opts: { scenes?: boolean } = {}): P
   return id;
 }
 
+
+/** The pieces a scored first chapter names in `unscoredBook`: the second is the one a sorrow or calm seed matches. */
+export const KNOWN_PIECES = [
+  { id: "composer-1--theme-1", title: "Theme 1", artist: "Composer 1", kind: "score", vocals: "none", moodTags: ["tension"] },
+  { id: "composer-2--theme-2", title: "Theme 2", artist: "Composer 2", kind: "score", vocals: "none", moodTags: ["sorrow", "calm"] },
+  { id: "composer-3--theme-3", title: "Theme 3", artist: "Composer 3", kind: "ambient", vocals: "none", moodTags: ["joy"] },
+];
+
+/**
+ * A three-chapter book with nothing scored (07.6, spec 07 A7), imported and reloaded; returns its id. With
+ * `tooLittle`, a finished scoring run is stored the way the runner stores one: the first chapter scored (naming
+ * KNOWN_PIECES), the second and third with too little written about them, each with its "Unscored" chip. Without
+ * it the book was never scored: the band offers "Score this book".
+ */
+export async function unscoredBook(page: Page, opts: { tooLittle?: boolean } = {}): Promise<string> {
+  await page.goto("/");
+  await page.getByTestId("import-book").click();
+  const chooser = page.waitForEvent("filechooser");
+  await page.getByTestId("import-files").click();
+  await (await chooser).setFiles([
+    { name: "Quiet Book - 01.wav", mimeType: "audio/wav", buffer: wav(4) },
+    { name: "Quiet Book - 02.wav", mimeType: "audio/wav", buffer: wav(4) },
+    { name: "Quiet Book - 03.wav", mimeType: "audio/wav", buffer: wav(4) },
+  ]);
+  await expect(page).toHaveURL(/\/book\/[a-z0-9]+$/);
+  const id = new URL(page.url()).pathname.split("/").pop()!;
+  if (opts.tooLittle) {
+    await page.evaluate(
+      ({ id, pieces, source }) => {
+        const books = JSON.parse(localStorage.getItem("books")!) as { id: string; chapters: { index: number; title: string }[] }[];
+        const book = books.find((b) => b.id === id)!;
+        const chapters = book.chapters.map((c) => {
+          const scored = c.index === 0;
+          return {
+            mood: {
+              chapterIndex: c.index,
+              chapterTitle: c.title,
+              emotions: scored ? [{ emotion: "tension", intensity: 0.8 }] : [],
+              sources: scored ? [{ url: source, title: "Quiet Book summary" }] : [],
+              coverage: scored ? "scored" : "too-little",
+              model: "gpt-5-mini",
+              version: "01.2.1",
+              scoredAt: 1,
+            },
+            pieces: scored ? pieces : [],
+            playlist: scored ? { chapterIndex: 0, piece: pieces[0].id, alternates: [pieces[1].id, pieces[2].id], pick: "auto" } : null,
+          };
+        });
+        localStorage.setItem(`scores:${id}`, JSON.stringify({ jobId: "e".repeat(64), model: "gpt-5-mini", version: "01.2.1", scoredAt: 1, costUsd: 0.04, chapters }));
+      },
+      { id, pieces: KNOWN_PIECES, source: SOURCE },
+    );
+  }
+  await page.reload();
+  await expect(page.getByTestId("mini-play-pause")).toHaveAttribute("aria-label", /Play|Pause/);
+  return id;
+}

@@ -19,5 +19,6 @@ export function useSoundtrack(): SoundtrackGroup[] {
   const entries = useSoundtrackEntries();
   const books = useBooks();
   // Titles are read as the list renders: scores do not change while this screen is open (a rescore runs from a river).
-  return soundtrackView(entries, books, (id) => scoringStore.scores(id));
+  // A listener's matched piece (07.6) is read from the book's chapters as the river reads them.
+  return soundtrackView(entries, books, (id) => ({ chapters: scoringStore.chapters(id) }));
 }

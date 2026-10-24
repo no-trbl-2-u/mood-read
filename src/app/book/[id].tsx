@@ -6,9 +6,12 @@ import { chapterBed, pickFor } from "@/lib/bed";
 import { speedLabel } from "@/lib/labels";
 import { chapterEdits, reached, useBook, useFurthestIn, useFurthestReached } from "@/lib/library";
 import { moodCardView, sceneBand } from "@/lib/mood-card";
+import { draftFrom } from "@/lib/mood-match";
 import { isReached } from "@/lib/reached";
 import { notes, useNoteDismissed } from "@/lib/notes";
 import { scoring, scoringStore, useBookScores, useScoringJob } from "@/lib/scoring";
+import { seedable } from "@/lib/scoring-store";
+import { setMood, useChapterScores } from "@/lib/seeding";
 import { soundtrack } from "@/lib/soundtrack";
 import { piecesPlayed } from "@/lib/soundtrack-store";
 import { nextVerdict } from "@/lib/verdict-store";
@@ -22,6 +25,7 @@ import { RescoreConfirm, RESCORE_MENU, ScoringBand } from "@/player/ScoringBand"
 import { Mixer } from "@/player/Mixer";
 import { usePlayer } from "@/player/PlayerProvider";
 import { SOUNDSCAPE_IDS } from "@/player/soundscapes";
+import { SetMoodSheet } from "@/player/SetMoodSheet";
 import { SpeedSleepSheet } from "@/player/SpeedSleepSheet";
 import { Button } from "@/ui/Button";
 import { OverflowMenu } from "@/ui/OverflowMenu";
@@ -46,12 +50,15 @@ export default function BookScreen() {
   const { id } = useLocalSearchParams<{ id: string }>();
   const book = useBook(id);
   const p = usePlayer();
-  const [sheet, setSheet] = useState<"speed" | "bookmarks" | null>(null);
+  // "Set the mood" (07.6, A7) opens for one chapter, by index.
+  const [sheet, setSheet] = useState<"speed" | "bookmarks" | { mood: number } | null>(null);
   const [confirmRescore, setConfirmRescore] = useState(false);
   const noteDismissed = useNoteDismissed("scoring-sent");
   const { open } = p;
   const job = useScoringJob(id ?? "");
   const scores = useBookScores(id ?? "");
+  // The research with the listener's seeds (07.6): what the rows, the card and "Your soundtrack" read.
+  const chapterScores = useChapterScores(id ?? "");
   const furthest = useFurthestReached(id ?? "");
   const bookVerdicts = useBookVerdicts(id ?? "");
 
@@ -80,10 +87,10 @@ export default function BookScreen() {
   // (src/lib/soundtrack-store.ts, 07.8, A9; 07.2, A2). A pick made while it plays is logged too, since it plays from
   // then on.
   useEffect(() => {
-    if (!id || !playingChapter || !scores) return;
-    const score = scores.chapters.find((s) => s.mood.chapterIndex === playingChapter.index && s.mood.chapterTitle === playingChapter.title);
+    if (!id || !playingChapter) return;
+    const score = chapterScores.find((s) => s.mood.chapterIndex === playingChapter.index && s.mood.chapterTitle === playingChapter.title);
     if (score) soundtrack.log(id, piecesPlayed(score, { chapter: playingChapter, position: playingPosition, furthestIn }));
-  }, [id, playingChapter, scores, playingPosition, furthestIn]);
+  }, [id, playingChapter, chapterScores, playingPosition, furthestIn]);
 
   if (!book) {
     return (
@@ -106,11 +113,14 @@ export default function BookScreen() {
   // while the chapter keeps the title it was scored under.
   // The playing row also shows the playing scene's emotions, nothing for a scene not yet reached (07.2, A2).
   const moods = book.chapters.map((c) => {
-    const score = scores?.chapters.find((s) => s.mood.chapterIndex === c.index && s.mood.chapterTitle === c.title) ?? null;
+    const score = chapterScores.find((s) => s.mood.chapterIndex === c.index && s.mood.chapterTitle === c.title) ?? null;
     const view = moodCardView(isReached(c, furthest, chapter), score);
     if (view.kind !== "scored" || c.index !== chapter?.index) return view;
     return { ...view, scene: sceneBand(score, c, position, active ? furthestIn : null) };
   });
+  // An unscored book (no chapter the research scored) offers "Set the mood" in its band, for the playing chapter.
+  const unscoredBook = seedable(book.chapters, scores).length === book.chapters.length;
+  const moodSheet = sheet !== null && typeof sheet === "object" ? book.chapters[sheet.mood] : undefined;
   const speedButton = p.sleep ? `${speedLabel(p.speed)} · Sleep` : speedLabel(p.speed);
 
   return (
@@ -160,6 +170,7 @@ export default function BookScreen() {
         onDismissNote={() => notes.dismiss("scoring-sent")}
         onStart={() => void scoring.start(book)}
         onRescore={() => void scoring.start(book, true)}
+        onSetMood={unscoredBook && chapter ? () => setSheet({ mood: chapter.index }) : undefined}
       />
       {active && p.error && (
         <Text style={styles.error} role="alert">
@@ -196,6 +207,7 @@ export default function BookScreen() {
               />
             ) : undefined
           }
+          onSetMood={(i) => setSheet({ mood: i })}
           onJump={(i) => active && p.jumpToChapter(i)}
           edits={
             active
@@ -210,6 +222,18 @@ export default function BookScreen() {
         {active && sheet === "speed" && <SpeedSleepSheet player={p} onClose={() => setSheet(null)} />}
         {active && sheet === "bookmarks" && (
           <BookmarksSheet book={book} position={position} onJump={p.seek} onClose={() => setSheet(null)} />
+        )}
+        {moodSheet && (
+          <SetMoodSheet
+            key={moodSheet.index}
+            chapterLabel={seedable([moodSheet], scores).length > 0 ? `Ch.${moodSheet.index + 1} — ${moodSheet.title}` : null}
+            initial={draftFrom(scoringStore.seeds(book.id).find((s) => s.mood.chapterIndex === moodSheet.index && s.mood.chapterTitle === moodSheet.title)?.mood.emotions ?? [])}
+            onApply={(target, lit) => {
+              setMood(book, target === "book" ? "book" : { chapter: moodSheet.index }, lit);
+              setSheet(null);
+            }}
+            onClose={() => setSheet(null)}
+          />
         )}
       </View>
       <MiniPlayer
