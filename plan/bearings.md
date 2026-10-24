@@ -111,6 +111,10 @@ Scripts (package.json):
   pnpm web | start                 dev server
   pnpm verify                      the full gate (pre-commit)
   pnpm deploy:check                the deploy gate (post-push)
+  pnpm prescore [--limit 20] [--dry-run]   owner only (05.10): pre-score the most-downloaded LibriVox books through
+                                   POST /v1/prescore, one at a time, at most 80 a day (.nexus/prescore-ledger.json),
+                                   30 s apart; stops once pre-scoring's half of the cap is spent. Run it as
+                                   node scripts/secrets.mjs run --only PRESCORE_TOKEN -- pnpm prescore
   pnpm plan:check | settle | claims | progress | order | pulse | secrets ...   the nexus scripts
 
 Scoring proxy (01.2; proxy/src/http.ts): it receives only a book's title, author and chapter titles, and for a

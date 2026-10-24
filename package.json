@@ -62,7 +62,8 @@
     "worktree": "node scripts/worktree.mjs",
     "secrets": "node scripts/secrets.mjs",
     "secrets:sync": "node scripts/secrets-sync.mjs",
-    "catalog:add": "node scripts/catalog-add.mjs"
+    "catalog:add": "node scripts/catalog-add.mjs",
+    "prescore": "node scripts/prescore.mjs"
   },
   "engines": {
     "node": ">=22"

@@ -13,6 +13,9 @@ export type LibriVoxSearchResult = {
   /** "mm:ss" (or similar) as archive.org stores it, or null when the item has none. */
   runtime: string | null;
   description: string | null;
+  /** LibriVox's own catalog number (archive.org's `call_number`), digits; null when absent. Browse reads a pre-scored
+   *  book's overall mood by it (05.10). */
+  catalogId: string | null;
 };
 
 export type LibriVoxFile = {
@@ -73,8 +76,12 @@ function readSearchDoc(d: unknown): LibriVoxSearchResult {
     creator: joinField(doc.creator),
     runtime: asString(doc.runtime),
     description: asString(doc.description) ?? (Array.isArray(doc.description) ? joinField(doc.description) : null),
+    catalogId: catalogNumber(doc.call_number),
   };
 }
+
+/** The fields a search or the popular list asks archive.org for. */
+const SEARCH_FIELDS = ["identifier", "title", "creator", "runtime", "description", "call_number"];
 
 /** Checks archive.org's search answer's shape; anything off is an error rather than a half-read result. */
 export function readSearchResponse(body: unknown): LibriVoxSearchResult[] {
@@ -132,7 +139,20 @@ export function readItem(body: unknown): LibriVoxItem {
 export async function search(fetchImpl: Fetch, query: string): Promise<LibriVoxSearchResult[]> {
   const q = `collection:librivoxaudio AND (title:(${query}) OR creator:(${query}) OR subject:(${query}))`;
   const params = new URLSearchParams({ q, rows: "20", output: "json" });
-  for (const field of ["identifier", "title", "creator", "runtime", "description"]) params.append("fl[]", field);
+  for (const field of SEARCH_FIELDS) params.append("fl[]", field);
+  const res = await fetchImpl(`https://archive.org/advancedsearch.php?${params.toString()}`, { headers: archiveHeaders() });
+  if (!res.ok) throw new Error(`archive.org's search answered ${res.status}`);
+  return readSearchResponse(await res.json());
+}
+
+/**
+ * The LibriVox collection's most-downloaded books, most first, one page of `rows` (05.10: the owner's `pnpm prescore`
+ * walks it). One advancedsearch.php call, the same endpoint and fields as a search.
+ */
+export async function popular(fetchImpl: Fetch, rows: number, page = 1): Promise<LibriVoxSearchResult[]> {
+  const params = new URLSearchParams({ q: "collection:librivoxaudio", rows: String(rows), page: String(page), output: "json" });
+  params.append("sort[]", "downloads desc");
+  for (const field of SEARCH_FIELDS) params.append("fl[]", field);
   const res = await fetchImpl(`https://archive.org/advancedsearch.php?${params.toString()}`, { headers: archiveHeaders() });
   if (!res.ok) throw new Error(`archive.org's search answered ${res.status}`);
   return readSearchResponse(await res.json());

@@ -15,6 +15,7 @@ import {
   readerNames,
   readersLine,
   readItem,
+  popular,
   readSearchResponse,
   search,
 } from "./librivox-api.ts";
@@ -25,7 +26,7 @@ const SEARCH_BODY = {
     numFound: 2,
     docs: [
       { identifier: "alice_in_wonderland_librivox", title: "Alice's Adventures in Wonderland", creator: "Lewis Carroll", runtime: "2:54:12", description: "A fantasy novel." },
-      { identifier: "dracula_1215_librivox", title: "Dracula", creator: ["Bram Stoker"], runtime: null, description: null },
+      { identifier: "dracula_1215_librivox", title: "Dracula", creator: ["Bram Stoker"], runtime: null, description: null, call_number: "1215" },
     ],
   },
 };
@@ -68,13 +69,31 @@ test("search builds one advancedsearch.php call scoped to the LibriVox collectio
   const url = new URL(calls[0]!.url);
   assert.equal(url.origin + url.pathname, "https://archive.org/advancedsearch.php");
   assert.equal(url.searchParams.get("q"), "collection:librivoxaudio AND (title:(alice) OR creator:(alice) OR subject:(alice))");
-  assert.deepEqual(url.searchParams.getAll("fl[]"), ["identifier", "title", "creator", "runtime", "description"]);
+  assert.deepEqual(url.searchParams.getAll("fl[]"), ["identifier", "title", "creator", "runtime", "description", "call_number"]);
   // node --test has no `window`, matching native/server-side fetch: the User-Agent etiquette header is set.
   assert.equal(new Headers(calls[0]!.init?.headers).get("User-Agent"), "MoodRead/1.0");
   assert.deepEqual(results, [
-    { identifier: "alice_in_wonderland_librivox", title: "Alice's Adventures in Wonderland", creator: "Lewis Carroll", runtime: "2:54:12", description: "A fantasy novel." },
-    { identifier: "dracula_1215_librivox", title: "Dracula", creator: "Bram Stoker", runtime: null, description: null },
+    { identifier: "alice_in_wonderland_librivox", title: "Alice's Adventures in Wonderland", creator: "Lewis Carroll", runtime: "2:54:12", description: "A fantasy novel.", catalogId: null },
+    { identifier: "dracula_1215_librivox", title: "Dracula", creator: "Bram Stoker", runtime: null, description: null, catalogId: "1215" },
   ]);
+});
+
+test("popular lists the LibriVox collection by downloads, most first, a page at a time (05.10)", async () => {
+  const calls: string[] = [];
+  const fetchImpl = async (url: string) => {
+    calls.push(url);
+    return new Response(JSON.stringify(SEARCH_BODY), { status: 200 });
+  };
+  const results = await popular(fetchImpl, 50, 2);
+  const url = new URL(calls[0]!);
+  assert.equal(url.origin + url.pathname, "https://archive.org/advancedsearch.php");
+  assert.equal(url.searchParams.get("q"), "collection:librivoxaudio");
+  assert.equal(url.searchParams.get("sort[]"), "downloads desc");
+  assert.equal(url.searchParams.get("rows"), "50");
+  assert.equal(url.searchParams.get("page"), "2");
+  assert.ok(url.searchParams.getAll("fl[]").includes("call_number"));
+  assert.deepEqual(results.map((r) => r.catalogId), [null, "1215"]);
+  await assert.rejects(popular(fakeFetch({}, 503), 10), /503/);
 });
 
 test("a non-ok search answer throws, and a malformed one throws rather than guessing", async () => {
