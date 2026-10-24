@@ -5,7 +5,7 @@
 //
 // The narration's audio is only measured here, never kept or sent anywhere (agents.md rule 6): a level in, a
 // gain out.
-import { DEFAULT_BED, normalizeBed, type BedSetting } from "./bed.ts";
+import { DEFAULT_BED, normalizeBed, type BedChoice, type BedSetting } from "./bed.ts";
 
 /**
  * A book's mixer setting, saved per book (A10): the levels, and (01.7, A12) the layer: the book's soundscape or off,
@@ -35,8 +35,11 @@ export const MIX_STEP = 0.1;
 const clamp = (n: number, lo: number, hi: number) => Math.min(hi, Math.max(lo, n));
 const round = (n: number) => Math.round(n * 1000) / 1000;
 
-/** A Mix from anything stored: missing or broken fields take the default, numbers are clamped and rounded. */
-export function normalizeMix(raw: unknown): Mix {
+/**
+ * A Mix from anything stored: missing or broken fields take the default, numbers are clamped and rounded. A mix with
+ * no layer of its own takes `fallbackBed` (the default soundscape setting, 06.3).
+ */
+export function normalizeMix(raw: unknown, fallbackBed?: BedChoice): Mix {
   const r = (raw && typeof raw === "object" ? raw : {}) as Partial<Record<keyof Mix, unknown>>;
   const num = (v: unknown, fallback: number, lo: number, hi: number) =>
     typeof v === "number" && Number.isFinite(v) ? round(clamp(v, lo, hi)) : fallback;
@@ -44,7 +47,7 @@ export function normalizeMix(raw: unknown): Mix {
     balance: num(r.balance, DEFAULT_MIX.balance, -1, 1),
     master: num(r.master, DEFAULT_MIX.master, 0, 1),
     duck: typeof r.duck === "boolean" ? r.duck : DEFAULT_MIX.duck,
-    ...normalizeBed(raw),
+    ...normalizeBed(raw, fallbackBed),
   };
 }
 

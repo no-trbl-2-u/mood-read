@@ -1,7 +1,7 @@
 import assert from "node:assert/strict";
 import { test } from "node:test";
 
-import { pickLayer, setChapterOnly } from "./bed.ts";
+import { defaultBedFor, pickLayer, setChapterOnly } from "./bed.ts";
 import { DEFAULT_MIX } from "./mix.ts";
 import { createLibraryStore, sortBooks, type Kv } from "./library-store.ts";
 import type { Book } from "./types.ts";
@@ -194,4 +194,16 @@ test("A6 edited chapters are saved for the book and kept across a reopen; a list
   store.setChapters("b1", [split[0]]);
   store.setChapters("b1", []);
   assert.deepEqual(store.getBook("b1")?.chapters, split);
+});
+
+test("06.3: a book never mixed opens on the default soundscape setting; a book's saved layer keeps its own", () => {
+  const kv = memoryKv();
+  const store = createLibraryStore(kv);
+  const tide = defaultBedFor("tide");
+  assert.equal(store.getMix("new", tide).soundscapeId, "tide");
+  assert.equal(store.getMix("new", defaultBedFor("off")).layer, "off");
+  assert.deepEqual(store.getMix("new", defaultBedFor(null)), DEFAULT_MIX);
+  store.saveMix("mine", { ...DEFAULT_MIX, ...pickLayer(DEFAULT_MIX, 0, "rain") });
+  assert.equal(store.getMix("mine", tide).soundscapeId, "rain");
+  assert.equal(store.getMix("mine", defaultBedFor("off")).layer, "soundscape");
 });

@@ -8,6 +8,7 @@ import {
   crossfadeGains,
   CROSSFADE_MS,
   DEFAULT_BED,
+  defaultBedFor,
   IDLE_BED,
   normalizeBed,
   pickFor,
@@ -50,6 +51,36 @@ test("A12: a chapter's own layer wins over the book's; the book's covers the res
   assert.equal(bedSoundFor(2, { ...book, layer: "off", soundscapeId: null }, cat), "tide");
   assert.equal(bedSoundFor(0, { ...book, layer: "off", soundscapeId: null }, cat), null);
   assert.equal(bedSoundFor(0, { layer: "music", soundscapeId: null, chapterBeds: {} }, cat), null);
+});
+
+test("06.3: with no default soundscape set, a book with no layer of its own plays as 01.7 has it", () => {
+  assert.deepEqual(defaultBedFor(null), DEFAULT_BED);
+  assert.deepEqual(normalizeBed(undefined, defaultBedFor(null)), DEFAULT_BED);
+  assert.deepEqual(normalizeBed({ balance: 0 }, defaultBedFor(null)), DEFAULT_BED);
+  assert.equal(bedSoundFor(3, normalizeBed(undefined, defaultBedFor(null)), SOUNDSCAPE_IDS), "night-wind");
+});
+
+test("06.3: a book with no layer of its own plays the default soundscape setting, or none when it is Off", () => {
+  const tide = normalizeBed(undefined, defaultBedFor("tide"));
+  assert.deepEqual(tide, { layer: "soundscape", soundscapeId: "tide", chapterBeds: {} });
+  assert.equal(bedSoundFor(0, tide, SOUNDSCAPE_IDS), "tide");
+  assert.equal(bedSoundFor(5, normalizeBed({ balance: 0.2 }, defaultBedFor("rain")), SOUNDSCAPE_IDS), "rain");
+  const off = normalizeBed(undefined, defaultBedFor("off"));
+  assert.deepEqual(off, { layer: "off", soundscapeId: null, chapterBeds: {} });
+  assert.equal(bedSoundFor(0, off, SOUNDSCAPE_IDS), null);
+  // A setting naming a loop no longer bundled plays as an unknown book choice does.
+  assert.equal(bedSoundFor(0, normalizeBed(undefined, defaultBedFor("test-drift")), SOUNDSCAPE_IDS), "night-wind");
+});
+
+test("06.3: a book's own layer, and a chapter's own, always win over the default soundscape setting", () => {
+  const saved = { layer: "soundscape", soundscapeId: "hearth-fire", chapterBeds: { "2": { layer: "off", soundscapeId: null } } };
+  for (const setting of [null, "off", "tide"]) {
+    const bed = normalizeBed(saved, defaultBedFor(setting));
+    assert.equal(bedSoundFor(0, bed, SOUNDSCAPE_IDS), "hearth-fire", String(setting));
+    assert.equal(bedSoundFor(2, bed, SOUNDSCAPE_IDS), null, String(setting));
+  }
+  const offBook = normalizeBed({ layer: "off", soundscapeId: null }, defaultBedFor("tide"));
+  assert.equal(bedSoundFor(0, offBook, SOUNDSCAPE_IDS), null);
 });
 
 test("A12: a new book plays Night Wind under every chapter; a loop no longer bundled falls back to it, then to the first", () => {

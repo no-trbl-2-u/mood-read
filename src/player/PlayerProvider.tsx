@@ -11,6 +11,7 @@ import { AppState, Platform } from "react-native";
 
 import {
   bedSoundFor,
+  defaultBedFor,
   IDLE_BED,
   pickLayer,
   planBed,
@@ -22,6 +23,7 @@ import {
 import { createClock, type Clock, type ClockEvent, type ClockState } from "@/lib/clock";
 import { createDucker, DEFAULT_MIX, mixLevels, normalizeMix, type Mix } from "@/lib/mix";
 import { library, useBooks } from "@/lib/library";
+import { settings } from "@/lib/settings";
 import { resolveFile } from "@/lib/media";
 import {
   bookPosition,
@@ -367,7 +369,8 @@ export function PlayerProvider({ children }: { children: ReactNode }) {
       const rate = clamp(library.getSpeed(id), MIN_SPEED, PLATFORM_MAX_SPEED);
       speedRef.current = rate;
       setSpeedState(rate);
-      setMixState(library.getMix(id));
+      // The book's own layer, else the listener's default soundscape setting (06.3).
+      setMixState(library.getMix(id, defaultBedFor(settings.get().defaultSoundscapeId)));
       pendingEvent.current = "load";
       await goTo(b, resumeStart(library.getPosition(id), b.duration), false);
     },

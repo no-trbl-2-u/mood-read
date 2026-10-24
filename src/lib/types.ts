@@ -59,3 +59,16 @@ export type Soundscape = {
   /** What allows Mood Read to play it (A18). */
   license: string;
 };
+
+/**
+ * The listener's settings (spec 06, Contracts), kept on the device. `defaultSoundscapeId` is what a book with no
+ * layer of its own plays (src/lib/bed.ts defaultBedFor): null for 01.7's default (Night Wind), `"off"`
+ * (SOUNDSCAPE_OFF in ./settings-store.ts) for no bed, else a bundled loop's id.
+ */
+export type Settings = {
+  /** Downloads wait for Wi-Fi (05.6 reads it). On by default. */
+  wifiOnly: boolean;
+  /** Mood Read's bed beside another app (01.14 brings the behaviour). Off by default. */
+  companionMode: boolean;
+  defaultSoundscapeId: string | null;
+};

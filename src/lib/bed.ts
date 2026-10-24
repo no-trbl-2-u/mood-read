@@ -7,6 +7,7 @@
 // The narration's speed is read only to be ignored: the bed always plays at BED_RATE, never sped up or
 // pitch-shifted (A9).
 import type { ClockEvent, ClockState } from "./clock.ts";
+import { SOUNDSCAPE_OFF } from "./settings-store.ts";
 import { DEFAULT_SOUNDSCAPE_ID } from "./soundscapes.ts";
 
 /** The bed's playback rate, whatever the narration's speed (A9). */
@@ -33,6 +34,17 @@ export type BedSetting = BedChoice & { chapterBeds: Record<string, BedChoice> };
 /** A new book: Night Wind under every chapter, no chapter of its own. */
 export const DEFAULT_BED: BedSetting = { layer: "soundscape", soundscapeId: DEFAULT_SOUNDSCAPE_ID, chapterBeds: {} };
 
+/**
+ * The layer a book with no choice of its own plays (06.3): the listener's default soundscape setting. Null (nothing
+ * set) is DEFAULT_BED, "off" is no bed, and a soundscape id plays that loop (one no longer bundled falls back as
+ * bedSoundFor says). A book's own choice, once saved in its Mix, always wins over this.
+ */
+export function defaultBedFor(defaultSoundscapeId: string | null): BedSetting {
+  if (defaultSoundscapeId === SOUNDSCAPE_OFF) return { layer: "off", soundscapeId: null, chapterBeds: {} };
+  if (defaultSoundscapeId) return { layer: "soundscape", soundscapeId: defaultSoundscapeId, chapterBeds: {} };
+  return DEFAULT_BED;
+}
+
 /** A pick from the mixer's layer chips: "off", or a soundscape id. */
 export type LayerPick = "off" | string;
 
@@ -48,10 +60,13 @@ export function normalizeBedChoice(raw: unknown): BedChoice | null {
   return { layer, soundscapeId: typeof r.soundscapeId === "string" && r.soundscapeId ? r.soundscapeId : DEFAULT_SOUNDSCAPE_ID };
 }
 
-/** A BedSetting from anything stored (a mix saved before 01.7 has none): broken parts take the default. */
-export function normalizeBed(raw: unknown): BedSetting {
+/**
+ * A BedSetting from anything stored (a mix saved before 01.7 has none): broken parts take the default, or
+ * `fallback` (the default soundscape setting, defaultBedFor) when the book has no layer of its own.
+ */
+export function normalizeBed(raw: unknown, fallback: BedChoice = DEFAULT_BED): BedSetting {
   const r = (raw && typeof raw === "object" ? raw : {}) as Partial<Record<keyof BedSetting, unknown>>;
-  const book = normalizeBedChoice(r) ?? DEFAULT_BED;
+  const book = normalizeBedChoice(r) ?? fallback;
   const chapterBeds: Record<string, BedChoice> = {};
   if (r.chapterBeds && typeof r.chapterBeds === "object") {
     for (const [key, value] of Object.entries(r.chapterBeds as Record<string, unknown>)) {
