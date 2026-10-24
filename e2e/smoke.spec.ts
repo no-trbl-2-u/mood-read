@@ -14,6 +14,7 @@ const ROUTES = [
   { path: "/downloads", title: "Downloads", also: "All caught up." },
   { path: "/privacy", title: "Privacy policy", also: "What the scoring proxy gets" },
   { path: "/licenses", title: "Open-source licenses", also: "Lucide icons" },
+  { path: "/credits", title: "Credits", also: "No music yet" },
 ];
 
 for (const route of ROUTES) {

@@ -1,7 +1,7 @@
 // Settings (06.3, spec 06 A3) on the web build: reached from the library's overflow menu; Wi-Fi only (on by
 // default), companion mode (off by default) and the default soundscape are saved on the device and survive a
-// reload; Storage links to Downloads (05.6); Spotify and Credits read "Not available yet"; the privacy policy
-// opens from it.
+// reload; Storage links to Downloads (05.6); Spotify reads "Not available yet"; Credits (05.5, e2e/credits.spec.ts)
+// and the privacy policy open from it.
 import { expect, test } from "@playwright/test";
 
 import { guard } from "./guard";
@@ -14,8 +14,7 @@ test.describe("settings", () => {
     await expect(more).toHaveAttribute("aria-expanded", "false");
     await more.click();
     await expect(page.getByRole("menu")).toBeVisible();
-    // Only entries whose route exists: Credits joins when 05.5 ships it.
-    await expect(page.getByRole("menuitem")).toHaveText(["Browse free books", "Downloads", "Settings"]);
+    await expect(page.getByRole("menuitem")).toHaveText(["Browse free books", "Downloads", "Settings", "Credits"]);
     await page.getByRole("menuitem", { name: "Settings" }).click();
     await expect(page).toHaveURL(/\/settings$/);
 
@@ -25,9 +24,8 @@ test.describe("settings", () => {
     await expect(companion).toHaveAttribute("aria-checked", "false");
     await expect(page.getByText(/no narration, beside another app such as Audible/)).toBeVisible();
     await expect(page.getByText(/later update/)).toHaveCount(0);
-    for (const id of ["setting-spotify", "setting-credits"]) {
-      await expect(page.getByTestId(id)).toContainText("Not available yet");
-    }
+    await expect(page.getByTestId("setting-spotify")).toContainText("Not available yet");
+    await expect(page.getByRole("link", { name: "Credits" })).toBeVisible();
     await expect(page.getByRole("link", { name: "Storage" })).toBeVisible();
 
     await wifi.click();

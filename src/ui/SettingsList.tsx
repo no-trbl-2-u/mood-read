@@ -59,6 +59,7 @@ export function SwitchRow(props: {
 /** A row that opens another screen (or, with `expanded`, opens in place). */
 export function LinkRow(props: {
   title: string;
+  caption?: string;
   value?: string;
   onPress: () => void;
   expanded?: boolean;
@@ -75,6 +76,7 @@ export function LinkRow(props: {
     >
       <View style={styles.text}>
         <Text style={styles.title}>{props.title}</Text>
+        {props.caption && <Text style={styles.caption}>{props.caption}</Text>}
       </View>
       {props.value && <Text style={styles.value}>{props.value}</Text>}
       <Icon name={props.expanded ? "chevron-down" : "chevron-right"} size="small" color={colors.textMuted} />
@@ -94,6 +96,19 @@ export function UnavailableRow(props: { title: string; testID?: string }) {
         <Text style={styles.title}>{props.title}</Text>
       </View>
       <Text style={styles.value}>{NOT_YET}</Text>
+    </View>
+  );
+}
+
+/** A row that only tells: a title, its caption lines and, optionally, controls of its own beside or under them. */
+export function InfoRow(props: { title: string; captions?: (string | null | undefined)[]; testID?: string; children?: ReactNode }) {
+  return (
+    <View testID={props.testID} style={styles.row}>
+      <View style={styles.text}>
+        <Text style={styles.title}>{props.title}</Text>
+        {props.captions?.map((c, i) => c && <Text key={i} style={styles.caption}>{c}</Text>)}
+      </View>
+      {props.children}
     </View>
   );
 }

@@ -38,6 +38,7 @@ const MENU: MenuItem[] = [
   { key: "browse", label: "Browse free books", icon: "search", onPress: () => router.push("/browse") },
   { key: "downloads", label: "Downloads", icon: "download", onPress: () => router.push("/downloads") },
   { key: "settings", label: "Settings", icon: "settings", onPress: () => router.push("/settings") },
+  { key: "credits", label: "Credits", icon: "heart", ruleBefore: true, onPress: () => router.push("/credits") },
 ];
 
 export default function LibraryScreen() {

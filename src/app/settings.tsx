@@ -13,9 +13,9 @@ import { colors, spacing } from "@/ui/theme";
 import { TopBar } from "@/ui/TopBar";
 
 // Settings (spec 06, 06.3, A3), from the library's overflow menu: a plain list, each setting saved on the device
-// as it changes (src/lib/settings.ts), with no Save button (design/layouts/DECISION.md, Settings). Rows for what
-// has not shipped (Credits, 05.5; Spotify, 05.13) are shown as "Not available yet" and go live with their
-// chunks. Storage (05.6) links to /downloads, where the storage meter and the queue live. All its copy lives here.
+// as it changes (src/lib/settings.ts), with no Save button (design/layouts/DECISION.md, Settings). A row for what
+// has not shipped (Spotify, 05.13) is shown as "Not available yet" and goes live with its chunk; Credits (05.5)
+// pushes /credits. Storage (05.6) links to /downloads, where the storage meter and the queue live. All its copy lives here.
 
 const COMPANION_CAPTION =
   "Plays only Mood Read's soundscape, no narration, beside another app such as Audible. " +
@@ -98,7 +98,7 @@ export default function SettingsScreen() {
         </SettingsSection>
 
         <SettingsSection label="About">
-          <UnavailableRow testID="setting-credits" title="Credits" />
+          <LinkRow testID="setting-credits" title="Credits" onPress={() => router.push("/credits")} />
           <LinkRow testID="setting-privacy" title="Privacy policy" onPress={() => router.push("/privacy")} />
           <LinkRow testID="setting-licenses" title="Open-source licenses" onPress={() => router.push("/licenses")} />
         </SettingsSection>

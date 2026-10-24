@@ -1,7 +1,7 @@
 // The accessibility bar (06.5, spec 06 A5) on the web build, on every route and the key states: the empty shelf,
 // its overflow menu, Import, Settings (with the default soundscape open), the privacy policy, Downloads (05.6,
-// empty on the web build), the licenses, a book that is not on the device, and a real book's river with the
-// playing row expanded (the mixer inline), its Speed & Sleep sheet and its Bookmarks sheet, and a scored book
+// empty on the web build), the licenses, Credits (05.5), a book that is not on the device, and a real book's river
+// with the playing row expanded (the mixer inline), its Speed & Sleep sheet and its Bookmarks sheet, and a scored book
 // (01.4): the playing row's mood card (emotion stickers, the named piece, alternates and the pick chips), a
 // reached row's stickers and a locked row, and Browse and a LibriVox book's page (05.8, archive.org stubbed by
 // e2e/librivox-fixtures.ts, same as e2e/browse.spec.ts). On each one:
@@ -144,6 +144,16 @@ const STATES: State[] = [
     open: async (page) => {
       await page.goto("/licenses");
       await expect(page.getByText("Lucide icons", { exact: true }).first()).toBeVisible();
+    },
+  },
+  {
+    name: "/credits (05.5): the soundscapes and a notice open inline",
+    open: async (page) => {
+      await page.goto("/credits");
+      await page.getByTestId("credits-soundscapes").click();
+      await expect(page.getByTestId("credit-soundscape-low-cafe")).toBeVisible();
+      await page.getByTestId("credit-notice-lucide").click();
+      await expect(page.getByText(/Lucide Icons and Contributors/).first()).toBeVisible();
     },
   },
   {
