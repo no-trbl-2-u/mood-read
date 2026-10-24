@@ -133,8 +133,6 @@ Decisions made upfront (do not ask):
   the monthly cap.
 - **A13** A book in one long file can be split on the device into one file per chapter, keeping its chapters,
   position and bookmarks.
-- **A14** The owner has the rights-checker's verdict on Spotify chapter playlists (Developer Policy III.5 and III.7)
-  before any Spotify code is written.
 - **A15** With a `yes` verdict, a connected Spotify account gets one playlist per chapter of instrumental tracks
   matching its emotions, at least as long as the chapter; Mood Read plays none of it.
 - **A16** Mood Read is published on Google Play.
@@ -165,7 +163,7 @@ All answered; none is open.
   and 05.15 wait in the Held lane.
 
 ## Chunks
-Measure: 17 open · 4 closed · next A22
+Measure: 16 open · 5 closed · next A22
 
 - [ ] **05.2** Seed the catalog across every emotion and intensity · L · closes A2 · needs 05.19
   - Sources the 01.13 study ranks, and D7's hand-picked CC-BY / CC-BY-SA tracks; every one through `catalog:add`.
@@ -178,9 +176,7 @@ Measure: 17 open · 4 closed · next A22
   - Update the privacy policy (`src/app/privacy.tsx`) for the LibriVox / Gutenberg ids the proxy now receives.
 - [ ] **05.10** Pre-scored books and their moods in Browse · M · closes A11 · needs 05.9
 - [ ] **05.11** Split a one-file book into chapter files on the device · M · closes A13 · needs 04.1
-- [ ] **05.12** Spotify chapter playlists: the rights check · S · closes A14 · needs —
-  - A study, same shape as 01.9: builds nothing; `unclear` counts as no and leaves 05.13 waiting.
-- [ ] **05.13** Spotify chapter playlists, sized to each chapter · M · closes A15 · needs 05.12, 01.11, 05.3
+- [ ] **05.13** Spotify chapter playlists, sized to each chapter · M · closes A15 · needs 01.11, 05.3
   - Rewrite the privacy policy's Spotify section (`src/app/privacy.tsx`) to say what a connected account shares.
   - Replace Settings' disabled "Spotify, Not available yet" row (06.3, `src/app/settings.tsx`) with connect and
     disconnect.

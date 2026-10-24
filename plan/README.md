@@ -20,12 +20,15 @@ under the narration.
 - **05.14** · blocked: Mood Read stays the owner's own preview APK for now; no Play Store developer account
   (spec 05, Open questions) · 2026-10-23
 - **05.15** · blocked: needs 05.14 and the Apple Developer Program (D6) · 2026-10-23
+- **05.13** · blocked: the 05.12 verdict (`docs/spotify-playlists.md`) is unclear on playlists and AI-named
+  tracks and not allowed under narration (Developer Policy III.7); waits on Spotify's written confirmation, a
+  one-way data flow and extended quota · 2026-10-24
 
 ## Specs
 
 | # | Initiative | Spec | Status | Progress |
 |---|---|---|---|---|
-| 5 | Mood Read v2: browse and download free LibriVox books, manage the library (remove a download, keep the book), a royalty-free music catalog, one button that builds and pre-downloads a book's chapter playlist, credits, Spotify chapter playlists, and the Play Store and App Store | [05-mood-read-v2.md](05-mood-read-v2.md) | planned | 15 left |
+| 5 | Mood Read v2: browse and download free LibriVox books, manage the library (remove a download, keep the book), a royalty-free music catalog, one button that builds and pre-downloads a book's chapter playlist, credits, Spotify chapter playlists, and the Play Store and App Store | [05-mood-read-v2.md](05-mood-read-v2.md) | planned | 14 left |
 | 4 | Android preview APKs: Mood Read installed on a real phone from a preview APK built from main, before any store; iOS after v1 | [04-android-preview.md](04-android-preview.md) | planned | 1 left |
 | 7 | Mood depth: scenes inside a chapter with their own pieces, a bed that fades in, fades out and holds for the narrator's opening, "Fits" / "Doesn't fit" verdicts that order alternates for every listener, a listener-seeded mood for unscored books, and a mood fingerprint and filter on the shelf with a Your soundtrack list | [07-mood-depth.md](07-mood-depth.md) | planned | 6 left |
 | 1 | Mood Read v1 in two parts. Part 1, the player: your own audiobooks with an ambient soundscape under the narration and a mixer. Part 2: each chapter's moods researched by AI, with one named no-vocals piece per chapter, named but not played in v1. After v1: a streaming study, then playing the pieces (01.10) | [01-audiobook-player-app-similar-to-audible.md](01-audiobook-player-app-similar-to-audible.md) | planned · priority 2 | 10 left |
