@@ -17,6 +17,8 @@ export function TopBar(props: {
   large?: boolean;
   back?: { label: string; a11yLabel?: string; iconOnly?: boolean; onPress: () => void };
   trailing?: ReactNode;
+  /** A row under the title inside the bar, full width: the shelf's filters (07.7; 05.16's state filter beside them). */
+  below?: ReactNode;
 }) {
   const insets = useSafeAreaInsets();
   return (
@@ -43,6 +45,7 @@ export function TopBar(props: {
         )}
         {props.trailing && <View style={styles.trailing}>{props.trailing}</View>}
       </View>
+      {props.below && <View style={styles.below}>{props.below}</View>}
     </View>
   );
 }
@@ -85,6 +88,7 @@ const styles = StyleSheet.create({
     alignItems: "center",
     gap: spacing.xxs,
   },
+  below: { paddingHorizontal: spacing.md, paddingBottom: spacing.sm },
   backText: typography.body,
   title: { ...typography.heading, flex: 1, minWidth: 0 },
   titleLarge: typography.title,

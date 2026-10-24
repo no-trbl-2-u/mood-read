@@ -3,7 +3,7 @@
 // empty on the web build), the licenses, Credits (05.5), a book that is not on the device, and a real book's river
 // with the playing row expanded (the mixer inline), its Speed & Sleep sheet and its Bookmarks sheet, and a scored book
 // (01.4): the playing row's mood card (emotion stickers, the named piece, alternates and the pick chips), a
-// reached row's stickers and a locked row; 07.4's verdict targets with "Fits" lit, and with "Doesn't fit" lit and the
+// reached row's stickers and a locked row; the shelf with a scored book's fingerprint and a mood lit (07.7); 07.4's verdict targets with "Fits" lit, and with "Doesn't fit" lit and the
 // other pieces offered in place; and Browse and a LibriVox book's page (05.8, archive.org stubbed by
 // e2e/librivox-fixtures.ts, same as e2e/browse.spec.ts). On each one:
 //   - axe (WCAG 2.0, 2.1 and 2.2, A and AA) finds no serious or critical issue;
@@ -213,6 +213,19 @@ const STATES: State[] = [
       const play = page.getByTestId("mini-play-pause");
       if ((await play.getAttribute("aria-label")) === "Pause") await play.click();
       await expect(play).toHaveAttribute("aria-label", "Play");
+    },
+  },
+  {
+    name: "the shelf with a scored book's fingerprint and a mood lit (07.7)",
+    open: async (page) => {
+      const id = await scoredBook(page);
+      const play = page.getByTestId("mini-play-pause");
+      if ((await play.getAttribute("aria-label")) === "Pause") await play.click();
+      await expect(play).toHaveAttribute("aria-label", "Play");
+      await page.getByTestId("top-back").click();
+      await expect(page.getByTestId(`fingerprint-${id}`)).toBeVisible();
+      await page.getByTestId("mood-filter-tension").click();
+      await expect(page.getByTestId("mood-filter-tension")).toHaveAttribute("aria-pressed", "true");
     },
   },
   {
