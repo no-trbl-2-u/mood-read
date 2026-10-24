@@ -7,6 +7,16 @@
 
 ## Pending — [needs-user-call]
 
+### [needs-user-call] Read the privacy policy before a store form uses it
+- category: legal
+- logged: 2026-10-23 (06.6, `src/app/privacy.tsx`, live at https://mood-read.pages.dev/privacy)
+- what: the loop wrote the policy from the code, claim by claim: no account, ads, analytics or crash reporting;
+  books and positions stay on the device; scoring is not switched on, so nothing is sent today; when it is, only
+  title, author and chapter titles; Spotify not connected. Contact is the GitHub issues page. It is not a
+  lawyer's read.
+- default taken: published as written; 01.2 turns off the proxy's Workers Logs so "keeps no listener data" stays
+  true. Before 05.14's data-safety form, read it and change the contact line if you want an email.
+
 ### [needs-user-call] Review the 06.2 layout picks
 - category: design
 - logged: 2026-10-23 (06.2, `design/layouts/DECISION.md` v2, `design/layouts/v2/*.png`)

@@ -97,6 +97,7 @@ App routes (expo-router, src/app/; the same paths on the web build):
   /                 the library: every book on the device
   /book/[id]        one book's player; [id] is the Book's id
   /import           Import a book: files or a folder, and the AAX/AAXC note as a state of it (01.6)
+  /privacy          the privacy policy, plain; linked from Import, and from Settings once 06.3 lands (06.6)
 
 Scripts (package.json):
   pnpm web | start                 dev server

@@ -237,6 +237,9 @@ pieces). Ids keep the order they were written in. The app itself (Expo at the re
     (`plan/bearings.md` Layout).
 - [ ] **01.2** Chapter moods and named pieces through the scoring proxy · L ·
   closes A13, A14, A15, A19, A20, A22 · needs —
+  - The privacy policy (`src/app/privacy.tsx`, 06.6) says the proxy keeps no listener data: turn off
+    `observability` in `proxy/wrangler.jsonc` (Workers Logs) or log no request detail, and rewrite the policy's
+    "not switched on yet" lines to say what is sent now.
   - v1 part 2: a research agent reads what is written about the book (Open questions 4) and names each chapter's
     emotions with intensities and sources, then one no-vocals piece per chapter plus alternates; nothing is
     played. It runs as a background job, stored per chapter.

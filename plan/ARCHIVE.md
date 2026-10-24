@@ -29,3 +29,4 @@ identity · deleted in <sha>`; recover its text with
 - 2026-10-23 · 06.1 · Design system decided: acid sticker tokens in theme.ts · 407cf865..6fca5273
 - 2026-10-23 · 01.16 · Every time readout sits in the mini player · 2583cb00..8fb01591
 - 2026-10-23 · 06.2 · Every v2 screen and state drawn, in colour · 97d416fd..4c77e5da
+- 2026-10-23 · 06.6 · The privacy policy is live at /privacy · b75ff827..b75ff827

@@ -189,12 +189,14 @@ Measure: 20 open · 0 closed · next A21
 - [ ] **05.8** Browse and search LibriVox, and download a book into the library · L · closes A9 · needs 05.6
   - The empty library offers "Browse free books" beside "Import a book", as 06.2 draws it.
 - [ ] **05.9** Score public-domain books from their own text · M · closes A10 · needs 01.2, 05.8
+  - Update the privacy policy (`src/app/privacy.tsx`) for the LibriVox / Gutenberg ids the proxy now receives.
 - [ ] **05.10** Pre-scored books and their moods in Browse · M · closes A11 · needs 05.9
 - [ ] **05.11** Split a one-file book into chapter files on the device · M · closes A13 · needs 04.1
 - [ ] **05.12** Spotify chapter playlists: the rights check · S · closes A14 · needs —
   - A study, same shape as 01.9: builds nothing; `unclear` counts as no and leaves 05.13 waiting.
-- [ ] **05.13** Spotify chapter playlists, sized to each chapter · M · closes A15 · needs 05.12, 01.11, 05.3, 06.3, 06.6
-- [ ] **05.14** Google Play release · M · closes A16 · needs 04.1, 06.5, 06.6 · secrets EXPO_TOKEN
+- [ ] **05.13** Spotify chapter playlists, sized to each chapter · M · closes A15 · needs 05.12, 01.11, 05.3, 06.3
+  - Rewrite the privacy policy's Spotify section (`src/app/privacy.tsx`) to say what a connected account shares.
+- [ ] **05.14** Google Play release · M · closes A16 · needs 04.1, 06.5 · secrets EXPO_TOKEN
 - [ ] **05.15** TestFlight and the App Store · M · closes A17 · needs 05.14 · secrets EXPO_TOKEN
   - Needs the owner in the Apple Developer Program (D6, `plan/AUDIT.md`).
 - [ ] **05.16** Finished books, sort, filter and search in the library · S · closes A18 ·

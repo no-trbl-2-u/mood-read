@@ -79,8 +79,6 @@ Decisions made upfront (do not ask):
   `src/ui/theme.ts`.
 - **A5** Every control has a screen-reader label; text scales to 200% without clipping; contrast meets WCAG 2.2 AA;
   touch targets are at least 44 px; and the e2e leg's accessibility check is green on every route.
-- **A6** A privacy policy is live at `/privacy` on the web build and linked from Settings, and says what the proxy
-  receives and that no listener data is kept.
 
 ## Open questions
 
@@ -89,10 +87,9 @@ Decisions made upfront (do not ask):
   icons are Lucide.
 
 ## Chunks
-Measure: 4 open · 2 closed · next A7
+Measure: 3 open · 3 closed · next A7
 
-- [ ] **06.6** The privacy policy page, linked from the app · S · closes A6 · needs —
-- [ ] **06.3** Settings, from the library's overflow menu · S · closes A3 · needs 06.6
+- [ ] **06.3** Settings, from the library's overflow menu · S · closes A3 · needs —
 - [ ] **06.4** Apply the design system to every built screen · M · closes A4 · needs —
   - Install `lucide-react-native` v1.x and `react-native-svg`; no brand icons. Ship the Lucide ISC, Feather MIT
     and react-native-svg MIT notices word for word (copied from each package's LICENSE) on an in-app licenses
