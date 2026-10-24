@@ -14,8 +14,8 @@ function memoryKv(): Kv & { data: Map<string, string> } {
   };
 }
 
-test("A3: with nothing saved, Wi-Fi only is on, companion mode off, and no default soundscape is set", () => {
-  assert.deepEqual(DEFAULT_SETTINGS, { wifiOnly: true, companionMode: false, defaultSoundscapeId: null });
+test("A3: with nothing saved, Wi-Fi only is on, companion mode and its chapter timer off, and no default soundscape is set", () => {
+  assert.deepEqual(DEFAULT_SETTINGS, { wifiOnly: true, companionMode: false, companionTimer: false, defaultSoundscapeId: null });
   assert.deepEqual(createSettingsStore(memoryKv()).get(), DEFAULT_SETTINGS);
 });
 
@@ -24,13 +24,14 @@ test("A3: each setting is saved on the device and survives reopening the app", (
   const store = createSettingsStore(kv);
   store.set({ wifiOnly: false });
   store.set({ companionMode: true });
+  store.set({ companionTimer: true });
   store.set({ defaultSoundscapeId: "tide" });
   const reopened = createSettingsStore(kv);
-  assert.deepEqual(reopened.get(), { wifiOnly: false, companionMode: true, defaultSoundscapeId: "tide" });
+  assert.deepEqual(reopened.get(), { wifiOnly: false, companionMode: true, companionTimer: true, defaultSoundscapeId: "tide" });
 
   reopened.set({ defaultSoundscapeId: SOUNDSCAPE_OFF });
   assert.equal(createSettingsStore(kv).get().defaultSoundscapeId, SOUNDSCAPE_OFF);
-  reopened.set({ defaultSoundscapeId: null, wifiOnly: true, companionMode: false });
+  reopened.set({ defaultSoundscapeId: null, wifiOnly: true, companionMode: false, companionTimer: false });
   assert.deepEqual(createSettingsStore(kv).get(), DEFAULT_SETTINGS);
 });
 
@@ -51,7 +52,7 @@ test("a malformed saved value falls back to the defaults, field by field", () =>
     assert.deepEqual(parseSettings(raw), DEFAULT_SETTINGS, raw);
   }
   assert.deepEqual(parseSettings(null), DEFAULT_SETTINGS);
-  assert.deepEqual(parseSettings('{"wifiOnly":"no","companionMode":true,"defaultSoundscapeId":7}'), {
+  assert.deepEqual(parseSettings('{"wifiOnly":"no","companionMode":true,"companionTimer":1,"defaultSoundscapeId":7}'), {
     ...DEFAULT_SETTINGS,
     companionMode: true,
   });

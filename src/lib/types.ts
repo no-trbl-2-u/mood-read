@@ -68,8 +68,10 @@ export type Soundscape = {
 export type Settings = {
   /** Downloads wait for Wi-Fi (05.6 reads it). On by default. */
   wifiOnly: boolean;
-  /** Mood Read's bed beside another app (01.14 brings the behaviour). Off by default. */
+  /** Mood Read's bed beside another app, no narration (01.14, src/lib/companion.ts). Off by default. */
   companionMode: boolean;
+  /** In companion mode, the bed moves on by the book's chapter lengths; off, it waits for a tap. Off by default. */
+  companionTimer: boolean;
   defaultSoundscapeId: string | null;
 };
 
