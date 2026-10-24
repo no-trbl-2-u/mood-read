@@ -1,7 +1,8 @@
 // The accessibility bar (06.5, spec 06 A5) on the web build, on every route and the key states: the empty shelf,
 // its overflow menu, Import, Settings (with the default soundscape open), the privacy policy, the licenses, a book
 // that is not on the device, and a real book's river with the playing row expanded (the mixer inline), its Speed &
-// Sleep sheet and its Bookmarks sheet. On each one:
+// Sleep sheet and its Bookmarks sheet, and a scored book (01.4): the playing row's mood card (emotion stickers, the
+// named piece, alternates and the pick chips), a reached row's stickers and a locked row. On each one:
 //   - axe (WCAG 2.0, 2.1 and 2.2, A and AA) finds no serious or critical issue;
 //   - every control (button, link, switch, checkbox, slider, tab, menu item, and any other focusable element, which
 //     is what a Pressable is on the web) is at least 44 x 44 CSS px (A5, `sizes.touch`; WCAG 2.5.5);
@@ -14,6 +15,7 @@ import { toneAndSilence, wavFile } from "../src/lib/meta/test-fixtures";
 import { sizes } from "../src/ui/theme";
 
 import { guard } from "./guard";
+import { scoredBook } from "./scored-book";
 
 /** The smallest touch target, in CSS px: 44, the size A5 holds (WCAG 2.5.5; 2.5.8's AA floor is 24). */
 const TOUCH = sizes.touch;
@@ -147,6 +149,24 @@ const STATES: State[] = [
       await importBook(page);
       await page.getByTestId("top-back").click();
       await expect(page.getByRole("link", { name: "Access Book" })).toBeVisible();
+    },
+  },
+  {
+    name: "/book/<id> scored: the mood card, a reached row's stickers and a locked row",
+    open: async (page) => {
+      await scoredBook(page);
+      // Reach chapter 2, then go back: chapter 1 plays with its mood card, chapter 2 shows its stickers, 3 is locked.
+      await page.getByTestId("chapter-1").click();
+      await expect(page.getByTestId("chapter-row-1").getByTestId("mood-card")).toBeVisible();
+      await page.getByTestId("chapter-0").click();
+      const row0 = page.getByTestId("chapter-row-0");
+      await expect(row0.getByTestId("mood-pick")).toBeVisible();
+      await expect(row0.getByTestId("mood-alternates")).toBeVisible();
+      await expect(page.getByTestId("row-emotions-1")).toBeVisible();
+      await expect(page.getByTestId("locked-2")).toBeVisible();
+      const play = page.getByTestId("mini-play-pause");
+      if ((await play.getAttribute("aria-label")) === "Pause") await play.click();
+      await expect(play).toHaveAttribute("aria-label", "Play");
     },
   },
 ];
