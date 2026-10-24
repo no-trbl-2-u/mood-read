@@ -27,13 +27,17 @@ export function toBookScores(book: Pick<Book, "chapters">, view: JobView, previo
   for (const c of r.chapters) {
     const mine = book.chapters[c.index];
     if (!mine || !sameChapterTitle(mine.title, c.title)) continue;
-    const pieces = c.pieces ? [c.pieces.piece, ...c.pieces.alternates] : [];
+    // The chapter's piece, its alternates, then any piece only a scene plays (07.1), each once.
+    const pieces = c.pieces ? [c.pieces.piece, ...c.pieces.alternates, ...(c.pieces.scenePieces ?? [])].filter((p, i, all) => all.findIndex((q) => q.id === p.id) === i) : [];
+    const scenePieces = c.pieces?.scenePieces && c.mood.scenes && c.pieces.scenePieces.length === c.mood.scenes.length ? c.pieces.scenePieces.map((p) => p.id) : undefined;
     const old = previous?.chapters.find((x) => x.mood.chapterIndex === c.index && x.mood.chapterTitle === mine.title)?.playlist;
     const keepPick = old && old.pick !== "auto" && pieces.some((p) => p.id === old.pick) ? old.pick : "auto";
     chapters.push({
       mood: { ...c.mood, chapterTitle: mine.title },
       pieces,
-      playlist: c.pieces ? { chapterIndex: c.index, piece: c.pieces.piece.id, alternates: c.pieces.alternates.map((p) => p.id), pick: keepPick } : null,
+      playlist: c.pieces
+        ? { chapterIndex: c.index, piece: c.pieces.piece.id, alternates: c.pieces.alternates.map((p) => p.id), pick: keepPick, ...(scenePieces ? { scenePieces } : {}) }
+        : null,
     });
   }
   return { jobId: view.jobId, model: r.model, version: r.version, scoredAt: r.scoredAt, costUsd: r.costUsd, chapters };

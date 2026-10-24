@@ -63,3 +63,28 @@ test("a listener's pick survives a rescore that comes back with different spacin
   const again = toBookScores(book, doneView(["THE STORM"]), first)!;
   assert.equal(again.chapters[0].playlist!.pick, "q0");
 });
+
+test("scenes and one piece per scene are kept on the device; a scene-only piece joins the chapter's pieces (07.1)", () => {
+  const view = doneView(["One"]);
+  const ch = view.result!.chapters[0];
+  ch.mood.scenes = [
+    { emotions: [{ emotion: "calm", intensity: 0.5 }], span: 0.4 },
+    { emotions: [{ emotion: "dread", intensity: 0.9 }], span: 0.6 },
+  ];
+  ch.pieces!.scenePieces = [piece("s0"), piece("p0")];
+  const scores = toBookScores(chapters(["One"]), view, null)!;
+  const kept = scores.chapters[0];
+  assert.deepEqual(kept.mood.scenes, ch.mood.scenes);
+  assert.deepEqual(kept.playlist!.scenePieces, ["s0", "p0"]);
+  assert.deepEqual(kept.playlist!.alternates, ["q0", "r0"], "a scene piece is not an alternate");
+  assert.deepEqual(kept.pieces.map((p) => p.id), ["p0", "q0", "r0", "s0"]);
+});
+
+test("a book cached before 07.1 keeps no scene pieces and still saves a pick", () => {
+  const scores = toBookScores(chapters(["One"]), doneView(["One"]), null)!;
+  assert.equal(scores.chapters[0].playlist!.scenePieces, undefined);
+  assert.equal(scores.chapters[0].mood.scenes, undefined);
+  const store = createScoringStore(mapKv());
+  store.saveScores("b", scores);
+  assert.equal(store.savePick("b", { index: 0, title: "One" }, "q0"), true);
+});

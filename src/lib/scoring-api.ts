@@ -1,7 +1,7 @@
 // The app's side of the scoring proxy (01.2): the only request Mood Read makes about a book. It sends the book's
 // title, author and chapter titles and nothing more (agents.md rule 6), to one configured base URL, and holds no key
 // (A22). Pure: `fetch` is handed in, so tests run it against a fake proxy.
-import { EMOTIONS, type Book, type JobView } from "./types.ts";
+import { EMOTIONS, MAX_SCENES, type Book, type JobView, type RemoteChapter, type Scene } from "./types.ts";
 
 /** Exactly what the proxy receives about a book. */
 export function scoringRequest(book: Pick<Book, "title" | "author" | "chapters">): { title: string; author: string; chapters: string[] } {
@@ -11,6 +11,38 @@ export function scoringRequest(book: Pick<Book, "title" | "author" | "chapters">
 type Fetch = (input: string, init?: RequestInit) => Promise<Response>;
 
 const STATES = ["running", "done", "capped", "failed"];
+
+const inSet = (e: { emotion?: unknown }) => (EMOTIONS as readonly string[]).includes(e?.emotion as string);
+
+/**
+ * A chapter's scenes as the device keeps them (07.1): 1 to MAX_SCENES, each with emotions and a positive span, spans
+ * summing to 1, rebuilt from emotions and span alone so no text rides along. Anything else is dropped, and the
+ * chapter reads as one scene (src/lib/scenes.ts); an emotion outside the fixed set is refused like the chapter's.
+ */
+function readScenes(raw: unknown): Scene[] | undefined {
+  if (!Array.isArray(raw) || raw.length === 0 || raw.length > MAX_SCENES) return undefined;
+  const out: Scene[] = [];
+  for (const s of raw) {
+    const r = s as { emotions?: unknown; span?: unknown };
+    if (!Array.isArray(r?.emotions) || !r.emotions.length || typeof r.span !== "number" || !Number.isFinite(r.span) || r.span <= 0) return undefined;
+    if (r.emotions.some((e) => !inSet(e))) throw new Error("an emotion outside the fixed set");
+    out.push({ emotions: r.emotions.map((e: Scene["emotions"][number]) => ({ emotion: e.emotion, intensity: e.intensity })), span: r.span });
+  }
+  return Math.abs(out.reduce((t, x) => t + x.span, 0) - 1) < 1e-6 ? out : undefined;
+}
+
+/** A chapter with its scenes and scene pieces read (or dropped), and every piece checked for vocals (A20). */
+function readChapter(c: RemoteChapter): RemoteChapter {
+  const { scenes: rawScenes, ...mood } = c.mood;
+  const scenes = rawScenes === undefined ? undefined : readScenes(rawScenes);
+  const out: RemoteChapter = { ...c, mood: scenes ? { ...mood, scenes } : mood };
+  if (c.pieces) {
+    const { scenePieces, ...pieces } = c.pieces;
+    if ([pieces.piece, ...pieces.alternates, ...(Array.isArray(scenePieces) ? scenePieces : [])].some((p2) => p2?.vocals !== "none")) throw new Error("a piece with vocals");
+    out.pieces = scenes && Array.isArray(scenePieces) && scenePieces.length === scenes.length ? { ...pieces, scenePieces } : pieces;
+  }
+  return out;
+}
 
 /** Checks a proxy answer's shape; anything off is an error rather than a half-read result. */
 export function readJobView(body: unknown): JobView {
@@ -23,12 +55,13 @@ export function readJobView(body: unknown): JobView {
   // A rescore running, capped or failed carries the cached result alongside; it is checked the same way.
   if (v.result !== undefined) {
     if (!v.result || !Array.isArray(v.result.chapters)) throw new Error("a job came back without its chapters");
+    const chapters: RemoteChapter[] = [];
     for (const c of v.result.chapters) {
       if (typeof c?.index !== "number" || !c.mood || !Array.isArray(c.mood.emotions)) throw new Error("a chapter came back malformed");
-      if (c.mood.emotions.some((e) => !(EMOTIONS as readonly string[]).includes(e.emotion))) throw new Error("an emotion outside the fixed set");
-      if (c.pieces && [c.pieces.piece, ...c.pieces.alternates].some((p2) => p2.vocals !== "none")) throw new Error("a piece with vocals");
+      if (c.mood.emotions.some((e) => !inSet(e))) throw new Error("an emotion outside the fixed set");
+      chapters.push(readChapter(c));
     }
-    out.result = v.result;
+    out.result = { ...v.result, chapters };
   }
   return out;
 }
