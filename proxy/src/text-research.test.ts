@@ -3,7 +3,7 @@ import { test } from "node:test";
 
 import type { CompletionRequest, ModelClient } from "./clients.ts";
 import type { BookRequest } from "./contract.ts";
-import { fakeModel, fakeSearch } from "./fakes.ts";
+import { admitted, fakeModel, fakeSearch } from "./fakes.ts";
 import { MIN_CHAPTER_WORDS, NoText, type TextChapter } from "./gutenberg.ts";
 import { createBookJob, type Run } from "./job.ts";
 import { createMeter, monthOf } from "./meter.ts";
@@ -194,7 +194,7 @@ function setup(s: { text?: TextSource; fetchText?: (url: string) => Response; ca
       fetched.push(url);
       return s.fetchText ? s.fetchText(url) : new Response(TEXT);
     });
-  const job = createBookJob({ store, meter, capUsd: s.cap ?? 20, search, model, text, now: () => NOW });
+  const job = admitted(createBookJob({ store, meter, capUsd: s.cap ?? 20, search, model, text, now: () => NOW }));
   return { store, meterStore, meter, search, model, job, fetched };
 }
 

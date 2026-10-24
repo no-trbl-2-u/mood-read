@@ -9,11 +9,14 @@
 // saving after each, so it survives eviction and retries a failed step. One more object, SpendMeter, holds the
 // month's spend: a single writer, so the cap is never raced. KV was the alternative and loses on both counts: no
 // alarms to drive a long job, and no atomic add for the meter. A third, PrescoreIndex (05.10), holds the pre-scored
-// books' overall emotions by LibriVox number, so Browse reads a page of them in one call (prescore.ts).
+// books' overall emotions by LibriVox number, so Browse reads a page of them in one call (prescore.ts). A fourth,
+// RateLimiter, counts new runs per client and per hour (limiter.ts, 01.21, A34), also a single writer; it holds only
+// the current hour's salted hashes, and its alarm deletes them when the hour ends.
 import { braveClient, openAiClient } from "./clients.ts";
 import type { BookRequest, JobView } from "./contract.ts";
 import { route, type Jobs } from "./http.ts";
 import { createBookJob } from "./job.ts";
+import { createRateLimiter, limitsFrom, rescoreMinAgeFrom, type Limiter, type Refusal } from "./limiter.ts";
 import { capFrom, createMeter, type Meter } from "./meter.ts";
 import { createOverallIndex, overallEmotions, prescoreBudget, type IndexPut, type OverallView, type PrescoredList } from "./prescore.ts";
 import { routePrescore, type PrescoreDeps } from "./prescore-http.ts";
@@ -40,6 +43,13 @@ export type Env = {
   PRESCORED?: DoNamespace;
   /** The owner's pre-scoring secret (05.10): a Worker secret only, never in the app. Unset, nobody may pre-score. */
   PRESCORE_TOKEN?: string;
+  RATE_LIMITER: DoNamespace;
+  /** New research runs one client may start an hour (default 3). */
+  RUNS_PER_CLIENT_PER_HOUR?: string;
+  /** New research runs every client together may start an hour (default 30). */
+  RUNS_PER_HOUR?: string;
+  /** Days a cached result must age before a rescore may replace it (default 7). */
+  RESCORE_MIN_AGE_DAYS?: string;
 };
 
 const METER_NAME = "spend-meter";
@@ -60,11 +70,25 @@ function remoteMeter(env: Env): Meter {
   };
 }
 
+const LIMITER_NAME = "rate-limiter";
+
+/** The limiter, reached in its own object. The client's address travels in the request and is hashed there. */
+function remoteLimiter(env: Env): Limiter {
+  return {
+    async admit(client, nowMs) {
+      const stub = env.RATE_LIMITER.get(env.RATE_LIMITER.idFromName(LIMITER_NAME));
+      const res = await stub.fetch("https://limiter/admit", { method: "POST", body: JSON.stringify({ client, now: nowMs }) });
+      return (await res.json()) as Awaited<ReturnType<Limiter["admit"]>>;
+    },
+  };
+}
+
 function bookJobs(env: Env): Jobs {
   const stub = (key: string) => env.BOOK_JOBS.get(env.BOOK_JOBS.idFromName(key));
   return {
-    async start(key: string, book: BookRequest, rescore: boolean) {
-      const res = await stub(key).fetch("https://book/start", { method: "POST", body: JSON.stringify({ key, book, rescore }) });
+    async start(key: string, book: BookRequest, rescore: boolean, client: string) {
+      const res = await stub(key).fetch("https://book/start", { method: "POST", body: JSON.stringify({ key, book, rescore, client }) });
+      if (res.status === 429) return { refused: (await res.json()) as Refusal };
       return (await res.json()) as JobView;
     },
     async status(key: string) {
@@ -131,6 +155,8 @@ export class BookJob {
         const put: IndexPut = { librivoxId: done.book.librivoxId, key: done.key, emotions: overallEmotions(result), prescore: done.prescore };
         await stub.fetch("https://index/put", { method: "POST", body: JSON.stringify(put) });
       },
+      limiter: remoteLimiter(this.env),
+      rescoreMinAgeMs: rescoreMinAgeFrom(this.env.RESCORE_MIN_AGE_DAYS),
     });
   }
 
@@ -139,8 +165,16 @@ export class BookJob {
     const job = this.job();
     if (pathname === "/start") {
       // `prescore` comes only from this Worker's own owner-checked route (prescore-http.ts): no client reaches an object.
-      const { key, book, rescore, prescore } = (await request.json()) as { key: string; book: BookRequest; rescore: boolean; prescore?: boolean };
-      const out = await job.start(key, book, rescore, { prescore: prescore === true });
+      // The client is passed on to the limiter and never stored here.
+      const { key, book, rescore, prescore, client } = (await request.json()) as {
+        key: string;
+        book: BookRequest;
+        rescore: boolean;
+        prescore?: boolean;
+        client?: string;
+      };
+      const out = await job.start(key, book, rescore, { prescore: prescore === true, client });
+      if ("refused" in out) return Response.json(out.refused, { status: 429 });
       if (out.run) await this.state.storage.setAlarm(Date.now());
       return Response.json(out.view);
     }
@@ -195,6 +229,35 @@ export class PrescoreIndex {
     }
     if (url.pathname === "/list") return Response.json(await index.list(Number(url.searchParams.get("limit"))));
     return Response.json(await index.get((url.searchParams.get("ids") ?? "").split(",")));
+  }
+}
+
+/** New runs per client and per hour, in one object so every count is serialized (limiter.ts). */
+export class RateLimiter {
+  state: DoState;
+  env: Env;
+
+  constructor(state: DoState, env: Env) {
+    this.state = state;
+    this.env = env;
+  }
+
+  limiter() {
+    return createRateLimiter(this.state.storage, limitsFrom(this.env));
+  }
+
+  async fetch(request: Request): Promise<Response> {
+    const { client, now } = (await request.json()) as { client: string; now?: number };
+    const at = typeof now === "number" ? now : Date.now();
+    const limiter = this.limiter();
+    const out = await limiter.admit(client, at);
+    // The hour's window (its salt and hashes) is deleted when the hour ends, whether or not another request comes.
+    if (out.ok && (await this.state.storage.getAlarm()) === null) await this.state.storage.setAlarm(limiter.windowEnd(at));
+    return Response.json(out);
+  }
+
+  async alarm(): Promise<void> {
+    await this.limiter().expire(Date.now());
   }
 }
 

@@ -20,13 +20,37 @@ export type CompletionRequest = {
   schema: JsonSchema;
 };
 
-export type Completion = { value: unknown; usage: { input: number; output: number } };
+export type Usage = { input: number; output: number };
+
+export type Completion = { value: unknown; usage: Usage };
 
 export type ModelClient = {
   readonly model: string;
-  /** A structured-output completion: the model's answer parsed from JSON, and the tokens it used. */
+  /**
+   * A structured-output completion: the model's answer parsed from JSON, and the tokens it used. A failed call
+   * throws; when the provider still reported the tokens it used, the error is a ModelCallError carrying them, so
+   * the meter counts what a failure cost (01.21).
+   */
   complete(req: CompletionRequest): Promise<Completion>;
 };
+
+/** A failed model call, with the tokens the provider reported for it when it reported any. */
+export class ModelCallError extends Error {
+  readonly usage?: Usage;
+  constructor(message: string, usage?: Usage) {
+    super(message);
+    this.name = "ModelCallError";
+    this.usage = usage;
+  }
+}
+
+/** The tokens a thrown error says its call used, or undefined when it does not say. */
+export function usageOf(error: unknown): Usage | undefined {
+  const u = (error as { usage?: unknown } | null)?.usage as Partial<Usage> | undefined;
+  if (!u || typeof u.input !== "number" || typeof u.output !== "number") return undefined;
+  if (!Number.isFinite(u.input) || !Number.isFinite(u.output) || u.input < 0 || u.output < 0) return undefined;
+  return { input: u.input, output: u.output };
+}
 
 type Fetch = (input: string, init?: RequestInit) => Promise<Response>;
 
@@ -72,18 +96,31 @@ export function openAiClient(apiKey: string, model: string, fetchImpl: Fetch = f
           response_format: { type: "json_schema", json_schema: { name: req.name, strict: true, schema: req.schema } },
         }),
       });
-      if (!res.ok) throw new Error(`openai answered ${res.status}`);
-      const body = (await res.json()) as {
+      let body: {
         choices?: { message?: { content?: unknown; refusal?: unknown } }[];
         usage?: { prompt_tokens?: unknown; completion_tokens?: unknown };
-      };
+      } = {};
+      try {
+        body = (await res.json()) as typeof body;
+      } catch {
+        // An unreadable body reports no usage; the job meters an estimate instead.
+      }
+      const reported =
+        typeof body.usage?.prompt_tokens === "number" && typeof body.usage?.completion_tokens === "number"
+          ? { input: body.usage.prompt_tokens, output: body.usage.completion_tokens }
+          : undefined;
+      if (!res.ok) throw new ModelCallError(`openai answered ${res.status}`, reported);
       const usage = {
         input: typeof body.usage?.prompt_tokens === "number" ? body.usage.prompt_tokens : 0,
         output: typeof body.usage?.completion_tokens === "number" ? body.usage.completion_tokens : 0,
       };
       const message = body.choices?.[0]?.message;
-      if (!message || typeof message.content !== "string") throw new Error("openai returned no content");
-      return { value: JSON.parse(message.content) as unknown, usage };
+      if (!message || typeof message.content !== "string") throw new ModelCallError("openai returned no content", reported);
+      try {
+        return { value: JSON.parse(message.content) as unknown, usage };
+      } catch {
+        throw new ModelCallError("openai returned unreadable content", reported);
+      }
     },
   };
 }

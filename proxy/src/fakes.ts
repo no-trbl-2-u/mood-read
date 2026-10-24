@@ -2,6 +2,7 @@
 // model that answers each structured request by its schema name. No test reaches the network.
 import type { Completion, CompletionRequest, ModelClient, SearchClient, SearchHit } from "./clients.ts";
 import type { Emotion } from "./contract.ts";
+import type { BookJob } from "./job.ts";
 
 export function fakeSearch(hitsFor: (q: string) => SearchHit[] = defaultHits): SearchClient & { queries: string[] } {
   const queries: string[] = [];
@@ -107,6 +108,18 @@ export function fakeModel(opts: FakeModelOptions = {}): ModelClient & { calls: C
         };
       }
       throw new Error(`unexpected request ${req.name}`);
+    },
+  };
+}
+
+/** A job whose start is expected to be admitted: a refusal throws, so a test reads the view directly. */
+export function admitted(job: BookJob) {
+  return {
+    ...job,
+    async start(...args: Parameters<BookJob["start"]>) {
+      const out = await job.start(...args);
+      if ("refused" in out) throw new Error(`start refused: ${out.refused.reason}`);
+      return out;
     },
   };
 }

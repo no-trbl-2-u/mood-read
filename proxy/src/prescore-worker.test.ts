@@ -5,7 +5,7 @@ import { afterEach, beforeEach, test } from "node:test";
 
 import { BRAVE_ENDPOINT, OPENAI_ENDPOINT } from "./clients.ts";
 import { defaultHits, fakeModel } from "./fakes.ts";
-import worker, { BookJob, PrescoreIndex, SpendMeter, type DoNamespace, type DoState, type DoStorage, type Env } from "./index.ts";
+import worker, { BookJob, PrescoreIndex, RateLimiter, SpendMeter, type DoNamespace, type DoState, type DoStorage, type Env } from "./index.ts";
 import { MIN_TOKEN_LENGTH, PRESCORE_BUCKET } from "./prescore.ts";
 import { memoryStore } from "./store.ts";
 
@@ -46,13 +46,15 @@ function namespace(make: (state: DoState) => Obj["instance"]): DoNamespace & { o
   };
 }
 
-type TestEnv = Env & { BOOK_JOBS: ReturnType<typeof namespace>; SPEND_METER: ReturnType<typeof namespace>; PRESCORED: ReturnType<typeof namespace> };
+type Ns = ReturnType<typeof namespace>;
+type TestEnv = Env & { BOOK_JOBS: Ns; SPEND_METER: Ns; PRESCORED: Ns; RATE_LIMITER: Ns };
 
 function makeEnv(over: Partial<Env> = {}): TestEnv {
   const env = { OPENAI_API_KEY: "test-openai", BRAVE_SEARCH_API_KEY: "test-brave", MONTHLY_CAP_USD: "20", PRESCORE_TOKEN: TOKEN, ...over } as TestEnv;
   env.BOOK_JOBS = namespace((state) => new BookJob(state, env));
   env.SPEND_METER = namespace((state) => new SpendMeter(state, env));
   env.PRESCORED = namespace((state) => new PrescoreIndex(state, env));
+  env.RATE_LIMITER = namespace((state) => new RateLimiter(state, env));
   return env;
 }
 
@@ -239,4 +241,26 @@ test("the listing needs no keys, starts nothing, and refuses an unbounded or mal
   assert.equal(env.BOOK_JOBS.objects.size, 0);
   assert.equal(env.SPEND_METER.objects.size, 0);
   assert.equal(outbound.length, 0);
+});
+
+test("the owner's pre-score runs are not counted by the run limits; a listener's new book still is (01.21, A34)", async () => {
+  const env = makeEnv({ RUNS_PER_CLIENT_PER_HOUR: "0", RUNS_PER_HOUR: "0" });
+  for (const n of ["1", "2", "3", "4"]) {
+    const res = await worker.fetch(post("/v1/prescore", { ...book, title: `Dracula ${n}`, librivoxId: n }, { ...owner, "cf-connecting-ip": "203.0.113.7" }), env);
+    assert.equal(res.status, 200, "pre-scoring has its own budget share, not the hourly limits");
+    assert.equal(((await res.json()) as { state: string }).state, "running");
+  }
+  assert.equal(env.RATE_LIMITER.objects.size, 0, "the limiter is never asked for a pre-score run");
+  const listener = await worker.fetch(post("/v1/score", { ...book, title: "Carmilla", librivoxId: undefined }, { "cf-connecting-ip": "203.0.113.7" }), env);
+  assert.equal(listener.status, 429);
+  assert.equal(((await listener.json()) as { reason: string }).reason, "global-limit");
+});
+
+test("a listener asking for a book being pre-scored takes the run over without counting as a new run (01.21, A34)", async () => {
+  const env = makeEnv({ RUNS_PER_CLIENT_PER_HOUR: "0" });
+  const started = (await (await worker.fetch(post("/v1/prescore", book, owner), env)).json()) as { jobId: string };
+  const res = await worker.fetch(post("/v1/score", book, { "cf-connecting-ip": "203.0.113.7" }), env);
+  assert.equal(res.status, 200, "the run already going is returned, past the client's limit");
+  assert.equal(((await res.json()) as { jobId: string }).jobId, started.jobId);
+  assert.equal(env.RATE_LIMITER.objects.size, 0);
 });

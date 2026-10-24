@@ -4,8 +4,9 @@ import assert from "node:assert/strict";
 import { test } from "node:test";
 
 import type { BookRequest, BookResult, ChapterResult } from "./contract.ts";
-import { fakeModel, fakeSearch } from "./fakes.ts";
+import { admitted, fakeModel, fakeSearch } from "./fakes.ts";
 import { createBookJob } from "./job.ts";
+import type { Limiter } from "./limiter.ts";
 import { createMeter, monthOf } from "./meter.ts";
 import {
   createOverallIndex,
@@ -35,7 +36,7 @@ function setup(meter = createMeter(memoryStore()), onFinish?: Parameters<typeof 
   const store = memoryStore();
   const search = fakeSearch();
   const model = fakeModel();
-  const job = createBookJob({ store, meter, capUsd: CAP, search, model, now: () => NOW, onFinish });
+  const job = admitted(createBookJob({ store, meter, capUsd: CAP, search, model, now: () => NOW, onFinish }));
   return { store, meter, search, model, job };
 }
 
@@ -141,6 +142,32 @@ test("a listener asking for a book mid pre-score takes the running run over", as
   await drain(job);
   assert.equal((await job.status()).view?.state, "done", "the listener's run is not paused at pre-scoring's half");
   assert.equal(await meter.spent(MONTH, PRESCORE_BUCKET), pre + HALF);
+});
+
+test("a pre-score start never asks the run limiter, nor does a listener taking over a paused one; a listener's new book does (01.21, A34)", async () => {
+  const asked: string[] = [];
+  const limiter: Limiter = {
+    async admit(client) {
+      asked.push(client);
+      return { ok: false, reason: "client-limit", retryAfterMs: 1000 };
+    },
+  };
+  const meter = createMeter(memoryStore());
+  await meter.add(MONTH, HALF - R - 0.01, PRESCORE_BUCKET);
+  const make = () => createBookJob({ store: memoryStore(), meter, capUsd: CAP, search: fakeSearch(), model: fakeModel(), now: () => NOW, limiter });
+  const job = admitted(make());
+  const key = await bookKey(book);
+  assert.equal((await job.start(key, book, false, { prescore: true, client: "203.0.113.7" })).view.state, "running");
+  await drain(job);
+  assert.equal((await job.status()).view?.state, "capped", "paused at the half");
+  const takeover = await job.start(key, { ...book, librivoxId: undefined }, false, { client: "203.0.113.7" });
+  assert.equal(takeover.view.state, "running", "the listener takes the paused run over");
+  assert.deepEqual(asked, [], "neither the pre-score start nor the takeover is a new run for the limiter");
+
+  const carmilla = { ...book, title: "Carmilla", librivoxId: undefined };
+  const refused = await make().start(await bookKey(carmilla), carmilla, false, { client: "203.0.113.7" });
+  assert.deepEqual(refused, { refused: { reason: "client-limit", retryAfterMs: 1000 } });
+  assert.deepEqual(asked, ["203.0.113.7"]);
 });
 
 test("a finished run tells the index whether it was a pre-score run", async () => {

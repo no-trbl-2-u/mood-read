@@ -1,7 +1,7 @@
 import assert from "node:assert/strict";
 import { test } from "node:test";
 
-import { BRAVE_ENDPOINT, braveClient, OPENAI_ENDPOINT, openAiClient } from "./clients.ts";
+import { BRAVE_ENDPOINT, braveClient, ModelCallError, OPENAI_ENDPOINT, openAiClient, usageOf } from "./clients.ts";
 
 type Call = { url: string; init?: RequestInit };
 const fakeFetch = (body: unknown, status = 200) => {
@@ -59,4 +59,22 @@ test("openai: an error status or a refusal throws", async () => {
   const req = { system: "", user: "", name: "n", schema: {} };
   await assert.rejects(openAiClient("k", "m", fakeFetch({}, 500).f).complete(req), /500/);
   await assert.rejects(openAiClient("k", "m", fakeFetch({ choices: [{ message: { refusal: "no" } }] }).f).complete(req), /no content/);
+});
+
+test("openai: a failed call carries the usage the provider reported, so the meter counts it (01.21)", async () => {
+  const req = { system: "", user: "", name: "n", schema: {} };
+  const used = { prompt_tokens: 900, completion_tokens: 40 };
+  const refused = await openAiClient("k", "m", fakeFetch({ choices: [{ message: { refusal: "no" } }], usage: used }).f).complete(req).catch((e) => e);
+  assert.ok(refused instanceof ModelCallError);
+  assert.deepEqual(usageOf(refused), { input: 900, output: 40 });
+  const garbled = await openAiClient("k", "m", fakeFetch({ choices: [{ message: { content: "{not json" } }], usage: used }).f).complete(req).catch((e) => e);
+  assert.deepEqual(usageOf(garbled), { input: 900, output: 40 });
+  const errored = await openAiClient("k", "m", fakeFetch({ error: { message: "overloaded" }, usage: used }, 500).f).complete(req).catch((e) => e);
+  assert.match(String(errored), /500/);
+  assert.deepEqual(usageOf(errored), { input: 900, output: 40 });
+  // No usage reported: the error says nothing, and the job meters an estimate instead.
+  const bare = await openAiClient("k", "m", fakeFetch({}, 503).f).complete(req).catch((e) => e);
+  assert.equal(usageOf(bare), undefined);
+  assert.equal(usageOf(new Error("network down")), undefined);
+  assert.equal(usageOf({ usage: { input: -1, output: 2 } }), undefined);
 });

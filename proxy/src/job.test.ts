@@ -2,9 +2,11 @@ import assert from "node:assert/strict";
 import { test } from "node:test";
 
 import type { BookRequest } from "./contract.ts";
-import { fakeModel, fakeSearch, type FakeModelOptions } from "./fakes.ts";
-import { createBookJob, MAX_ATTEMPTS, type Run } from "./job.ts";
-import { createMeter, monthOf, type Meter } from "./meter.ts";
+import type { CompletionRequest, ModelClient } from "./clients.ts";
+import { admitted, fakeModel, fakeSearch, type FakeModelOptions } from "./fakes.ts";
+import { createBookJob, MAX_ATTEMPTS, type BookJob, type Run } from "./job.ts";
+import { createRateLimiter, DAY_MS, HOUR_MS, type Limiter } from "./limiter.ts";
+import { BRAVE_USD_PER_QUERY, createMeter, estimateUsage, monthOf, openAiCost, type Meter } from "./meter.ts";
 import { memoryStore, type Store } from "./store.ts";
 import { bookKey } from "./validate.ts";
 
@@ -15,18 +17,28 @@ const book: BookRequest = {
   chapters: ["Opening Credits", "Chapter 1", "Chapter 2", "Chapter 3"],
 };
 
-type Setup = { store?: Store; meter?: Meter; cap?: number; model?: FakeModelOptions; now?: () => number };
+type Setup = {
+  store?: Store;
+  meter?: Meter;
+  cap?: number;
+  model?: FakeModelOptions;
+  now?: () => number;
+  limiter?: Limiter;
+  /** Left out: 0, so the older tests may rescore at once; the minimum age has its own tests. */
+  rescoreMinAgeMs?: number;
+};
 
 function setup(s: Setup = {}) {
   const store = s.store ?? memoryStore();
   const meter = s.meter ?? createMeter(memoryStore());
   const search = fakeSearch();
   const model = fakeModel(s.model);
-  const job = createBookJob({ store, meter, capUsd: s.cap ?? 20, search, model, now: s.now ?? (() => NOW) });
-  return { store, meter, search, model, job };
+  const rescoreMinAgeMs = "rescoreMinAgeMs" in s ? s.rescoreMinAgeMs : 0;
+  const raw = createBookJob({ store, meter, capUsd: s.cap ?? 20, search, model, now: s.now ?? (() => NOW), limiter: s.limiter, rescoreMinAgeMs });
+  return { store, meter, search, model, job: admitted(raw), raw };
 }
 
-async function drain(job: ReturnType<typeof createBookJob>, limit = 200) {
+async function drain(job: Pick<BookJob, "step" | "status">, limit = 200) {
   const seen: { step: number; steps: number }[] = [];
   for (let i = 0; i < limit; i++) {
     const { more } = await job.step();
@@ -234,14 +246,14 @@ test("a failing step is retried, then the run is marked failed; a new start runs
   assert.equal((await flaky.job.status()).view?.state, "done", "one failure is retried");
 
   const store = memoryStore();
-  const broken = createBookJob({
+  const broken = admitted(createBookJob({
     store,
     meter: createMeter(memoryStore()),
     capUsd: 20,
     search: { search: async () => Promise.reject(new Error("down")) },
     model: fakeModel(),
     now: () => NOW,
-  });
+  }));
   await broken.start(key, book);
   for (let i = 0; i < MAX_ATTEMPTS; i++) await broken.step();
   assert.equal((await broken.status()).view?.state, "failed");
@@ -266,7 +278,9 @@ test("a failed or capped rescore still shows the cached result on status, as sta
   const cached = (await first.job.status()).view!.result!;
 
   // A rescore whose searches keep failing until the run is marked failed.
-  const broken = createBookJob({ store, meter, capUsd: 20, search: { search: async () => Promise.reject(new Error("down")) }, model: fakeModel(), now: () => NOW });
+  const broken = admitted(
+    createBookJob({ store, meter, capUsd: 20, search: { search: async () => Promise.reject(new Error("down")) }, model: fakeModel(), now: () => NOW, rescoreMinAgeMs: 0 }),
+  );
   await broken.start(key, book, true);
   await drain(broken);
   const failed = (await broken.status()).view!;
@@ -348,4 +362,104 @@ test("a run saved before 07.1 (drafts with no scenes) finishes with one scene pe
   const ch = (await job.status()).view!.result!.chapters[1];
   assert.deepEqual(ch.mood.scenes, [{ emotions: ch.mood.emotions, span: 1 }]);
   assert.deepEqual(ch.pieces!.scenePieces, [ch.pieces!.piece]);
+});
+
+test("rescoring a cached book waits until its result is the minimum age, 7 days by default (A34)", async () => {
+  let now = NOW;
+  const { job, raw, search, model } = setup({ now: () => now, rescoreMinAgeMs: undefined });
+  const key = await bookKey(book);
+  await job.start(key, book);
+  await drain(job);
+  const paid = search.queries.length + model.calls.length;
+
+  now = NOW + 6 * DAY_MS;
+  const early = await raw.start(key, book, true);
+  assert.ok("refused" in early);
+  assert.equal(early.refused.reason, "rescore-too-soon");
+  assert.equal(early.refused.retryAfterMs, DAY_MS, "retry once the result is 7 days old");
+  assert.equal((await raw.status()).view?.state, "done", "a refused rescore leaves the job as it was");
+  assert.equal((await raw.step()).more, false);
+  assert.equal(search.queries.length + model.calls.length, paid, "and buys nothing");
+
+  now = NOW + 7 * DAY_MS;
+  const due = await raw.start(key, book, true);
+  assert.ok(!("refused" in due) && due.run, "a 7-day-old result may be rescored");
+});
+
+test("a cached book or a run already going never asks the limiter; a new run does, and a refusal stores nothing (A34)", async () => {
+  const asked: string[] = [];
+  let allow = true;
+  const limiter: Limiter = {
+    async admit(client) {
+      asked.push(client);
+      return allow ? { ok: true } : { ok: false, reason: "client-limit", retryAfterMs: 1234 };
+    },
+  };
+  const { job, raw, store } = setup({ limiter });
+  const key = await bookKey(book);
+  await job.start(key, book, false, { client: "203.0.113.7" });
+  assert.deepEqual(asked, ["203.0.113.7"], "a new run is counted for its client");
+  await job.start(key, book, false, { client: "203.0.113.7" });
+  assert.equal(asked.length, 1, "a run already going is not");
+  await drain(job);
+  for (let i = 0; i < 5; i++) assert.equal((await job.start(key, book, false, { client: "203.0.113.7" })).view.state, "done");
+  assert.equal(asked.length, 1, "a cached book never is");
+
+  allow = false;
+  const otherStore = memoryStore();
+  const other = setup({ limiter, store: otherStore });
+  const otherKey = await bookKey({ ...book, title: "Carmilla" });
+  const refused = await other.raw.start(otherKey, { ...book, title: "Carmilla" }, false, { client: "203.0.113.7" });
+  assert.deepEqual(refused, { refused: { reason: "client-limit", retryAfterMs: 1234 } });
+  assert.deepEqual(otherStore.keys(), [], "a refused start stores nothing, not even a waiting job");
+  assert.equal((await other.raw.status()).view, null);
+  assert.ok(!JSON.stringify(await store.get("job")).includes("203.0.113.7"), "the client is never stored with the job");
+  assert.equal((await raw.status()).view?.state, "done");
+});
+
+test("starts that would wait at the cap are counted too, so made-up books cannot queue up for next month (A34)", async () => {
+  const meter = createMeter(memoryStore());
+  await meter.add(monthOf(NOW), 50);
+  const limiter = createRateLimiter(memoryStore(), { perClient: 2, global: 30, windowMs: HOUR_MS });
+  const outs = [];
+  for (const title of ["A", "B", "C"]) {
+    const b = { ...book, title };
+    outs.push(await setup({ meter, limiter }).raw.start(await bookKey(b), b, false, { client: "198.51.100.9" }));
+  }
+  assert.deepEqual(
+    outs.map((o) => ("refused" in o ? o.refused.reason : o.view.state)),
+    ["capped", "capped", "client-limit"],
+  );
+});
+
+test("a failed model call is metered: the provider's reported usage, else a conservative estimate (01.21)", async () => {
+  const key = await bookKey(book);
+  async function failedRun(usage?: { input: number; output: number }) {
+    const meter = createMeter(memoryStore());
+    const search = fakeSearch();
+    const reqs: CompletionRequest[] = [];
+    const model: ModelClient = {
+      model: "gpt-5-mini",
+      async complete(req) {
+        reqs.push(req);
+        throw Object.assign(new Error("model unavailable"), usage ? { usage } : {});
+      },
+    };
+    const job = createBookJob({ store: memoryStore(), meter, capUsd: 20, search, model, now: () => NOW });
+    await job.start(key, book);
+    for (let i = 0; i < 50 && (await job.step()).more; i++);
+    assert.equal((await job.status()).view?.state, "failed");
+    assert.equal(reqs.length, MAX_ATTEMPTS, "the reading failed on every attempt");
+    const modelSpend = (await meter.spent(monthOf(NOW))) - search.queries.length * BRAVE_USD_PER_QUERY;
+    return { modelSpend, reqs };
+  }
+
+  const reported = { input: 5000, output: 300 };
+  const a = await failedRun(reported);
+  assert.ok(Math.abs(a.modelSpend - MAX_ATTEMPTS * openAiCost("gpt-5-mini", reported)) < 1e-12, "the reported usage is counted");
+
+  const b = await failedRun();
+  const estimated = b.reqs.reduce((sum, r) => sum + openAiCost("gpt-5-mini", estimateUsage(r)), 0);
+  assert.ok(estimated > 0);
+  assert.ok(Math.abs(b.modelSpend - estimated) < 1e-12, "with none reported, the estimate is counted");
 });

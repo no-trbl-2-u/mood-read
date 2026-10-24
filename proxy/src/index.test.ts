@@ -9,13 +9,13 @@ import { fileURLToPath } from "node:url";
 import { BRAVE_ENDPOINT, OPENAI_ENDPOINT } from "./clients.ts";
 import type { JobView } from "./contract.ts";
 import { defaultHits, fakeModel } from "./fakes.ts";
-import worker, { BookJob, SpendMeter, type DoNamespace, type DoState, type DoStorage, type Env } from "./index.ts";
+import worker, { BookJob, RateLimiter, SpendMeter, type DoNamespace, type DoState, type DoStorage, type Env } from "./index.ts";
 import { memoryStore } from "./store.ts";
 
 const HERE = path.dirname(fileURLToPath(import.meta.url));
 const BASE = "https://mood-read-proxy.example.workers.dev";
 
-function storage(): DoStorage & { alarm: number | null } {
+function storage(): DoStorage & { alarm: number | null; keys(): string[] } {
   const s = memoryStore();
   const st = {
     ...s,
@@ -49,13 +49,17 @@ function namespace(make: (state: DoState) => Obj["instance"]): DoNamespace & { o
   };
 }
 
-function makeEnv(over: Partial<Env> = {}): Env & { BOOK_JOBS: ReturnType<typeof namespace>; SPEND_METER: ReturnType<typeof namespace> } {
+type Ns = ReturnType<typeof namespace>;
+
+function makeEnv(over: Partial<Env> = {}): Env & { BOOK_JOBS: Ns; SPEND_METER: Ns; RATE_LIMITER: Ns } {
   const env = { OPENAI_API_KEY: "test-openai", BRAVE_SEARCH_API_KEY: "test-brave", MONTHLY_CAP_USD: "20", ...over } as Env & {
-    BOOK_JOBS: ReturnType<typeof namespace>;
-    SPEND_METER: ReturnType<typeof namespace>;
+    BOOK_JOBS: Ns;
+    SPEND_METER: Ns;
+    RATE_LIMITER: Ns;
   };
   env.BOOK_JOBS = namespace((state) => new BookJob(state, env));
   env.SPEND_METER = namespace((state) => new SpendMeter(state, env));
+  env.RATE_LIMITER = namespace((state) => new RateLimiter(state, env));
   return env;
 }
 
@@ -91,7 +95,8 @@ afterEach(() => {
 });
 
 const book = { title: "Dracula", author: "Bram Stoker", chapters: ["Chapter 1", "Chapter 2", "Chapter 3"] };
-const post = (p: string, body: unknown) => new Request(`${BASE}${p}`, { method: "POST", headers: { "content-type": "application/json" }, body: JSON.stringify(body) });
+const post = (p: string, body: unknown, ip?: string) =>
+  new Request(`${BASE}${p}`, { method: "POST", headers: { "content-type": "application/json", ...(ip ? { "cf-connecting-ip": ip } : {}) }, body: JSON.stringify(body) });
 
 async function runAlarms(env: ReturnType<typeof makeEnv>, key: string) {
   const obj = env.BOOK_JOBS.objects.get(key)!;
@@ -148,4 +153,57 @@ test("the proxy's code logs nothing (the privacy policy: no listener data kept)"
   for (const f of fs.readdirSync(HERE).filter((n) => n.endsWith(".ts") && !n.endsWith(".test.ts"))) {
     assert.doesNotMatch(fs.readFileSync(path.join(HERE, f), "utf8"), /\bconsole\.\w+\(/, f);
   }
+});
+
+test("through the Worker: a client's fourth made-up book this hour is a 429, others still score, nothing kept names the address (A34)", async () => {
+  const env = makeEnv();
+  const made = (n: number) => ({ ...book, title: `Made Up ${n}` });
+  for (let n = 1; n <= 3; n++) assert.equal((await worker.fetch(post("/v1/score", made(n), "203.0.113.7"), env)).status, 200);
+  const calls = outbound.length;
+  const over = await worker.fetch(post("/v1/score", made(4), "203.0.113.7"), env);
+  assert.equal(over.status, 429);
+  assert.ok(Number(over.headers.get("retry-after")) >= 1);
+  assert.equal(outbound.length, calls, "a refused book costs nothing");
+  assert.equal((await worker.fetch(post("/v1/score", made(4), "198.51.100.2"), env)).status, 200, "another client may");
+
+  const limiter = env.RATE_LIMITER.objects.get("rate-limiter")!;
+  assert.notEqual(limiter.storage.alarm, null, "the hour's window is set to be deleted when it ends");
+  const kept = JSON.stringify(await limiter.storage.get("window"));
+  for (const ip of ["203.0.113.7", "198.51.100.2"]) assert.ok(!kept.includes(ip), "only salted hashes are kept");
+  for (const obj of env.BOOK_JOBS.objects.values()) {
+    for (const k of obj.storage.keys()) assert.ok(!JSON.stringify(await obj.storage.get(k)).includes("203.0.113.7"), "a book's job keeps no address");
+  }
+
+  // The window's alarm deletes it once the hour is over.
+  const now = Date.now;
+  Date.now = () => now() + 2 * 3_600_000;
+  try {
+    limiter.storage.alarm = null;
+    await limiter.instance.alarm!();
+  } finally {
+    Date.now = now;
+  }
+  assert.deepEqual(limiter.storage.keys(), []);
+});
+
+test("through the Worker: a cached book is served to a client past its limit, and an early rescore is a 429 (A34)", async () => {
+  const env = makeEnv({ RUNS_PER_CLIENT_PER_HOUR: "1" });
+  const started = (await (await worker.fetch(post("/v1/score", book, "203.0.113.7"), env)).json()) as JobView;
+  await runAlarms(env, started.jobId);
+  const again = await worker.fetch(post("/v1/score", book, "203.0.113.7"), env);
+  assert.equal(again.status, 200);
+  assert.equal(((await again.json()) as JobView).state, "done");
+  const re = await worker.fetch(post("/v1/rescore", book, "198.51.100.2"), env);
+  assert.equal(re.status, 429);
+  assert.equal(((await re.json()) as { reason: string }).reason, "rescore-too-soon");
+});
+
+test("the limits are config values: a global ceiling of new runs an hour across every client (A34)", async () => {
+  const env = makeEnv({ RUNS_PER_HOUR: "2" });
+  const made = (n: number) => ({ ...book, title: `Made Up ${n}` });
+  assert.equal((await worker.fetch(post("/v1/score", made(1), "10.0.0.1"), env)).status, 200);
+  assert.equal((await worker.fetch(post("/v1/score", made(2), "10.0.0.2"), env)).status, 200);
+  const over = await worker.fetch(post("/v1/score", made(3), "10.0.0.3"), env);
+  assert.equal(over.status, 429);
+  assert.equal(((await over.json()) as { reason: string }).reason, "global-limit");
 });

@@ -65,3 +65,16 @@ export function createMeter(store: Store): Meter {
 export async function underCap(meter: Meter, capUsd: number, nowMs: number): Promise<boolean> {
   return (await meter.spent(monthOf(nowMs))) < capUsd;
 }
+
+/** Output tokens assumed for a failed model call that reported no usage: a full answer, high on purpose. */
+export const FAILED_CALL_OUTPUT_TOKENS = 4000;
+
+/**
+ * A conservative token count for a failed model call whose provider reported none (01.21): the request at about
+ * three characters a token in, FAILED_CALL_OUTPUT_TOKENS out. Over-counting only brings the cap closer; a failure
+ * that went uncounted could let the real spend pass it.
+ */
+export function estimateUsage(req: { system: string; user: string; schema: unknown }): { input: number; output: number } {
+  const chars = req.system.length + req.user.length + JSON.stringify(req.schema ?? null).length;
+  return { input: Math.ceil(chars / 3), output: FAILED_CALL_OUTPUT_TOKENS };
+}

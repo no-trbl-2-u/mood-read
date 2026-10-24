@@ -7,12 +7,18 @@
 //   is returned as it stands; a new run starts only under the monthly cap, else the job waits as `capped` and starts
 //   by itself once a status poll finds the month's spend under the cap again.
 // - rescore is explicit: it starts a new run even for a cached book; the old result stays until the new one lands.
+//   A cached book is rescored only once its result is at least the minimum age (01.21, A34).
 // - a book with a Project Gutenberg number is read from its own text first (05.9, text-research.ts): phase `text`
 //   stands in for `search` and `moods`, and falls back to them when the text is missing or matches nothing.
 // - a pre-score run (05.10, prescore.ts) is billed to the meter's pre-score share and runs a step only while that
 //   share's budget is open; when it closes the run waits as `capped`, keeping its progress. A listener who asks for
 //   the same book takes the run over: from then on it is billed and gated as the listener's.
-import type { ModelClient, SearchClient } from "./clients.ts";
+// - every listener's start that would begin a new run (running or waiting at the cap) must first be admitted by the
+//   limiter (limiter.ts, 01.21, A34); a cached book, a run already going, or a listener taking over a paused pre-score
+//   run never asks it. A refused start stores nothing. A pre-score start (the owner's token route) is not limited
+//   per client: its own budget share bounds it.
+// - a model call that fails is metered too: the usage the provider reported, else a conservative estimate (01.21).
+import { usageOf, type ModelClient, type SearchClient } from "./clients.ts";
 import {
   SCORER_VERSION,
   type BookRequest,
@@ -26,7 +32,8 @@ import {
   type SourceLink,
 } from "./contract.ts";
 import { matchChapters } from "./match.ts";
-import { BRAVE_USD_PER_QUERY, monthOf, openAiCost, underCap, type Meter } from "./meter.ts";
+import { DAY_MS, DEFAULT_RESCORE_MIN_AGE_DAYS, UNKNOWN_CLIENT, type Limiter, type Refusal } from "./limiter.ts";
+import { BRAVE_USD_PER_QUERY, estimateUsage, monthOf, openAiCost, underCap, type Meter } from "./meter.ts";
 import { PRESCORE_BUCKET, prescoreOpen } from "./prescore.ts";
 import {
   MIN_ALTERNATES,
@@ -100,12 +107,18 @@ export type JobDeps = {
   model: ModelClient;
   /** A public-domain book's own text (05.9); without it every book is researched on the web. */
   text?: TextSource;
+  /** Admits new runs per client and per hour; without one (some tests) every new run is admitted. */
+  limiter?: Limiter;
+  /** How old a cached result must be before a rescore may replace it; 7 days unless given. */
+  rescoreMinAgeMs?: number;
   now?: () => number;
   /** Told when a run finishes (05.10: the pre-scored books' index). A failure here never fails the run. */
   onFinish?: (done: { key: string; book: BookRequest; prescore: boolean }, result: BookResult) => Promise<void>;
 };
 
 export type Schedule = { view: JobView; run: boolean };
+/** What a start answers: the job, or why no run was started and when to ask again. */
+export type Started = Schedule | { refused: Refusal };
 
 const chunks = (n: number, size: number) => Math.ceil(n / size);
 
@@ -184,7 +197,14 @@ export function createBookJob(deps: JobDeps) {
   }
 
   async function complete(run: Run, req: Parameters<ModelClient["complete"]>[0]) {
-    const out = await deps.model.complete(req);
+    let out;
+    try {
+      out = await deps.model.complete(req);
+    } catch (e) {
+      // A failed call may still have been billed: count what the provider reported, else a conservative estimate.
+      await charge(run, openAiCost(deps.model.model, usageOf(e) ?? estimateUsage(req)));
+      throw e;
+    }
     await charge(run, openAiCost(deps.model.model, out.usage));
     return out.value;
   }
@@ -321,8 +341,15 @@ export function createBookJob(deps: JobDeps) {
   const resumed = (run: Run): Run =>
     run.step > 0 ? { ...run, state: "running", attempts: 0 } : freshRun(run.key, run.book, "running", !!run.prescore);
 
+  const rescoreMinAgeMs = deps.rescoreMinAgeMs ?? DEFAULT_RESCORE_MIN_AGE_DAYS * DAY_MS;
+
   return {
-    async start(key: string, book: BookRequest, rescore = false, opts: { prescore?: boolean } = {}): Promise<Schedule> {
+    /**
+     * Starts the book's job, or answers its cached result or the run already going. `opts.client` names the caller
+     * only for the limiter, which keeps no more than a salted hash of it for the hour; it is never stored here.
+     * `opts.prescore` marks the owner's pre-score run (05.10), which the per-client limiter never counts.
+     */
+    async start(key: string, book: BookRequest, rescore = false, opts: { prescore?: boolean; client?: string } = {}): Promise<Started> {
       const prescore = !!opts.prescore && !rescore;
       const [run, result] = await load();
       if (run && run.state === "running") {
@@ -331,13 +358,22 @@ export function createBookJob(deps: JobDeps) {
         return { view: view(key, run, result)!, run: false };
       }
       if (result && !rescore) return { view: view(key, undefined, result)!, run: false };
-      // A pre-score run paused at the half keeps its progress for whoever asks next, while their budget allows.
+      if (result && rescore) {
+        const age = now() - result.scoredAt;
+        if (age < rescoreMinAgeMs) return { refused: { reason: "rescore-too-soon", retryAfterMs: rescoreMinAgeMs - age } };
+      }
+      // A pre-score run paused at the half keeps its progress for whoever asks next, while their budget allows. It is
+      // not a new run, so taking it over never asks the limiter.
       if (run && run.state === "capped" && run.step > 0 && run.prescore) {
         if (!prescore) await store.put(LISTENER, true);
         if (!(await mayRun(await prescoring(run)))) return { view: view(key, run, result)!, run: false };
         const going = resumed(run);
         await store.put(JOB, going);
         return { view: view(key, going, result)!, run: true };
+      }
+      if (deps.limiter && !prescore) {
+        const admitted = await deps.limiter.admit(opts.client ?? UNKNOWN_CLIENT, now());
+        if (!admitted.ok) return { refused: { reason: admitted.reason, retryAfterMs: admitted.retryAfterMs } };
       }
       return begin(key, book, result, prescore);
     },
