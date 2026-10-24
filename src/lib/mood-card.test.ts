@@ -5,11 +5,13 @@ import { EMOTIONS as THEME_EMOTIONS, emotionHues } from "../ui/theme.ts";
 import type { Kv } from "./library-store.ts";
 import {
   alternatesLine,
+  canPeek,
   EMOTION_NAMES,
   intensityPercent,
   moodCardView,
   pieceLine,
   strongest,
+  togglePeek,
 } from "./mood-card.ts";
 import { stickerLabel } from "./labels.ts";
 import { createScoringStore } from "./scoring-store.ts";
@@ -138,4 +140,19 @@ test("a pick that is not an alternate, or for a chapter with no playlist or a ch
   assert.equal(store.savePick("b", { index: 0, title: "Renamed" }, "p2"), false);
   assert.equal(store.savePick("none", { index: 0, title: "The Storm" }, "p2"), false);
   assert.equal(store.chapterScore("b", { index: 0, title: "The Storm" })!.playlist!.pick, "auto");
+});
+
+test("A35: a reached, scored, non-playing row opens its mood card from its chips; one row at a time; a locked row never (A21)", () => {
+  const scored = moodCardView(true, score());
+  assert.equal(canPeek(scored, false), true);
+  // The playing row is always open: its chips are the card's, not a toggle.
+  assert.equal(canPeek(scored, true), false);
+  assert.equal(canPeek(moodCardView(false, score()), false), false);
+  assert.equal(canPeek({ kind: "none" }, false), false);
+  assert.equal(canPeek({ kind: "unscored" }, false), false);
+  assert.equal(canPeek({ kind: "scored", emotions: [], piece: null, alternates: [], pick: "auto" }, false), false);
+
+  assert.equal(togglePeek(null, 2), 2);
+  assert.equal(togglePeek(2, 2), null);
+  assert.equal(togglePeek(1, 2), 2);
 });

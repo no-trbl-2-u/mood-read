@@ -2,7 +2,9 @@
 // (design/layouts/DECISION.md, "Mood card, reached chapter"). Top to bottom: every emotion chip with its intensity,
 // the named piece (title, then composer or artist and kind), a muted line of alternates, and the listener's pick:
 // Auto or one alternate, saved per chapter. Nothing is previewed or played (v1). Never a chapter's events and never
-// a source's text: the card draws only emotions and pieces. A row not yet reached never gets here (A21).
+// a source's text: the card draws only emotions and pieces. A row not yet reached never gets here (A21). 01.22 (A35):
+// a reached, non-playing row opens the same card in place from its chips, without moving playback.
+import type { ReactNode } from "react";
 import { StyleSheet, Text, View } from "react-native";
 
 import { alternatesLine, EMOTION_NAMES, pieceLine, strongest, type MoodCardView } from "@/lib/mood-card";
@@ -44,7 +46,12 @@ export function EmotionChips(props: { emotions: readonly EmotionScore[]; limit?:
   );
 }
 
-export function MoodCard(props: { view: MoodCardView; onPick: (pick: "auto" | string) => void }) {
+export function MoodCard(props: {
+  view: MoodCardView;
+  onPick: (pick: "auto" | string) => void;
+  /** Drawn in place of the emotion chips: a reached row's chips toggle that open its card (01.22, A35). */
+  emotions?: ReactNode;
+}) {
   const v = props.view;
   if (v.kind === "unscored") {
     return (
@@ -57,7 +64,7 @@ export function MoodCard(props: { view: MoodCardView; onPick: (pick: "auto" | st
   if (v.kind !== "scored") return null;
   return (
     <View style={styles.card} testID="mood-card">
-      <EmotionChips emotions={v.emotions} testID="mood-emotions" />
+      {props.emotions ?? <EmotionChips emotions={v.emotions} testID="mood-emotions" />}
       {v.piece ? (
         <>
           <View style={styles.block} testID="mood-piece">
