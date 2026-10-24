@@ -6,6 +6,7 @@
 import { File, type Directory } from 'expo-file-system';
 
 import type { Transfer } from './download-queue';
+import type { DownloadTarget } from './types';
 
 /** Builds a `Transfer` that always moves the same URL into the same destination, regardless of which download it is handed. */
 export function createFileTransfer(url: string, destination: File | Directory): Transfer {
@@ -19,7 +20,7 @@ export function createFileTransfer(url: string, destination: File | Directory): 
 }
 
 /** Builds a `Transfer` for a whole queue, resolving each download's target to its own URL and destination. */
-export function createResolvingTransfer(resolve: (target: Parameters<Transfer>[0]['target']) => { url: string; destination: File | Directory }): Transfer {
+export function createResolvingTransfer(resolve: (target: DownloadTarget) => { url: string; destination: File | Directory }): Transfer {
   return (download, onProgress, signal) => {
     const { url, destination } = resolve(download.target);
     return createFileTransfer(url, destination)(download, onProgress, signal);
