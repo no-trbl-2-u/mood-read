@@ -61,7 +61,8 @@
     "ledger": "node scripts/ledger.mjs",
     "worktree": "node scripts/worktree.mjs",
     "secrets": "node scripts/secrets.mjs",
-    "secrets:sync": "node scripts/secrets-sync.mjs"
+    "secrets:sync": "node scripts/secrets-sync.mjs",
+    "catalog:add": "node scripts/catalog-add.mjs"
   },
   "engines": {
     "node": ">=22"
