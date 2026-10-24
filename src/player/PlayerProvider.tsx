@@ -53,6 +53,7 @@ import {
   startCompanion,
   type CompanionClock,
 } from "@/lib/companion";
+import { createHandoff } from "@/lib/handoff";
 import { createDucker, DEFAULT_MIX, mixLevels, normalizeMix, type Mix } from "@/lib/mix";
 import { library, useBooks } from "@/lib/library";
 import { scoringStore } from "@/lib/scoring";
@@ -131,8 +132,8 @@ export type PlayerApi = {
   setCompanionTimer: (on: boolean) => void;
 };
 
-/** A file being loaded: where to land in it and whether to play once it is ready. */
-type Target = { bookId: string; fileIndex: number; offset: number; play: boolean };
+/** A file being loaded: where to land in it. Whether it plays once ready is the handoff's (src/lib/handoff.ts). */
+type Target = { bookId: string; fileIndex: number; offset: number };
 
 function waitUntilLoaded(ready: () => boolean, cancelled: () => boolean, timeoutMs = 20000): Promise<void> {
   return new Promise((resolve, reject) => {
@@ -189,11 +190,12 @@ export function PlayerProvider({ children }: { children: ReactNode }) {
   const replanBed = useRef<() => void>(() => {});
   const ducker = useMemo(() => createDucker(), []);
   const lastSave = useRef(0);
-  const loadToken = useRef(0);
   const pendingEvent = useRef<ClockEvent | null>(null);
-  // True from a file's natural end until the next file is set to play: the clock keeps saying "playing" across the
-  // handoff, so the bed crossfades into the next chapter instead of stopping for it.
-  const continuing = useRef(false);
+  // The listener's play or pause while a file loads (A31), from the load's first moment, not once its URI is found.
+  // It also keeps the clock saying "playing" across a natural end's handoff, so the bed crossfades into the next
+  // chapter instead of stopping for it. `loadPlay` mirrors it for the screen: null when nothing loads.
+  const [loadPlay, setLoadPlay] = useState<boolean | null>(null);
+  const handoff = useMemo(() => createHandoff(setLoadPlay), []);
   const companionRef = useRef<CompanionClock | null>(null);
   const timerRef = useRef(companionTimer);
   const setTransport = useCallback((next: CompanionClock | null) => {
@@ -231,11 +233,12 @@ export function PlayerProvider({ children }: { children: ReactNode }) {
   }, [player]);
 
   // The narration's place. Companion mode never moves it: the narration resumes where it stopped once it is off.
+  // While a file loads, the place is the one goTo saved: a pause then must not save the old file's time over it.
   const persist = useCallback(() => {
     const b = bookRef.current;
-    if (b && !targetRef.current && !companionRef.current) library.savePosition(b.id, livePosition());
+    if (b && !handoff.loading() && !companionRef.current) library.savePosition(b.id, livePosition());
     lastSave.current = Date.now();
-  }, [livePosition]);
+  }, [livePosition, handoff]);
 
   // The audio session (src/lib/companion.ts): off, exclusive focus for the narration and its lock screen
   // (expo-audio: doNotMix for lock-screen controls); on, mixed with the other app, no focus asked, nothing ducked.
@@ -273,51 +276,50 @@ export function PlayerProvider({ children }: { children: ReactNode }) {
       const { fileIndex: fi, offset } = locate(b.files, bookSeconds);
       library.savePosition(b.id, bookSeconds);
       const sameFile =
-        bookRef.current?.id === b.id && fileRef.current === fi && player.isLoaded && !targetRef.current;
+        bookRef.current?.id === b.id && fileRef.current === fi && player.isLoaded && !handoff.loading();
       if (sameFile) {
         await player.seekTo(offset);
         if (play) player.play();
         else player.pause();
         return;
       }
-      const token = ++loadToken.current;
-      const t: Target = { bookId: b.id, fileIndex: fi, offset, play };
+      const t: Target = { bookId: b.id, fileIndex: fi, offset };
       setLoadError(null);
       try {
-        const uri = await resolveFile(b.files[fi].ref);
-        if (token !== loadToken.current) return;
-        player.pause();
-        bookRef.current = b;
-        fileRef.current = fi;
-        targetRef.current = t;
-        continuing.current = false;
-        setBookId(b.id);
-        setFileIndex(fi);
-        setTarget(t);
-        player.replace({ uri, name: b.files[fi].name });
-        bindRemote();
-        // Status events are not a reliable "loaded" signal: on web, replace() emits nothing, so the last status
-        // (the previous file's) still says loaded. Ask the player directly.
-        await waitUntilLoaded(() => player.isLoaded && player.duration > 0, () => token !== loadToken.current);
-        if (token !== loadToken.current) return;
-        await player.seekTo(offset);
-        player.setPlaybackRate(speedRef.current, "high");
-        // A new file is a new element on the web, at full volume: the mix applies again.
-        setVolume(player, narrationLevel.current);
-        // A pause during the load flips the live target's `play`.
-        if (targetRef.current?.play) player.play();
+        await handoff.run(play, {
+          resolve: () => resolveFile(b.files[fi].ref),
+          swap: (uri) => {
+            player.pause();
+            bookRef.current = b;
+            fileRef.current = fi;
+            targetRef.current = t;
+            setBookId(b.id);
+            setFileIndex(fi);
+            setTarget(t);
+            player.replace({ uri, name: b.files[fi].name });
+            bindRemote();
+          },
+          // Status events are not a reliable "loaded" signal: on web, replace() emits nothing, so the last status
+          // (the previous file's) still says loaded. Ask the player directly.
+          loaded: (stale) => waitUntilLoaded(() => player.isLoaded && player.duration > 0, stale),
+          land: async () => {
+            await player.seekTo(offset);
+            player.setPlaybackRate(speedRef.current, "high");
+            // A new file is a new element on the web, at full volume: the mix applies again.
+            setVolume(player, narrationLevel.current);
+            targetRef.current = null;
+            setTarget(null);
+          },
+          play: () => player.play(),
+        });
+      } catch (e) {
+        // The handoff throws only for the latest load; a stale one settles quietly.
         targetRef.current = null;
         setTarget(null);
-      } catch (e) {
-        continuing.current = false;
-        if (token === loadToken.current) {
-          targetRef.current = null;
-          setTarget(null);
-          setLoadError(e instanceof Error ? e.message : String(e));
-        }
+        setLoadError(e instanceof Error ? e.message : String(e));
       }
     },
-    [player, bindRemote, setTransport],
+    [player, bindRemote, setTransport, handoff],
   );
 
   // A user's seek, skip or jump moves an End of chapter timer to the chapter it lands in.
@@ -377,7 +379,6 @@ export function PlayerProvider({ children }: { children: ReactNode }) {
     const nextStart = bookPosition(b.files, fi + 1, 0);
     const stop = sleepDue(sleepRef.current, Date.now(), nextStart);
     if (stop) stopForSleep();
-    else continuing.current = true;
     goTo(b, nextStart, !stop);
   }, [status.didJustFinish, goTo, stopForSleep]);
 
@@ -447,12 +448,12 @@ export function PlayerProvider({ children }: { children: ReactNode }) {
   const removed = !!bookId && !book;
   useEffect(() => {
     if (!removed) return;
-    loadToken.current++;
+    handoff.cancel();
     targetRef.current = null;
     halt();
     player.pause();
     player.clearLockScreenControls();
-  }, [removed, player, halt]);
+  }, [removed, player, halt, handoff]);
 
   // A book opens in the mode the listener's setting says; opening it again in the other mode switches over.
   const open = useCallback(
@@ -464,10 +465,9 @@ export function PlayerProvider({ children }: { children: ReactNode }) {
       if (bookRef.current) persist();
       if (toCompanion && !inCompanion) {
         // The narration stops and lets go of the lock screen and Media Session before the bed plays alone.
-        loadToken.current++;
+        handoff.cancel();
         targetRef.current = null;
         setTarget(null);
-        continuing.current = false;
         player.pause();
         player.clearLockScreenControls();
       }
@@ -491,7 +491,7 @@ export function PlayerProvider({ children }: { children: ReactNode }) {
       setTransport(null);
       await goTo(b, start, false);
     },
-    [goTo, persist, player, setTransport],
+    [goTo, persist, player, setTransport, handoff],
   );
 
   // Companion mode turned on or off while a book is open: it reopens, paused, in the new mode.
@@ -500,19 +500,22 @@ export function PlayerProvider({ children }: { children: ReactNode }) {
     if (id && (companionRef.current !== null) !== companionMode) void open(id);
   }, [companionMode, open]);
 
-  const playing = companion ? companion.playing : status.playing || !!target?.play;
+  // The listener's intent, never the web status flag: that reads "paused" whenever the element is short of data
+  // (readyState), so the play button would flicker while audio buffers (A31). While a file loads, the handoff's
+  // intent; otherwise the player's own flag, which only play, pause, an end or an error moves.
+  const playing = companion ? companion.playing : (loadPlay ?? player.playing);
 
   // Publish the narration's clock on every change; the bed (01.3) follows it.
   const chapterIndex = chapter?.index ?? null;
   useEffect(() => {
     const event = pendingEvent.current ?? "tick";
     pendingEvent.current = null;
-    // The listener's intent, not the status flag: the web's status says "paused" whenever the element is short of
-    // data (readyState), which would stutter the bed; and across a file handoff the book is still playing.
+    // The listener's intent, not the status flag (as `playing` above), which would stutter the bed; and across a
+    // file handoff the book is still playing.
     const c = companionRef.current;
-    const intent = c ? c.playing : player.playing || !!targetRef.current?.play || continuing.current;
+    const intent = c ? c.playing : (handoff.wantsPlay() ?? player.playing);
     clock.publish({ bookId, position, playing: intent, rate: speed, chapterIndex }, event);
-  }, [clock, player, bookId, position, playing, speed, chapterIndex]);
+  }, [clock, player, handoff, bookId, position, playing, speed, chapterIndex]);
 
   // The bed follows the narration's clock: its sound for the chapter, play, pause, seek and crossfades (A8). It
   // only listens; nothing it does reaches the narration, and the narration's speed never reaches it (A9).
@@ -621,9 +624,8 @@ export function PlayerProvider({ children }: { children: ReactNode }) {
 
   const api = useMemo<PlayerApi>(() => {
     const pause = () => {
-      if (targetRef.current) targetRef.current = { ...targetRef.current, play: false };
+      handoff.pause();
       pendingEvent.current = "pause";
-      continuing.current = false;
       halt();
       persist();
     };
@@ -634,11 +636,11 @@ export function PlayerProvider({ children }: { children: ReactNode }) {
       pendingEvent.current = "play";
       const c = companionRef.current;
       if (c) setTransport(companionPlay(c, Date.now(), b, timerRef.current));
-      else if (targetRef.current) targetRef.current = { ...targetRef.current, play: true };
+      else if (handoff.play()) return;
       else if (livePosition() >= b.duration - 0.25) goTo(b, 0, true);
       else player.play();
     };
-    const isPlaying = () => companionRef.current?.playing ?? (player.playing || !!targetRef.current?.play);
+    const isPlaying = () => companionRef.current?.playing ?? handoff.wantsPlay() ?? player.playing;
     // Changes the open book's layer for the playing chapter and saves it with the mix.
     const updateBed = (change: (bed: BedSetting, chapterIndex: number | null) => BedSetting) => {
       const b = bookRef.current;
@@ -663,7 +665,7 @@ export function PlayerProvider({ children }: { children: ReactNode }) {
       chapter,
       position,
       playing,
-      loading: !!target,
+      loading: loadPlay !== null,
       error,
       speed,
       sleep,
@@ -736,7 +738,7 @@ export function PlayerProvider({ children }: { children: ReactNode }) {
     chapter,
     position,
     playing,
-    target,
+    loadPlay,
     error,
     speed,
     sleep,
@@ -752,6 +754,7 @@ export function PlayerProvider({ children }: { children: ReactNode }) {
     companion,
     companionTimer,
     setTransport,
+    handoff,
   ]);
 
   useEffect(() => {

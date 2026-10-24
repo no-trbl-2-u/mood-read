@@ -2,7 +2,9 @@
 // chapters), then play and pause, +/-30 s with clamps, a chapter jump from the river, speed without pitch change,
 // the sleep timer, bookmarks, resume after a reload, and the browser's Media Session; then the bed (01.3, A8, A9)
 // under it, the mixer (01.5, A10, A11) setting both, and the soundscapes picked from its Layer chips per book or per
-// chapter (01.7, A12); and a reached chapter's mood card opened from its chips without moving playback (01.22, A35). The narration's and the bed's HTMLAudioElements are read directly (page.evaluate) so nothing waits
+// chapter (01.7, A12); a reached chapter's mood card opened from its chips without moving playback (01.22, A35);
+// and a file handoff and buffering that never flip the play button against the listener (01.18, A31). The
+// narration's and the bed's HTMLAudioElements are read directly (page.evaluate) so nothing waits
 // on real time it does not need; the bed's are the looping ones.
 import { expect, test, type Page } from "@playwright/test";
 
@@ -47,15 +49,41 @@ type AudioState = {
 };
 
 // Before the app loads: remember every Audio element made (expo-audio's web player makes one per file) and every
-// Media Session handler registered (the last one registered for an action is the live one).
+// Media Session handler registered (the last one registered for an action is the live one). With `__holdLoads` on,
+// an element made then has its `loadeddata` held back from the player until `__releaseLoads()`, so a test can act
+// while the next file is still loading.
 async function instrument(page: Page) {
   await page.addInitScript(() => {
-    const w = window as unknown as { __audios: HTMLAudioElement[]; __ms: Record<string, unknown>; Audio: unknown };
+    const w = window as unknown as {
+      __audios: HTMLAudioElement[];
+      __ms: Record<string, unknown>;
+      Audio: unknown;
+      __holdLoads: boolean;
+      __releaseLoads: () => void;
+    };
     const Original = window.Audio;
     w.__audios = [];
+    w.__holdLoads = false;
+    const held = new Set<HTMLAudioElement>();
+    const loaded = new Set<HTMLAudioElement>();
+    w.__releaseLoads = () => {
+      w.__holdLoads = false;
+      const release = [...held].filter((a) => loaded.has(a));
+      held.clear();
+      for (const a of release) a.dispatchEvent(new Event("loadeddata"));
+    };
     const Patched = function (src?: string) {
       const a = new Original(src);
       w.__audios.push(a);
+      if (w.__holdLoads) {
+        held.add(a);
+        // Registered before the player's own handler, so it runs first and keeps the event from it.
+        a.addEventListener("loadeddata", (e) => {
+          if (!held.has(a)) return;
+          loaded.add(a);
+          e.stopImmediatePropagation();
+        });
+      }
       return a;
     } as unknown as typeof Audio;
     Patched.prototype = Original.prototype;
@@ -386,6 +414,72 @@ test.describe("the player", () => {
     await expect.poll(async () => (await narration(page)).paused).toBe(false);
     await call("pause");
     await expect.poll(async () => (await narration(page)).paused).toBe(true);
+  });
+
+  test("A31: a pause pressed while the next chapter's file is still loading holds", async ({ page }) => {
+    await importBook(page);
+    const button = page.getByTestId("mini-play-pause");
+    await button.click();
+    await expect.poll(async () => (await narration(page)).paused).toBe(false);
+
+    // A chapter jump starts loading chapter 2 to play; its file is held loading while the listener pauses.
+    await page.evaluate(() => ((window as unknown as { __holdLoads: boolean }).__holdLoads = true));
+    await page.getByTestId("chapter-1").click();
+    await expect(button.locator("[role=progressbar]")).toHaveCount(1);
+    await button.click();
+    await expect(button).toHaveAttribute("aria-label", "Play");
+    await page.evaluate(() => (window as unknown as { __releaseLoads: () => void }).__releaseLoads());
+
+    // Loaded, it lands on chapter 2 and stays paused there.
+    await readyToPlay(page);
+    await expectChapter(page, 1);
+    await page.waitForTimeout(800);
+    const after = await narration(page);
+    expect(after.paused).toBe(true);
+    expect(after.currentTime).toBeLessThan(0.3);
+    await expect(button).toHaveAttribute("aria-label", "Play");
+
+    // Play then plays it.
+    await button.click();
+    await expect.poll(async () => (await narration(page)).paused).toBe(false);
+    await expect(button).toHaveAttribute("aria-label", "Pause");
+  });
+
+  test("A31: the play button never flickers to Play while the narration buffers", async ({ page }) => {
+    await importBook(page);
+    const button = page.getByTestId("mini-play-pause");
+    await button.click();
+    await expect.poll(async () => (await narration(page)).currentTime).toBeGreaterThan(0.3);
+    await expect(button).toHaveAttribute("aria-label", "Pause");
+
+    // The element reports it is short of data (as while buffering): the browser's status reads paused from then on.
+    await page.evaluate(() => {
+      const all = (window as unknown as { __audios: HTMLAudioElement[] }).__audios.filter(
+        (a) => a.ontimeupdate && !a.loop,
+      );
+      const a = all[all.length - 1];
+      Object.defineProperty(a, "readyState", { configurable: true, get: () => HTMLMediaElement.HAVE_CURRENT_DATA });
+      a.dispatchEvent(new Event("waiting"));
+    });
+    const labels: (string | null)[] = [];
+    const start = (await narration(page)).currentTime;
+    // Long enough for several of the player's status updates (every 250 ms of playback).
+    while ((await narration(page)).currentTime < start + 1.5) {
+      labels.push(await button.getAttribute("aria-label"));
+      await page.waitForTimeout(100);
+    }
+    expect(labels.length).toBeGreaterThan(5);
+    expect(labels.filter((l) => l !== "Pause")).toEqual([]);
+
+    await page.evaluate(() => {
+      const all = (window as unknown as { __audios: HTMLAudioElement[] }).__audios.filter(
+        (a) => a.ontimeupdate && !a.loop,
+      );
+      delete (all[all.length - 1] as unknown as { readyState?: number }).readyState;
+    });
+    await button.click();
+    await expect.poll(async () => (await narration(page)).paused).toBe(true);
+    await expect(button).toHaveAttribute("aria-label", "Play");
   });
 
   test("A8, A9: the bed loops under the narration, follows play, pause and seek, crossfades at the chapter boundary and ignores the speed", async ({
