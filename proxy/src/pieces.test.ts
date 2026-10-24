@@ -145,3 +145,32 @@ test("the no-vocals name screen catches plural and common vocal titles, and leav
   const clean = ["Ballade No. 1 in G minor", "Massive", "Nocturne", "Passacaglia"];
   for (const title of clean) assert.equal(failsNoVocalsScreen({ title, artist: "Frederic Chopin" }), false, title);
 });
+
+test("the name screen catches humming and the vocal works best known by name (A20)", () => {
+  const vocal = [
+    "Lacrimosa",
+    "O Fortuna",
+    "Nessun Dorma",
+    "Gloria in D major",
+    "Sanctus",
+    "Dies Irae",
+    "Ode to Joy",
+    "Humming",
+    "Hummed Lullaby Theme",
+    "Hum",
+    "Libera Me",
+    "Pie Jesu",
+    "Panis Angelicus",
+    "Benedictus",
+    "Ave Verum Corpus",
+    "Casta Diva",
+    "Lascia ch'io pianga",
+    "Una furtiva lagrima",
+    "Queen of the Night",
+    "Requiem aeternam",
+    "Vocalise",
+  ];
+  for (const title of vocal) assert.equal(failsNoVocalsScreen({ title, artist: "X" }), true, title);
+  const clean = ["Humoresque", "Human Nature Suite", "Glorious Morning", "Fortunate Son Instrumental"];
+  for (const title of clean) assert.equal(failsNoVocalsScreen({ title, artist: "X" }), false, title);
+});
