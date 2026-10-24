@@ -97,6 +97,13 @@
 
 ## Pending — findings
 
+### [4.5] The web export puts package assets under dist/assets/node_modules/, which Pages never uploads
+- category: tooling
+- impact: 4 (any asset a package ships, such as expo-router's own images or a font loaded from its package, 404s on mood-read.pages.dev while it works locally and in e2e)
+- ease: 5 (copy such assets into `assets/` as 06.4 did for Bricolage Grotesque, with a byte-equality test, or rename the folder after `expo export`)
+- seen: 2026-10-23 (06.4: the display face, moved to assets/fonts; expo-router's assets still sit there, unrequested today)
+- next: /iterate, with an e2e check that no requested asset path contains node_modules
+
 ### [5.4] Two sessions' gates collide on e2e port 4173
 - category: tooling
 - impact: 5 (a parallel session's e2e holds 127.0.0.1:4173, so another session's `git commit` hook fails red with "is already used"; seen three times in one evening)

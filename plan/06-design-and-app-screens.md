@@ -72,8 +72,6 @@ Decisions made upfront (do not ask):
 
 ## Acceptance
 
-- **A4** Every built screen uses the design system's tokens, type and icons, with no colour or size outside
-  `src/ui/theme.ts`.
 - **A5** Every control has a screen-reader label; text scales to 200% without clipping; contrast meets WCAG 2.2 AA;
   touch targets are at least 44 px; and the e2e leg's accessibility check is green on every route.
 
@@ -84,14 +82,8 @@ Decisions made upfront (do not ask):
   icons are Lucide.
 
 ## Chunks
-Measure: 2 open · 4 closed · next A7
+Measure: 1 open · 5 closed · next A7
 
-- [ ] **06.4** Apply the design system to every built screen · M · closes A4 · needs —
-  - Install `lucide-react-native` v1.x and `react-native-svg`; no brand icons. Ship the Lucide ISC, Feather MIT
-    and react-native-svg MIT notices word for word (copied from each package's LICENSE) on an in-app licenses
-    screen and in a licenses file served with the web build (06.1's rights check).
-  - Bundle Bricolage Grotesque (OFL) and set `fonts.display` in `src/ui/theme.ts`.
-  - Add the two pairs 06.2's boards use to `contrastPairs`: dark text on `pop` (the Finished chip) and dark text
-    on `danger` (the Delete book button).
-  - Retire v1's copy for `design/layouts/DECISION.md`'s v2 copy ("Library" becomes "Your shelf"), tests with it.
-- [ ] **06.5** Accessibility pass, with an automated check in the e2e leg · M · closes A5 · needs 06.4
+- [ ] **06.5** Accessibility pass, with an automated check in the e2e leg · M · closes A5 · needs —
+  - Known misses from 06.3 and 06.4: the top bar's text button is 36 px tall, and the back control leans on hit
+    slop; both go to 44 px from `sizes.touch`.
