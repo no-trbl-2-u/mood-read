@@ -1,6 +1,5 @@
 {
   "01.2": "privileged_agent_session|10.0.0.208|Artemis|2026-10-24T01:51:02.149Z|s:4c4808a7~deneb",
-  "06.3": "privileged_agent_session|10.0.0.208|Artemis|2026-10-24T00:43:43.624Z|s:050f8770~capella",
   "06.4": "privileged_agent_session|10.0.0.208|Artemis|2026-10-24T00:43:43.624Z|s:050f8770~capella",
   "06.5": "privileged_agent_session|10.0.0.208|Artemis|2026-10-24T00:43:43.624Z|s:050f8770~capella"
 }
