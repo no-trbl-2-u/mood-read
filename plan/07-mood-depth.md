@@ -121,8 +121,6 @@ Decisions made upfront (do not ask):
 - **A2** Playback crossfades to the next scene's piece when the clock crosses a scene boundary, and back on a seek
   back; a chapter-wide pick plays for every scene; the mood card shows the playing scene's emotions and nothing for
   a scene not yet reached.
-- **A5** "Fits" and "Doesn't fit" on the mood card keep a verdict per chapter on the device; "Doesn't fit" offers
-  the alternates in place; both are 44 px, labelled and readable at 200% text.
 - **A6** Verdicts reach the proxy only as `{pieceId, emotions, verdict}` rows with no book, chapter, device or
   time, at most daily, never when "Share what fits" is off; the proxy stores counts only and orders alternates by
   them, demoting a piece with misfits two to one over at least ten verdicts; the privacy policy says so.
@@ -145,18 +143,15 @@ All answered; none is open.
   could keep; a daily batch with no time is not (decided here, 2026-10-24).
 
 ## Chunks
-Measure: 6 open · 3 closed · next A10
+Measure: 5 open · 4 closed · next A10
 
 - [ ] **07.2** The bed follows scenes; the mood card shows the playing scene · M · closes A2 · needs —
   - `src/lib/bed.ts`: `sceneAt(positionInChapter, chapterLength, scenes)` and the boundary crossfade;
     `src/player/bed-engine.ts` drives it from the clock; `src/player/MoodCard.tsx` adds the scene band; reached
     scenes extend `src/lib/reached.ts` with the furthest position within the playing chapter. Until 01.10 plays
     pieces, the scene change is logged and the card band moves; the bed's soundscape is unchanged.
-- [ ] **07.4** "Fits" and "Doesn't fit" on the mood card, kept on the device · S · closes A5 · needs —
-  - `src/lib/verdict-store.ts` behind `src/lib/`, `src/player/MoodCard.tsx` targets, the alternates offered in
-    place; the axe, 44 px and 200% checks in the e2e accessibility walk cover both.
 - [ ] **07.5** Verdicts as daily aggregates to the proxy, which orders alternates by them · M · closes A6 ·
-  needs 07.4
+  needs —
   - `POST /v1/verdicts` in `proxy/src/http.ts` with counts in `proxy/src/store.ts`, rate-limited like `/v1/score`
     (01.21's limiter when it lands, else its own); ordering in `proxy/src/pieces.ts`; the app's sender in
     `src/lib/verdict-sync.ts` reads `Settings.shareVerdicts` and `wifiOnly`; `Settings` row in

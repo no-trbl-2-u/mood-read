@@ -47,3 +47,4 @@ identity · deleted in <sha>`; recover its text with
 - 2026-10-24 · 05.5 · Credits screen from the library's menu and Settings · 35fcca77..be8decdc
 - 2026-10-24 · 07.3 · The bed fades in, fades out and holds for the opening · 2060db17..2060db17
 - 2026-10-24 · 05.12 · Spotify playlists verdict: unclear and not allowed, 05.13 held · d03f4351..d03f4351
+- 2026-10-24 · 07.4 · Fits and Doesn't fit on the mood card, kept per chapter · be37c6d4..be37c6d4

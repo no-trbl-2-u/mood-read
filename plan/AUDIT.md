@@ -57,6 +57,14 @@
 
 ## Pending — findings
 
+### [4.0] Verdicts keyed by chapter index can light on the wrong chapter after a chapter edit
+- category: correctness
+- impact: 4 (a merge or split shifts indices, so a kept "Fits" or "Doesn't fit" can show on another chapter that
+  plays the same piece; 07.5 would then send it with the wrong chapter's emotions)
+- ease: 7 (clear a book's `verdicts:` in the chapter-edit path, or match the chapter title as scores do)
+- seen: 2026-10-24 (07.4 builder, heads-down rigel)
+- next: /iterate, before or with 07.5
+
 ### [4.5] The web export puts package assets under dist/assets/node_modules/, which Pages never uploads
 - category: tooling
 - impact: 4 (any asset a package ships, such as expo-router's own images or a font loaded from its package, 404s on mood-read.pages.dev while it works locally and in e2e)
