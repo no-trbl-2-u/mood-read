@@ -36,3 +36,5 @@ identity · deleted in <sha>`; recover its text with
 - 2026-10-23 · 06.4 · Every screen wears the acid sticker system: Your shelf · 2e0f7a62..6b27e948
 - 2026-10-24 · 01.2 · Proxy scores chapter moods and names no-vocals pieces, hermetically tested · 544cb12f..900379f1
 - 2026-10-24 · 01.4 · Reached chapters show emotions; the playing row is the mood card · 07017846..a10064f6
+- 2026-10-24 · 06.5 · Axe, 44 px and 200% text checks gate every route · 9380a0e1..b5c26981
+- 2026-10-24 · 06 · spec complete: Design system, the undrawn screens, Settings, accessibility and a privacy policy · absorbed into plan/bearings.md Visual & tonal defaults, the route contract and standing decisions, and design/system/DECISION.md and design/layouts/DECISION.md · deleted in "plan: settle 06.5"

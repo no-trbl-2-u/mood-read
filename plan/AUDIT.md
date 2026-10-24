@@ -97,6 +97,13 @@
 
 ## Pending — findings
 
+### [5.5] The mini player's scrubber can't be moved from a keyboard
+- category: accessibility
+- impact: 5 (WCAG 2.2 2.1.1: a keyboard or switch user can't seek within a chapter; axe does not flag it, so the 06.5 gate stays green)
+- ease: 6 (`src/ui/Slider.tsx`: arrow keys step 5 s, Page keys 30 s, Home and End; `aria-valuenow` already set)
+- seen: 2026-10-24 (06.5)
+- next: /iterate, with an e2e that focuses the scrubber and presses ArrowRight
+
 ### [4.5] The web export puts package assets under dist/assets/node_modules/, which Pages never uploads
 - category: tooling
 - impact: 4 (any asset a package ships, such as expo-router's own images or a font loaded from its package, 404s on mood-read.pages.dev while it works locally and in e2e)

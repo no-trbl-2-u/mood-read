@@ -203,7 +203,7 @@ Measure: 20 open · 0 closed · next A21
   - Rewrite the privacy policy's Spotify section (`src/app/privacy.tsx`) to say what a connected account shares.
   - Replace Settings' disabled "Spotify, Not available yet" row (06.3, `src/app/settings.tsx`) with connect and
     disconnect.
-- [ ] **05.14** Google Play release · M · closes A16 · needs 04.1, 06.5 · secrets EXPO_TOKEN
+- [ ] **05.14** Google Play release · M · closes A16 · needs 04.1 · secrets EXPO_TOKEN
 - [ ] **05.15** TestFlight and the App Store · M · closes A17 · needs 05.14 · secrets EXPO_TOKEN
   - Needs the owner in the Apple Developer Program (D6, `plan/AUDIT.md`).
 - [ ] **05.16** Finished books, sort, filter and search in the library · S · closes A18 ·

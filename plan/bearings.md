@@ -97,7 +97,9 @@ App routes (expo-router, src/app/; the same paths on the web build):
   /                 the library: every book on the device
   /book/[id]        one book's player; [id] is the Book's id
   /import           Import a book: files or a folder, and the AAX/AAXC note as a state of it (01.6)
-  /privacy          the privacy policy, plain; linked from Import, and from Settings once 06.3 lands (06.6)
+  /privacy          the privacy policy, plain; linked from Import and Settings (06.6)
+  /settings         Settings, from the shelf's overflow menu; each value saved on the device (06.3)
+  /licenses         the open-source notices word for word, from Settings; /licenses.txt on the web build (06.4)
 
 Scripts (package.json):
   pnpm web | start                 dev server
@@ -193,6 +195,18 @@ The design system (06.1, option A "acid sticker", owner direction "full gen z ch
   three notices ship word for word on a licenses screen and a web licenses file; no brand icons.
 - **Voice:** playful and loud, labels included, but an action still says plainly what it does; the fixed lines
   ("Unscored", the cap line, the privacy line, the AAX/AAXC note) are never rewritten; no emojis.
+- **Layout additions:** `design/layouts/DECISION.md`'s v2 sections draw every v2 screen and state. The shelf's
+  overflow menu is the one home for Browse, Downloads, Settings and Credits (an entry joins `MENU` in
+  `src/ui/OverflowMenu.tsx` when its route ships); no tab bar. A design board's recommendation is taken when it
+  lands and an owner overrule is recorded in its DECISION.md.
+- **Accessibility (06.5, gated):** every control has a screen-reader label and role; text scales to 200% without
+  clipping (no `numberOfLines`, `allowFontScaling={false}` or `hitSlop`; `src/lib/a11y-guard.test.ts`); WCAG 2.2
+  AA contrast, including through a dim; touch targets at least 44 px from the box itself; emotion chips never
+  carry meaning by colour alone. `e2e/a11y.spec.ts` runs axe, the 44 px check and the 200% check on every route
+  and state and fails on any serious or critical issue; a new route or state joins it.
+- **A4 guard:** `src/lib/design-guard.test.ts` fails on any colour or size literal outside `src/ui/theme.ts`.
+- **Settings data:** `Settings` (wifiOnly on, companionMode off, defaultSoundscapeId) through `src/lib/settings.ts`;
+  a book's own soundscape choice always beats the default.
 
 ## Plan expansion posture
 
@@ -201,7 +215,7 @@ The design system (06.1, option A "acid sticker", owner direction "full gen z ch
 ## Decisions standing for the autonomous loop
 
 - **Library sort:** most recently played first, then title.
-- **Empty library copy:** "No books yet. Add an audiobook file you own to start listening."
+- **Empty shelf copy:** "Nothing on the shelf yet." (06.4; the library is titled "Your shelf").
 - **Loading state:** a quiet placeholder of the screen's shape; no spinners over playback controls.
 - **Error state:** one plain sentence of what happened and what to do, with a retry where one applies.
 - **Skip intervals:** 30 s back and forward; speeds 0.5× to 3× in 0.1 steps with presets 1×, 1.25×, 1.5×, 2×.
