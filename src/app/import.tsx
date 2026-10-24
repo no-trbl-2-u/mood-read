@@ -141,8 +141,8 @@ function ImportNote({ note, onChooseAnother }: { note: Note; onChooseAnother: ()
         </Text>
         <Text style={styles.muted}>
           Bring a DRM-free copy instead: from a DRM-free store such as Libro.fm, or from the public domain on LibriVox.
-          Or keep the book in the Audible app: companion mode, coming in a later update, plays Mood Read&apos;s
-          soundscape beside it.
+          Or keep the book in the Audible app: companion mode, in Settings, plays Mood Read&apos;s soundscape
+          beside it.
         </Text>
         {more && (
           <View style={styles.more} testID="import-note-more">

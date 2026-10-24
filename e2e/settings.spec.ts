@@ -22,7 +22,8 @@ test.describe("settings", () => {
     const companion = page.getByRole("switch", { name: "Companion mode" });
     await expect(wifi).toHaveAttribute("aria-checked", "true");
     await expect(companion).toHaveAttribute("aria-checked", "false");
-    await expect(page.getByText(/It arrives in a later update; your choice is saved now\./)).toBeVisible();
+    await expect(page.getByText(/no narration, beside another app such as Audible/)).toBeVisible();
+    await expect(page.getByText(/later update/)).toHaveCount(0);
     for (const id of ["setting-storage", "setting-spotify", "setting-credits"]) {
       await expect(page.getByTestId(id)).toContainText("Not available yet");
     }

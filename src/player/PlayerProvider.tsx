@@ -5,6 +5,10 @@
 // under the narrator's voice from a level measured on the device (./voice-level.ts); the audio goes nowhere.
 // The book's Mix also carries its layer (01.7): a soundscape or off for the book, and any chapter's own; the bed
 // plays the chapter's own, else the book's, and a pick crossfades to it while playing.
+// Companion mode (01.14, A27): with the listener's setting on, the narration never loads; the clock comes from a
+// silent companion clock over the book's chapters (src/lib/companion.ts) that the same bed follows, the session
+// mixes with the other app, and nothing claims the lock screen or the Media Session. Turning it off reopens the
+// book on the narration's own session, place and lock-screen controls.
 import { setAudioModeAsync, useAudioPlayer, useAudioPlayerStatus, type AudioPlayer } from "expo-audio";
 import { createContext, useCallback, useContext, useEffect, useMemo, useRef, useState, type ReactNode } from "react";
 import { AppState, Platform } from "react-native";
@@ -21,9 +25,21 @@ import {
   type LayerPick,
 } from "@/lib/bed";
 import { createClock, type Clock, type ClockEvent, type ClockState } from "@/lib/clock";
+import {
+  companionFinished,
+  companionMove,
+  companionPause,
+  companionPlay,
+  companionPosition,
+  companionRate,
+  rebase,
+  sessionFor,
+  startCompanion,
+  type CompanionClock,
+} from "@/lib/companion";
 import { createDucker, DEFAULT_MIX, mixLevels, normalizeMix, type Mix } from "@/lib/mix";
 import { library, useBooks } from "@/lib/library";
-import { settings } from "@/lib/settings";
+import { settings, useSettings } from "@/lib/settings";
 import { resolveFile } from "@/lib/media";
 import {
   bookPosition,
@@ -90,6 +106,11 @@ export type PlayerApi = {
   pickLayer: (pick: LayerPick) => void;
   /** "This chapter only": gives the playing chapter its own layer, or drops it to follow the book's. */
   setChapterOnly: (on: boolean) => void;
+  /** The open book plays in companion mode (01.14): the bed only, beside another app, no narration. */
+  companion: boolean;
+  /** Companion mode's chapter timer: on, the bed moves on by the book's chapter lengths; off, it waits for a tap. */
+  companionTimer: boolean;
+  setCompanionTimer: (on: boolean) => void;
 };
 
 /** A file being loaded: where to land in it and whether to play once it is ready. */
@@ -120,6 +141,7 @@ export function PlayerProvider({ children }: { children: ReactNode }) {
   const status = useAudioPlayerStatus(player);
   const books = useBooks();
   const clock = useMemo(() => createClock(), []);
+  const { companionMode, companionTimer } = useSettings();
 
   const [bookId, setBookId] = useState<string | null>(null);
   const [fileIndex, setFileIndex] = useState(0);
@@ -128,6 +150,9 @@ export function PlayerProvider({ children }: { children: ReactNode }) {
   const [speed, setSpeedState] = useState(1);
   const [sleep, setSleep] = useState<SleepTimer | null>(null);
   const [mix, setMixState] = useState<Mix>(DEFAULT_MIX);
+  // The companion clock while the open book plays in companion mode, else null (src/lib/companion.ts).
+  const [companion, setCompanion] = useState<CompanionClock | null>(null);
+  const [now, setNow] = useState(() => Date.now());
 
   // Mirrors of state for callbacks and event handlers, which must not read stale renders.
   const bookRef = useRef<Book | undefined>(undefined);
@@ -148,11 +173,22 @@ export function PlayerProvider({ children }: { children: ReactNode }) {
   // True from a file's natural end until the next file is set to play: the clock keeps saying "playing" across the
   // handoff, so the bed crossfades into the next chapter instead of stopping for it.
   const continuing = useRef(false);
+  const companionRef = useRef<CompanionClock | null>(null);
+  const timerRef = useRef(companionTimer);
+  const setTransport = useCallback((next: CompanionClock | null) => {
+    companionRef.current = next;
+    setCompanion(next);
+    setNow(Date.now());
+  }, []);
 
   const book = bookId ? books.find((b) => b.id === bookId) : undefined;
-  const position = book ? bookPosition(book.files, fileIndex, target ? target.offset : status.currentTime) : 0;
+  const position = !book
+    ? 0
+    : companion
+      ? companionPosition(companion, now, book, companionTimer)
+      : bookPosition(book.files, fileIndex, target ? target.offset : status.currentTime);
   const chapter = book ? chapterAt(book.chapters, position) : undefined;
-  const error = loadError ?? status.error ?? null;
+  const error = loadError ?? (companion ? null : status.error) ?? null;
 
   useEffect(() => {
     bookRef.current = book;
@@ -160,28 +196,39 @@ export function PlayerProvider({ children }: { children: ReactNode }) {
   useEffect(() => {
     sleepRef.current = sleep;
   }, [sleep]);
+  useEffect(() => {
+    timerRef.current = companionTimer;
+  }, [companionTimer]);
 
   const livePosition = useCallback((): number => {
     const b = bookRef.current;
     if (!b) return 0;
+    const c = companionRef.current;
+    if (c) return companionPosition(c, Date.now(), b, timerRef.current);
     const t = targetRef.current;
     return bookPosition(b.files, fileRef.current, t ? t.offset : player.currentTime);
   }, [player]);
 
+  // The narration's place. Companion mode never moves it: the narration resumes where it stopped once it is off.
   const persist = useCallback(() => {
     const b = bookRef.current;
-    if (b && !targetRef.current) library.savePosition(b.id, livePosition());
+    if (b && !targetRef.current && !companionRef.current) library.savePosition(b.id, livePosition());
     lastSave.current = Date.now();
   }, [livePosition]);
 
+  // The audio session (src/lib/companion.ts): off, exclusive focus for the narration and its lock screen
+  // (expo-audio: doNotMix for lock-screen controls); on, mixed with the other app, no focus asked, nothing ducked.
   useEffect(() => {
-    // Background playback and the lock screen need exclusive focus (expo-audio: doNotMix for lock-screen controls).
-    setAudioModeAsync({
-      playsInSilentMode: true,
-      shouldPlayInBackground: true,
-      interruptionMode: "doNotMix",
-    }).catch(() => {});
-  }, []);
+    setAudioModeAsync(sessionFor(companionMode).audioMode).catch(() => {});
+  }, [companionMode]);
+
+  // The companion clock ticks the screen while it runs.
+  const companionRunning = !!companion?.playing;
+  useEffect(() => {
+    if (!companionRunning) return;
+    const t = setInterval(() => setNow(Date.now()), 250);
+    return () => clearInterval(t);
+  }, [companionRunning]);
 
   // The handlers the lock screen and media keys call; a ref, so a binding made once always reaches the latest.
   const remote = useRef({ play: () => {}, pause: () => {}, skip: (_d: number) => {} });
@@ -196,6 +243,12 @@ export function PlayerProvider({ children }: { children: ReactNode }) {
   /** Points the player at a book position, loading another file if needed. */
   const goTo = useCallback(
     async (b: Book, bookSeconds: number, play: boolean) => {
+      // Companion mode moves its silent clock; no narration loads and the narration's place stays.
+      const c = companionRef.current;
+      if (c) {
+        setTransport(companionMove(c, Date.now(), bookSeconds, play, b));
+        return;
+      }
       const { fileIndex: fi, offset } = locate(b.files, bookSeconds);
       library.savePosition(b.id, bookSeconds);
       const sameFile =
@@ -243,7 +296,7 @@ export function PlayerProvider({ children }: { children: ReactNode }) {
         }
       }
     },
-    [player, bindRemote],
+    [player, bindRemote, setTransport],
   );
 
   // A user's seek, skip or jump moves an End of chapter timer to the chapter it lands in.
@@ -260,13 +313,23 @@ export function PlayerProvider({ children }: { children: ReactNode }) {
     pendingEvent.current = "stop";
   }, []);
 
+  /** Stops what is playing: the companion clock, or the narration. */
+  const halt = useCallback(() => {
+    const c = companionRef.current;
+    const b = bookRef.current;
+    if (c) setTransport(b ? companionPause(c, Date.now(), b, timerRef.current) : { ...c, playing: false });
+    else player.pause();
+  }, [player, setTransport]);
+
   // Lock screen and media keys: the chapter title over the book title, with 30 s skips (layout: lock screen).
   const lockTitle = chapter?.title ?? book?.title ?? null;
   const lockArtist = book?.title;
   const lockAlbum = book?.author;
   const lockArt = book?.cover ?? undefined;
+  // Companion mode claims no lock screen: the other app keeps its own (A27).
+  const lockScreen = sessionFor(companionMode).lockScreen && !companion;
   useEffect(() => {
-    if (!lockTitle) return;
+    if (!lockTitle || !lockScreen) return;
     player.setActiveForLockScreen(
       true,
       { title: lockTitle, artist: lockArtist, albumTitle: lockAlbum, artworkUrl: lockArt },
@@ -278,12 +341,12 @@ export function PlayerProvider({ children }: { children: ReactNode }) {
       },
     );
     bindRemote();
-  }, [lockTitle, lockArtist, lockAlbum, lockArt, player, bindRemote]);
+  }, [lockTitle, lockArtist, lockAlbum, lockArt, lockScreen, player, bindRemote]);
 
   // End of a file: on to the next one, unless the sleep timer says stop at this chapter's end.
   useEffect(() => {
     const b = bookRef.current;
-    if (!status.didJustFinish || !b || targetRef.current) return;
+    if (!status.didJustFinish || !b || targetRef.current || companionRef.current) return;
     const fi = fileRef.current;
     if (fi + 1 >= b.files.length) {
       library.savePosition(b.id, b.duration);
@@ -299,7 +362,7 @@ export function PlayerProvider({ children }: { children: ReactNode }) {
 
   // Save the position often while playing, and right away on pause.
   useEffect(() => {
-    if (!bookRef.current || targetRef.current) return;
+    if (!bookRef.current || targetRef.current || companionRef.current) return;
     if (!status.playing || Date.now() - lastSave.current >= SAVE_EVERY_MS) persist();
   }, [status.currentTime, status.playing, persist]);
 
@@ -308,14 +371,24 @@ export function PlayerProvider({ children }: { children: ReactNode }) {
     if (sleep?.kind !== "minutes") return;
     const check = () => {
       if (sleepDue(sleepRef.current, Date.now(), 0)) {
-        player.pause();
+        halt();
         persist();
         stopForSleep();
       }
     };
     const t = setInterval(check, 1000);
     return () => clearInterval(t);
-  }, [sleep, player, persist, stopForSleep]);
+  }, [sleep, halt, persist, stopForSleep]);
+
+  // The chapter timer has run the book out: the companion clock stops there.
+  useEffect(() => {
+    const c = companionRef.current;
+    const b = bookRef.current;
+    if (!c || !b || !companionFinished(c, Date.now(), b, timerRef.current)) return;
+    if (sleepRef.current) stopForSleep();
+    else pendingEvent.current = "pause";
+    halt();
+  }, [position, halt, stopForSleep]);
 
   // Sleep timer at chapter end, inside a file (chapters from markers, 01.6): stop and park at the chapter's end,
   // so the next listen starts the next chapter. A chapter that ends its file stops in the end-of-file effect.
@@ -355,15 +428,28 @@ export function PlayerProvider({ children }: { children: ReactNode }) {
     if (!removed) return;
     loadToken.current++;
     targetRef.current = null;
+    halt();
     player.pause();
     player.clearLockScreenControls();
-  }, [removed, player]);
+  }, [removed, player, halt]);
 
+  // A book opens in the mode the listener's setting says; opening it again in the other mode switches over.
   const open = useCallback(
     async (id: string) => {
       const b = library.getBook(id);
-      if (!b || bookRef.current?.id === id) return;
+      const toCompanion = settings.get().companionMode;
+      const inCompanion = companionRef.current !== null;
+      if (!b || (bookRef.current?.id === id && inCompanion === toCompanion)) return;
       if (bookRef.current) persist();
+      if (toCompanion && !inCompanion) {
+        // The narration stops and lets go of the lock screen and Media Session before the bed plays alone.
+        loadToken.current++;
+        targetRef.current = null;
+        setTarget(null);
+        continuing.current = false;
+        player.pause();
+        player.clearLockScreenControls();
+      }
       sleepRef.current = null;
       setSleep(null);
       const rate = clamp(library.getSpeed(id), MIN_SPEED, PLATFORM_MAX_SPEED);
@@ -372,12 +458,28 @@ export function PlayerProvider({ children }: { children: ReactNode }) {
       // The book's own layer, else the listener's default soundscape setting (06.3).
       setMixState(library.getMix(id, defaultBedFor(settings.get().defaultSoundscapeId)));
       pendingEvent.current = "load";
-      await goTo(b, resumeStart(library.getPosition(id), b.duration), false);
+      const start = resumeStart(library.getPosition(id), b.duration);
+      if (toCompanion) {
+        // The companion clock starts where the narration stopped, paused, and no narration file loads.
+        setLoadError(null);
+        bookRef.current = b;
+        setBookId(b.id);
+        setTransport(startCompanion(start, rate, Date.now()));
+        return;
+      }
+      setTransport(null);
+      await goTo(b, start, false);
     },
-    [goTo, persist],
+    [goTo, persist, player, setTransport],
   );
 
-  const playing = status.playing || !!target?.play;
+  // Companion mode turned on or off while a book is open: it reopens, paused, in the new mode.
+  useEffect(() => {
+    const id = bookRef.current?.id;
+    if (id && (companionRef.current !== null) !== companionMode) void open(id);
+  }, [companionMode, open]);
+
+  const playing = companion ? companion.playing : status.playing || !!target?.play;
 
   // Publish the narration's clock on every change; the bed (01.3) follows it.
   const chapterIndex = chapter?.index ?? null;
@@ -386,7 +488,8 @@ export function PlayerProvider({ children }: { children: ReactNode }) {
     pendingEvent.current = null;
     // The listener's intent, not the status flag: the web's status says "paused" whenever the element is short of
     // data (readyState), which would stutter the bed; and across a file handoff the book is still playing.
-    const intent = player.playing || !!targetRef.current?.play || continuing.current;
+    const c = companionRef.current;
+    const intent = c ? c.playing : player.playing || !!targetRef.current?.play || continuing.current;
     clock.publish({ bookId, position, playing: intent, rate: speed, chapterIndex }, event);
   }, [clock, player, bookId, position, playing, speed, chapterIndex]);
 
@@ -436,7 +539,7 @@ export function PlayerProvider({ children }: { children: ReactNode }) {
   // Duck under voice (A11): while the narration plays with duck on, its level is measured on the device and the bed
   // dips while the narrator speaks, coming back in the pauses. Sampling starts only once the listener plays (the
   // web's audio graph needs their gesture) and stops with duck off. A pause only stops listening.
-  const duckListening = mix.duck && playing;
+  const duckListening = mix.duck && playing && !companion;
   useEffect(() => {
     if (!duckListening) return;
     return listenToVoice(player, (frames) => {
@@ -453,7 +556,7 @@ export function PlayerProvider({ children }: { children: ReactNode }) {
       if (targetRef.current) targetRef.current = { ...targetRef.current, play: false };
       pendingEvent.current = "pause";
       continuing.current = false;
-      player.pause();
+      halt();
       persist();
     };
     const play = () => {
@@ -461,11 +564,13 @@ export function PlayerProvider({ children }: { children: ReactNode }) {
       if (!b) return;
       library.markPlayed(b.id);
       pendingEvent.current = "play";
-      if (targetRef.current) targetRef.current = { ...targetRef.current, play: true };
+      const c = companionRef.current;
+      if (c) setTransport(companionPlay(c, Date.now(), b, timerRef.current));
+      else if (targetRef.current) targetRef.current = { ...targetRef.current, play: true };
       else if (livePosition() >= b.duration - 0.25) goTo(b, 0, true);
       else player.play();
     };
-    const isPlaying = () => player.playing || !!targetRef.current?.play;
+    const isPlaying = () => companionRef.current?.playing ?? (player.playing || !!targetRef.current?.play);
     // Changes the open book's layer for the playing chapter and saves it with the mix.
     const updateBed = (change: (bed: BedSetting, chapterIndex: number | null) => BedSetting) => {
       const b = bookRef.current;
@@ -523,7 +628,10 @@ export function PlayerProvider({ children }: { children: ReactNode }) {
         speedRef.current = r;
         setSpeedState(r);
         pendingEvent.current = "rate";
-        player.setPlaybackRate(r, "high");
+        const c = companionRef.current;
+        const b = bookRef.current;
+        if (c && b) setTransport(companionRate(c, Date.now(), r, b, timerRef.current));
+        else player.setPlaybackRate(r, "high");
         if (bookRef.current) library.saveSpeed(bookRef.current.id, r);
       },
       setSleepMinutes: (m) => setSleep({ kind: "minutes", minutes: m, endsAt: Date.now() + m * 60_000 }),
@@ -544,8 +652,39 @@ export function PlayerProvider({ children }: { children: ReactNode }) {
       },
       pickLayer: (pick) => updateBed((bed, i) => pickLayer(bed, i, pick)),
       setChapterOnly: (on) => updateBed((bed, i) => setChapterOnly(bed, i, on)),
+      companion: !!companion,
+      companionTimer,
+      setCompanionTimer: (on) => {
+        // Re-anchored under the old timer first, so a clock held at a chapter's end moves on from there.
+        const c = companionRef.current;
+        const b = bookRef.current;
+        if (c && b) setTransport(rebase(c, Date.now(), b, timerRef.current));
+        timerRef.current = on;
+        settings.set({ companionTimer: on });
+      },
     };
-  }, [book, chapter, position, playing, target, error, speed, sleep, clock, mix, open, goTo, persist, player, livePosition, followSleep]);
+  }, [
+    book,
+    chapter,
+    position,
+    playing,
+    target,
+    error,
+    speed,
+    sleep,
+    clock,
+    mix,
+    open,
+    goTo,
+    persist,
+    player,
+    livePosition,
+    followSleep,
+    halt,
+    companion,
+    companionTimer,
+    setTransport,
+  ]);
 
   useEffect(() => {
     remote.current = { play: api.play, pause: api.pause, skip: api.skip };

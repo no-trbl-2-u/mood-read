@@ -16,7 +16,8 @@ import { TopBar } from "@/ui/TopBar";
 // available yet" and go live with their chunks. All its copy lives here.
 
 const COMPANION_CAPTION =
-  "Plays Mood Read's soundscape beside another app. It arrives in a later update; your choice is saved now.";
+  "Plays only Mood Read's soundscape, no narration, beside another app such as Audible. " +
+  "While it is on, the lock screen stays with that app.";
 
 /**
  * The default soundscape's choices, the mixer's Layer chips (src/player/LayerPicker.tsx): Off and each bundled loop.

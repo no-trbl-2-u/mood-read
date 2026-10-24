@@ -10,6 +10,7 @@ import { isReached } from "@/lib/reached";
 import { scoring, scoringStore, useBookScores, useScoringJob } from "@/lib/scoring";
 import { BookmarksSheet } from "@/player/BookmarksSheet";
 import { ChapterRiver } from "@/player/ChapterRiver";
+import { CompanionBand } from "@/player/CompanionBand";
 import { LayerPicker } from "@/player/LayerPicker";
 import { MiniPlayer } from "@/player/MiniPlayer";
 import { ScoringBand } from "@/player/ScoringBand";
@@ -109,6 +110,7 @@ export default function BookScreen() {
           </>
         }
       />
+      {active && p.companion && <CompanionBand timer={p.companionTimer} onTimer={p.setCompanionTimer} />}
       <ScoringBand
         chapters={book.chapters.length}
         job={job}

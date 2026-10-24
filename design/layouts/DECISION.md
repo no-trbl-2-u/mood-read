@@ -266,8 +266,9 @@ Top bar: back "Your shelf", title "Settings". Grouped cards under section labels
 
 - **Downloads:** **"Downloads on Wi-Fi only"** (a switch, on by default); **"Storage"** (value "1.2 GB", a
   chevron, pushes `/downloads`).
-- **Listening:** **"Companion mode"** (a switch, off by default) with the caption "Plays Mood Read's soundscape
-  beside another app. It arrives in a later update; your choice is saved now." (01.14 brings the behaviour);
+- **Listening:** **"Companion mode"** (a switch, off by default) with the caption "Plays only Mood Read's
+  soundscape, no narration, beside another app such as Audible. While it is on, the lock screen stays with that
+  app." (01.14: on, the river shows a companion line under the top bar with its "Chapter timer" switch, inline);
   **"Default soundscape"** (value "Night Wind"), which opens inline into one horizontally scrolling row of the
   layer chips (Off and the bundled loops, the selectable-chip style), never a sheet or a new screen.
 - **Connected accounts:** **"Spotify"**, shown disabled at 55% with the value **"Not available yet"** (the
