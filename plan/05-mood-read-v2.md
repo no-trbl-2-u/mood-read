@@ -125,8 +125,6 @@ Decisions made upfront (do not ask):
 - **A4** One "Build playlist" press downloads every chapter's piece with progress; afterwards the book plays offline
   from any chapter, each chapter's piece looping until that chapter ends.
 - **A5** Changing a chapter's pick downloads the new piece and releases the old one.
-- **A6** Downloads show progress and can be paused, resumed and retried; Wi-Fi-only is on by default; a storage
-  meter shows books and music apart.
 - **A7** "Remove download" deletes a book's file and keeps the book, its position, bookmarks, moods, picks and mix;
   a LibriVox book downloads again in one tap, an imported one asks for its file again.
 - **A8** Removing or deleting a book deletes each of its pieces unless another book still on the device has that
@@ -171,7 +169,7 @@ All answered; none is open.
   and 05.15 wait in the Held lane.
 
 ## Chunks
-Measure: 20 open · 0 closed · next A21
+Measure: 19 open · 1 closed · next A21
 
 - [ ] **05.1** The music catalog: manifest, R2 hosting, and `catalog:add` through the rights-checker · M ·
   closes A1 · needs — · secrets CLOUDFLARE_S3_ACCESS_KEY_ID, CLOUDFLARE_S3_SECRET_ACCESS_KEY, S3_API_ENDPOINT
@@ -180,17 +178,13 @@ Measure: 20 open · 0 closed · next A21
   - Sources the 01.13 study ranks, and D7's hand-picked CC-BY / CC-BY-SA tracks; every one through `catalog:add`.
 - [ ] **05.3** The scorer names catalog pieces only, and re-matches books scored before v2 · M · closes A3 ·
   needs 05.2
-- [ ] **05.6** The download manager: queue, pause and resume, retry, Wi-Fi only, storage meter · M · closes A6 ·
-  needs —
-  - Read `wifiOnly` from `src/lib/settings.ts` (06.3, on by default); add Downloads to the library's overflow menu
-    (`MENU` in `src/ui/OverflowMenu.tsx`) and turn Settings' disabled Storage row into the link to `/downloads`.
-- [ ] **05.4** One button builds and pre-downloads a book's playlist · M · closes A4, A5 · needs 01.10, 05.3, 05.6
+- [ ] **05.4** One button builds and pre-downloads a book's playlist · M · closes A4, A5 · needs 01.10, 05.3
 - [ ] **05.7** Library management: remove a download, keep the book; shared pieces survive deletion · M ·
   closes A7, A8 · needs 05.4
 - [ ] **05.5** Credits, off to the side in the library's overflow menu · S · closes A12 · needs 05.1
   - One line in `MENU` (`src/ui/OverflowMenu.tsx`, 06.3) adds Credits; Settings' disabled Credits row becomes
     its link.
-- [ ] **05.8** Browse and search LibriVox, and download a book into the library · L · closes A9 · needs 05.6
+- [ ] **05.8** Browse and search LibriVox, and download a book into the library · L · closes A9 · needs —
   - The empty library offers "Browse free books" beside "Import a book", as 06.2 draws it.
   - Browse joins the library's overflow menu: one line in `MENU` (`src/ui/OverflowMenu.tsx`, 06.3).
 - [ ] **05.9** Score public-domain books from their own text · M · closes A10 · needs 05.8
