@@ -61,3 +61,4 @@ identity · deleted in <sha>`; recover its text with
 - 2026-10-24 · 01.18 · A pause holds through a file handoff; no button flicker · d2870de2..7defefd4
 - 2026-10-24 · 07.5 · Verdicts reach the proxy as daily counts that order alternates · eecded0e..eecded0e
 - 2026-10-24 · 07 · spec complete: Mood depth: scenes, a bed that enters and leaves, verdicts, seeded moods, a mood lens on the shelf · absorbed into plan/bearings.md standing decisions and the route contract, and identity/decisions/2026.md D18, D19, D22-D32 · deleted in "plan: settle 01.18, 07.5"
+- 2026-10-24 · 01.24 · dropped via oversight: the owner chose OpenAI only (D33) · (this commit)
