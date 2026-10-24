@@ -141,7 +141,6 @@ Decisions made upfront (do not ask):
   transport.
 - **A21** The catalog bucket exists and serves `catalog.json` and its pieces read-only to
   mood-read.pages.dev, and the app reads it from `expo.extra.catalogBaseUrl`.
-- **A22** Browse opens on "Popular on LibriVox", pre-scored books first, before any search.
 
 ## Open questions
 
@@ -160,7 +159,7 @@ All answered; none is open.
   and 05.15 wait in the Held lane.
 
 ## Chunks
-Measure: 15 open · 7 closed · next A23
+Measure: 14 open · 8 closed · next A23
 
 - [ ] **05.2** Seed the catalog across every emotion and intensity · L · closes A2 · needs 05.19
   - Sources the 01.13 study ranks, and D7's hand-picked CC-BY / CC-BY-SA tracks; every one through `catalog:add`.
@@ -190,6 +189,3 @@ Measure: 15 open · 7 closed · next A23
     in `src/lib/catalog-api.test.ts`).
   - Name `pnpm catalog:add` and the bucket in `plan/bearings.md`, and give `S3_API_ENDPOINT` and
     `CLOUDFLARE_S3_SECRET_ACCESS_KEY` real descriptions in `nexus.secrets.json`.
-- [ ] **05.20** Browse opens on Popular on LibriVox, pre-scored books first · S ·
-  closes A22 · needs —
-  - As the layout draws it; needs a listing route on the proxy for pre-scored ids (05.10 serves only lookups).
