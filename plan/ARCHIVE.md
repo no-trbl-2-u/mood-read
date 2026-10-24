@@ -31,3 +31,4 @@ identity · deleted in <sha>`; recover its text with
 - 2026-10-23 · 06.2 · Every v2 screen and state drawn, in colour · 97d416fd..4c77e5da
 - 2026-10-23 · 06.6 · The privacy policy is live at /privacy · b75ff827..b75ff827
 - 2026-10-23 · 01.5 · Inline mixer: balance, master, duck under voice, saved per book · 7d90754d..2878edf4
+- 2026-10-24 · 01.7 · Six synthesized soundscapes, picked per book or per chapter · 7604d422..d8c4c8d3

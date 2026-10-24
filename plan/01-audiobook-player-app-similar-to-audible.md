@@ -50,8 +50,9 @@ just name the pieces/scores/songs/instrumentals (It's important that there's no 
   chapter's piece (01.10).
 - **The mixer (01.5):** one balance control between narration and the bed (plus a master volume), saved per book,
   and an optional "duck under voice" that dips the bed while the narrator speaks.
-- **Ambient soundscapes (01.7):** a bundled set of seamless loops (at least rain, fireplace, cityscape, forest,
-  ocean, café), chosen per book or per chapter, through the same layer and mixer.
+- **Ambient soundscapes (01.7):** a bundled set of seamless loops (Rain, Hearth Fire, Night Wind, Tide, Static
+  Hush, Low Café, synthesized by `scripts/make-soundscapes.mjs` and owned by the project), chosen per book or per
+  chapter, through the same layer and mixer.
 - **Mood scoring (01.2):** an AI research agent works out what happens in each chapter from what is written about
   the book: chapter summaries (e.g. SparkNotes), reviews and other sources found by searching on the book's title,
   author and chapter titles (Open questions 4). From that it names the emotions each chapter evokes (a small fixed
@@ -95,8 +96,6 @@ just name the pieces/scores/songs/instrumentals (It's important that there's no 
 - **A2** Speed runs 0.5× to 3× without pitch change (0.5× to 2× on Android and iOS, where the audio engine caps it);
   a sleep timer stops playback after N minutes or at chapter end.
 - **A4** Playback continues in the background and answers lock-screen / media-key controls.
-- **A12** At least six ambient soundscapes loop without an audible seam and can play under a whole book or one
-  chapter, through the same layer and mixer.
 - **A13** Scoring a book names each chapter's emotions with intensities and stores them; rescoring is explicit.
 - **A14** Each scored chapter is assigned one named piece whose mood tags match its emotions (title, composer or
   artist, kind), plus at least two alternates. The piece is meant to loop for the whole chapter: one piece, one
@@ -129,6 +128,7 @@ just name the pieces/scores/songs/instrumentals (It's important that there's no 
   that only the title, author and chapter titles are sent.
 - **A31** A pause pressed while the next chapter's file is still loading holds, and the web play
   button never flickers while audio buffers.
+- **A32** A chapter's own soundscape stays with that chapter when chapters are merged or split.
 
 ## Owner decisions (all answered)
 
@@ -219,17 +219,13 @@ Every question below is answered; none is open. Elsewhere in the plan, "Open que
    no emotions on its card (A21).
 
 ## Chunks
-Measure: 17 open · 14 closed · next A32
+Measure: 17 open · 15 closed · next A33
 
 Build order follows the owner's two-part v1, and the lines below are in that order. **Part 1, the player:** 01.1,
 01.6, 01.3, 01.5, 01.7: the player, then real books in it, then the second layer, its mixer and the soundscapes it
 plays. **Part 2, moods and named pieces:** 01.2, then 01.4. **After v1:** 01.9 (a study), then 01.10 (play the
 pieces). Ids keep the order they were written in. The app itself (Expo at the repo root, the gates) is spec 02.
 
-- [ ] **01.7** Ambient soundscapes: six or more licensed seamless loops · M · closes A12 · partial A18 ·
-  needs —
-  - Per book or per chapter, through the layer and mixer; picked from the mixer's layer chips
-    (`plan/bearings.md` Layout).
 - [ ] **01.2** Chapter moods and named pieces through the scoring proxy · L ·
   closes A13, A14, A15, A19, A20, A22 · needs —
   - The privacy policy (`src/app/privacy.tsx`, 06.6) says the proxy keeps no listener data: turn off
@@ -262,7 +258,7 @@ pieces). Ids keep the order they were written in. The app itself (Expo at the re
     Developer Policy III.5, until the owner revisits it after v1); YouTube playlists through the Data API within
     its daily quota; Apple Music playlists only once the Apple Developer Program is joined (after v1); SoundCloud
     gets a plain soundcloud.com link, no API.
-- [ ] **01.14** Companion mode: Mood Read's bed beside another app · M · closes A27 · needs 01.7, 06.3
+- [ ] **01.14** Companion mode: Mood Read's bed beside another app · M · closes A27 · needs 06.3
   - As `docs/workarounds.md` (Companion mode) sets it: iOS `.playback` with `mixWithOthers`; Android requests no
     `AUDIOFOCUS_GAIN`; Expo needs `doNotMix` for lock-screen controls, so this is a mode the listener turns on,
     never the default. Automatic chapter following is out (iOS has no API; Android's notification access is unclear).
@@ -282,6 +278,8 @@ pieces). Ids keep the order they were written in. The app itself (Expo at the re
   - 01.5's duck under voice: on iOS it samples the narration through expo-audio's tap (untried on a device); on
     Android it is a no-op, since expo-audio samples only with RECORD_AUDIO and Mood Read asks for no microphone.
     Check iOS, and decide whether Android needs another path.
+  - Listen to 01.7's six synthesized soundscapes under narration (nobody has heard them yet): the wrap of each
+    loop, and whether Low Café reads as a distant room rather than a crowd. Swap any that sound wrong.
 - [ ] **01.17** Scoring in the river: start, progress, cap paused, rescore · S ·
   closes A30 · needs 01.2
   - As 06.2 draws it: "Score this book" and its progress in the river's top bar, "Rescore" in its overflow.
@@ -289,3 +287,7 @@ pieces). Ids keep the order they were written in. The app itself (Expo at the re
   closes A31 · needs —
   - Seen in 01.3: `goTo` loads the next file with play on even after a pause; the mini player reads the web
     status flag, which reads paused whenever the element is short of data (the clock no longer does).
+- [ ] **01.19** Per-chapter soundscapes follow chapter merges and splits · S ·
+  closes A32 · needs —
+  - Seen in 01.7: `Mix.chapterBeds` is keyed by chapter index, and 01.6's merge and split shift indices, so an
+    override lands on the wrong chapter.
