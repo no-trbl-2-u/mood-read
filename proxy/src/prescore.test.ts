@@ -13,9 +13,13 @@ import {
   overallEmotions,
   ownerAuthorized,
   parseIds,
+  parseLimit,
   PRESCORE_BUCKET,
   PRESCORE_STEP_RESERVE_USD,
   prescoreBudget,
+  PRESCORED_DEFAULT,
+  PRESCORED_KEEP,
+  PRESCORED_MAX,
 } from "./prescore.ts";
 import { memoryStore } from "./store.ts";
 import { bookKey } from "./validate.ts";
@@ -247,4 +251,62 @@ test("Browse's ids: digits only, deduplicated, at most fifty", () => {
   assert.equal(parseIds("1,abc").ok, false);
   assert.equal(parseIds("01").ok, false);
   assert.equal(parseIds(Array.from({ length: 51 }, (_, i) => String(i + 1)).join(",")).ok, false);
+});
+
+// ---- Browse's default list (05.20, A22) ----
+
+const mood = (intensity: number) => [{ emotion: "wonder" as const, intensity }];
+
+test("the listing: pre-scored books only, most recently pre-scored first, bounded, emotions and numbers alone", async () => {
+  const store = memoryStore();
+  const index = createOverallIndex(store);
+  await index.put({ librivoxId: "1", key: "k1", emotions: mood(0.1), prescore: true });
+  await index.put({ librivoxId: "2", key: "k2", emotions: mood(0.2), prescore: true });
+  await index.put({ librivoxId: "3", key: "k3", emotions: mood(0.3), prescore: true });
+  await index.put({ librivoxId: "9", key: "mine", emotions: mood(0.9), prescore: false });
+  assert.deepEqual(await index.list(10), {
+    books: [
+      { id: "3", emotions: mood(0.3) },
+      { id: "2", emotions: mood(0.2) },
+      { id: "1", emotions: mood(0.1) },
+    ],
+  }, "a listener's own book never appears");
+  assert.deepEqual((await index.list(2)).books.map((b) => b.id), ["3", "2"]);
+
+  // A pre-score run of a listed book moves it to the head; a listener's refresh of it keeps its place.
+  await index.put({ librivoxId: "1", key: "k1", emotions: mood(0.15), prescore: true });
+  assert.deepEqual((await index.list(10)).books.map((b) => b.id), ["1", "3", "2"]);
+  await index.put({ librivoxId: "2", key: "k2", emotions: mood(0.25), prescore: false });
+  assert.deepEqual((await index.list(10)).books.map((b) => b.id), ["1", "3", "2"]);
+  assert.deepEqual((await index.list(10)).books[2].emotions, mood(0.25), "the refresh still updates its emotions");
+
+  // A rescore with nothing scored drops the book from the listing too.
+  await index.put({ librivoxId: "3", key: "k3", emotions: [], prescore: true });
+  assert.deepEqual((await index.list(10)).books.map((b) => b.id), ["1", "2"]);
+
+  for (const b of (await index.list(10)).books) assert.deepEqual(Object.keys(b).sort(), ["emotions", "id"]);
+  const before = JSON.stringify(store.keys().sort());
+  await index.list(10);
+  assert.equal(JSON.stringify(store.keys().sort()), before, "listing writes nothing");
+});
+
+test("the listing never returns more than its maximum, and its order stays bounded however many are pre-scored", async () => {
+  const store = memoryStore();
+  const index = createOverallIndex(store);
+  for (let i = 1; i <= PRESCORED_KEEP + 30; i++) await index.put({ librivoxId: String(i), key: `k${i}`, emotions: mood(0.5), prescore: true });
+  assert.equal((await index.list(1000)).books.length, PRESCORED_MAX);
+  assert.equal((await index.list(0)).books.length, 1);
+  assert.equal((await index.list(Number.NaN)).books.length, PRESCORED_DEFAULT);
+  assert.equal((await index.list(PRESCORED_MAX)).books[0].id, String(PRESCORED_KEEP + 30), "newest first");
+  assert.equal((await store.get<string[]>("order"))!.length, PRESCORED_KEEP);
+  // A book that fell off the order is still found by Browse's lookup.
+  assert.ok((await index.get(["1"])).books["1"]);
+});
+
+test("the listing's limit: absent is the default, otherwise digits from one to fifty", () => {
+  assert.deepEqual(parseLimit(null), { ok: true, limit: PRESCORED_DEFAULT });
+  assert.deepEqual(parseLimit(""), { ok: true, limit: PRESCORED_DEFAULT });
+  assert.deepEqual(parseLimit("1"), { ok: true, limit: 1 });
+  assert.deepEqual(parseLimit("50"), { ok: true, limit: 50 });
+  for (const bad of ["0", "51", "-1", "1.5", "abc", "1e2", "9999"]) assert.equal(parseLimit(bad).ok, false, bad);
 });

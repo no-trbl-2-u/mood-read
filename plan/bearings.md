@@ -67,7 +67,7 @@ bare `pnpm add`, so versions match the SDK.
 |---|---|---|---|---|
 | 01 | GitHub | the repo, the cloud loop (`march.yml`, `next.yml`, `heartbeat.yml`), Actions secrets | `GH_TOKEN` | live |
 | 02 | Cloudflare Pages | the web build's deploys (02.3), project `mood-read` | `CLOUDFLARE_API_TOKEN`, `CLOUDFLARE_ACCOUNT_ID` | live |
-| 06 | Cloudflare Workers | the scoring proxy, Worker `mood-read-proxy` (`proxy/wrangler.jsonc`; 02.4, 01.2): three Durable Objects (`BookJob` per book: job, progress, cache; `SpendMeter`; `PrescoreIndex`, 05.10: the pre-scored books' overall emotions), Workers Logs off, `MONTHLY_CAP_USD` and `OPENAI_MODEL` as vars | `CLOUDFLARE_S3_ACCESS_KEY_ID`, `CLOUDFLARE_S3_SECRET_ACCESS_KEY`, `S3_API_ENDPOINT`, `OPENAI_API_KEY`, `BRAVE_SEARCH_API_KEY`, `PRESCORE_TOKEN` (05.10, the owner's pre-scoring secret) (pushed by `pnpm secrets:sync`) | live (the 01.2 proxy waits on the owner's deploy) |
+| 06 | Cloudflare Workers | the scoring proxy, Worker `mood-read-proxy` (`proxy/wrangler.jsonc`; 02.4, 01.2): three Durable Objects (`BookJob` per book: job, progress, cache; `SpendMeter`; `PrescoreIndex`, 05.10: the pre-scored books' overall emotions, and their order for Browse's default list, 05.20), Workers Logs off, `MONTHLY_CAP_USD` and `OPENAI_MODEL` as vars | `CLOUDFLARE_S3_ACCESS_KEY_ID`, `CLOUDFLARE_S3_SECRET_ACCESS_KEY`, `S3_API_ENDPOINT`, `OPENAI_API_KEY`, `BRAVE_SEARCH_API_KEY`, `PRESCORE_TOKEN` (05.10, the owner's pre-scoring secret) (pushed by `pnpm secrets:sync`) | live (the 01.2 proxy waits on the owner's deploy) |
 | 03 | AI provider + web search | the scoring proxy's research agent (01.2) | `OPENAI_API_KEY`, `BRAVE_SEARCH_API_KEY`: Worker secrets of `mood-read-proxy` only, never in the app (A22) | OpenAI (model `gpt-5-mini` by default) and Brave Search, chosen 2026-10-23 (Open questions 6); built in 01.2, live once the owner deploys |
 | 04 | Expo / EAS | Android preview APKs on demand (04.1: `pnpm build:android:preview`, `android-preview.yml`) | `EXPO_TOKEN` | live: project `@no.trbl.2.u/mood-read`, keystore held by EAS |
 | 05 | Sentry | error tracking, later | `SENTRY_AUTH_TOKEN` | not used in v1's specs |
@@ -130,6 +130,9 @@ LibriVox book its public LibriVox and Project Gutenberg numbers (05.9).
   GET  /v1/overall?ids=1,2 read only, for Browse: each pre-scored book's overall emotions (top three by mean
                            intensity over its scored chapters) by LibriVox number, never a chapter's; starts no run
                                                                                    -> {books: {"<id>": {emotions}}}
+  GET  /v1/prescored?limit=20  read only, for Browse's default list (05.20): the pre-scored books, most recently
+                           pre-scored first (a listener's refresh keeps a book's place), at most 50 (20 unnamed),
+                           each its LibriVox number and overall emotions; starts no run -> {books: [{id, emotions}]}
   The cap's halves (05.10, proxy/src/prescore.ts): a pre-score step runs only while pre-scoring's own spend plus one
   step's reserve fits in half of MONTHLY_CAP_USD and the month's total plus that reserve fits in the whole cap; a
   listener run starts while the total is under the whole cap, so it may use whatever pre-scoring left.

@@ -195,3 +195,48 @@ test("once pre-scoring's half is spent the Worker answers 429 with the budget an
   const mine = (await (await worker.fetch(post("/v1/score", { ...book, librivoxId: undefined }), env)).json()) as { state: string };
   assert.equal(mine.state, "running");
 });
+
+test("Browse's default list (05.20): the pre-scored books, newest first, read only, no chapter data, never a listener's", async () => {
+  const env = makeEnv();
+  for (const id of ["1234", "5678"]) {
+    const started = (await (await worker.fetch(post("/v1/prescore", { ...book, title: `Book ${id}`, librivoxId: id }, owner), env)).json()) as { jobId: string };
+    await runAlarms(env, started.jobId);
+  }
+  const mine = (await (await worker.fetch(post("/v1/score", { ...book, title: "My Own", librivoxId: "4321" }), env)).json()) as { jobId: string };
+  await runAlarms(env, mine.jobId);
+
+  const objects = env.BOOK_JOBS.objects.size;
+  const month = new Date().toISOString().slice(0, 7);
+  const meter = env.SPEND_METER.objects.get("spend-meter")!.storage;
+  const spent = await meter.get<number>(`spend:${month}`);
+  assert.ok(spent && spent > 0);
+  const calls = outbound.length;
+  const res = await worker.fetch(get("/v1/prescored"), env);
+  assert.equal(res.status, 200);
+  assert.equal(res.headers.get("access-control-allow-origin"), "*");
+  const body = (await res.json()) as { books: { id: string; emotions: { emotion: string }[] }[] };
+  assert.deepEqual(body.books.map((b) => b.id), ["5678", "1234"], "most recently pre-scored first; the listener's own book never");
+  for (const b of body.books) assert.deepEqual(Object.keys(b).sort(), ["emotions", "id"]);
+  assert.deepEqual(body.books[0].emotions.map((e) => e.emotion), ["tension", "dread"]);
+  assert.doesNotMatch(JSON.stringify(body), /Secret|summaries|reviews|scenes|pieces|chapter|Book 1234|Bram/i, "no chapter or book data leaks");
+  assert.deepEqual(((await (await worker.fetch(get("/v1/prescored?limit=1"), env)).json()) as typeof body).books.map((b) => b.id), ["5678"]);
+  assert.equal(env.BOOK_JOBS.objects.size, objects, "listing starts no run");
+  assert.equal(await meter.get<number>(`spend:${month}`), spent, "spends nothing");
+  assert.equal(outbound.length, calls, "and costs nothing");
+});
+
+test("the listing needs no keys, starts nothing, and refuses an unbounded or malformed limit", async () => {
+  const env = makeEnv({ OPENAI_API_KEY: undefined, BRAVE_SEARCH_API_KEY: undefined });
+  const res = await worker.fetch(get("/v1/prescored?limit=50"), env);
+  assert.equal(res.status, 200);
+  assert.deepEqual(await res.json(), { books: [] });
+  for (const bad of ["0", "51", "1000", "abc"]) {
+    const r = await worker.fetch(get(`/v1/prescored?limit=${bad}`), env);
+    assert.equal(r.status, 400, bad);
+    assert.equal(r.headers.get("access-control-allow-origin"), "*");
+  }
+  assert.notEqual((await worker.fetch(post("/v1/prescored", {}), env)).status, 200, "read only: no POST");
+  assert.equal(env.BOOK_JOBS.objects.size, 0);
+  assert.equal(env.SPEND_METER.objects.size, 0);
+  assert.equal(outbound.length, 0);
+});

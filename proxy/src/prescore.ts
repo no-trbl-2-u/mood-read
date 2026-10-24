@@ -31,6 +31,16 @@ export const PRESCORE_STEP_RESERVE_USD = 0.25;
 export const OVERALL_TOP = 3;
 /** The most LibriVox numbers one Browse lookup may ask for (a page of results is 20). */
 export const OVERALL_MAX_IDS = 50;
+/** How many pre-scored books Browse's default list asks for when it names no limit (05.20, A22). */
+export const PRESCORED_DEFAULT = 20;
+/** The most pre-scored books one listing may return (05.20): a bounded read, like OVERALL_MAX_IDS. */
+export const PRESCORED_MAX = 50;
+/**
+ * How many LibriVox numbers the index's order keeps, most recently pre-scored first: more than PRESCORED_MAX, so a
+ * listing still fills when a few at the head have been dropped, and bounded, so the one stored value never grows past
+ * a Durable Object value's size however many books the owner pre-scores.
+ */
+export const PRESCORED_KEEP = 200;
 /** The shortest owner token accepted: a short one refuses everything rather than guard pre-scoring weakly. */
 export const MIN_TOKEN_LENGTH = 32;
 
@@ -106,14 +116,26 @@ export type IndexPut = { librivoxId: string; key: string; emotions: EmotionScore
 /** What Browse reads: per LibriVox number asked for and pre-scored, the book's overall emotions; nothing else. */
 export type OverallView = { books: Record<string, { emotions: EmotionScore[] }> };
 
+/**
+ * Browse's default list (05.20, A22): the pre-scored books, most recently pre-scored first, each its LibriVox number
+ * and overall emotions (the same per-book shape as OverallView) and nothing else. An array, so the order survives JSON
+ * (an object keyed by digit strings would come back in numeric order).
+ */
+export type PrescoredList = { books: { id: string; emotions: EmotionScore[] }[] };
+
 const entryKey = (librivoxId: string) => `lv:${librivoxId}`;
+/** The index's order: LibriVox numbers, most recently pre-scored first, at most PRESCORED_KEEP. */
+const ORDER_KEY = "order";
 
 /**
  * The pre-scored books, by LibriVox number (in production one Durable Object's storage, index.ts). A pre-score run
  * adds its book; any later run of the same book (same cache key, a listener's rescore say) refreshes it. A listener's
  * own book that was never pre-scored is never added, so Browse never shows what some listener chose to score.
+ * The index also keeps an order (05.20): a pre-score run moves its book to the head; a listener's refresh of a
+ * pre-scored book leaves its place alone, so the list's order never tells which book some listener rescored.
  */
 export function createOverallIndex(store: Store) {
+  const readOrder = async () => (await store.get<string[]>(ORDER_KEY)) ?? [];
   return {
     async put(p: IndexPut): Promise<void> {
       if (!isCatalogId(p.librivoxId)) return;
@@ -125,11 +147,35 @@ export function createOverallIndex(store: Store) {
         .filter((e) => (EMOTIONS as readonly string[]).includes(e.emotion) && Number.isFinite(e.intensity) && e.intensity > 0)
         .slice(0, OVERALL_TOP)
         .map((e) => ({ emotion: e.emotion, intensity: round2(Math.min(1, e.intensity)) }));
+      const order = await readOrder();
       if (!emotions.length) {
         await store.delete(k);
+        if (order.includes(p.librivoxId)) await store.put(ORDER_KEY, order.filter((id) => id !== p.librivoxId));
         return;
       }
       await store.put(k, { key: p.key, emotions } satisfies Entry);
+      if (p.prescore) {
+        await store.put(ORDER_KEY, [p.librivoxId, ...order.filter((id) => id !== p.librivoxId)].slice(0, PRESCORED_KEEP));
+      } else if (!order.includes(p.librivoxId) && order.length < PRESCORED_KEEP) {
+        // A book indexed before the order existed joins at the tail, never the head, on a listener's refresh.
+        await store.put(ORDER_KEY, [...order, p.librivoxId]);
+      }
+    },
+
+    /**
+     * Reads only (05.20): up to `limit` pre-scored books (clamped to 1..PRESCORED_MAX), most recently pre-scored
+     * first. No run starts, nothing is written; a number whose entry is gone is skipped.
+     */
+    async list(limit: number): Promise<PrescoredList> {
+      const n = Math.min(PRESCORED_MAX, Math.max(1, Math.floor(Number.isFinite(limit) ? limit : PRESCORED_DEFAULT)));
+      const books: PrescoredList["books"] = [];
+      for (const id of await readOrder()) {
+        if (books.length >= n) break;
+        if (!isCatalogId(id)) continue;
+        const e = await store.get<Entry>(entryKey(id));
+        if (e?.emotions?.length) books.push({ id, emotions: e.emotions });
+      }
+      return { books };
     },
 
     /** Reads only: no run starts, nothing is written. Unknown numbers are left out. */
@@ -143,6 +189,14 @@ export function createOverallIndex(store: Store) {
       return { books };
     },
   };
+}
+
+/** The `?limit=` of a listing (05.20): absent is PRESCORED_DEFAULT; otherwise digits, 1 to PRESCORED_MAX. */
+export function parseLimit(raw: string | null): { ok: true; limit: number } | { ok: false; error: string } {
+  if (raw === null || raw === "") return { ok: true, limit: PRESCORED_DEFAULT };
+  const n = /^[0-9]{1,3}$/.test(raw) ? Number(raw) : NaN;
+  if (!(n >= 1 && n <= PRESCORED_MAX)) return { ok: false, error: `limit must be a number from 1 to ${PRESCORED_MAX}` };
+  return { ok: true, limit: n };
 }
 
 /** The LibriVox numbers in a `?ids=1,2,3` query, or an error: digits only, at most OVERALL_MAX_IDS. */

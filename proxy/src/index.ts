@@ -15,7 +15,7 @@ import type { BookRequest, JobView } from "./contract.ts";
 import { route, type Jobs } from "./http.ts";
 import { createBookJob } from "./job.ts";
 import { capFrom, createMeter, type Meter } from "./meter.ts";
-import { createOverallIndex, overallEmotions, prescoreBudget, type IndexPut, type OverallView } from "./prescore.ts";
+import { createOverallIndex, overallEmotions, prescoreBudget, type IndexPut, type OverallView, type PrescoredList } from "./prescore.ts";
 import { routePrescore, type PrescoreDeps } from "./prescore-http.ts";
 import type { Store } from "./store.ts";
 import { gutenbergSource } from "./text-research.ts";
@@ -93,6 +93,12 @@ function prescoreDeps(env: Env): PrescoreDeps {
       if (!stub) return { books: {} };
       const res = await stub.fetch(`https://index/get?ids=${ids.join(",")}`);
       return (await res.json()) as OverallView;
+    },
+    async list(limit) {
+      const stub = indexStub(env);
+      if (!stub) return { books: [] };
+      const res = await stub.fetch(`https://index/list?limit=${limit}`);
+      return (await res.json()) as PrescoredList;
     },
   };
 }
@@ -187,6 +193,7 @@ export class PrescoreIndex {
       await index.put((await request.json()) as IndexPut);
       return new Response(null, { status: 204 });
     }
+    if (url.pathname === "/list") return Response.json(await index.list(Number(url.searchParams.get("limit"))));
     return Response.json(await index.get((url.searchParams.get("ids") ?? "").split(",")));
   }
 }

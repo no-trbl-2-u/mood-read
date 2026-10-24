@@ -5,12 +5,15 @@
 //                            -> { jobId, state, progress, budget }, or 429 { error, budget } once the half is spent
 //   GET  /v1/overall?ids=1,2 public, read only: each pre-scored book's overall emotions by LibriVox number
 //                            -> { books: { "<id>": { emotions } } }; never starts a run
+//   GET  /v1/prescored?limit=20  public, read only (05.20, A22): the pre-scored books for Browse's default list, most
+//                            recently pre-scored first, at most 50 (20 when no limit is named)
+//                            -> { books: [{ id, emotions }] }; never starts a run, spends nothing
 //
 // The pre-score route sends no CORS headers and the scoring routes' CORS never allows an Authorization header, so no
 // page in a browser can call it; the app holds no token (agents.md rule 6, A22) and its /v1/score body cannot carry a
 // pre-score flag (validate.ts refuses every unknown field).
 import type { BookRequest, JobView } from "./contract.ts";
-import { ownerAuthorized, parseIds, type OverallView, type PrescoreBudget } from "./prescore.ts";
+import { ownerAuthorized, parseIds, parseLimit, type OverallView, type PrescoreBudget, type PrescoredList } from "./prescore.ts";
 import { bookKey, LIMITS, parseBookRequest } from "./validate.ts";
 
 export type PrescoreDeps = {
@@ -21,6 +24,8 @@ export type PrescoreDeps = {
   start(key: string, book: BookRequest): Promise<JobView>;
   /** Reads the index; never starts a run. */
   overall(ids: string[]): Promise<OverallView>;
+  /** Lists the index, most recently pre-scored first; never starts a run. */
+  list(limit: number): Promise<PrescoredList>;
 };
 
 /** What POST /v1/prescore answers: the job without its chapters, and the budget. */
@@ -58,10 +63,17 @@ async function overall(url: URL, deps: PrescoreDeps): Promise<Response> {
   return json(200, await deps.overall(ids.ids), OVERALL_HEADERS);
 }
 
+async function prescored(url: URL, deps: PrescoreDeps): Promise<Response> {
+  const limit = parseLimit(url.searchParams.get("limit"));
+  if (!limit.ok) return json(400, { error: limit.error }, OVERALL_HEADERS);
+  return json(200, await deps.list(limit.limit), OVERALL_HEADERS);
+}
+
 /** Answers the pre-score routes; null for any other request, which http.ts's route() then handles. */
 export async function routePrescore(request: Request, deps: () => PrescoreDeps): Promise<Response | null> {
   const url = new URL(request.url);
   if (url.pathname === "/v1/prescore" && request.method === "POST") return prescore(request, deps());
   if (url.pathname === "/v1/overall" && request.method === "GET") return overall(url, deps());
+  if (url.pathname === "/v1/prescored" && request.method === "GET") return prescored(url, deps());
   return null;
 }
