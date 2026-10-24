@@ -41,6 +41,7 @@
     ],
     "extra": {
       "scoringProxyUrl": "https://mood-read-proxy.invalid",
+      "catalogBaseUrl": "https://mood-read-catalog.invalid",
       "eas": {
         "projectId": "90c02664-ad75-4ddd-9195-4d385e34be8f"
       }
