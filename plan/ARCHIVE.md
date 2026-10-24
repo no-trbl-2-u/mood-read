@@ -44,3 +44,6 @@ identity · deleted in <sha>`; recover its text with
 - 2026-10-24 · 05.8 · Browse searches LibriVox and downloads a book onto the shelf · 265e46f8..4ae007cf
 - 2026-10-24 · 05.1 · Catalog contract, A1 validator, catalog:add and the app reader · 7009ca4a..20117474
 - 2026-10-24 · 07.1 · Scorer returns ordered scenes with spans, one piece each · 5f3809de..9a3c3304
+- 2026-10-24 · 01.21 · The proxy limits new runs per client and early rescores · 15e085b5..f973035f
+- 2026-10-24 · 01.19 · A chapter's own soundscape follows merges and splits · a1454d3a..6142f8ad
+- 2026-10-24 · 01.22 · A reached chapter's mood card opens from its chips · 7181b230..7181b230

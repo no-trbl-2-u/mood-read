@@ -104,12 +104,8 @@ just name the pieces/scores/songs/instrumentals (It's important that there's no 
   a playlist in their own YouTube or Apple Music account.
 - **A31** A pause pressed while the next chapter's file is still loading holds, and the web play
   button never flickers while audio buffers.
-- **A32** A chapter's own soundscape stays with that chapter when chapters are merged or split.
 - **A33** (Claude since D15: read "OpenAI's and Brave's" below as Anthropic's.) Scoring a real book on mood-read.pages.dev returns researched chapter moods and named pieces
   from the deployed proxy, with spend metered at OpenAI's and Brave's current prices.
-- **A34** A caller cannot spend the monthly budget with made-up books or repeated rescores: the proxy
-  limits how often one client starts runs, and rescoring a cached book waits a minimum age.
-- **A35** Tapping a reached chapter's emotion chips opens its mood card in place without moving playback.
 - **A36** Companion mode is checked with Audible on a real iOS and Android phone: both play
   together whichever starts first, through a pause, a call and Bluetooth, the bed keeps playing with the screen
   off, and the narration's lock-screen controls are unchanged when companion mode is off.
@@ -117,6 +113,8 @@ just name the pieces/scores/songs/instrumentals (It's important that there's no 
   own web search: one `ANTHROPIC_API_KEY` Worker secret, no OpenAI or Brave key, the model one config value,
   spend metered at Anthropic's rates (tokens and searches) against the same monthly cap, and the hermetic tests
   green on a fake Claude client.
+- **A38** When the proxy answers 429, the river says when scoring can start again (from Retry-After) instead
+  of "unreachable", and starting again before then waits rather than calling the proxy.
 
 ## Owner decisions (all answered)
 
@@ -207,7 +205,7 @@ Every question below is answered; none is open. Elsewhere in the plan, "Open que
    no emotions on its card (A21).
 
 ## Chunks
-Measure: 12 open · 25 closed · next A38
+Measure: 10 open · 28 closed · next A39
 
 Build order follows the owner's two-part v1, and the lines below are in that order. **Part 1, the player:** 01.1,
 01.6, 01.3, 01.5, 01.7: the player, then real books in it, then the second layer, its mixer and the soundscapes it
@@ -251,12 +249,8 @@ pieces). Ids keep the order they were written in. The app itself (Expo at the re
   closes A31 · needs —
   - Seen in 01.3: `goTo` loads the next file with play on even after a pause; the mini player reads the web
     status flag, which reads paused whenever the element is short of data (the clock no longer does).
-- [ ] **01.19** Per-chapter soundscapes follow chapter merges and splits · S ·
-  closes A32 · needs —
-  - Seen in 01.7: `Mix.chapterBeds` is keyed by chapter index, and 01.6's merge and split shift indices, so an
-    override lands on the wrong chapter.
 - [ ] **01.20** Turn scoring on: keys to the Worker, deploy the proxy, set the app's proxy URL · S ·
-  closes A33 · needs 01.21, 01.24 · secrets ANTHROPIC_API_KEY
+  closes A33 · needs 01.24 · secrets ANTHROPIC_API_KEY
   - The owner chose (2026-10-24) to go live on Claude, after the rate limit: the deploy below syncs
     `ANTHROPIC_API_KEY` instead of the OpenAI and Brave keys, and the price check is against Anthropic's rates.
   - The owner's production step 01.2 left (it spends against the $20 cap): `pnpm secrets:sync` through the vault,
@@ -264,13 +258,6 @@ pieces). Ids keep the order they were written in. The app itself (Expo at the re
     `expo.extra.scoringProxyUrl` in `app.json` set to the Worker's URL (the placeholder resolves nowhere).
   - Check `proxy/src/meter.ts`'s prices (gpt-5-mini at $0.25 / $2 per million tokens, Brave at $0.005 a query)
     against the providers' current rates, and score one real book end to end.
-- [ ] **01.21** Rate-limit scoring runs and rescores on the proxy · S · closes A34 · needs —
-  - Seen in 01.2: anyone can call `/v1/score` or `/v1/rescore` with made-up books up to the cap; rescore re-buys
-    a cached book. Also meter usage on failed OpenAI calls, which today go uncounted.
-- [ ] **01.22** A reached chapter's mood card opens from its chips without moving playback · S ·
-  closes A35 · needs —
-  - `design/layouts/DECISION.md` suggests it; 01.4 expands only the playing row. An unreached row still never
-    expands.
 - [ ] **01.23** Companion mode beside Audible on a real phone · S · closes A36 ·
   needs —
   - The owner's check on 04.1's preview APK (and an iPhone when iOS builds exist); 01.14 built and tested the rest
@@ -279,7 +266,7 @@ pieces). Ids keep the order they were written in. The app itself (Expo at the re
     which companion mode turns off. If the bed stops, decide between a foreground service with no media session
     and accepting the limit; note the limit in `docs/workarounds.md`.
 - [ ] **01.24** The scoring proxy moves to Claude: one key, Claude's web search · M ·
-  closes A37 · needs 01.21 · secrets ANTHROPIC_API_KEY
+  closes A37 · needs — · secrets ANTHROPIC_API_KEY
   - `proxy/src/clients.ts` gains a Claude client on `@anthropic-ai/sdk` (structured outputs through
     `output_config.format`); research replaces Brave with the `web_search` server tool, keeping only links and the
     model's findings, never page text (Open questions 4).
@@ -287,3 +274,8 @@ pieces). Ids keep the order they were written in. The app itself (Expo at the re
     `proxy/src/meter.ts` prices tokens and web searches per Anthropic's published rates.
   - No-vocals checks, chapter matching, caching and the cap stay as 01.2 built them; the OpenAI and Brave clients
     and their secrets go.
+- [ ] **01.25** The app reads the proxy's 429 and Retry-After as "try later" · S · closes A38 ·
+  needs —
+  - Seen in 01.21: `src/lib/scoring-api.ts` throws on any non-OK answer and `scoring-runner` marks the job
+    unreachable; a 429 body is `{error, reason, retryAfterSeconds}` (`reason` is `client-limit`, `hourly-limit` or
+    `rescore-too-soon`).
