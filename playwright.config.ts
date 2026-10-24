@@ -1,8 +1,9 @@
 // The hermetic e2e: Chromium only, over the web build (dist/, from `pnpm build`) served on localhost:4173 by
-// e2e/serve.mjs. No network beyond localhost: the specs abort and fail any other origin.
+// e2e/serve.mjs. No network beyond localhost: the specs abort and fail any other origin. `E2E_PORT` moves the
+// server off 4173, so two worktrees' gates can run at once (plan/AUDIT.md, two gates collide on 4173).
 import { defineConfig, devices } from "@playwright/test";
 
-const PORT = 4173;
+const PORT = Number(process.env.E2E_PORT) || 4173;
 const BASE_URL = `http://127.0.0.1:${PORT}`;
 
 export default defineConfig({
