@@ -116,8 +116,6 @@ Decisions made upfront (do not ask):
 
 ## Acceptance
 
-- **A1** Every piece in the catalog carries a license that allows playing it in the app (CC0, public domain, CC-BY or
-  CC-BY-SA), a rights-checker `yes`, vocals `none` and mood tags; nothing else enters it.
 - **A2** The catalog covers every emotion in the scorer's fixed set at low and high intensity, with at least three
   pieces each.
 - **A3** Every piece the scorer names, as the main piece or an alternate, is a catalog piece; a book scored before
@@ -149,6 +147,8 @@ Decisions made upfront (do not ask):
   bookmarks, moods, picks and mixes onto matching books.
 - **A20** Mood Read appears in Android Auto (and in CarPlay once iOS ships) with its library, chapters and
   transport.
+- **A21** The catalog bucket exists and serves `catalog.json` and its pieces read-only to
+  mood-read.pages.dev, and the app reads it from `expo.extra.catalogBaseUrl`.
 
 ## Open questions
 
@@ -167,19 +167,16 @@ All answered; none is open.
   and 05.15 wait in the Held lane.
 
 ## Chunks
-Measure: 18 open · 2 closed · next A21
+Measure: 18 open · 3 closed · next A22
 
-- [ ] **05.1** The music catalog: manifest, R2 hosting, and `catalog:add` through the rights-checker · M ·
-  closes A1 · needs — · secrets CLOUDFLARE_S3_ACCESS_KEY_ID, CLOUDFLARE_S3_SECRET_ACCESS_KEY, S3_API_ENDPOINT
-  - Contract first: `CatalogPiece` and `catalog.json` are pinned here; every later chunk reads them.
-- [ ] **05.2** Seed the catalog across every emotion and intensity · L · closes A2 · needs 05.1
+- [ ] **05.2** Seed the catalog across every emotion and intensity · L · closes A2 · needs 05.19
   - Sources the 01.13 study ranks, and D7's hand-picked CC-BY / CC-BY-SA tracks; every one through `catalog:add`.
 - [ ] **05.3** The scorer names catalog pieces only, and re-matches books scored before v2 · M · closes A3 ·
   needs 05.2
 - [ ] **05.4** One button builds and pre-downloads a book's playlist · M · closes A4, A5 · needs 01.10, 05.3
 - [ ] **05.7** Library management: remove a download, keep the book; shared pieces survive deletion · M ·
   closes A7, A8 · needs 05.4
-- [ ] **05.5** Credits, off to the side in the library's overflow menu · S · closes A12 · needs 05.1
+- [ ] **05.5** Credits, off to the side in the library's overflow menu · S · closes A12 · needs —
   - One line in `MENU` (`src/ui/OverflowMenu.tsx`, 06.3) adds Credits; Settings' disabled Credits row becomes
     its link.
 - [ ] **05.9** Score public-domain books from their own text · M · closes A10 · needs —
@@ -200,3 +197,11 @@ Measure: 18 open · 2 closed · next A21
 - [ ] **05.17** Export and import the library, never the audio · S · closes A19 · needs 05.7
 - [ ] **05.18** Android Auto, then CarPlay · M · closes A20 · needs 05.14
   - Android Auto lists only apps from Google Play, so this waits on 05.14 (held); CarPlay waits on 05.15.
+- [ ] **05.19** Turn the catalog on: the R2 bucket, public read and the app's catalog URL · S ·
+  closes A21 · needs — · secrets CLOUDFLARE_S3_ACCESS_KEY_ID, CLOUDFLARE_S3_SECRET_ACCESS_KEY, S3_API_ENDPOINT
+  - The owner's production step 05.1 left (`docs/catalog.md`): bucket `mood-read-catalog`, an R2 token with
+    Object Read and Write on it, public read (r2.dev or a custom domain) with a CORS GET rule for
+    `https://mood-read.pages.dev`, then `expo.extra.catalogBaseUrl` in `app.json` (and the placeholder assertion
+    in `src/lib/catalog-api.test.ts`).
+  - Name `pnpm catalog:add` and the bucket in `plan/bearings.md`, and give `S3_API_ENDPOINT` and
+    `CLOUDFLARE_S3_SECRET_ACCESS_KEY` real descriptions in `nexus.secrets.json`.
