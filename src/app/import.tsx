@@ -4,7 +4,7 @@ import { Pressable, ScrollView, StyleSheet, Text, View } from "react-native";
 
 import { importFiles, pickFiles, pickFolder, type ImportOutcome, type ImportStep } from "@/lib/library";
 import type { DrmKind } from "@/lib/meta/types";
-import { colors, radii, spacing } from "@/ui/theme";
+import { colors, radii, spacing, typography } from "@/ui/theme";
 import { TopBar } from "@/ui/TopBar";
 
 // Import (spec 01 A5-A7; design/layouts/DECISION.md "Import note"): a full screen pushed from the library. The
@@ -90,6 +90,9 @@ export default function ImportScreen() {
           The title, author and cover come from the files&apos; tags, and the chapters from their chapter markers. The
           files stay on this device.
         </Text>
+        <Pressable testID="privacy-link" role="link" style={styles.link} onPress={() => router.push("/privacy")}>
+          <Text style={styles.linkText}>Privacy policy</Text>
+        </Pressable>
         {error && (
           <Text style={styles.error} role="alert">
             {error}
@@ -186,6 +189,8 @@ const styles = StyleSheet.create({
   heading: { color: colors.text, fontSize: 20, fontWeight: "700" },
   text: { color: colors.text, fontSize: 16, lineHeight: 22 },
   muted: { color: colors.textMuted, fontSize: 14, lineHeight: 20 },
+  link: { alignSelf: "flex-start", minHeight: spacing.xxl, justifyContent: "center" },
+  linkText: { ...typography.label, color: colors.accent, textDecorationLine: "underline" },
   error: { color: colors.danger, fontSize: 14, lineHeight: 20 },
   more: { gap: spacing.sm },
   tile: {
