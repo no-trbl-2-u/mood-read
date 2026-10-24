@@ -264,6 +264,10 @@ pieces). Ids keep the order they were written in. The app itself (Expo at the re
     `expo.extra.scoringProxyUrl` in `app.json` set to the Worker's URL (the placeholder resolves nowhere).
   - Check `proxy/src/meter.ts`'s prices (gpt-5-mini at $0.25 / $2 per million tokens, Brave at $0.005 a query)
     against the providers' current rates, and score one real book end to end.
+  - 05.10's pre-scoring rides the same deploy (it creates `PrescoreIndex`): set `PRESCORE_TOKEN` (64 hex) in the
+    vault before `pnpm secrets:sync`, then `pnpm prescore --dry-run` and one real
+    `node scripts/secrets.mjs run --only PRESCORE_TOKEN -- pnpm prescore`; check once that archive.org's search
+    returns `call_number`, or Browse rows never read Scored.
 - [ ] **01.21** Rate-limit scoring runs and rescores on the proxy · S · closes A34 · needs —
   - Seen in 01.2: anyone can call `/v1/score` or `/v1/rescore` with made-up books up to the cap; rescore re-buys
     a cached book. Also meter usage on failed OpenAI calls, which today go uncounted.

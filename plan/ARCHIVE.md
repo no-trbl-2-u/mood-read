@@ -51,3 +51,4 @@ identity · deleted in <sha>`; recover its text with
 - 2026-10-24 · 07.7 · Shelf shows each book's mood fingerprint; Mood filter finds books · e77ac9f4..e77ac9f4
 - 2026-10-24 · 05.9 · Public-domain books score from their own Gutenberg text · da2c3390..ed19936a
 - 2026-10-24 · 07.8 · Your soundtrack lists every piece played, by book · a35118d3..a35118d3
+- 2026-10-24 · 05.10 · Browse shows pre-scored books' overall moods; prescore within half the cap · 2157748e..a7f53301

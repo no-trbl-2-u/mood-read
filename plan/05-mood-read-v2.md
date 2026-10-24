@@ -127,8 +127,6 @@ Decisions made upfront (do not ask):
   a LibriVox book downloads again in one tap, an imported one asks for its file again.
 - **A8** Removing or deleting a book deletes each of its pieces unless another book still on the device has that
   piece in its playlist.
-- **A11** Browse shows a pre-scored book's overall emotions, never a chapter's, and pre-scoring stays within half of
-  the monthly cap.
 - **A13** A book in one long file can be split on the device into one file per chapter, keeping its chapters,
   position and bookmarks.
 - **A15** With a `yes` verdict, a connected Spotify account gets one playlist per chapter of instrumental tracks
@@ -143,6 +141,7 @@ Decisions made upfront (do not ask):
   transport.
 - **A21** The catalog bucket exists and serves `catalog.json` and its pieces read-only to
   mood-read.pages.dev, and the app reads it from `expo.extra.catalogBaseUrl`.
+- **A22** Browse opens on "Popular on LibriVox", pre-scored books first, before any search.
 
 ## Open questions
 
@@ -161,7 +160,7 @@ All answered; none is open.
   and 05.15 wait in the Held lane.
 
 ## Chunks
-Measure: 15 open · 6 closed · next A22
+Measure: 15 open · 7 closed · next A23
 
 - [ ] **05.2** Seed the catalog across every emotion and intensity · L · closes A2 · needs 05.19
   - Sources the 01.13 study ranks, and D7's hand-picked CC-BY / CC-BY-SA tracks; every one through `catalog:add`.
@@ -170,8 +169,6 @@ Measure: 15 open · 6 closed · next A22
 - [ ] **05.4** One button builds and pre-downloads a book's playlist · M · closes A4, A5 · needs 01.10, 05.3
 - [ ] **05.7** Library management: remove a download, keep the book; shared pieces survive deletion · M ·
   closes A7, A8 · needs 05.4
-- [ ] **05.10** Pre-scored books and their moods in Browse · M · closes A11 · needs —
-  - Throttle pre-scoring: Gutenberg's terms flag more than about 100 downloads a day (seen in 05.9).
 - [ ] **05.11** Split a one-file book into chapter files on the device · M · closes A13 · needs 04.1
 - [ ] **05.13** Spotify chapter playlists, sized to each chapter · M · closes A15 · needs 01.11, 05.3
   - Rewrite the privacy policy's Spotify section (`src/app/privacy.tsx`) to say what a connected account shares.
@@ -193,3 +190,6 @@ Measure: 15 open · 6 closed · next A22
     in `src/lib/catalog-api.test.ts`).
   - Name `pnpm catalog:add` and the bucket in `plan/bearings.md`, and give `S3_API_ENDPOINT` and
     `CLOUDFLARE_S3_SECRET_ACCESS_KEY` real descriptions in `nexus.secrets.json`.
+- [ ] **05.20** Browse opens on Popular on LibriVox, pre-scored books first · S ·
+  closes A22 · needs —
+  - As the layout draws it; needs a listing route on the proxy for pre-scored ids (05.10 serves only lookups).
