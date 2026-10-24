@@ -8,6 +8,7 @@ It now also covers SoundCloud, for chunk 01.12 (closes A25). Its terms were read
 one question the others do not raise: can single Creative Commons tracks from it join the royalty-free catalog.
 
 What to do instead: docs/workarounds.md (01.13).
+Spotify chapter playlists, the rights check: docs/spotify-playlists.md (05.12).
 
 ## 1. Bottom line
 
