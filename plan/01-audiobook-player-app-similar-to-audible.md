@@ -96,26 +96,13 @@ just name the pieces/scores/songs/instrumentals (It's important that there's no 
 - **A2** Speed runs 0.5× to 3× without pitch change (0.5× to 2× on Android and iOS, where the audio engine caps it);
   a sleep timer stops playback after N minutes or at chapter end.
 - **A4** Playback continues in the background and answers lock-screen / media-key controls.
-- **A13** Scoring a book names each chapter's emotions with intensities and stores them; rescoring is explicit.
-- **A14** Each scored chapter is assigned one named piece whose mood tags match its emotions (title, composer or
-  artist, kind), plus at least two alternates. The piece is meant to loop for the whole chapter: one piece, one
-  chapter.
-- **A15** Scoring runs in the background with progress and survives the app closing; an unscored chapter still plays.
 - **A16** Each chapter's mood card shows its emotions, its named piece and the alternates, and saves the listener's
   pick (or `auto`).
 - **A17** (After v1, 01.10.) The chapter's piece, meaning the saved pick or else auto, loops under that chapter on
   every listen.
 - **A18** Every piece and soundscape Mood Read plays carries a license that allows playing it in the app.
-- **A19** Each scored chapter's emotions come from research on the book (summaries, reviews and similar sources),
-  cite the sources they came from, and are found without uploading or transcribing the book's audio. A chapter
-  with too little written about it is shown as unscored, not given a guessed mood.
-- **A20** Every named piece is instrumental, with no vocals: no singing and no spoken words. A piece with vocals is
-  never named, as the main piece or as an alternate.
 - **A21** Mood Read never shows a chapter's events, only its emotions; a chapter's mood card shows its emotions only
   once the listener has reached that chapter (Open questions 7).
-- **A22** No AI or search key ships in the app. Scoring goes through the proxy, which receives only title, author
-  and chapter titles, stops starting new research runs at the monthly cap, and returns a book already scored for
-  any listener from its cache without a new run (Open questions 6).
 - **A24** Each chapter's mood card links out to its reference piece ("In the spirit of") on Spotify, YouTube /
   YouTube Music and Apple Music, and Mood Read plays none of it; a listener can save a book's reference pieces as
   a playlist in their own YouTube or Apple Music account.
@@ -129,6 +116,10 @@ just name the pieces/scores/songs/instrumentals (It's important that there's no 
 - **A31** A pause pressed while the next chapter's file is still loading holds, and the web play
   button never flickers while audio buffers.
 - **A32** A chapter's own soundscape stays with that chapter when chapters are merged or split.
+- **A33** Scoring a real book on mood-read.pages.dev returns researched chapter moods and named pieces
+  from the deployed proxy, with spend metered at OpenAI's and Brave's current prices.
+- **A34** A caller cannot spend the monthly budget with made-up books or repeated rescores: the proxy
+  limits how often one client starts runs, and rescoring a cached book waits a minimum age.
 
 ## Owner decisions (all answered)
 
@@ -219,31 +210,21 @@ Every question below is answered; none is open. Elsewhere in the plan, "Open que
    no emotions on its card (A21).
 
 ## Chunks
-Measure: 17 open · 15 closed · next A33
+Measure: 13 open · 21 closed · next A35
 
 Build order follows the owner's two-part v1, and the lines below are in that order. **Part 1, the player:** 01.1,
 01.6, 01.3, 01.5, 01.7: the player, then real books in it, then the second layer, its mixer and the soundscapes it
 plays. **Part 2, moods and named pieces:** 01.2, then 01.4. **After v1:** 01.9 (a study), then 01.10 (play the
 pieces). Ids keep the order they were written in. The app itself (Expo at the repo root, the gates) is spec 02.
 
-- [ ] **01.2** Chapter moods and named pieces through the scoring proxy · L ·
-  closes A13, A14, A15, A19, A20, A22 · needs —
-  - The privacy policy (`src/app/privacy.tsx`, 06.6) says the proxy keeps no listener data: turn off
-    `observability` in `proxy/wrangler.jsonc` (Workers Logs) or log no request detail, and rewrite the policy's
-    "not switched on yet" lines to say what is sent now.
-  - v1 part 2: a research agent reads what is written about the book (Open questions 4) and names each chapter's
-    emotions with intensities and sources, then one no-vocals piece per chapter plus alternates; nothing is
-    played. It runs as a background job, stored per chapter.
-  - Scoring goes through the proxy that holds the key, caps spend and caches each book (Open questions 6,
-    answered): OpenAI with Brave Search, and a $20 monthly cap held as one config value on the proxy.
 - [ ] **01.4** The chapter mood card: emotions, the named piece and alternates, a saved pick over auto · S ·
-  closes A16, A21 · needs 01.2
+  closes A16, A21 · needs —
   - No preview in v1. No events, only emotions, shown once the listener reaches the chapter (Open questions 7,
     answered).
   - The card is the expanded chapter row, inline in the river; an unreached row never expands (`plan/bearings.md`
     Layout).
 - [ ] **01.10** After v1: play the chapter's piece, looped under the narration · M · closes A17, A18 ·
-  needs 01.2, 05.3
+  needs 05.3
   - The pick, else auto, loops for the whole chapter through the layer and mixer, from a licensed source: the
     royalty-free catalog. 01.9 found no compliant path for a connected paid account (`docs/streaming-sources.md`).
   - It plays the catalog piece 05.3 picks for the chapter (D8), with no closest-match search of its own, so it
@@ -283,7 +264,7 @@ pieces). Ids keep the order they were written in. The app itself (Expo at the re
   - Listen to 01.7's six synthesized soundscapes under narration (nobody has heard them yet): the wrap of each
     loop, and whether Low Café reads as a distant room rather than a crowd. Swap any that sound wrong.
 - [ ] **01.17** Scoring in the river: start, progress, cap paused, rescore · S ·
-  closes A30 · needs 01.2
+  closes A30 · needs —
   - As 06.2 draws it: "Score this book" and its progress in the river's top bar, "Rescore" in its overflow.
 - [ ] **01.18** Pause holds through a file handoff; no play-button flicker on web · S ·
   closes A31 · needs —
@@ -293,3 +274,13 @@ pieces). Ids keep the order they were written in. The app itself (Expo at the re
   closes A32 · needs —
   - Seen in 01.7: `Mix.chapterBeds` is keyed by chapter index, and 01.6's merge and split shift indices, so an
     override lands on the wrong chapter.
+- [ ] **01.20** Turn scoring on: keys to the Worker, deploy the proxy, set the app's proxy URL · S ·
+  closes A33 · needs — · secrets OPENAI_API_KEY, BRAVE_SEARCH_API_KEY
+  - The owner's production step 01.2 left (it spends against the $20 cap): `pnpm secrets:sync` through the vault,
+    `wrangler deploy --config proxy/wrangler.jsonc` (creates the `BookJob` and `SpendMeter` Durable Objects), then
+    `expo.extra.scoringProxyUrl` in `app.json` set to the Worker's URL (the placeholder resolves nowhere).
+  - Check `proxy/src/meter.ts`'s prices (gpt-5-mini at $0.25 / $2 per million tokens, Brave at $0.005 a query)
+    against the providers' current rates, and score one real book end to end.
+- [ ] **01.21** Rate-limit scoring runs and rescores on the proxy · S · closes A34 · needs —
+  - Seen in 01.2: anyone can call `/v1/score` or `/v1/rescore` with made-up books up to the cap; rescore re-buys
+    a cached book. Also meter usage on failed OpenAI calls, which today go uncounted.

@@ -179,7 +179,7 @@ Measure: 20 open · 0 closed · next A21
 - [ ] **05.2** Seed the catalog across every emotion and intensity · L · closes A2 · needs 05.1
   - Sources the 01.13 study ranks, and D7's hand-picked CC-BY / CC-BY-SA tracks; every one through `catalog:add`.
 - [ ] **05.3** The scorer names catalog pieces only, and re-matches books scored before v2 · M · closes A3 ·
-  needs 01.2, 05.2
+  needs 05.2
 - [ ] **05.6** The download manager: queue, pause and resume, retry, Wi-Fi only, storage meter · M · closes A6 ·
   needs —
   - Read `wifiOnly` from `src/lib/settings.ts` (06.3, on by default); add Downloads to the library's overflow menu
@@ -193,7 +193,7 @@ Measure: 20 open · 0 closed · next A21
 - [ ] **05.8** Browse and search LibriVox, and download a book into the library · L · closes A9 · needs 05.6
   - The empty library offers "Browse free books" beside "Import a book", as 06.2 draws it.
   - Browse joins the library's overflow menu: one line in `MENU` (`src/ui/OverflowMenu.tsx`, 06.3).
-- [ ] **05.9** Score public-domain books from their own text · M · closes A10 · needs 01.2, 05.8
+- [ ] **05.9** Score public-domain books from their own text · M · closes A10 · needs 05.8
   - Update the privacy policy (`src/app/privacy.tsx`) for the LibriVox / Gutenberg ids the proxy now receives.
 - [ ] **05.10** Pre-scored books and their moods in Browse · M · closes A11 · needs 05.9
 - [ ] **05.11** Split a one-file book into chapter files on the device · M · closes A13 · needs 04.1
