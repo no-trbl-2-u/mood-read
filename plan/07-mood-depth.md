@@ -121,9 +121,6 @@ Decisions made upfront (do not ask):
 - **A6** Verdicts reach the proxy only as `{pieceId, emotions, verdict}` rows with no book, chapter, device or
   time, at most daily, never when "Share what fits" is off; the proxy stores counts only and orders alternates by
   them, demoting a piece with misfits two to one over at least ten verdicts; the privacy policy says so.
-- **A7** An unscored book or chapter offers "Set the mood"; the lit emotions are stored as a listener mood, a piece
-  the device already knows is matched by mood tags (else the soundscape plays and the card says so), nothing is
-  sent to the proxy, and a later `too-little` result keeps the seed while a `scored` result replaces it.
 
 ## Open questions
 
@@ -136,16 +133,12 @@ All answered; none is open.
   could keep; a daily batch with no time is not (decided here, 2026-10-24).
 
 ## Chunks
-Measure: 2 open · 7 closed · next A10
+Measure: 1 open · 8 closed · next A10
 
 - [ ] **07.5** Verdicts as daily aggregates to the proxy, which orders alternates by them · M · closes A6 ·
   needs —
   - `POST /v1/verdicts` in `proxy/src/http.ts` with counts in `proxy/src/store.ts`, rate-limited like `/v1/score`
     (01.21's limiter when it lands, else its own); ordering in `proxy/src/pieces.ts`; the app's sender in
-    `src/lib/verdict-sync.ts` reads `Settings.shareVerdicts` and `wifiOnly`; `Settings` row in
+    `src/lib/verdict-sync.ts` reads `Settings.shareVerdicts` and `wifiOnly` and skips `coverage: "listener"`
+    chapters (07.6); `Settings` row in
     `src/app/settings.tsx`; one sentence in `src/app/privacy.tsx`.
-- [ ] **07.6** "Set the mood": a listener seeds an unscored book or chapter and a known piece is matched · M ·
-  closes A7 · needs —
-  - The sheet from the river's unscored state and an unscored row; `coverage: "listener"`; local matching in
-    `src/lib/mood-match.ts` over the pieces the device holds (the catalog manifest once 05.1 lands); the replace
-    rule in `src/lib/scoring-store.ts`.

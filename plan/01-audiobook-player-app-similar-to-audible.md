@@ -104,7 +104,6 @@ just name the pieces/scores/songs/instrumentals (It's important that there's no 
   a playlist in their own YouTube or Apple Music account.
 - **A31** A pause pressed while the next chapter's file is still loading holds, and the web play
   button never flickers while audio buffers.
-- **A32** A chapter's own soundscape stays with that chapter when chapters are merged or split.
 - **A33** (Claude since D15: read "OpenAI's and Brave's" below as Anthropic's.) Scoring a real book on mood-read.pages.dev returns researched chapter moods and named pieces
   from the deployed proxy, with spend metered at OpenAI's and Brave's current prices.
 - **A34** A caller cannot spend the monthly budget with made-up books or repeated rescores: the proxy
@@ -207,7 +206,7 @@ Every question below is answered; none is open. Elsewhere in the plan, "Open que
    no emotions on its card (A21).
 
 ## Chunks
-Measure: 12 open · 25 closed · next A38
+Measure: 11 open · 26 closed · next A38
 
 Build order follows the owner's two-part v1, and the lines below are in that order. **Part 1, the player:** 01.1,
 01.6, 01.3, 01.5, 01.7: the player, then real books in it, then the second layer, its mixer and the soundscapes it
@@ -251,10 +250,6 @@ pieces). Ids keep the order they were written in. The app itself (Expo at the re
   closes A31 · needs —
   - Seen in 01.3: `goTo` loads the next file with play on even after a pause; the mini player reads the web
     status flag, which reads paused whenever the element is short of data (the clock no longer does).
-- [ ] **01.19** Per-chapter soundscapes follow chapter merges and splits · S ·
-  closes A32 · needs —
-  - Seen in 01.7: `Mix.chapterBeds` is keyed by chapter index, and 01.6's merge and split shift indices, so an
-    override lands on the wrong chapter.
 - [ ] **01.20** Turn scoring on: keys to the Worker, deploy the proxy, set the app's proxy URL · S ·
   closes A33 · needs 01.21, 01.24 · secrets ANTHROPIC_API_KEY
   - The owner chose (2026-10-24) to go live on Claude, after the rate limit: the deploy below syncs

@@ -54,3 +54,5 @@ identity · deleted in <sha>`; recover its text with
 - 2026-10-24 · 05.10 · Browse shows pre-scored books' overall moods; prescore within half the cap · 2157748e..a7f53301
 - 2026-10-24 · 07.2 · The bed follows scenes; the card shows the playing scene · e2f588b7..65f4b796
 - 2026-10-24 · 05.20 · Browse opens on Popular on LibriVox, pre-scored books first · afc0e9e9..a518afe4
+- 2026-10-24 · 01.19 · A chapter's own soundscape follows merges and splits · 9e388846..314788b8
+- 2026-10-24 · 07.6 · Set the mood seeds an unscored book or chapter · 96646fa7..0ad84c10
