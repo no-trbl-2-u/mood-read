@@ -45,3 +45,4 @@ identity · deleted in <sha>`; recover its text with
 - 2026-10-24 · 05.1 · Catalog contract, A1 validator, catalog:add and the app reader · 7009ca4a..20117474
 - 2026-10-24 · 07.1 · Scorer returns ordered scenes with spans, one piece each · 5f3809de..9a3c3304
 - 2026-10-24 · 05.5 · Credits screen from the library's menu and Settings · 35fcca77..be8decdc
+- 2026-10-24 · 07.3 · The bed fades in, fades out and holds for the opening · 2060db17..2060db17

@@ -121,11 +121,6 @@ Decisions made upfront (do not ask):
 - **A2** Playback crossfades to the next scene's piece when the clock crosses a scene boundary, and back on a seek
   back; a chapter-wide pick plays for every scene; the mood card shows the playing scene's emotions and nothing for
   a scene not yet reached.
-- **A3** The bed ramps in from silence on play, after a pause and after a seek; a sleep timer fades the bed out
-  over its last 60 s (or its whole length) and fires with the bed silent; the last chapter's end fades the bed out
-  instead of cutting it.
-- **A4** With quiet opening on (the default, per book, in the mixer), the bed is silent for the first 20 s of every
-  chapter and then ramps in; a seek past the hold skips it; off, the bed enters at once.
 - **A5** "Fits" and "Doesn't fit" on the mood card keep a verdict per chapter on the device; "Doesn't fit" offers
   the alternates in place; both are 44 px, labelled and readable at 200% text.
 - **A6** Verdicts reach the proxy only as `{pieceId, emotions, verdict}` rows with no book, chapter, device or
@@ -150,19 +145,13 @@ All answered; none is open.
   could keep; a daily batch with no time is not (decided here, 2026-10-24).
 
 ## Chunks
-Measure: 8 open · 1 closed · next A10
+Measure: 6 open · 3 closed · next A10
 
 - [ ] **07.2** The bed follows scenes; the mood card shows the playing scene · M · closes A2 · needs —
   - `src/lib/bed.ts`: `sceneAt(positionInChapter, chapterLength, scenes)` and the boundary crossfade;
     `src/player/bed-engine.ts` drives it from the clock; `src/player/MoodCard.tsx` adds the scene band; reached
     scenes extend `src/lib/reached.ts` with the furthest position within the playing chapter. Until 01.10 plays
     pieces, the scene change is logged and the card band moves; the bed's soundscape is unchanged.
-- [ ] **07.3** The bed enters and leaves: fade-in, sleep fade, quiet opening, end of book · M · closes A3, A4 ·
-  needs —
-  - `src/lib/bed.ts` ramps as pure functions; `bedVolume` in `src/lib/mix.ts` gains the fourth factor;
-    `Mix.quietOpening` in `src/lib/mix.ts` with its row in `src/player/Mixer.tsx`; the sleep timer's fade reads
-    `SleepTimer` in `src/player/PlayerProvider.tsx`; companion mode (`src/lib/companion.ts`) takes the enter and
-    exit ramps. An e2e step on the web build checks the hold and the ramp through the bed's gain readout.
 - [ ] **07.4** "Fits" and "Doesn't fit" on the mood card, kept on the device · S · closes A5 · needs —
   - `src/lib/verdict-store.ts` behind `src/lib/`, `src/player/MoodCard.tsx` targets, the alternates offered in
     place; the axe, 44 px and 200% checks in the e2e accessibility walk cover both.
