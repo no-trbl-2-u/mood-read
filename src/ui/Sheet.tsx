@@ -1,7 +1,7 @@
 import type { ReactNode } from "react";
 import { Pressable, ScrollView, StyleSheet, Text, View } from "react-native";
 
-import { colors, radii, spacing } from "./theme";
+import { colors, radii, sizes, spacing, strokes, typography } from "./theme";
 
 /**
  * A bottom sheet over the river: it rises from just above the docked mini player, with a handle, over a dimmed
@@ -22,7 +22,7 @@ export function Sheet(props: { title: string; onClose: () => void; children: Rea
           <Text style={styles.title} role="heading">
             {props.title}
           </Text>
-          <Pressable role="button" onPress={props.onClose} hitSlop={8} testID="sheet-done">
+          <Pressable role="button" onPress={props.onClose} hitSlop={spacing.sm} testID="sheet-done" style={styles.doneHit}>
             <Text style={styles.done}>Done</Text>
           </Pressable>
         </View>
@@ -45,15 +45,15 @@ const styles = StyleSheet.create({
     backgroundColor: colors.surface,
     borderTopLeftRadius: radii.lg,
     borderTopRightRadius: radii.lg,
-    borderTopWidth: 1,
-    borderColor: colors.border,
+    borderTopWidth: strokes.outline,
+    borderColor: colors.edge,
   },
   handle: {
     alignSelf: "center",
-    width: 40,
-    height: 4,
-    borderRadius: 2,
-    backgroundColor: colors.border,
+    width: sizes.handleWidth,
+    height: sizes.handleHeight,
+    borderRadius: radii.pill,
+    backgroundColor: colors.textMuted,
     marginTop: spacing.sm,
   },
   header: {
@@ -63,7 +63,8 @@ const styles = StyleSheet.create({
     paddingHorizontal: spacing.md,
     paddingTop: spacing.sm,
   },
-  title: { color: colors.text, fontSize: 18, fontWeight: "700" },
-  done: { color: colors.accent, fontSize: 15, fontWeight: "600" },
+  title: typography.heading,
+  doneHit: { minHeight: sizes.touch, justifyContent: "center", paddingHorizontal: spacing.xs },
+  done: { ...typography.label, color: colors.accent },
   body: { padding: spacing.md, gap: spacing.md },
 });

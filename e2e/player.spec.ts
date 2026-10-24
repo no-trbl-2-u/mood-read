@@ -225,9 +225,10 @@ test.describe("the player", () => {
     await expectTime(page, CH2 - 1, 0.3);
     await expectChapter(page, 1);
 
-    // Back to Library: the book is listed with its chapter count and where it resumes.
-    await page.getByTestId("top-back").click();
-    await expect(page.getByRole("heading", { name: "Library" })).toBeVisible();
+    // Back to your shelf: the book is listed with its chapter count and where it resumes.
+    // The river's back control is the chevron alone, named for screen readers (design/layouts/DECISION.md, v2).
+    await page.getByRole("button", { name: "Back to your shelf" }).click();
+    await expect(page.getByRole("heading", { name: "Your shelf" })).toBeVisible();
     await expect(page.getByText("2 ch · resuming Ch.2")).toBeVisible();
     await expect(page.getByTestId("cover-play-mark")).toBeVisible();
   });

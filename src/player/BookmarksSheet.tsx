@@ -9,7 +9,8 @@ import { library, useBookmarks } from "@/lib/library";
 import { chapterAt } from "@/lib/timeline";
 import type { Book } from "@/lib/types";
 import { Sheet } from "@/ui/Sheet";
-import { colors, radii, spacing } from "@/ui/theme";
+import { Button } from "@/ui/Button";
+import { colors, sizes, spacing, strokes, typography } from "@/ui/theme";
 
 export function BookmarksSheet(props: {
   book: Book;
@@ -81,7 +82,8 @@ export function BookmarksSheet(props: {
                   setEditing(m.id);
                   setDraft(m.name);
                 }}
-                hitSlop={6}
+                style={styles.actionHit}
+                hitSlop={spacing.xs}
               >
                 <Text style={styles.action}>Rename</Text>
               </Pressable>
@@ -89,7 +91,8 @@ export function BookmarksSheet(props: {
                 role="button"
                 testID="bookmark-delete"
                 onPress={() => library.deleteBookmark(book.id, m.id)}
-                hitSlop={6}
+                style={styles.actionHit}
+                hitSlop={spacing.xs}
               >
                 <Text style={styles.action}>Delete</Text>
               </Pressable>
@@ -97,9 +100,7 @@ export function BookmarksSheet(props: {
           )}
         </View>
       ))}
-      <Pressable testID="add-bookmark" role="button" style={styles.add} onPress={add}>
-        <Text style={styles.addText}>+ Add bookmark at {here}</Text>
-      </Pressable>
+      <Button testID="add-bookmark" label={`Add bookmark at ${here}`} icon="plus" onPress={add} />
     </Sheet>
   );
 }
@@ -110,28 +111,19 @@ const styles = StyleSheet.create({
     alignItems: "center",
     gap: spacing.sm,
     paddingVertical: spacing.sm,
-    borderBottomWidth: 1,
+    borderBottomWidth: strokes.hairline,
     borderBottomColor: colors.border,
   },
-  main: { flex: 1, gap: 2 },
-  where: { color: colors.text, fontSize: 15, fontWeight: "600", fontVariant: ["tabular-nums"] },
-  muted: { color: colors.textMuted, fontSize: 13 },
+  main: { flex: 1, gap: spacing.xxs },
+  where: { ...typography.label, fontVariant: ["tabular-nums"] },
+  muted: typography.caption,
   input: {
-    color: colors.text,
-    fontSize: 15,
-    borderBottomWidth: 1,
+    ...typography.body,
+    borderBottomWidth: strokes.outline,
     borderBottomColor: colors.accent,
     paddingVertical: spacing.xs,
   },
-  actions: { flexDirection: "row", gap: spacing.md },
-  action: { color: colors.textMuted, fontSize: 13 },
-  add: {
-    marginTop: spacing.sm,
-    minHeight: 48,
-    borderRadius: radii.md,
-    alignItems: "center",
-    justifyContent: "center",
-    backgroundColor: colors.accent,
-  },
-  addText: { color: colors.onAccent, fontSize: 15, fontWeight: "700" },
+  actions: { flexDirection: "row", gap: spacing.sm },
+  actionHit: { minHeight: sizes.touch, justifyContent: "center", paddingHorizontal: spacing.xs },
+  action: { ...typography.label, color: colors.textMuted },
 });

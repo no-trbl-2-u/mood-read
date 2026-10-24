@@ -7,9 +7,9 @@ import { guard } from "./guard";
 // An empty library (a fresh browser holds no books), and a book id this device does not have: a clear
 // not-found state with a way back, not a crash.
 const ROUTES = [
-  { path: "/", title: "Library", also: "Import a book" },
+  { path: "/", title: "Your shelf", also: "Import a book" },
   { path: "/import", title: "Import", also: "Choose files" },
-  { path: "/book/sample-1", title: "Book not found", also: "Back to Library" },
+  { path: "/book/sample-1", title: "Book not found", also: "Back to your shelf" },
   { path: "/settings", title: "Settings", also: "Downloads on Wi-Fi only" },
   { path: "/privacy", title: "Privacy policy", also: "What the scoring proxy gets" },
 ];

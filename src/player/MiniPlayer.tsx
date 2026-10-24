@@ -11,7 +11,7 @@ import { clamp, SKIP_SECONDS } from "@/lib/timeline";
 import type { Book, Chapter, SleepTimer } from "@/lib/types";
 import { Cover } from "@/ui/Cover";
 import { Icon } from "@/ui/Icon";
-import { colors, spacing } from "@/ui/theme";
+import { colors, hardShadow, radii, shadows, sizes, spacing, strokes, typography } from "@/ui/theme";
 
 export function MiniPlayer(props: {
   book: Book;
@@ -34,7 +34,7 @@ export function MiniPlayer(props: {
   const sleep = sleepReadout(props.sleep, now);
   return (
     <View style={[styles.bar, { paddingBottom: Math.max(insets.bottom, spacing.sm) }]} testID="mini-player">
-      <Cover book={props.book} width={44} />
+      <Cover book={props.book} width={sizes.miniCover} />
       <View style={styles.middle}>
         <Text style={styles.title} numberOfLines={1} testID="mini-chapter-title">
           {props.chapter?.title ?? props.book.title}
@@ -154,35 +154,44 @@ const styles = StyleSheet.create({
     flexDirection: "row",
     alignItems: "center",
     gap: spacing.sm,
-    paddingHorizontal: spacing.md,
+    paddingHorizontal: spacing.sm,
     paddingTop: spacing.sm,
-    borderTopWidth: 1,
-    borderTopColor: colors.border,
-    backgroundColor: colors.background,
-  },
-  middle: { flex: 1, gap: 2, minWidth: 0 },
-  title: { color: colors.text, fontSize: 14, fontWeight: "700" },
-  track: { paddingTop: spacing.sm, paddingBottom: spacing.xs },
-  readouts: { flexDirection: "row", flexWrap: "wrap", alignItems: "center", columnGap: spacing.sm },
-  time: { color: colors.text, fontSize: 12, fontVariant: ["tabular-nums"] },
-  sleep: { color: colors.textMuted, fontSize: 12, fontVariant: ["tabular-nums"], flexShrink: 1 },
-  trackBg: { height: 4, borderRadius: 2, backgroundColor: colors.border, overflow: "hidden" },
-  trackFill: { height: 4, backgroundColor: colors.accent },
-  skip: {
-    width: 44,
-    height: 44,
-    borderRadius: 22,
-    alignItems: "center",
-    justifyContent: "center",
+    borderTopWidth: strokes.outline,
+    borderTopColor: colors.edge,
     backgroundColor: colors.surface,
   },
-  skipText: { color: colors.text, fontSize: 13, fontWeight: "700" },
+  middle: { flex: 1, gap: spacing.xxs, minWidth: 0 },
+  title: typography.label,
+  track: { paddingTop: spacing.sm, paddingBottom: spacing.xs },
+  readouts: { flexDirection: "row", flexWrap: "wrap", alignItems: "center", columnGap: spacing.sm },
+  time: { ...typography.meta, color: colors.text, fontVariant: ["tabular-nums"] },
+  sleep: { ...typography.meta, fontVariant: ["tabular-nums"], flexShrink: 1 },
+  trackBg: {
+    height: sizes.track,
+    borderRadius: radii.pill,
+    borderWidth: strokes.hairline,
+    borderColor: colors.edge,
+    backgroundColor: colors.background,
+    overflow: "hidden",
+  },
+  trackFill: { height: "100%", backgroundColor: colors.accent },
+  skip: {
+    width: sizes.touch,
+    height: sizes.touch,
+    borderRadius: radii.pill,
+    alignItems: "center",
+    justifyContent: "center",
+  },
+  skipText: { ...typography.meta, color: colors.text, fontWeight: typography.label.fontWeight },
   play: {
-    width: 52,
-    height: 52,
-    borderRadius: 26,
+    width: sizes.play,
+    height: sizes.play,
+    borderRadius: radii.pill,
     alignItems: "center",
     justifyContent: "center",
     backgroundColor: colors.accent,
+    borderWidth: strokes.heavy,
+    borderColor: colors.ink,
+    boxShadow: hardShadow(shadows.button),
   },
 });

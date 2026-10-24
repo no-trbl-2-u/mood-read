@@ -119,8 +119,8 @@ export const sizes = {
   inputMin: 160,
 } as const;
 
-/** Opacities: a row that is not available yet, the list behind an open menu, a control while work runs. */
-export const opacities = { disabled: 0.55, behindMenu: 0.55, busy: 0.6 } as const;
+/** Opacities: a row that is not available yet (and a disabled control), and the list behind an open menu. */
+export const opacities = { disabled: 0.55, behindMenu: 0.55 } as const;
 
 /** Outline and rule widths. */
 export const strokes = {

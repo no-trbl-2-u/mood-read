@@ -7,7 +7,7 @@ import { StyleSheet, Text, View } from "react-native";
 import { balanceText, MIX_STEP, percentText, type Mix } from "@/lib/mix";
 import { Chip } from "@/ui/Chip";
 import { Slider } from "@/ui/Slider";
-import { colors, spacing } from "@/ui/theme";
+import { spacing, typography } from "@/ui/theme";
 
 import { VOICE_LEVEL_SUPPORTED } from "./voice-level";
 
@@ -86,14 +86,14 @@ export function Mixer({ mix, onChange, layer }: { mix: Mix; onChange: (patch: Pa
 
 const styles = StyleSheet.create({
   mixer: { gap: spacing.sm, marginTop: spacing.xs, marginBottom: spacing.xs },
-  heading: { color: colors.textMuted, fontSize: 13, fontWeight: "700" },
+  heading: { ...typography.caption, fontWeight: typography.label.fontWeight },
   control: { gap: spacing.xxs },
   captionRow: { flexDirection: "row", justifyContent: "space-between", alignItems: "baseline" },
-  label: { color: colors.text, fontSize: 14, fontWeight: "700" },
-  value: { color: colors.textMuted, fontSize: 13 },
+  label: typography.label,
+  value: typography.caption,
   ends: { flexDirection: "row", justifyContent: "space-between" },
-  end: { color: colors.textMuted, fontSize: 12 },
+  end: typography.meta,
   duckRow: { flexDirection: "row", flexWrap: "wrap", alignItems: "center", justifyContent: "space-between", gap: spacing.sm },
   chips: { flexDirection: "row", gap: spacing.sm },
-  note: { color: colors.textMuted, fontSize: 13 },
+  note: typography.caption,
 });

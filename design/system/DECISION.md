@@ -115,7 +115,7 @@ Every size follows the OS text size (06.5 holds the 200% bar); nothing sets `all
   (`coverWidth`, `coverHeight`), `miniCover` 44, `coverMark` 20, the import note's file tile 72 x 88, the sheet
   handle 40 x 4, `track` 6 (progress bars, the slider track), `thumb` 24 (the slider's), `readout` 48 (the
   speed between Slower and Faster), `inputMin` 160.
-- **Opacities:** `disabled` 0.55, `behindMenu` 0.55, `busy` 0.6 (a button while an import runs).
+- **Opacities:** `disabled` 0.55 (an unavailable row, a disabled button), `behindMenu` 0.55.
 - **Tilt:** chips rotate by `tilts` (-3, 2, -1.5, 3, -2, 1 degrees), cycled by index so a row never lines up.
   Buttons, rows and text never tilt. Tilt is static and stays under reduce motion (it is shape, not motion).
 
@@ -134,9 +134,11 @@ Every size follows the OS text size (06.5 holds the 200% bar); nothing sets `all
 
 ## Iconography
 
-**Lucide**, through **`lucide-react-native` v1.x only** (which needs `react-native-svg`). Not installed by
-06.1; 06.4 installs both and swaps `src/ui/glyphs.tsx` for Lucide icons. Size `icons.size` 24 (18 inline in
-text), stroke width `icons.strokeWidth` 2.5 to match the sticker outlines, coloured from the palette.
+**Lucide**, through **`lucide-react-native` v1.x only** (which needs `react-native-svg`). 06.4 installed both
+and replaced the hand-drawn glyphs with `src/ui/Icon.tsx`, the one place an icon is drawn. Size `icons.size` 24
+(`icons.small` 18 inline in text or beside a label, `icons.mark` 10 in a cover's play badge), stroke width
+`icons.strokeWidth` 2.5 to match the sticker outlines, coloured from the palette. Skip 30 s is `rotate-ccw` /
+`rotate-cw` over a "30".
 
 **Rights check: allowed** (the `rights-checker`, checked 2026-10-23).
 
@@ -168,6 +170,9 @@ Playful, short, and never in the way of listening. Durations in ms, from `motion
 | Press (chips, buttons) | 90 | `standard` | Scale to 0.94 and back; the hard shadow shrinks to 0 while pressed ("pushed in"). |
 | Sheet rise | 240 | `standard` | `exit` (0.4, 0, 1, 1) on dismiss. |
 | Chapter-boundary audio crossfade | 2000 | equal-power | The soundscape / piece crossfade (spec 01, 01.3); sound, not motion. |
+
+**As built (06.4):** the press is instant (no tween yet), from `src/ui/motion.ts`: a pressed chip or button
+drops its hard shadow and, unless reduce motion is on, scales to `pressScale`. No other screen animates yet.
 
 **Reduce motion:** with the OS setting on, every visual duration is 0 and nothing bounces or scales; the audio
 crossfade is unchanged. Nothing loops, flashes or moves on its own while a book plays.

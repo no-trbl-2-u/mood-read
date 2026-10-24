@@ -63,7 +63,7 @@ test.describe("your own books", () => {
     await expect(page.getByRole("heading", { name: "The Quiet Harbor" })).toBeVisible();
 
     await page.getByTestId("top-back").click();
-    await expect(page.getByRole("heading", { name: "Library" })).toBeVisible();
+    await expect(page.getByRole("heading", { name: "Your shelf" })).toBeVisible();
     const row = page.getByRole("link", { name: "The Quiet Harbor" });
     await expect(row).toBeVisible();
     await expect(row.getByTestId("book-author")).toHaveText("Ada Lindqvist");
@@ -150,7 +150,7 @@ test.describe("your own books", () => {
     await expect(note).not.toContainText(/convert/i);
     // Nothing was added to the library.
     await page.getByTestId("top-back").click();
-    await expect(page.getByText("No books yet")).toBeVisible();
+    await expect(page.getByRole("heading", { name: "Nothing on the shelf yet." })).toBeVisible();
   });
 
   test("A7: an AAXC renamed to .m4b is still caught by its content, and Choose another file picks again", async ({

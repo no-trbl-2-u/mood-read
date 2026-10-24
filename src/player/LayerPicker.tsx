@@ -6,7 +6,7 @@ import { ScrollView, StyleSheet, Text, View } from "react-native";
 
 import type { LayerPick } from "@/lib/bed";
 import { Chip } from "@/ui/Chip";
-import { colors, spacing } from "@/ui/theme";
+import { spacing, typography } from "@/ui/theme";
 
 import { SOUNDSCAPES } from "./soundscapes";
 
@@ -66,8 +66,8 @@ export function LayerPicker(props: {
 const styles = StyleSheet.create({
   layer: { gap: spacing.xs },
   captionRow: { flexDirection: "row", justifyContent: "space-between", alignItems: "baseline" },
-  label: { color: colors.text, fontSize: 14, fontWeight: "700" },
-  value: { color: colors.textMuted, fontSize: 13 },
-  chips: { flexDirection: "row", gap: spacing.sm, paddingVertical: spacing.xxs },
+  label: typography.label,
+  value: typography.caption,
+  chips: { flexDirection: "row", gap: spacing.sm, paddingVertical: spacing.xxs, paddingRight: spacing.xs },
   chapterRow: { flexDirection: "row" },
 });

@@ -1,13 +1,14 @@
 // The Speed & Sleep bottom sheet: speed presets (0.5x to 3x where the platform plays it) with 0.1 steps, and the
 // sleep timer (15, 30, 45 min, End of chapter, Off). The chosen chip shows which timer is set; what is left of it
 // reads in the mini player docked below (A28), never here.
-import { Pressable, StyleSheet, Text, View } from "react-native";
+import { StyleSheet, Text, View } from "react-native";
 
 import { speedLabel } from "@/lib/labels";
 import { MAX_SPEED, MIN_SPEED, SLEEP_MINUTES, speedPresets, stepSpeed } from "@/lib/timeline";
 import { Chip } from "@/ui/Chip";
 import { Sheet } from "@/ui/Sheet";
-import { colors, spacing } from "@/ui/theme";
+import { Button } from "@/ui/Button";
+import { sizes, spacing, typography } from "@/ui/theme";
 
 import { PLATFORM_MAX_SPEED, type PlayerApi } from "./PlayerProvider";
 
@@ -77,34 +78,22 @@ export function SpeedSleepSheet({ player, onClose }: { player: PlayerApi; onClos
 
 function StepButton(props: { label: string; disabled: boolean; onPress: () => void; testID: string }) {
   return (
-    <Pressable
+    <Button
       testID={props.testID}
-      role="button"
-      aria-disabled={props.disabled}
+      kind="secondary"
+      small
+      label={props.label}
       disabled={props.disabled}
       onPress={props.onPress}
-      style={[styles.step, props.disabled && styles.stepOff]}
-    >
-      <Text style={styles.stepText}>{props.label}</Text>
-    </Pressable>
+    />
   );
 }
 
 const styles = StyleSheet.create({
   section: { gap: spacing.sm },
-  label: { color: colors.textMuted, fontSize: 13, fontWeight: "600", textTransform: "uppercase" },
+  label: { ...typography.caption, fontWeight: typography.label.fontWeight },
   chips: { flexDirection: "row", flexWrap: "wrap", gap: spacing.sm },
   stepper: { flexDirection: "row", alignItems: "center", gap: spacing.md },
-  speedNow: { color: colors.text, fontSize: 16, fontWeight: "700", minWidth: 48, textAlign: "center" },
-  step: {
-    minHeight: 40,
-    justifyContent: "center",
-    paddingHorizontal: spacing.md,
-    borderRadius: 20,
-    borderWidth: 1,
-    borderColor: colors.border,
-  },
-  stepOff: { opacity: 0.4 },
-  stepText: { color: colors.text, fontSize: 14 },
-  muted: { color: colors.textMuted, fontSize: 13 },
+  speedNow: { ...typography.heading, minWidth: sizes.readout, textAlign: "center" },
+  muted: typography.caption,
 });

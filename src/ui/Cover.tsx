@@ -4,7 +4,7 @@ import { useFileUri } from "@/lib/library";
 import type { Book } from "@/lib/types";
 
 import { Icon } from "./Icon";
-import { colors, radii } from "./theme";
+import { colors, coverTint, radii, sizes, spacing, strokes, typography } from "./theme";
 
 /**
  * The book's cover from its tags (01.6), or a tile with its initials when it has none. `marked` draws the play mark
@@ -35,8 +35,8 @@ export function Cover({
       {uri ? (
         <Image testID="cover-image" source={{ uri }} style={box} accessibilityIgnoresInvertColors />
       ) : (
-        <View style={[styles.tile, box, { backgroundColor: `hsl(${hue}, 30%, 28%)` }]}>
-          <Text style={[styles.initials, { fontSize: Math.min(width, height) / 3 }]}>{initials || "?"}</Text>
+        <View style={[styles.tile, box, { backgroundColor: coverTint(hue) }]}>
+          <Text style={styles.initials}>{initials || "?"}</Text>
         </View>
       )}
       {marked && (
@@ -49,18 +49,19 @@ export function Cover({
 }
 
 const styles = StyleSheet.create({
-  tile: { alignItems: "center", justifyContent: "center", borderWidth: 1, borderColor: colors.border },
-  initials: { color: colors.text, fontWeight: "700" },
+  tile: { alignItems: "center", justifyContent: "center", borderWidth: strokes.outline, borderColor: colors.ink },
+  initials: typography.label,
   mark: {
     position: "absolute",
-    left: 4,
-    bottom: 4,
-    width: 18,
-    height: 18,
-    borderRadius: 9,
+    left: spacing.xs,
+    top: spacing.xs,
+    width: sizes.coverMark,
+    height: sizes.coverMark,
+    borderRadius: radii.pill,
+    borderWidth: strokes.outline,
+    borderColor: colors.ink,
     backgroundColor: colors.accent,
     alignItems: "center",
     justifyContent: "center",
-    paddingLeft: 2,
   },
 });

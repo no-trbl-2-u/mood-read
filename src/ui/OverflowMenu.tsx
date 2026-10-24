@@ -2,7 +2,7 @@ import { useRef, useState, type ComponentRef } from "react";
 import { Modal, Pressable, StyleSheet, Text, useWindowDimensions, View } from "react-native";
 
 import { Icon, type IconName } from "./Icon";
-import { colors, radii, shadows, sizes, spacing, strokes, typography } from "./theme";
+import { colors, hardShadow, radii, shadows, sizes, spacing, strokes, typography } from "./theme";
 
 export type MenuItem = { key: string; label: string; icon?: IconName; onPress: () => void; ruleBefore?: boolean };
 
@@ -90,7 +90,7 @@ const styles = StyleSheet.create({
     borderWidth: strokes.outline,
     borderColor: colors.edge,
     borderRadius: radii.lg,
-    boxShadow: `${shadows.card.offsetX}px ${shadows.card.offsetY}px 0 ${shadows.card.color}`,
+    boxShadow: hardShadow(shadows.card),
   },
   item: {
     minHeight: sizes.menuRow,

@@ -3,7 +3,7 @@ import { Pressable, StyleSheet, Text, View } from "react-native";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
 
 import { Icon, type IconName } from "./Icon";
-import { colors, spacing } from "./theme";
+import { colors, radii, sizes, spacing, strokes, typography } from "./theme";
 
 /**
  * A screen's top bar: an optional back control (Lucide `chevron-left` and the parent's title, or the chevron alone
@@ -11,6 +11,8 @@ import { colors, spacing } from "./theme";
  */
 export function TopBar(props: {
   title: string;
+  /** The library's title is the big `title` type; every other screen's is `heading`. */
+  large?: boolean;
   back?: { label: string; a11yLabel?: string; iconOnly?: boolean; onPress: () => void };
   trailing?: ReactNode;
 }) {
@@ -25,13 +27,13 @@ export function TopBar(props: {
             aria-label={props.back.a11yLabel ?? props.back.label}
             onPress={props.back.onPress}
             style={styles.back}
-            hitSlop={8}
+            hitSlop={spacing.sm}
           >
             <Icon name="back" />
             {!props.back.iconOnly && <Text style={styles.backText}>{props.back.label}</Text>}
           </Pressable>
         )}
-        <Text style={styles.title} numberOfLines={1} role="heading">
+        <Text style={[styles.title, props.large && styles.titleLarge]} numberOfLines={1} role="heading">
           {props.title}
         </Text>
         {props.trailing && <View style={styles.trailing}>{props.trailing}</View>}
@@ -55,7 +57,7 @@ export function TopBarButton(props: {
       aria-label={props.a11yLabel ?? props.label}
       onPress={props.onPress}
       style={styles.action}
-      hitSlop={6}
+      hitSlop={spacing.xs}
     >
       {props.icon ? <Icon name={props.icon} /> : <Text style={styles.actionText}>{props.label}</Text>}
     </Pressable>
@@ -63,20 +65,33 @@ export function TopBarButton(props: {
 }
 
 const styles = StyleSheet.create({
-  bar: { backgroundColor: colors.background, borderBottomWidth: 1, borderBottomColor: colors.border },
-  inner: { minHeight: 52, flexDirection: "row", alignItems: "center", gap: spacing.sm, paddingHorizontal: spacing.md },
-  back: { flexDirection: "row", alignItems: "center", gap: spacing.xs, paddingVertical: spacing.sm, paddingLeft: 2 },
-  backText: { color: colors.text, fontSize: 15 },
-  title: { flex: 1, color: colors.text, fontSize: 17, fontWeight: "700" },
-  trailing: { flexDirection: "row", alignItems: "center", gap: spacing.xs },
-  action: {
-    minHeight: 36,
-    justifyContent: "center",
-    paddingHorizontal: spacing.sm + 2,
-    borderRadius: 18,
-    borderWidth: 1,
-    borderColor: colors.border,
-    backgroundColor: colors.surface,
+  bar: { backgroundColor: colors.background, borderBottomWidth: strokes.hairline, borderBottomColor: colors.border },
+  inner: {
+    minHeight: sizes.topBar,
+    flexDirection: "row",
+    alignItems: "center",
+    gap: spacing.sm,
+    paddingHorizontal: spacing.md,
   },
-  actionText: { color: colors.text, fontSize: 14, fontWeight: "600" },
+  back: {
+    minHeight: sizes.touch,
+    minWidth: sizes.touch,
+    marginLeft: -spacing.sm,
+    flexDirection: "row",
+    alignItems: "center",
+    gap: spacing.xxs,
+  },
+  backText: typography.body,
+  title: { ...typography.heading, flex: 1, minWidth: 0 },
+  titleLarge: typography.title,
+  trailing: { flexDirection: "row", alignItems: "center", gap: spacing.xxs, marginRight: -spacing.sm },
+  action: {
+    minHeight: sizes.touch,
+    minWidth: sizes.touch,
+    alignItems: "center",
+    justifyContent: "center",
+    paddingHorizontal: spacing.sm,
+    borderRadius: radii.pill,
+  },
+  actionText: typography.label,
 });

@@ -10,7 +10,8 @@ import { Pressable, ScrollView, StyleSheet, Text, TextInput, View, type ScrollVi
 import { canMergeWithNext, canSplitAt } from "@/lib/chapters";
 import type { Book } from "@/lib/types";
 import { Icon } from "@/ui/Icon";
-import { colors, spacing } from "@/ui/theme";
+import { Button } from "@/ui/Button";
+import { colors, hardShadow, radii, shadows, sizes, spacing, strokes, typography } from "@/ui/theme";
 
 export function ChapterRiver(props: {
   book: Book;
@@ -63,11 +64,11 @@ export function ChapterRiver(props: {
               style={styles.titleLine}
             >
               <View style={styles.titleWrap}>
-                <Text style={[styles.title, playing && styles.titlePlaying]} numberOfLines={2}>
+                <Text style={styles.title} numberOfLines={2}>
                   Ch.{c.index + 1} — {c.title}
                 </Text>
                 {playing && (
-                  <View style={styles.mark} testID="playing-mark">
+                  <View testID="playing-mark">
                     <Icon name="play" size="small" color={colors.accent} filled />
                   </View>
                 )}
@@ -151,58 +152,49 @@ function ChapterEdits(props: {
 
 function EditButton(props: { label: string; a11yLabel?: string; onPress: () => void; disabled?: boolean; testID: string }) {
   return (
-    <Pressable
+    <Button
       testID={props.testID}
-      role="button"
-      aria-label={props.a11yLabel ?? props.label}
-      aria-disabled={props.disabled || undefined}
+      kind="secondary"
+      small
+      label={props.label}
+      a11yLabel={props.a11yLabel}
       disabled={props.disabled}
       onPress={props.onPress}
-      style={[styles.editButton, props.disabled && styles.disabled]}
-    >
-      <Text style={styles.editText}>{props.label}</Text>
-    </Pressable>
+    />
   );
 }
 
 const styles = StyleSheet.create({
-  content: { paddingBottom: spacing.xl },
+  content: { padding: spacing.md, paddingRight: spacing.md + shadows.card.offsetX, gap: spacing.sm },
   row: {
-    paddingVertical: spacing.md,
+    paddingVertical: spacing.xs,
     paddingHorizontal: spacing.md,
-    borderBottomWidth: 1,
-    borderBottomColor: colors.border,
-    borderLeftWidth: 4,
-    borderLeftColor: "transparent",
+    backgroundColor: colors.surface,
+    borderWidth: strokes.hairline,
+    borderColor: colors.border,
+    borderRadius: radii.lg,
   },
-  rowPlaying: { backgroundColor: colors.surface, borderLeftColor: colors.accent },
-  titleLine: { flexDirection: "row", alignItems: "center", gap: spacing.md, minHeight: 32 },
+  rowPlaying: {
+    paddingBottom: spacing.md,
+    backgroundColor: colors.raised,
+    borderLeftWidth: strokes.rule,
+    borderLeftColor: colors.accent,
+    boxShadow: hardShadow(shadows.card),
+  },
+  titleLine: { flexDirection: "row", alignItems: "center", gap: spacing.md, minHeight: sizes.touch },
   titleWrap: { flex: 1, flexDirection: "row", alignItems: "center", gap: spacing.sm },
-  title: { flexShrink: 1, color: colors.text, fontSize: 15 },
-  titlePlaying: { fontWeight: "700" },
-  mark: { paddingTop: 1 },
-  expanded: { marginTop: spacing.sm, gap: spacing.xs },
-  editRow: { flexDirection: "row", flexWrap: "wrap", alignItems: "center", gap: spacing.sm, marginTop: spacing.sm },
-  editButton: {
-    minHeight: 36,
-    justifyContent: "center",
-    paddingHorizontal: spacing.sm + 2,
-    borderRadius: 18,
-    borderWidth: 1,
-    borderColor: colors.border,
-    backgroundColor: colors.background,
-  },
-  editText: { color: colors.text, fontSize: 13, fontWeight: "600" },
-  disabled: { opacity: 0.4 },
+  title: { ...typography.body, flexShrink: 1, fontWeight: typography.label.fontWeight },
+  expanded: { marginTop: spacing.xs, gap: spacing.xs },
+  editRow: { flexDirection: "row", flexWrap: "wrap", alignItems: "center", gap: spacing.sm, marginTop: spacing.md },
   input: {
+    ...typography.body,
     flexGrow: 1,
-    minWidth: 160,
-    minHeight: 36,
+    minWidth: sizes.inputMin,
+    minHeight: sizes.touch,
     paddingHorizontal: spacing.sm,
-    borderRadius: 6,
-    borderWidth: 1,
-    borderColor: colors.border,
-    color: colors.text,
-    fontSize: 15,
+    borderRadius: radii.md,
+    borderWidth: strokes.outline,
+    borderColor: colors.edge,
+    backgroundColor: colors.surface,
   },
 });

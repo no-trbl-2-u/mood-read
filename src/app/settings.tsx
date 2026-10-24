@@ -41,7 +41,7 @@ export default function SettingsScreen() {
 
   return (
     <View style={styles.screen}>
-      <TopBar title="Settings" back={{ label: "Library", onPress: goBack }} />
+      <TopBar title="Settings" back={{ label: "Your shelf", a11yLabel: "Back to your shelf", onPress: goBack }} />
       <ScrollView contentContainerStyle={styles.body}>
         <SettingsSection label="Downloads">
           <SwitchRow

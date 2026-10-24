@@ -1,6 +1,6 @@
 import { router, useLocalSearchParams } from "expo-router";
 import { useEffect, useState } from "react";
-import { Pressable, StyleSheet, Text, View } from "react-native";
+import { StyleSheet, Text, View } from "react-native";
 
 import { chapterBed, pickFor } from "@/lib/bed";
 import { speedLabel } from "@/lib/labels";
@@ -13,13 +13,24 @@ import { Mixer } from "@/player/Mixer";
 import { usePlayer } from "@/player/PlayerProvider";
 import { SOUNDSCAPE_IDS } from "@/player/soundscapes";
 import { SpeedSleepSheet } from "@/player/SpeedSleepSheet";
-import { colors, radii, spacing } from "@/ui/theme";
+import { Button } from "@/ui/Button";
+import { colors, spacing, typography } from "@/ui/theme";
 import { TopBar, TopBarButton } from "@/ui/TopBar";
 
 const backToLibrary = () => (router.canGoBack() ? router.back() : router.replace("/"));
 
-// One book's chapter river: the top bar (back to Library, the book title, Speed & Sleep and Bookmarks), the river,
-// and the docked mini player. The two sheets rise over the river; the mini player stays below them.
+const COPY = {
+  back: "Back to your shelf",
+  shelf: "Your shelf",
+  notFound: "Book not found",
+  notFoundBody: "This book isn't on your shelf on this device.",
+  bookmarks: "Bookmarks",
+  speedSleep: "Speed and sleep timer",
+  playError: (error: string) => `This book could not play: ${error} Try opening it again from your shelf.`,
+};
+
+// One book's chapter river: the top bar (back to your shelf, the book title, Speed & Sleep and Bookmarks), the
+// river, and the docked mini player. The two sheets rise over the river; the mini player stays below them.
 export default function BookScreen() {
   const { id } = useLocalSearchParams<{ id: string }>();
   const book = useBook(id);
@@ -34,12 +45,10 @@ export default function BookScreen() {
   if (!book) {
     return (
       <View style={styles.screen}>
-        <TopBar title="Book not found" back={{ label: "Library", onPress: backToLibrary }} />
+        <TopBar title={COPY.notFound} back={{ label: COPY.shelf, a11yLabel: COPY.back, onPress: backToLibrary }} />
         <View style={styles.missing}>
-          <Text style={styles.missingText}>This book is not in your library on this device.</Text>
-          <Pressable testID="back-to-library" role="link" style={styles.primary} onPress={() => router.replace("/")}>
-            <Text style={styles.primaryText}>Back to Library</Text>
-          </Pressable>
+          <Text style={styles.missingText}>{COPY.notFoundBody}</Text>
+          <Button testID="back-to-library" role="link" label={COPY.back} onPress={() => router.replace("/")} />
         </View>
       </View>
     );
@@ -55,18 +64,18 @@ export default function BookScreen() {
     <View style={styles.screen}>
       <TopBar
         title={book.title}
-        back={{ label: "Library", onPress: backToLibrary }}
+        back={{ label: COPY.back, iconOnly: true, onPress: backToLibrary }}
         trailing={
           <>
             <TopBarButton
               testID="open-speed-sleep"
               label={speedButton}
-              a11yLabel="Speed and sleep timer"
+              a11yLabel={COPY.speedSleep}
               onPress={() => setSheet(sheet === "speed" ? null : "speed")}
             />
             <TopBarButton
               testID="open-bookmarks"
-              label="Bookmarks"
+              label={COPY.bookmarks}
               icon="bookmark"
               onPress={() => setSheet(sheet === "bookmarks" ? null : "bookmarks")}
             />
@@ -75,7 +84,7 @@ export default function BookScreen() {
       />
       {active && p.error && (
         <Text style={styles.error} role="alert">
-          This book could not play: {p.error} Try opening it again from the library.
+          {COPY.playError(p.error)}
         </Text>
       )}
       <View style={styles.body}>
@@ -134,15 +143,6 @@ const styles = StyleSheet.create({
   screen: { flex: 1, backgroundColor: colors.background },
   body: { flex: 1, position: "relative" },
   missing: { flex: 1, alignItems: "center", justifyContent: "center", gap: spacing.md, padding: spacing.lg },
-  missingText: { color: colors.textMuted, fontSize: 15, textAlign: "center" },
-  primary: {
-    minHeight: 48,
-    paddingHorizontal: spacing.lg,
-    borderRadius: radii.md,
-    backgroundColor: colors.accent,
-    alignItems: "center",
-    justifyContent: "center",
-  },
-  primaryText: { color: colors.onAccent, fontSize: 16, fontWeight: "700" },
-  error: { color: colors.danger, fontSize: 14, paddingHorizontal: spacing.md, paddingTop: spacing.sm },
+  missingText: { ...typography.body, color: colors.textMuted, textAlign: "center" },
+  error: { ...typography.body, color: colors.danger, paddingHorizontal: spacing.md, paddingTop: spacing.sm },
 });

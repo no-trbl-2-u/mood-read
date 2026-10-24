@@ -4,9 +4,7 @@
 import { useRef, useState } from "react";
 import { StyleSheet, View, type AccessibilityActionEvent, type GestureResponderEvent, type KeyDownEvent } from "react-native";
 
-import { colors, focusRing, radii } from "./theme";
-
-const THUMB = 24;
+import { colors, focusRing, radii, sizes, strokes } from "./theme";
 
 export function Slider(props: {
   /** What it sets, for assistive tech ("Balance"). */
@@ -105,20 +103,20 @@ export function Slider(props: {
 }
 
 const styles = StyleSheet.create({
-  hit: { minHeight: 44, justifyContent: "center", marginHorizontal: THUMB / 2, borderRadius: radii.sm },
+  hit: { minHeight: sizes.touch, justifyContent: "center", marginHorizontal: sizes.thumb / 2, borderRadius: radii.sm },
   focused: { outlineWidth: focusRing.width, outlineColor: focusRing.color, outlineStyle: "solid", outlineOffset: focusRing.offset },
-  track: { height: 6, borderRadius: 3, backgroundColor: colors.border, overflow: "hidden" },
+  track: { height: sizes.track, borderRadius: radii.pill, backgroundColor: colors.border, overflow: "hidden" },
   fill: { position: "absolute", top: 0, bottom: 0, backgroundColor: colors.accent },
   thumb: {
     position: "absolute",
-    width: THUMB,
-    height: THUMB,
-    marginLeft: -THUMB / 2,
-    marginTop: -THUMB / 2,
+    width: sizes.thumb,
+    height: sizes.thumb,
+    marginLeft: -sizes.thumb / 2,
+    marginTop: -sizes.thumb / 2,
     top: "50%",
     borderRadius: radii.pill,
     backgroundColor: colors.edge,
-    borderWidth: 2,
+    borderWidth: strokes.outline,
     borderColor: colors.ink,
   },
 });

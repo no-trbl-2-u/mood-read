@@ -4,7 +4,8 @@ import { Pressable, ScrollView, StyleSheet, Text, View } from "react-native";
 
 import { importFiles, pickFiles, pickFolder, type ImportOutcome, type ImportStep } from "@/lib/library";
 import type { DrmKind } from "@/lib/meta/types";
-import { colors, radii, spacing, typography } from "@/ui/theme";
+import { Button } from "@/ui/Button";
+import { colors, radii, sizes, spacing, strokes, typography } from "@/ui/theme";
 import { TopBar } from "@/ui/TopBar";
 
 // Import (spec 01 A5-A7; design/layouts/DECISION.md "Import note"): a full screen pushed from the library. The
@@ -31,6 +32,7 @@ const TILE: Record<DrmKind, string> = { aax: "AAX", aaxc: "AAXC", protected: "DR
 type Note = { fileName: string; drm: DrmKind };
 
 const backToLibrary = () => (router.canGoBack() ? router.back() : router.replace("/"));
+const BACK = { label: "Your shelf", a11yLabel: "Back to your shelf", onPress: backToLibrary };
 
 export default function ImportScreen() {
   const [step, setStep] = useState<ImportStep | null>(null);
@@ -79,7 +81,7 @@ export default function ImportScreen() {
   const busy = step !== null;
   return (
     <View style={styles.screen}>
-      <TopBar title="Import" back={{ label: "Library", onPress: backToLibrary }} />
+      <TopBar title="Import" back={BACK} />
       <ScrollView contentContainerStyle={styles.body}>
         <Text style={styles.heading}>Import a book</Text>
         <Text style={styles.text}>
@@ -104,24 +106,14 @@ export default function ImportScreen() {
           </Text>
         )}
         <View style={styles.actions}>
-          <Pressable
-            testID="import-files"
-            role="button"
-            style={[styles.primary, busy && styles.busy]}
-            disabled={busy}
-            onPress={() => choose("files")}
-          >
-            <Text style={styles.primaryText}>Choose files</Text>
-          </Pressable>
-          <Pressable
+          <Button testID="import-files" label="Choose files" disabled={busy} onPress={() => choose("files")} />
+          <Button
             testID="import-folder"
-            role="button"
-            style={[styles.secondary, busy && styles.busy]}
+            kind="secondary"
+            label="Choose a folder"
             disabled={busy}
             onPress={() => choose("folder")}
-          >
-            <Text style={styles.secondaryText}>Choose a folder</Text>
-          </Pressable>
+          />
         </View>
       </ScrollView>
     </View>
@@ -133,7 +125,7 @@ function ImportNote({ note, onChooseAnother }: { note: Note; onChooseAnother: ()
   const [more, setMore] = useState(false);
   return (
     <View style={styles.screen} testID="import-note">
-      <TopBar title="Import" back={{ label: "Library", onPress: backToLibrary }} />
+      <TopBar title="Import" back={BACK} />
       <ScrollView contentContainerStyle={styles.body}>
         <View style={styles.tile}>
           <Text style={styles.tileText}>{TILE[note.drm]}</Text>
@@ -165,18 +157,14 @@ function ImportNote({ note, onChooseAnother }: { note: Note; onChooseAnother: ()
           </View>
         )}
         <View style={styles.actions}>
-          <Pressable testID="choose-another" role="button" style={styles.primary} onPress={onChooseAnother}>
-            <Text style={styles.primaryText}>Choose another file</Text>
-          </Pressable>
-          <Pressable
+          <Button testID="choose-another" label="Choose another file" onPress={onChooseAnother} />
+          <Button
             testID="learn-more"
-            role="button"
-            aria-expanded={more}
-            style={styles.secondary}
+            kind="secondary"
+            label={more ? "Show less" : "Learn more"}
+            expanded={more}
             onPress={() => setMore(!more)}
-          >
-            <Text style={styles.secondaryText}>{more ? "Show less" : "Learn more"}</Text>
-          </Pressable>
+          />
         </View>
       </ScrollView>
     </View>
@@ -186,44 +174,23 @@ function ImportNote({ note, onChooseAnother }: { note: Note; onChooseAnother: ()
 const styles = StyleSheet.create({
   screen: { flex: 1, backgroundColor: colors.background },
   body: { padding: spacing.lg, gap: spacing.md },
-  heading: { color: colors.text, fontSize: 20, fontWeight: "700" },
-  text: { color: colors.text, fontSize: 16, lineHeight: 22 },
-  muted: { color: colors.textMuted, fontSize: 14, lineHeight: 20 },
-  link: { alignSelf: "flex-start", minHeight: spacing.xxl, justifyContent: "center" },
+  heading: typography.heading,
+  text: typography.body,
+  muted: { ...typography.body, color: colors.textMuted },
+  link: { alignSelf: "flex-start", minHeight: sizes.touch, justifyContent: "center" },
   linkText: { ...typography.label, color: colors.accent, textDecorationLine: "underline" },
-  error: { color: colors.danger, fontSize: 14, lineHeight: 20 },
+  error: { ...typography.body, color: colors.danger },
   more: { gap: spacing.sm },
   tile: {
-    width: 72,
-    height: 88,
+    width: sizes.fileTileWidth,
+    height: sizes.fileTileHeight,
     borderRadius: radii.sm,
-    borderWidth: 1,
-    borderColor: colors.border,
+    borderWidth: strokes.outline,
+    borderColor: colors.edge,
     backgroundColor: colors.surface,
     alignItems: "center",
     justifyContent: "center",
   },
-  tileText: { color: colors.textMuted, fontSize: 15, fontWeight: "700" },
-  actions: { gap: spacing.sm, marginTop: spacing.md },
-  primary: {
-    minHeight: 48,
-    paddingHorizontal: spacing.lg,
-    borderRadius: radii.md,
-    backgroundColor: colors.accent,
-    alignItems: "center",
-    justifyContent: "center",
-  },
-  primaryText: { color: colors.onAccent, fontSize: 16, fontWeight: "700" },
-  secondary: {
-    minHeight: 48,
-    paddingHorizontal: spacing.lg,
-    borderRadius: radii.md,
-    borderWidth: 1,
-    borderColor: colors.border,
-    backgroundColor: colors.surface,
-    alignItems: "center",
-    justifyContent: "center",
-  },
-  secondaryText: { color: colors.text, fontSize: 16, fontWeight: "600" },
-  busy: { opacity: 0.6 },
+  tileText: { ...typography.heading, color: colors.textMuted },
+  actions: { gap: spacing.md, marginTop: spacing.md },
 });
