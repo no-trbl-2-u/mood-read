@@ -7,19 +7,31 @@ import type { Book, BookScores, Chapter, ChapterScore, JobView, ScoringJob } fro
 export const jobKey = (bookId: string) => `scorejob:${bookId}`;
 export const scoresKey = (bookId: string) => `scores:${bookId}`;
 
-/** Turns a finished job's chapters into what the device keeps, matched to the book's chapters by index and title. */
+/**
+ * A chapter title as the proxy compares it (proxy/src/validate.ts bookKey): the proxy collapses whitespace, and a
+ * cached book carries the first listener's casing, so titles that differ only in those are the same chapter.
+ */
+export const sameChapterTitle = (a: string, b: string) => {
+  const norm = (s: string) => s.normalize("NFKC").toLowerCase().replace(/\s+/g, " ").trim();
+  return norm(a) === norm(b);
+};
+
+/**
+ * Turns a finished job's chapters into what the device keeps, matched to the book's chapters by index and title. A
+ * kept mood carries the device's own chapter title, so later lookups compare against the title as it is on the device.
+ */
 export function toBookScores(book: Pick<Book, "chapters">, view: JobView, previous: BookScores | null): BookScores | null {
   const r = view.result;
   if (!r) return null;
   const chapters: ChapterScore[] = [];
   for (const c of r.chapters) {
     const mine = book.chapters[c.index];
-    if (!mine || mine.title !== c.title) continue;
+    if (!mine || !sameChapterTitle(mine.title, c.title)) continue;
     const pieces = c.pieces ? [c.pieces.piece, ...c.pieces.alternates] : [];
-    const old = previous?.chapters.find((x) => x.mood.chapterIndex === c.index && x.mood.chapterTitle === c.title)?.playlist;
+    const old = previous?.chapters.find((x) => x.mood.chapterIndex === c.index && x.mood.chapterTitle === mine.title)?.playlist;
     const keepPick = old && old.pick !== "auto" && pieces.some((p) => p.id === old.pick) ? old.pick : "auto";
     chapters.push({
-      mood: c.mood,
+      mood: { ...c.mood, chapterTitle: mine.title },
       pieces,
       playlist: c.pieces ? { chapterIndex: c.index, piece: c.pieces.piece.id, alternates: c.pieces.alternates.map((p) => p.id), pick: keepPick } : null,
     });
