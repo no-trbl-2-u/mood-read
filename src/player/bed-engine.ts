@@ -7,9 +7,13 @@
 // bedEnvelope: the enter ramp, the quiet opening, the sleep fade) every FADE_STEP_MS and multiplies it into every
 // deck, so a ramp moves smoothly between the clock's ticks. A pause with a fade (the book's end, a companion-mode
 // pause) plays the bed on under the exit ramp (exitGain) and stops it once silent.
+//
+// Scenes (07.2, spec 07 A2): the provider plans the clock's scene (src/lib/bed.ts planScene) and hands the engine a
+// scene command when it moves. Until 01.10 plays pieces the engine only logs it (sceneLogLine) and keeps the scene
+// it is in (`scene()`): the decks, and so the soundscape heard, do not change at a scene boundary.
 import { createAudioPlayer, type AudioPlayer, type AudioSource } from "expo-audio";
 
-import { BED_RATE, crossfadeGains, CROSSFADE_MS, exitGain, type BedCommand } from "@/lib/bed";
+import { BED_RATE, crossfadeGains, CROSSFADE_MS, exitGain, sceneLogLine, type BedCommand, type SceneCommand } from "@/lib/bed";
 import { bedVolume } from "@/lib/mix";
 
 const FADE_STEP_MS = 50;
@@ -23,6 +27,8 @@ export type BedEngine = {
   setLevel: (level: number, duck?: number) => void;
   /** Where the enter-exit gain is read from while the bed plays (src/lib/bed.ts bedEnvelope). */
   setEnvelope: (read: () => number) => void;
+  /** The last scene command carried out (07.2), or null: what 01.10 crossfades to. */
+  scene: () => SceneCommand | null;
   dispose: () => void;
 };
 
@@ -46,6 +52,7 @@ export function createBedEngine(source: (soundId: string) => AudioSource | undef
   };
   let active = 0;
   let fade: Fade | null = null;
+  let lastScene: SceneCommand | null = null;
   // While a deck loads, the latest play state and place wait here.
   let loading = 0;
   let wantPlay = false;
@@ -183,6 +190,11 @@ export function createBedEngine(source: (soundId: string) => AudioSource | undef
           exit = 1;
           decks.forEach((d) => d.pause());
           return;
+        case "scene":
+          // Until 01.10 plays pieces: logged, and the soundscape plays on unchanged.
+          lastScene = command;
+          console.info(sceneLogLine(command));
+          return;
       }
     },
     setLevel(next, nextDuck = 1) {
@@ -195,6 +207,7 @@ export function createBedEngine(source: (soundId: string) => AudioSource | undef
       readEnvelope = read;
       if (wantPlay) sample();
     },
+    scene: () => lastScene,
     dispose() {
       stopTicker();
       exiting = null;

@@ -4,8 +4,8 @@ import { StyleSheet, Text, View } from "react-native";
 
 import { chapterBed, pickFor } from "@/lib/bed";
 import { speedLabel } from "@/lib/labels";
-import { chapterEdits, reached, useBook, useFurthestReached } from "@/lib/library";
-import { moodCardView } from "@/lib/mood-card";
+import { chapterEdits, reached, useBook, useFurthestIn, useFurthestReached } from "@/lib/library";
+import { moodCardView, sceneBand } from "@/lib/mood-card";
 import { isReached } from "@/lib/reached";
 import { notes, useNoteDismissed } from "@/lib/notes";
 import { scoring, scoringStore, useBookScores, useScoringJob } from "@/lib/scoring";
@@ -69,6 +69,12 @@ export default function BookScreen() {
   useEffect(() => {
     if (id && playingChapter) reached.reach(id, playingChapter);
   }, [id, playingChapter]);
+  // And the furthest place within it (07.2, A2): a scene shows only once the clock has reached its start.
+  const playingPosition = p.book?.id === id ? p.position : null;
+  const furthestIn = useFurthestIn(id ?? "", playingChapter?.start ?? null);
+  useEffect(() => {
+    if (id && playingChapter && playingPosition !== null) reached.reachAt(id, playingChapter, playingPosition);
+  }, [id, playingChapter, playingPosition]);
 
   // The reached chapter's piece plays for it: "Your soundtrack" logs it, and its scene pieces, the first time
   // (src/lib/soundtrack-store.ts, 07.8, A9). A pick made while it plays is logged too, since it plays from then on.
@@ -97,12 +103,13 @@ export default function BookScreen() {
   // What each row may show: nothing before the chapter is reached (A21); then the "Unscored" chip, never a guessed
   // mood (A19), or its emotions, named piece, alternates and the listener's pick (A16). A stored score counts only
   // while the chapter keeps the title it was scored under.
-  const moods = book.chapters.map((c) =>
-    moodCardView(
-      isReached(c, furthest, chapter),
-      scores?.chapters.find((s) => s.mood.chapterIndex === c.index && s.mood.chapterTitle === c.title) ?? null,
-    ),
-  );
+  // The playing row also shows the playing scene's emotions, nothing for a scene not yet reached (07.2, A2).
+  const moods = book.chapters.map((c) => {
+    const score = scores?.chapters.find((s) => s.mood.chapterIndex === c.index && s.mood.chapterTitle === c.title) ?? null;
+    const view = moodCardView(isReached(c, furthest, chapter), score);
+    if (view.kind !== "scored" || c.index !== chapter?.index) return view;
+    return { ...view, scene: sceneBand(score, c, position, active ? furthestIn : null) };
+  });
   const speedButton = p.sleep ? `${speedLabel(p.speed)} · Sleep` : speedLabel(p.speed);
 
   return (

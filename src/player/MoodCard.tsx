@@ -4,7 +4,9 @@
 // Auto or one alternate, saved per chapter. 07.4 (spec 07 A5) adds the listener's say beside the piece: "Fits" and
 // "Doesn't fit" on the piece that plays (the pick, else the named piece), one lit at most, kept on the device per
 // chapter; "Doesn't fit" opens the chapter's other pieces right there, so the next step is a pick. Nothing is
-// previewed or played (v1). Never a chapter's events and never
+// previewed or played (v1). 07.2 (spec 07 A2) adds the scene band under the chapter's chips: the playing scene's
+// emotions, a thin band that changes as the clock crosses a scene boundary and shows nothing for a scene not yet
+// reached (src/lib/mood-card.ts sceneBand). Never a chapter's events and never
 // a source's text: the card draws only emotions and pieces. A row not yet reached never gets here (A21).
 import { StyleSheet, Text, View } from "react-native";
 
@@ -17,6 +19,8 @@ import { colors, spacing, strokes, typography } from "@/ui/theme";
 
 const COPY = {
   emotions: "Emotions in this chapter",
+  scene: "In this scene",
+  sceneEmotions: "Emotions in the playing scene",
   piece: "Named piece",
   alternates: "Alternates",
   pick: "Your pick",
@@ -35,12 +39,22 @@ const COPY = {
   unscored: "Not enough has been written about this chapter to score it. Shown unscored, never guessed.",
 };
 
-/** A row of emotion stickers with intensity ("Curious 70%"); `limit` keeps the strongest few (a collapsed row: 2). */
-export function EmotionChips(props: { emotions: readonly EmotionScore[]; limit?: number; testID?: string }) {
+/**
+ * A row of emotion stickers with intensity ("Curious 70%"); `limit` keeps the strongest few (a collapsed row: 2).
+ * `label` names the list (the chapter's emotions by default); `idPrefix` keeps each sticker's test id apart from the
+ * chapter's when two rows share a card (the scene band: `scene-emotion-`).
+ */
+export function EmotionChips(props: {
+  emotions: readonly EmotionScore[];
+  limit?: number;
+  testID?: string;
+  label?: string;
+  idPrefix?: string;
+}) {
   const shown = strongest(props.emotions, props.limit);
   if (shown.length === 0) return null;
   return (
-    <View style={styles.chips} testID={props.testID} role="list" aria-label={COPY.emotions}>
+    <View style={styles.chips} testID={props.testID} role="list" aria-label={props.label ?? COPY.emotions}>
       {shown.map((e, i) => (
         <View key={e.emotion} role="listitem">
           <Sticker
@@ -48,7 +62,7 @@ export function EmotionChips(props: { emotions: readonly EmotionScore[]; limit?:
             label={EMOTION_NAMES[e.emotion]}
             intensity={e.intensity}
             index={i}
-            testID={`emotion-${e.emotion}`}
+            testID={`${props.idPrefix ?? "emotion-"}${e.emotion}`}
           />
         </View>
       ))}
@@ -77,6 +91,12 @@ export function MoodCard(props: {
   return (
     <View style={styles.card} testID="mood-card">
       <EmotionChips emotions={v.emotions} testID="mood-emotions" />
+      {v.scene && v.scene.length > 0 && (
+        <View style={styles.sceneBand} testID="mood-scene">
+          <Text style={styles.heading}>{COPY.scene}</Text>
+          <EmotionChips emotions={v.scene} testID="mood-scene-emotions" label={COPY.sceneEmotions} idPrefix="scene-emotion-" />
+        </View>
+      )}
       {v.piece ? (
         <>
           <View style={styles.block} testID="mood-piece">
@@ -191,6 +211,12 @@ const styles = StyleSheet.create({
   card: { gap: spacing.sm, marginTop: spacing.xs },
   chips: { flexDirection: "row", flexWrap: "wrap", alignItems: "center", gap: spacing.sm },
   block: { gap: spacing.xxs },
+  sceneBand: {
+    gap: spacing.xxs,
+    paddingLeft: spacing.sm,
+    borderLeftWidth: strokes.outline,
+    borderLeftColor: colors.border,
+  },
   heading: { ...typography.caption, fontWeight: typography.label.fontWeight },
   pieceTitle: { ...typography.body, fontWeight: typography.label.fontWeight },
   muted: typography.caption,

@@ -10,6 +10,7 @@ import {
   misfitOffers,
   moodCardView,
   pieceLine,
+  sceneBand,
   strongest,
 } from "./mood-card.ts";
 import { stickerLabel } from "./labels.ts";
@@ -163,4 +164,41 @@ test("A5: \"Doesn't fit\" offers every other piece of the chapter, the named pie
   assert.ok(lone.kind === "scored" && misfitOffers(lone).length === 0);
   const none = moodCardView(true, score({}, null));
   assert.ok(none.kind === "scored" && misfitOffers(none).length === 0);
+});
+
+// ---- The scene band (07.2, spec 07 A2) -----------------------------------------------------------------------
+
+const SCENES = [
+  { emotions: [{ emotion: "calm" as const, intensity: 0.3 }, { emotion: "wonder" as const, intensity: 0.6 }], span: 0.4 },
+  { emotions: [{ emotion: "tension" as const, intensity: 0.9 }], span: 0.35 },
+  { emotions: [{ emotion: "triumph" as const, intensity: 0.8 }], span: 0.25 },
+];
+const CH = { start: 100, end: 200 };
+
+test("A2: the band shows the playing scene's emotions, strongest first, and changes as the clock crosses a boundary", () => {
+  const s = score({ scenes: SCENES });
+  assert.deepEqual(sceneBand(s, CH, 110, null), [{ emotion: "wonder", intensity: 0.6 }, { emotion: "calm", intensity: 0.3 }]);
+  assert.deepEqual(sceneBand(s, CH, 140, null), [{ emotion: "tension", intensity: 0.9 }]);
+  assert.deepEqual(sceneBand(s, CH, 190, 190), [{ emotion: "triumph", intensity: 0.8 }]);
+  // A seek back shows the earlier scene again.
+  assert.deepEqual(sceneBand(s, CH, 105, 190), SCENES[0].emotions.slice().reverse());
+});
+
+test("A2: a scene not yet reached shows nothing: the band never runs ahead of the clock or the furthest place", () => {
+  const s = score({ scenes: SCENES });
+  // Just short of the second scene: nothing of the second or third scene is in the band.
+  const before = sceneBand(s, CH, 139.9, 120)!;
+  assert.ok(!before.some((e) => e.emotion === "tension" || e.emotion === "triumph"));
+  // The furthest place reached is the third scene, the clock back in the first: the band follows the clock.
+  assert.deepEqual(sceneBand(s, CH, 101, 190)?.map((e) => e.emotion), ["wonder", "calm"]);
+  // A place not yet reached (ahead of the clock's mark) shows nothing.
+  assert.equal(sceneBand(s, CH, Number.NaN, null), null);
+});
+
+test("A2: no band for a chapter with one scene, no scenes, no score, too little written, or no chapter", () => {
+  assert.equal(sceneBand(score(), CH, 110, null), null, "no scenes: the chapter's own chips say it all");
+  assert.equal(sceneBand(score({ scenes: [{ emotions: SCENES[0].emotions, span: 1 }] }), CH, 110, null), null);
+  assert.equal(sceneBand(null, CH, 110, null), null);
+  assert.equal(sceneBand(score({ scenes: SCENES, coverage: "too-little" }), CH, 110, null), null);
+  assert.equal(sceneBand(score({ scenes: SCENES }), undefined, 110, null), null);
 });

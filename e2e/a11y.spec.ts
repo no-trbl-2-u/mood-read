@@ -237,6 +237,17 @@ const STATES: State[] = [
     },
   },
   {
+    name: "/book/<id> scored with scenes: the mood card's scene band (07.2)",
+    open: async (page) => {
+      await scoredBook(page, { scenes: true });
+      const band = page.getByTestId("chapter-row-0").getByTestId("mood-scene");
+      await expect(band).toContainText("Wonder 75%");
+      const play = page.getByTestId("mini-play-pause");
+      if ((await play.getAttribute("aria-label")) === "Pause") await play.click();
+      await expect(play).toHaveAttribute("aria-label", "Play");
+    },
+  },
+  {
     name: "the shelf with a scored book's fingerprint and a mood lit (07.7)",
     open: async (page) => {
       const id = await scoredBook(page);

@@ -13,6 +13,9 @@
 // a sleep timer's last minute (src/lib/bed.ts sleepFade reads SleepTimer); with the book's quiet opening on it holds
 // silent for each chapter's first 20 s; and at the book's end, or a companion-mode pause, it fades out over 4 s
 // instead of stopping with the clock. The engine samples that envelope from here (bedEnvelope) while the bed plays.
+// The bed follows scenes (07.2, A2): on every clock event the playing chapter's scene is planned from its stored
+// score (src/lib/bed.ts planScene, sceneContextFor) and a move is handed to the engine, which logs it until 01.10
+// plays pieces; a pick saved for the chapter re-plans at once, so its piece covers every scene.
 import { setAudioModeAsync, useAudioPlayer, useAudioPlayerStatus, type AudioPlayer } from "expo-audio";
 import { createContext, useCallback, useContext, useEffect, useMemo, useRef, useState, type ReactNode } from "react";
 import { AppState, Platform } from "react-native";
@@ -23,13 +26,17 @@ import {
   defaultBedFor,
   entersNow,
   IDLE_BED,
+  NO_SCENE,
   pickLayer,
   planBed,
+  planScene,
+  sceneContextFor,
   setChapterOnly,
   sleepFade,
   type BedSetting,
   type BedState,
   type LayerPick,
+  type SceneSpot,
 } from "@/lib/bed";
 import { createClock, type Clock, type ClockEvent, type ClockState } from "@/lib/clock";
 import {
@@ -48,6 +55,7 @@ import {
 } from "@/lib/companion";
 import { createDucker, DEFAULT_MIX, mixLevels, normalizeMix, type Mix } from "@/lib/mix";
 import { library, useBooks } from "@/lib/library";
+import { scoringStore } from "@/lib/scoring";
 import { settings, useSettings } from "@/lib/settings";
 import { resolveFile } from "@/lib/media";
 import {
@@ -531,6 +539,7 @@ export function PlayerProvider({ children }: { children: ReactNode }) {
     });
     engineRef.current = engine;
     let state: BedState = IDLE_BED;
+    let scene: SceneSpot = NO_SCENE;
     let wasPlaying = false;
     const follow = (s: ClockState, event: ClockEvent) => {
       const b = bookRef.current?.id === s.bookId ? bookRef.current : undefined;
@@ -547,11 +556,21 @@ export function PlayerProvider({ children }: { children: ReactNode }) {
       });
       state = plan.state;
       plan.commands.forEach(engine.apply);
+      // The playing chapter's scene (07.2): its stored score, while the chapter keeps the title it was scored under.
+      const c = chapters.find((ch) => ch.index === s.chapterIndex);
+      const score =
+        b && c ? (scoringStore.scores(b.id)?.chapters.find((x) => x.mood.chapterIndex === c.index && x.mood.chapterTitle === c.title) ?? null) : null;
+      const next = planScene(scene, s, b && c ? sceneContextFor(score, { start: c.start, end: Math.min(c.end, b.duration) }) : null);
+      scene = next.spot;
+      if (next.command) engine.apply(next.command);
     };
     const off = clock.subscribe(follow);
     replanBed.current = () => follow(clock.current(), "tick");
+    // A pick (or a new score) for the playing chapter changes its scenes' pieces: re-plan now.
+    const offScores = scoringStore.subscribe(() => follow(clock.current(), "tick"));
     return () => {
       off();
+      offScores();
       replanBed.current = () => {};
       engineRef.current = null;
       engine.dispose();

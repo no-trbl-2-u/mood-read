@@ -16,7 +16,8 @@
 // at the book's end (and on a companion-mode pause, src/lib/companion.ts) it fades out over BED_EXIT_MS while the
 // engine plays it on, instead of stopping with the narration.
 import type { ClockEvent, ClockState } from "./clock.ts";
-import type { SleepTimer } from "./types.ts";
+import type { ChapterScore, Scene, SleepTimer } from "./types.ts";
+import { scenePiecesOf, scenesOf } from "./scenes.ts";
 import { SOUNDSCAPE_OFF } from "./settings-store.ts";
 import { DEFAULT_SOUNDSCAPE_ID } from "./soundscapes.ts";
 
@@ -299,7 +300,9 @@ export type BedCommand =
   | { type: "seek"; offset: number }
   | { type: "play" }
   /** `fadeMs` (07.3): fade the bed out over this long, playing on, before it stops; absent, stop at once. */
-  | { type: "pause"; fadeMs?: number };
+  | { type: "pause"; fadeMs?: number }
+  /** The clock is in another scene of the chapter (07.2, planScene); until 01.10 the engine logs it, nothing more. */
+  | SceneCommand;
 
 export type BedContext = {
   /** The start (book seconds) of the chapter the clock is in. */
@@ -340,4 +343,141 @@ export function planBed(
     commands.push(playing ? { type: "play" } : fadeMs > 0 ? { type: "pause", fadeMs } : { type: "pause" });
   }
   return { state, commands };
+}
+
+// ---- Scenes inside a chapter (07.2, spec 07 A2) -------------------------------------------------------------
+//
+// A scored chapter may hold 1 to 4 scenes, each covering a `span` of it in order (src/lib/scenes.ts reads them). The
+// engine maps the clock's place in the chapter to a scene (sceneAt) and, when that place crosses a scene boundary
+// inside the chapter, crosses to the next scene's piece over the same CROSSFADE_MS as a chapter change; a seek back
+// crosses the other way (planScene). A scene's piece is the chapter-wide pick when there is one (scenePiecesOf,
+// D18), so a pick plays for every scene and its boundaries cross nothing. Until 01.10 plays pieces the scene command
+// changes nothing heard: the engine logs it, and the bed's soundscape plays on (planBed never reads a scene).
+
+type SceneSpan = Pick<Scene, "span">;
+
+/**
+ * Where each scene starts, in seconds into a chapter of `chapterLength`: the spans read as shares of the chapter (so
+ * spans that do not sum to 1 still cover it), a broken span (not a positive number) counting for nothing, and with no
+ * usable span at all the scenes share the chapter evenly.
+ */
+export function sceneStarts(chapterLength: number, scenes: readonly SceneSpan[]): number[] {
+  const length = Number.isFinite(chapterLength) && chapterLength > 0 ? chapterLength : 0;
+  const weights = scenes.map((s) => (Number.isFinite(s.span) && s.span > 0 ? s.span : 0));
+  const total = weights.reduce((a, b) => a + b, 0);
+  const shares = total > 0 ? weights.map((w) => w / total) : weights.map(() => 1 / scenes.length);
+  const starts: number[] = [];
+  let at = 0;
+  for (const share of shares) {
+    starts.push(round(at * length));
+    at += share;
+  }
+  return starts;
+}
+
+/**
+ * The scene (its index) the clock is in, `positionInChapter` seconds into a chapter of `chapterLength`: a boundary
+ * belongs to the scene it starts (a scene with no length never plays), before the start reads as the first scene
+ * and past the end as the last. A chapter with no length is its first scene. Null when the chapter has no scenes.
+ */
+export function sceneAt(positionInChapter: number, chapterLength: number, scenes: readonly SceneSpan[]): number | null {
+  if (scenes.length === 0) return null;
+  if (!(Number.isFinite(chapterLength) && chapterLength > 0)) return 0;
+  const into = Number.isFinite(positionInChapter) ? positionInChapter : 0;
+  const starts = sceneStarts(chapterLength, scenes);
+  let scene = 0;
+  for (let i = 1; i < starts.length; i++) if (into >= starts[i] - SCENE_SLACK_S) scene = i;
+  return scene;
+}
+
+/** A little slack at a scene boundary, so float noise in the clock's place never holds a scene back. */
+const SCENE_SLACK_S = 0.001;
+
+/** What the scene plan reads for the playing chapter: where it sits in the book, its length, scenes and their pieces. */
+export type SceneContext = {
+  chapterStart: number;
+  chapterLength: number;
+  scenes: readonly Scene[];
+  /** One piece id per scene (null where no piece is named), the pick for every scene when there is one. */
+  pieces: readonly (string | null)[];
+};
+
+/**
+ * The scene context for a chapter's stored score: its scenes (one, the whole chapter, when it has none) and each
+ * scene's piece (scenePiecesOf: the pick covers the chapter). Null for a chapter with no score, or one scored too
+ * little to have a mood.
+ */
+export function sceneContextFor(score: ChapterScore | null, chapter: { start: number; end: number }): SceneContext | null {
+  if (!score) return null;
+  const scenes = scenesOf(score.mood);
+  if (scenes.length === 0) return null;
+  const named = scenePiecesOf(score.playlist, scenes.length);
+  return {
+    chapterStart: chapter.start,
+    chapterLength: Math.max(0, chapter.end - chapter.start),
+    scenes,
+    pieces: scenes.map((_, i) => named[i] ?? null),
+  };
+}
+
+/** The scene the bed is in: its book and chapter, the scene's index and its piece; all null outside a scored chapter. */
+export type SceneSpot = { bookId: string | null; chapterIndex: number | null; scene: number | null; pieceId: string | null };
+
+export const NO_SCENE: SceneSpot = { bookId: null, chapterIndex: null, scene: null, pieceId: null };
+
+/**
+ * One scene instruction for the engine: the bed is now in `scene` of the chapter, whose piece is `pieceId`.
+ * `direction` is "on" across a boundary forward, "back" across one backward (a seek back), "enter" on coming into
+ * the chapter (its own change crosses then, so no scene crossfade); a pick inside a scene reads as "on". `crossfade`: cross to the scene's piece over
+ * `fadeMs` (CROSSFADE_MS), true only while playing, inside the chapter, and to another piece than the one heard.
+ */
+export type SceneCommand = {
+  type: "scene";
+  chapterIndex: number;
+  scene: number;
+  from: number | null;
+  pieceId: string | null;
+  direction: "on" | "back" | "enter";
+  crossfade: boolean;
+  fadeMs: number;
+};
+
+/**
+ * The scene the clock is in and, when it moved (a boundary crossed, a seek, a chapter entered, a pick that changes
+ * the scene's piece), what to tell the engine. Pure, from the clock and the playing chapter's scene context.
+ */
+export function planScene(
+  prev: SceneSpot,
+  clock: ClockState,
+  ctx: SceneContext | null,
+): { spot: SceneSpot; command: SceneCommand | null } {
+  if (!clock.bookId || clock.chapterIndex === null || !ctx) return { spot: NO_SCENE, command: null };
+  const scene = sceneAt(clock.position - ctx.chapterStart, ctx.chapterLength, ctx.scenes);
+  if (scene === null) return { spot: NO_SCENE, command: null };
+  const pieceId = ctx.pieces[scene] ?? null;
+  const spot: SceneSpot = { bookId: clock.bookId, chapterIndex: clock.chapterIndex, scene, pieceId };
+  const within = prev.bookId === clock.bookId && prev.chapterIndex === clock.chapterIndex && prev.scene !== null;
+  if (within && prev.scene === scene && prev.pieceId === pieceId) return { spot, command: null };
+  const direction = !within ? "enter" : scene > prev.scene! ? "on" : scene < prev.scene! ? "back" : "on";
+  return {
+    spot,
+    command: {
+      type: "scene",
+      chapterIndex: clock.chapterIndex,
+      scene,
+      from: within ? prev.scene : null,
+      pieceId,
+      direction,
+      crossfade: within && clock.playing && pieceId !== prev.pieceId,
+      fadeMs: CROSSFADE_MS,
+    },
+  };
+}
+
+/**
+ * The line the engine logs for a scene command until 01.10 plays pieces (the bed's soundscape is unchanged): which
+ * chapter and scene (counted from 0), its piece, the way it crossed and whether it would crossfade.
+ */
+export function sceneLogLine(c: SceneCommand): string {
+  return `bed scene: chapter=${c.chapterIndex} scene=${c.scene} piece=${c.pieceId ?? "none"} direction=${c.direction} crossfade=${c.crossfade}`;
 }

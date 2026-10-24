@@ -1,6 +1,8 @@
 // A scored book for the e2e (01.4, shared by e2e/mood-card.spec.ts and e2e/a11y.spec.ts), hermetic: imported from
 // three local WAV files (one chapter each), its scores seeded on the device the way a finished scoring run stores
-// them (src/lib/scoring-store.ts, `scores:<book id>`), so no proxy is involved.
+// them (src/lib/scoring-store.ts, `scores:<book id>`), so no proxy is involved. With `scenes` (07.2, spec 07 A2) the
+// first chapter is 10 s long and holds three scenes (spans 0.4, 0.35, 0.25: 0-4 s, 4-7.5 s, 7.5-10 s), each with its
+// own emotions and its own piece (scenePieces: Theme 1, 2, 3), so a scene boundary is crossed in a few seconds of play.
 import { expect, type Page } from "@playwright/test";
 
 function wav(seconds: number, rate = 8000): Buffer {
@@ -43,21 +45,43 @@ export const EMOTIONS = [
   ],
 ];
 
-/** Imports the three-chapter book, seeds every chapter's score on the device, reloads; returns the book id. */
-export async function scoredBook(page: Page): Promise<string> {
+/** The first chapter's scenes with `scenes` on: emotions no other scene, and not the chapter's own chips, show. */
+export const SCENES = [
+  {
+    span: 0.4,
+    emotions: [
+      { emotion: "wonder", intensity: 0.75 },
+      { emotion: "calm", intensity: 0.5 },
+    ],
+  },
+  {
+    span: 0.35,
+    emotions: [
+      { emotion: "tension", intensity: 0.9 },
+      { emotion: "dread", intensity: 0.45 },
+    ],
+  },
+  { span: 0.25, emotions: [{ emotion: "triumph", intensity: 0.85 }] },
+];
+
+/**
+ * Imports the three-chapter book, seeds every chapter's score on the device, reloads; returns the book id. With
+ * `scenes`, the first chapter runs 10 s and carries SCENES and one piece per scene.
+ */
+export async function scoredBook(page: Page, opts: { scenes?: boolean } = {}): Promise<string> {
   await page.goto("/");
   await page.getByTestId("import-book").click();
   const chooser = page.waitForEvent("filechooser");
   await page.getByTestId("import-files").click();
   await (await chooser).setFiles([
-    { name: "Mood Book - 01.wav", mimeType: "audio/wav", buffer: wav(4) },
+    { name: "Mood Book - 01.wav", mimeType: "audio/wav", buffer: wav(opts.scenes ? 10 : 4) },
     { name: "Mood Book - 02.wav", mimeType: "audio/wav", buffer: wav(4) },
     { name: "Mood Book - 03.wav", mimeType: "audio/wav", buffer: wav(4) },
   ]);
   await expect(page).toHaveURL(/\/book\/[a-z0-9]+$/);
   const id = new URL(page.url()).pathname.split("/").pop()!;
   await page.evaluate(
-    ({ id, emotions, pieces, source }) => {
+    ({ id, emotions, pieces, source, scenes }) => {
       const books = JSON.parse(localStorage.getItem("books")!) as { id: string; chapters: { index: number; title: string }[] }[];
       const book = books.find((b) => b.id === id)!;
       const chapters = book.chapters.map((c) => ({
@@ -65,6 +89,7 @@ export async function scoredBook(page: Page): Promise<string> {
           chapterIndex: c.index,
           chapterTitle: c.title,
           emotions: emotions[c.index],
+          ...(scenes && c.index === 0 ? { scenes } : {}),
           sources: [{ url: source, title: "Mood Book summary" }],
           coverage: "scored",
           model: "gpt-5-mini",
@@ -72,11 +97,17 @@ export async function scoredBook(page: Page): Promise<string> {
           scoredAt: 1,
         },
         pieces,
-        playlist: { chapterIndex: c.index, piece: pieces[0].id, alternates: [pieces[1].id, pieces[2].id], pick: "auto" },
+        playlist: {
+          chapterIndex: c.index,
+          piece: pieces[0].id,
+          alternates: [pieces[1].id, pieces[2].id],
+          pick: "auto",
+          ...(scenes && c.index === 0 ? { scenePieces: pieces.map((p) => p.id) } : {}),
+        },
       }));
       localStorage.setItem(`scores:${id}`, JSON.stringify({ jobId: "d".repeat(64), model: "gpt-5-mini", version: "01.2.1", scoredAt: 1, costUsd: 0.04, chapters }));
     },
-    { id, emotions: EMOTIONS, pieces: [piece(1), piece(2), piece(3)], source: SOURCE },
+    { id, emotions: EMOTIONS, pieces: [piece(1), piece(2), piece(3)], source: SOURCE, scenes: opts.scenes ? SCENES : null },
   );
   await page.reload();
   await expect(page.getByTestId("mini-play-pause")).toHaveAttribute("aria-label", /Play|Pause/);

@@ -3,11 +3,23 @@
 // (src/lib/scoring-store.ts, `scores:<book id>`), so no proxy is involved. A chapter not yet reached shows no
 // emotions and does not expand; the playing chapter shows its emotions, named piece and alternates; a picked
 // alternate is saved across a reload, and Auto returns to auto. 07.4 (spec 07 A5): "Fits" and "Doesn't fit" keep a
-// verdict per chapter across a reload, and "Doesn't fit" offers the chapter's other pieces in place.
+// verdict per chapter across a reload, and "Doesn't fit" offers the chapter's other pieces in place. 07.2 (spec 07
+// A2): a chapter with three scenes shows the playing scene's emotions in a band that changes as the clock crosses a
+// boundary, nothing of a scene not yet reached, the earlier scene again on a seek back; the bed logs each scene's
+// piece (until 01.10 plays pieces), and a chapter-wide pick is the piece for every scene.
 import { expect, test, type Page } from "@playwright/test";
 
 import { guard } from "./guard";
 import { EMOTIONS, scoredBook, SOURCE } from "./scored-book";
+
+/** The bed's scene lines (src/lib/bed.ts sceneLogLine) as the page logs them. */
+function sceneLog(page: Page): string[] {
+  const lines: string[] = [];
+  page.on("console", (msg) => {
+    if (msg.text().startsWith("bed scene:")) lines.push(msg.text());
+  });
+  return lines;
+}
 
 const storedPick = (page: Page, id: string, index: number) =>
   page.evaluate(({ id, index }) => JSON.parse(localStorage.getItem(`scores:${id}`)!).chapters[index].playlist.pick as string, { id, index });
@@ -151,5 +163,58 @@ test.describe("the chapter mood card", () => {
     await fits.click();
     await expect(fits).toHaveAttribute("aria-pressed", "false");
     expect(await storedVerdicts()).toEqual([{ chapterIndex: 1, pieceId: "composer-1--theme-1", verdict: "misfit" }]);
+  });
+
+  test("A2: the band follows the playing scene, shows nothing of a scene not reached, and a pick plays for every scene", async ({ page }) => {
+    const log = sceneLog(page);
+    await scoredBook(page, { scenes: true });
+    const card = page.getByTestId("chapter-row-0").getByTestId("mood-card");
+    const band = card.getByTestId("mood-scene");
+    const play = page.getByTestId("mini-play-pause");
+    const pause = async () => {
+      if ((await play.getAttribute("aria-label")) === "Pause") await play.click();
+      await expect(play).toHaveAttribute("aria-label", "Play");
+    };
+    const sceneChips = (emotion: string) => page.getByTestId(`scene-emotion-${emotion}`);
+
+    // The first scene, under the chapter's own chips; nothing of the later scenes anywhere on the page.
+    await expect(card.getByTestId("mood-emotions")).toContainText("Tension 80%");
+    await expect(band).toContainText("In this scene");
+    await expect(band.getByTestId("mood-scene-emotions")).toHaveAttribute("aria-label", "Emotions in the playing scene");
+    await expect(sceneChips("wonder")).toHaveText("Wonder 75%");
+    await expect(sceneChips("calm")).toHaveText("Calm 50%");
+    for (const e of ["tension", "dread", "triumph"]) await expect(sceneChips(e)).toHaveCount(0);
+    await expect(page.getByText("Triumph 85%")).toHaveCount(0);
+    await expect.poll(() => log.some((l) => l.includes("chapter=0 scene=0 piece=composer-1--theme-1 direction=enter"))).toBe(true);
+
+    // Play through the boundary at 4 s: the band moves to the second scene, and its piece crosses in.
+    await play.click();
+    await expect(sceneChips("tension")).toHaveText("Tension 90%", { timeout: 15_000 });
+    await pause();
+    await expect(sceneChips("dread")).toHaveText("Dread 45%");
+    await expect(sceneChips("wonder")).toHaveCount(0);
+    await expect(sceneChips("triumph")).toHaveCount(0);
+    await expect(page.getByText("Triumph 85%")).toHaveCount(0);
+    expect(log).toContainEqual("bed scene: chapter=0 scene=1 piece=composer-2--theme-2 direction=on crossfade=true");
+
+    // A seek back crosses the other way: the first scene again.
+    await page.getByTestId("mini-back-30").click();
+    await expect(sceneChips("wonder")).toHaveText("Wonder 75%");
+    await expect(sceneChips("tension")).toHaveCount(0);
+    await expect.poll(() => log.some((l) => /^bed scene: chapter=0 scene=0 piece=composer-1--theme-1 direction=back/.test(l))).toBe(true);
+
+    // A chapter-wide pick is the piece for every scene, and the band still follows the scenes.
+    const before = log.length;
+    await card.getByTestId("pick-composer-3--theme-3").click();
+    await expect.poll(() => log.slice(before).some((l) => l.includes("scene=0 piece=composer-3--theme-3"))).toBe(true);
+    await play.click();
+    await expect(sceneChips("tension")).toHaveText("Tension 90%", { timeout: 15_000 });
+    await expect(sceneChips("triumph")).toHaveText("Triumph 85%", { timeout: 15_000 });
+    await pause();
+    const picked = log.slice(before).filter((l) => l.includes("chapter=0 "));
+    expect(picked.map((l) => l.match(/scene=(\d)/)![1])).toEqual(expect.arrayContaining(["0", "1", "2"]));
+    for (const l of picked) expect(l).toContain("piece=composer-3--theme-3");
+    // The same piece plays on across each boundary: nothing crossfades at a scene change under a pick.
+    for (const l of picked.filter((l) => / direction=on /.test(l) && !/scene=0 /.test(l))) expect(l).toContain("crossfade=false");
   });
 });

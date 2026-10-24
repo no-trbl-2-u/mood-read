@@ -35,6 +35,12 @@ export function useFurthestReached(bookId: string): number | null {
   return useSyncExternalStore(reached.subscribe, read, read);
 }
 
+/** The furthest place reached within the playing chapter (07.2, A2), or null: src/lib/reached.ts furthestIn. */
+export function useFurthestIn(bookId: string, chapterStart: number | null): number | null {
+  const read = () => (chapterStart === null ? null : reached.furthestIn(bookId, { start: chapterStart }));
+  return useSyncExternalStore(reached.subscribe, read, read);
+}
+
 export function useBooks(): Book[] {
   return useSyncExternalStore(library.subscribe, library.books, library.books);
 }

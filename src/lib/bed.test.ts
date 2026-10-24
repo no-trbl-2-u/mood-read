@@ -29,7 +29,14 @@ import {
   pickFor,
   pickLayer,
   planBed,
+  NO_SCENE,
+  planScene,
+  sceneAt,
+  sceneContextFor,
+  sceneLogLine,
+  sceneStarts,
   setChapterOnly,
+  type SceneContext,
   type BedContext,
   type BedSetting,
   type BedState,
@@ -433,4 +440,160 @@ test("A3, A4: the enter-exit gain multiplies the enter ramp, the opening hold, i
   const product = enterGain(700) * openingGain(20_900, true) * sleepGain(i.sleep);
   assert.equal(bedEnvelope(i), Math.round(product * 1e6) / 1e6);
   assert.equal(bedEnvelope({ ...base, sleep: { leftMs: 0, fadeMs: 60_000 } }), 0);
+});
+
+// ---- Scenes inside a chapter (07.2, spec 07 A2) -------------------------------------------------------------
+
+const span = (...spans: number[]) => spans.map((s) => ({ span: s }));
+
+test("A2: sceneAt maps the place in the chapter to a scene by its span; a boundary belongs to the scene it starts", () => {
+  const scenes = span(0.4, 0.35, 0.25);
+  assert.equal(sceneAt(0, 100, scenes), 0);
+  assert.equal(sceneAt(39.9, 100, scenes), 0);
+  assert.equal(sceneAt(40, 100, scenes), 1);
+  assert.equal(sceneAt(74.9, 100, scenes), 1);
+  assert.equal(sceneAt(75, 100, scenes), 2);
+  assert.equal(sceneAt(100, 100, scenes), 2, "the chapter's end is its last scene");
+  assert.equal(sceneAt(500, 100, scenes), 2, "past the end clamps to the last scene");
+  assert.equal(sceneAt(-5, 100, scenes), 0, "before the start clamps to the first");
+  assert.deepEqual(sceneStarts(100, scenes), [0, 40, 75]);
+});
+
+test("A2: sceneAt with no scenes is null; one scene is the whole chapter; broken spans never throw", () => {
+  assert.equal(sceneAt(10, 100, []), null);
+  assert.equal(sceneAt(99, 100, span(1)), 0);
+  assert.equal(sceneAt(Number.NaN, 100, span(0.5, 0.5)), 0, "an unknown place reads as the chapter's start");
+  assert.equal(sceneAt(10, 0, span(0.5, 0.5)), 0, "a chapter with no length is its first scene");
+  // Spans that do not sum to 1 are read as shares of the chapter.
+  assert.deepEqual(sceneStarts(100, span(1, 1)), [0, 50]);
+  // A broken span counts for nothing; with no usable span the scenes share the chapter evenly.
+  assert.deepEqual(sceneStarts(90, span(Number.NaN, 0.5, 0.5)), [0, 0, 45]);
+  assert.deepEqual(sceneStarts(90, span(0, -1, Number.NaN)), [0, 30, 60]);
+});
+
+const sceneCtx = (pieces: string[] = ["p1", "p2", "p3"]): SceneContext => ({
+  chapterStart: 1000,
+  chapterLength: 100,
+  scenes: span(0.4, 0.35, 0.25).map((s) => ({ ...s, emotions: [] })),
+  pieces,
+});
+const inScene = (position: number, over: Partial<ClockState> = {}): ClockState => ({
+  bookId: "b",
+  position,
+  playing: true,
+  rate: 1,
+  chapterIndex: 3,
+  ...over,
+});
+
+test("A2: crossing a scene boundary while playing crosses to the next scene's piece over CROSSFADE_MS", () => {
+  const first = planScene(NO_SCENE, inScene(1010), sceneCtx());
+  assert.deepEqual(first.spot, { bookId: "b", chapterIndex: 3, scene: 0, pieceId: "p1" });
+  const steady = planScene(first.spot, inScene(1030), sceneCtx());
+  assert.equal(steady.command, null, "a tick inside the scene does nothing");
+  const cross = planScene(steady.spot, inScene(1040.2), sceneCtx());
+  assert.deepEqual(cross.command, {
+    type: "scene",
+    chapterIndex: 3,
+    scene: 1,
+    from: 0,
+    pieceId: "p2",
+    direction: "on",
+    crossfade: true,
+    fadeMs: CROSSFADE_MS,
+  });
+  assert.deepEqual(cross.spot, { bookId: "b", chapterIndex: 3, scene: 1, pieceId: "p2" });
+});
+
+test("A2: a seek back crosses the boundary the other way", () => {
+  const inThird = planScene(NO_SCENE, inScene(1080), sceneCtx()).spot;
+  const back = planScene(inThird, inScene(1005), sceneCtx());
+  assert.equal(back.command?.scene, 0);
+  assert.equal(back.command?.from, 2);
+  assert.equal(back.command?.direction, "back");
+  assert.equal(back.command?.pieceId, "p1");
+  assert.equal(back.command?.crossfade, true);
+});
+
+test("A2: paused, a scene change moves the spot without a crossfade", () => {
+  const spot = planScene(NO_SCENE, inScene(1010, { playing: false }), sceneCtx()).spot;
+  const moved = planScene(spot, inScene(1050, { playing: false }), sceneCtx());
+  assert.equal(moved.command?.scene, 1);
+  assert.equal(moved.command?.crossfade, false);
+});
+
+test("A2: a chapter-wide pick plays for every scene: the scene changes, the piece does not, nothing crossfades", () => {
+  const picked = sceneCtx(["pick", "pick", "pick"]);
+  const spot = planScene(NO_SCENE, inScene(1010), picked).spot;
+  const cross = planScene(spot, inScene(1045), picked);
+  assert.equal(cross.command?.scene, 1);
+  assert.equal(cross.command?.pieceId, "pick");
+  assert.equal(cross.command?.crossfade, false, "the same piece plays on across the boundary");
+  // A pick made inside a scene crosses to the picked piece there and then.
+  const repick = planScene(spot, inScene(1011), picked);
+  assert.equal(repick.command, null, "same piece, same scene");
+  const toPick = planScene(planScene(NO_SCENE, inScene(1010), sceneCtx()).spot, inScene(1011), picked);
+  assert.equal(toPick.command?.scene, 0);
+  assert.equal(toPick.command?.pieceId, "pick");
+  assert.equal(toPick.command?.crossfade, true);
+});
+
+test("A2: entering a chapter places the scene without a scene crossfade (the chapter's change crosses on its own)", () => {
+  const prev = { bookId: "b", chapterIndex: 2, scene: 0, pieceId: "x" };
+  const entered = planScene(prev, inScene(1080), sceneCtx());
+  assert.equal(entered.command?.direction, "enter");
+  assert.equal(entered.command?.scene, 2);
+  assert.equal(entered.command?.from, null);
+  assert.equal(entered.command?.crossfade, false);
+  assert.equal(entered.spot.pieceId, "p3");
+});
+
+test("A2: no book, no chapter or an unscored chapter has no scene and says nothing", () => {
+  assert.deepEqual(planScene(NO_SCENE, inScene(1010, { bookId: null }), sceneCtx()), { spot: NO_SCENE, command: null });
+  assert.deepEqual(planScene(NO_SCENE, inScene(1010), null), { spot: NO_SCENE, command: null });
+  const spot = planScene(NO_SCENE, inScene(1010), sceneCtx()).spot;
+  assert.deepEqual(planScene(spot, inScene(1010), null), { spot: NO_SCENE, command: null }, "scores gone: the spot clears quietly");
+});
+
+test("A2: a scene command never changes what the bed plays until 01.10: planBed's sound is the soundscape's", () => {
+  // The bed's plan reads only the chapter's sound; a scene boundary inside the chapter is a tick to it.
+  const ctx = { chapterStart: 1000, soundFor: () => "wind", loopSeconds: () => 60 };
+  const playing = planBed(IDLE_BED, inScene(1010), "play", ctx).state;
+  assert.deepEqual(planBed(playing, inScene(1041), "tick", ctx).commands, []);
+});
+
+test("A2: sceneContextFor reads a chapter's scenes and their pieces; a pick covers every scene", () => {
+  const mood = {
+    chapterIndex: 3,
+    chapterTitle: "Three",
+    emotions: [{ emotion: "tension" as const, intensity: 0.8 }],
+    scenes: [
+      { emotions: [{ emotion: "calm" as const, intensity: 0.5 }], span: 0.5 },
+      { emotions: [{ emotion: "dread" as const, intensity: 0.9 }], span: 0.5 },
+    ],
+    sources: [],
+    coverage: "scored" as const,
+    model: "m",
+    version: "v",
+    scoredAt: 1,
+  };
+  const playlist = { chapterIndex: 3, piece: "p1", alternates: ["p2", "p3"], pick: "auto", scenePieces: ["p1", "p2"] };
+  const chapter = { start: 1000, end: 1100 };
+  const ctx = sceneContextFor({ mood, pieces: [], playlist }, chapter);
+  assert.deepEqual(ctx?.pieces, ["p1", "p2"]);
+  assert.equal(ctx?.chapterLength, 100);
+  assert.equal(ctx?.scenes.length, 2);
+  assert.deepEqual(sceneContextFor({ mood, pieces: [], playlist: { ...playlist, pick: "p3" } }, chapter)?.pieces, ["p3", "p3"]);
+  // No scenes: one scene, the chapter's piece.
+  assert.deepEqual(sceneContextFor({ mood: { ...mood, scenes: undefined }, pieces: [], playlist }, chapter)?.pieces, ["p1"]);
+  assert.equal(sceneContextFor(null, chapter), null);
+  assert.equal(sceneContextFor({ mood: { ...mood, coverage: "too-little" }, pieces: [], playlist }, chapter), null);
+  // A chapter with no piece named still has scenes, each with no piece.
+  assert.deepEqual(sceneContextFor({ mood, pieces: [], playlist: null }, chapter)?.pieces, [null, null]);
+});
+
+test("A2: the logged scene line names the chapter, the scene, its piece and the crossing", () => {
+  const cmd = planScene(planScene(NO_SCENE, inScene(1010), sceneCtx()).spot, inScene(1041), sceneCtx()).command!;
+  assert.equal(sceneLogLine(cmd), "bed scene: chapter=3 scene=1 piece=p2 direction=on crossfade=true");
+  assert.equal(sceneLogLine({ ...cmd, pieceId: null, crossfade: false }), "bed scene: chapter=3 scene=1 piece=none direction=on crossfade=false");
 });
