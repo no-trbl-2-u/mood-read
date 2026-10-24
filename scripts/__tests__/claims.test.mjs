@@ -96,13 +96,14 @@ describe('the claims branch', () => {
   });
 
   it('belongs to its session: one owner loop renews and releases only its own, never a crashed loop\'s', () => {
-    assert.equal(claim(a, ['37.1', '37.2'], owner, { now: () => Date.now() - TTL_MS + 60_000 }).ok, true);
+    // Ten minutes short of stale, so a slow run (a loaded machine) still finds it live until the jump below.
+    assert.equal(claim(a, ['37.1', '37.2'], owner, { now: () => Date.now() - TTL_MS + 10 * 60_000 }).ok, true);
     assert.equal(claim(a, ['39.4'], owner2).ok, true);
     assert.equal(claim(a, ['37.1'], owner2).ok, false);
     assert.deepEqual(renew(a, [], owner2), ['39.4']);
     assert.deepEqual(release(a, ['37.1', '39.4'], owner2), { gone: ['39.4'], kept: ['37.1'] });
     assert.equal(claim(a, ['37.2'], owner2, { force: true }).results[0].why, 'taken over');
-    assert.equal(claim(a, ['37.1'], owner2, { now: () => Date.now() + 120_000 }).results[0].why, 'reclaimed');
+    assert.equal(claim(a, ['37.1'], owner2, { now: () => Date.now() + 11 * 60_000 }).results[0].why, 'reclaimed');
   });
 
   it('a spec being chunked and its chunks exclude each other; a stale one is reclaimed, a PR kept through renewals', () => {
