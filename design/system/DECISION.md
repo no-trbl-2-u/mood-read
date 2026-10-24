@@ -32,8 +32,12 @@ unchanged: this decides how things look and sound, not where they sit.
 
 `src/ui/theme.ts` holds every value below and is the only place a colour or size lives. The names screens import
 today (`colors.background`, `surface`, `text`, `textMuted`, `accent`, `border`, `onAccent`, `scrim`, `danger`,
-`spacing.*`, `radii.*`, `typography.title/body/caption`) all keep working; 06.4 moves every screen onto the full
-set and removes any literal colour or size left outside the file.
+`spacing.*`, `radii.*`, `typography.title/body/caption`) all keep working; 06.4 moved every screen onto the full
+set. `src/lib/design-guard.test.ts` keeps it so (spec 06 A4): it scans `src/app`, `src/player` and `src/ui` (all
+but `theme.ts` and the verbatim `licenses.ts`) and fails on any colour literal (hex, `rgb()`, `hsl()`, a colour
+prop given a string) and any number in a size prop (type, width and height, padding, margin, gap, radius, stroke,
+position, opacity, shadow, duration), in a style or as a JSX prop. Its only allowances: 0, a percentage, and
+halving a token (`/ 2`). A new value is a new token here first.
 
 ### Palette (dark only)
 
