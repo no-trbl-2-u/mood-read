@@ -2,7 +2,8 @@
 // Deploy (the owner): node scripts/secrets.mjs run --only CLOUDFLARE_API_TOKEN,CLOUDFLARE_ACCOUNT_ID --
 //   pnpm exec wrangler deploy --config proxy/wrangler.jsonc
 // Secrets (never here; pushed by `pnpm secrets:sync`, which sends every name nexus.secrets.json binds for cloudflare):
-//   OPENAI_API_KEY, BRAVE_SEARCH_API_KEY. Without both, POST /v1/score answers 503.
+//   OPENAI_API_KEY, BRAVE_SEARCH_API_KEY. Without both, POST /v1/score answers 503. PRESCORE_TOKEN (05.10): the owner's
+//   pre-scoring secret; without it POST /v1/prescore refuses everyone (401).
 {
   "$schema": "../node_modules/wrangler/config-schema.json",
   "name": "mood-read-proxy",
@@ -24,8 +25,13 @@
   "durable_objects": {
     "bindings": [
       { "name": "BOOK_JOBS", "class_name": "BookJob" },
-      { "name": "SPEND_METER", "class_name": "SpendMeter" }
+      { "name": "SPEND_METER", "class_name": "SpendMeter" },
+      // The pre-scored books' overall emotions by LibriVox number, for Browse (05.10, src/prescore.ts).
+      { "name": "PRESCORED", "class_name": "PrescoreIndex" }
     ]
   },
-  "migrations": [{ "tag": "v1", "new_sqlite_classes": ["BookJob", "SpendMeter"] }]
+  "migrations": [
+    { "tag": "v1", "new_sqlite_classes": ["BookJob", "SpendMeter"] },
+    { "tag": "v2", "new_sqlite_classes": ["PrescoreIndex"] }
+  ]
 }

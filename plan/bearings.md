@@ -67,7 +67,7 @@ bare `pnpm add`, so versions match the SDK.
 |---|---|---|---|---|
 | 01 | GitHub | the repo, the cloud loop (`march.yml`, `next.yml`, `heartbeat.yml`), Actions secrets | `GH_TOKEN` | live |
 | 02 | Cloudflare Pages | the web build's deploys (02.3), project `mood-read` | `CLOUDFLARE_API_TOKEN`, `CLOUDFLARE_ACCOUNT_ID` | live |
-| 06 | Cloudflare Workers | the scoring proxy, Worker `mood-read-proxy` (`proxy/wrangler.jsonc`; 02.4, 01.2): two Durable Objects (`BookJob` per book: job, progress, cache; `SpendMeter`), Workers Logs off, `MONTHLY_CAP_USD` and `OPENAI_MODEL` as vars | `CLOUDFLARE_S3_ACCESS_KEY_ID`, `CLOUDFLARE_S3_SECRET_ACCESS_KEY`, `S3_API_ENDPOINT`, `OPENAI_API_KEY`, `BRAVE_SEARCH_API_KEY` (pushed by `pnpm secrets:sync`) | live (the 01.2 proxy waits on the owner's deploy) |
+| 06 | Cloudflare Workers | the scoring proxy, Worker `mood-read-proxy` (`proxy/wrangler.jsonc`; 02.4, 01.2): three Durable Objects (`BookJob` per book: job, progress, cache; `SpendMeter`; `PrescoreIndex`, 05.10: the pre-scored books' overall emotions), Workers Logs off, `MONTHLY_CAP_USD` and `OPENAI_MODEL` as vars | `CLOUDFLARE_S3_ACCESS_KEY_ID`, `CLOUDFLARE_S3_SECRET_ACCESS_KEY`, `S3_API_ENDPOINT`, `OPENAI_API_KEY`, `BRAVE_SEARCH_API_KEY`, `PRESCORE_TOKEN` (05.10, the owner's pre-scoring secret) (pushed by `pnpm secrets:sync`) | live (the 01.2 proxy waits on the owner's deploy) |
 | 03 | AI provider + web search | the scoring proxy's research agent (01.2) | `OPENAI_API_KEY`, `BRAVE_SEARCH_API_KEY`: Worker secrets of `mood-read-proxy` only, never in the app (A22) | OpenAI (model `gpt-5-mini` by default) and Brave Search, chosen 2026-10-23 (Open questions 6); built in 01.2, live once the owner deploys |
 | 04 | Expo / EAS | Android preview APKs on demand (04.1: `pnpm build:android:preview`, `android-preview.yml`) | `EXPO_TOKEN` | live: project `@no.trbl.2.u/mood-read`, keystore held by EAS |
 | 05 | Sentry | error tracking, later | `SENTRY_AUTH_TOKEN` | not used in v1's specs |
@@ -120,6 +120,15 @@ LibriVox book its public LibriVox and Project Gutenberg numbers (05.9).
                            cached result                                                          -> JobView
   POST /v1/rescore         the same body: a new run even for a cached book (explicit, A13)         -> JobView
   GET  /v1/jobs/:jobId     progress, and the scored chapters once done                            -> JobView | 404
+  POST /v1/prescore        owner only (Authorization: Bearer PRESCORE_TOKEN; 05.10), the /v1/score body with its
+                           librivoxId: a pre-score run, billed to pre-scoring's half of the cap -> {jobId, state,
+                           progress, budget} | 401 | 429 once the half is spent       (proxy/src/prescore-http.ts)
+  GET  /v1/overall?ids=1,2 read only, for Browse: each pre-scored book's overall emotions (top three by mean
+                           intensity over its scored chapters) by LibriVox number, never a chapter's; starts no run
+                                                                                   -> {books: {"<id>": {emotions}}}
+  The cap's halves (05.10, proxy/src/prescore.ts): a pre-score step runs only while pre-scoring's own spend plus one
+  step's reserve fits in half of MONTHLY_CAP_USD and the month's total plus that reserve fits in the whole cap; a
+  listener run starts while the total is under the whole cap, so it may use whatever pre-scoring left.
   The job id is the book's cache key (SHA-256 of its normalized title, author and chapter titles, plus
   "gutenberg:<n>" when a Gutenberg number is sent). The ids are digit strings; any other body field is a 400.
   With a Gutenberg number the proxy reads the book's text from Project Gutenberg in memory and keeps no copy

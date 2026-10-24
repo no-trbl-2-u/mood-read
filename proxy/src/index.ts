@@ -8,12 +8,15 @@
 // whose storage holds the job, its progress and the cached result, and whose alarm runs the job one step at a time,
 // saving after each, so it survives eviction and retries a failed step. One more object, SpendMeter, holds the
 // month's spend: a single writer, so the cap is never raced. KV was the alternative and loses on both counts: no
-// alarms to drive a long job, and no atomic add for the meter.
+// alarms to drive a long job, and no atomic add for the meter. A third, PrescoreIndex (05.10), holds the pre-scored
+// books' overall emotions by LibriVox number, so Browse reads a page of them in one call (prescore.ts).
 import { braveClient, openAiClient } from "./clients.ts";
 import type { BookRequest, JobView } from "./contract.ts";
 import { route, type Jobs } from "./http.ts";
 import { createBookJob } from "./job.ts";
 import { capFrom, createMeter, type Meter } from "./meter.ts";
+import { createOverallIndex, overallEmotions, prescoreBudget, type IndexPut, type OverallView } from "./prescore.ts";
+import { routePrescore, type PrescoreDeps } from "./prescore-http.ts";
 import type { Store } from "./store.ts";
 import { gutenbergSource } from "./text-research.ts";
 
@@ -33,20 +36,26 @@ export type Env = {
   /** The monthly cap in US dollars; one config value (Open questions 6). */
   MONTHLY_CAP_USD?: string;
   OPENAI_MODEL?: string;
+  /** The pre-scored books' index (05.10). */
+  PRESCORED?: DoNamespace;
+  /** The owner's pre-scoring secret (05.10): a Worker secret only, never in the app. Unset, nobody may pre-score. */
+  PRESCORE_TOKEN?: string;
 };
 
 const METER_NAME = "spend-meter";
+const INDEX_NAME = "prescored";
 
 /** The meter, reached in its own object. */
 function remoteMeter(env: Env): Meter {
   const stub = () => env.SPEND_METER.get(env.SPEND_METER.idFromName(METER_NAME));
   return {
-    async spent(month) {
-      const res = await stub().fetch(`https://meter/spent?month=${encodeURIComponent(month)}`);
+    async spent(month, bucket) {
+      const q = `month=${encodeURIComponent(month)}${bucket ? `&bucket=${encodeURIComponent(bucket)}` : ""}`;
+      const res = await stub().fetch(`https://meter/spent?${q}`);
       return ((await res.json()) as { usd: number }).usd;
     },
-    async add(month, usd) {
-      await stub().fetch("https://meter/add", { method: "POST", body: JSON.stringify({ month, usd }) });
+    async add(month, usd, bucket) {
+      await stub().fetch("https://meter/add", { method: "POST", body: JSON.stringify({ month, usd, bucket }) });
     },
   };
 }
@@ -61,6 +70,29 @@ function bookJobs(env: Env): Jobs {
     async status(key: string) {
       const res = await stub(key).fetch("https://book/status");
       return res.status === 404 ? null : ((await res.json()) as JobView);
+    },
+  };
+}
+
+/** The pre-scored books' index, reached in its own object. */
+function indexStub(env: Env): DoStub | null {
+  return env.PRESCORED ? env.PRESCORED.get(env.PRESCORED.idFromName(INDEX_NAME)) : null;
+}
+
+function prescoreDeps(env: Env): PrescoreDeps {
+  return {
+    token: env.PRESCORE_TOKEN,
+    budget: () => prescoreBudget(remoteMeter(env), capFrom(env.MONTHLY_CAP_USD), Date.now()),
+    async start(key, book) {
+      const stub = env.BOOK_JOBS.get(env.BOOK_JOBS.idFromName(key));
+      const res = await stub.fetch("https://book/start", { method: "POST", body: JSON.stringify({ key, book, rescore: false, prescore: true }) });
+      return (await res.json()) as JobView;
+    },
+    async overall(ids) {
+      const stub = indexStub(env);
+      if (!stub) return { books: {} };
+      const res = await stub.fetch(`https://index/get?ids=${ids.join(",")}`);
+      return (await res.json()) as OverallView;
     },
   };
 }
@@ -87,6 +119,12 @@ export class BookJob {
       search: braveClient(this.env.BRAVE_SEARCH_API_KEY ?? ""),
       model: openAiClient(this.env.OPENAI_API_KEY ?? "", this.env.OPENAI_MODEL || DEFAULT_MODEL),
       text: this.text,
+      onFinish: async (done, result) => {
+        const stub = indexStub(this.env);
+        if (!stub || !done.book.librivoxId) return;
+        const put: IndexPut = { librivoxId: done.book.librivoxId, key: done.key, emotions: overallEmotions(result), prescore: done.prescore };
+        await stub.fetch("https://index/put", { method: "POST", body: JSON.stringify(put) });
+      },
     });
   }
 
@@ -94,8 +132,9 @@ export class BookJob {
     const { pathname } = new URL(request.url);
     const job = this.job();
     if (pathname === "/start") {
-      const { key, book, rescore } = (await request.json()) as { key: string; book: BookRequest; rescore: boolean };
-      const out = await job.start(key, book, rescore);
+      // `prescore` comes only from this Worker's own owner-checked route (prescore-http.ts): no client reaches an object.
+      const { key, book, rescore, prescore } = (await request.json()) as { key: string; book: BookRequest; rescore: boolean; prescore?: boolean };
+      const out = await job.start(key, book, rescore, { prescore: prescore === true });
       if (out.run) await this.state.storage.setAlarm(Date.now());
       return Response.json(out.view);
     }
@@ -125,11 +164,30 @@ export class SpendMeter {
     const url = new URL(request.url);
     const meter = createMeter(this.state.storage);
     if (url.pathname === "/add") {
-      const { month, usd } = (await request.json()) as { month: string; usd: number };
-      await meter.add(month, usd);
+      const { month, usd, bucket } = (await request.json()) as { month: string; usd: number; bucket?: string };
+      await meter.add(month, usd, bucket || undefined);
       return new Response(null, { status: 204 });
     }
-    return Response.json({ usd: await meter.spent(url.searchParams.get("month") ?? "") });
+    return Response.json({ usd: await meter.spent(url.searchParams.get("month") ?? "", url.searchParams.get("bucket") || undefined) });
+  }
+}
+
+/** The pre-scored books' overall emotions (05.10), in one object so Browse reads a page of them in one call. */
+export class PrescoreIndex {
+  state: DoState;
+
+  constructor(state: DoState, _env: Env) {
+    this.state = state;
+  }
+
+  async fetch(request: Request): Promise<Response> {
+    const url = new URL(request.url);
+    const index = createOverallIndex(this.state.storage);
+    if (url.pathname === "/put") {
+      await index.put((await request.json()) as IndexPut);
+      return new Response(null, { status: 204 });
+    }
+    return Response.json(await index.get((url.searchParams.get("ids") ?? "").split(",")));
   }
 }
 
@@ -141,7 +199,7 @@ export async function handle(request: Request, env?: Env): Promise<Response> {
       headers: { "content-type": "application/json; charset=utf-8", "access-control-allow-origin": "*" },
     });
   }
-  return route(request, () => bookJobs(env as Env));
+  return (await routePrescore(request, () => prescoreDeps(env as Env))) ?? route(request, () => bookJobs(env as Env));
 }
 
 const worker = {

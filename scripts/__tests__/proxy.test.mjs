@@ -39,8 +39,8 @@ describe('the proxy worker', () => {
     const c = config();
     assert.equal(c.vars.MONTHLY_CAP_USD, '20');
     const bindings = Object.fromEntries(c.durable_objects.bindings.map((b) => [b.name, b.class_name]));
-    assert.deepEqual(bindings, { BOOK_JOBS: 'BookJob', SPEND_METER: 'SpendMeter' });
-    assert.deepEqual(c.migrations.flatMap((m) => m.new_sqlite_classes ?? []).sort(), ['BookJob', 'SpendMeter']);
+    assert.deepEqual(bindings, { BOOK_JOBS: 'BookJob', SPEND_METER: 'SpendMeter', PRESCORED: 'PrescoreIndex' });
+    assert.deepEqual(c.migrations.flatMap((m) => m.new_sqlite_classes ?? []).sort(), ['BookJob', 'PrescoreIndex', 'SpendMeter']);
   });
 
   it('carries no secret in its config: the keys are Worker secrets only', () => {
@@ -48,5 +48,6 @@ describe('the proxy worker', () => {
     assert.doesNotMatch(text, /sk-[A-Za-z0-9_-]{10,}/);
     assert.equal(config().vars.OPENAI_API_KEY, undefined);
     assert.equal(config().vars.BRAVE_SEARCH_API_KEY, undefined);
+    assert.equal(config().vars.PRESCORE_TOKEN, undefined);
   });
 });

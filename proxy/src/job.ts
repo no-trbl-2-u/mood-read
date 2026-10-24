@@ -9,6 +9,9 @@
 // - rescore is explicit: it starts a new run even for a cached book; the old result stays until the new one lands.
 // - a book with a Project Gutenberg number is read from its own text first (05.9, text-research.ts): phase `text`
 //   stands in for `search` and `moods`, and falls back to them when the text is missing or matches nothing.
+// - a pre-score run (05.10, prescore.ts) is billed to the meter's pre-score share and runs a step only while that
+//   share's budget is open; when it closes the run waits as `capped`, keeping its progress. A listener who asks for
+//   the same book takes the run over: from then on it is billed and gated as the listener's.
 import type { ModelClient, SearchClient } from "./clients.ts";
 import {
   SCORER_VERSION,
@@ -24,6 +27,7 @@ import {
 } from "./contract.ts";
 import { matchChapters } from "./match.ts";
 import { BRAVE_USD_PER_QUERY, monthOf, openAiCost, underCap, type Meter } from "./meter.ts";
+import { PRESCORE_BUCKET, prescoreOpen } from "./prescore.ts";
 import {
   MIN_ALTERNATES,
   askEmotions,
@@ -79,10 +83,14 @@ export type Run = {
   error?: string;
   /** The text path's matching and cursor (05.9): chapter numbers only, never the text. */
   text?: TextRun;
+  /** Started by the owner's pre-scoring (05.10); billed and gated as such until a listener asks for the book. */
+  prescore?: boolean;
 };
 
 const JOB = "job";
 const RESULT = "result";
+/** Set when a listener asks for a book whose pre-score run is going: kept apart from the run so no step overwrites it. */
+const LISTENER = "listener";
 
 export type JobDeps = {
   store: Store;
@@ -93,6 +101,8 @@ export type JobDeps = {
   /** A public-domain book's own text (05.9); without it every book is researched on the web. */
   text?: TextSource;
   now?: () => number;
+  /** Told when a run finishes (05.10: the pre-scored books' index). A failure here never fails the run. */
+  onFinish?: (done: { key: string; book: BookRequest; prescore: boolean }, result: BookResult) => Promise<void>;
 };
 
 export type Schedule = { view: JobView; run: boolean };
@@ -126,7 +136,13 @@ export function createBookJob(deps: JobDeps) {
 
   const load = () => Promise.all([store.get<Run>(JOB), store.get<BookResult>(RESULT)]);
 
-  function freshRun(key: string, book: BookRequest, state: JobState): Run {
+  /** True while the run is billed and gated as pre-scoring. */
+  const prescoring = async (run: Run) => !!run.prescore && !(await store.get<boolean>(LISTENER));
+
+  /** Whether a new run, or the next step of a waiting one, may go: pre-scoring's half or the whole cap. */
+  const mayRun = async (prescore: boolean) => (prescore ? prescoreOpen(meter, deps.capUsd, now()) : underCap(meter, deps.capUsd, now()));
+
+  function freshRun(key: string, book: BookRequest, state: JobState, prescore = false): Run {
     const queries = buildQueries(book);
     const run: Run = {
       key,
@@ -143,26 +159,28 @@ export function createBookJob(deps: JobDeps) {
       costUsd: 0,
       startedAt: now(),
       attempts: 0,
+      ...(prescore ? { prescore: true } : {}),
     };
     // A text run reads its chapters in a step or a few (05.9); its count firms up once the text is matched.
     run.steps = run.phase === "text" ? 1 + chunks(book.chapters.length, PIECE_CHAPTERS_PER_STEP) : estimateSteps(run);
     return run;
   }
 
-  async function begin(key: string, book: BookRequest, result: BookResult | undefined): Promise<Schedule> {
-    if (!(await underCap(meter, deps.capUsd, now()))) {
-      const waiting = freshRun(key, book, "capped");
+  async function begin(key: string, book: BookRequest, result: BookResult | undefined, prescore = false): Promise<Schedule> {
+    await store.delete(LISTENER);
+    if (!(await mayRun(prescore))) {
+      const waiting = freshRun(key, book, "capped", prescore);
       await store.put(JOB, waiting);
       return { view: view(key, waiting, result)!, run: false };
     }
-    const run = freshRun(key, book, "running");
+    const run = freshRun(key, book, "running", prescore);
     await store.put(JOB, run);
     return { view: view(key, run, result)!, run: true };
   }
 
   async function charge(run: Run, usd: number) {
     run.costUsd += usd;
-    await meter.add(monthOf(now()), usd);
+    await meter.add(monthOf(now()), usd, (await prescoring(run)) ? PRESCORE_BUCKET : undefined);
   }
 
   async function complete(run: Run, req: Parameters<ModelClient["complete"]>[0]) {
@@ -292,23 +310,45 @@ export function createBookJob(deps: JobDeps) {
     await store.put(RESULT, next);
     // The search snippets go with the run: only the findings and their links are kept (Open questions 4).
     await store.put(JOB, { ...run, state: "done", phase: "done", queries: [], sources: [], drafts: [], step: run.steps } satisfies Run);
+    try {
+      await deps.onFinish?.({ key: run.key, book: run.book, prescore: !!run.prescore }, next);
+    } catch {
+      // The index is a convenience for Browse; the scored book is cached either way.
+    }
   }
 
+  /** A waiting run with progress picks up where it stopped (a pre-score run paused mid-way); else it starts afresh. */
+  const resumed = (run: Run): Run =>
+    run.step > 0 ? { ...run, state: "running", attempts: 0 } : freshRun(run.key, run.book, "running", !!run.prescore);
+
   return {
-    async start(key: string, book: BookRequest, rescore = false): Promise<Schedule> {
+    async start(key: string, book: BookRequest, rescore = false, opts: { prescore?: boolean } = {}): Promise<Schedule> {
+      const prescore = !!opts.prescore && !rescore;
       const [run, result] = await load();
-      if (run && run.state === "running") return { view: view(key, run, result)!, run: false };
+      if (run && run.state === "running") {
+        // A listener asking for a book being pre-scored takes the run over (05.10): it is no longer paused at the half.
+        if (run.prescore && !prescore) await store.put(LISTENER, true);
+        return { view: view(key, run, result)!, run: false };
+      }
       if (result && !rescore) return { view: view(key, undefined, result)!, run: false };
-      return begin(key, book, result);
+      // A pre-score run paused at the half keeps its progress for whoever asks next, while their budget allows.
+      if (run && run.state === "capped" && run.step > 0 && run.prescore) {
+        if (!prescore) await store.put(LISTENER, true);
+        if (!(await mayRun(await prescoring(run)))) return { view: view(key, run, result)!, run: false };
+        const going = resumed(run);
+        await store.put(JOB, going);
+        return { view: view(key, going, result)!, run: true };
+      }
+      return begin(key, book, result, prescore);
     },
 
     /** The job as it stands; a capped job starts here once the month's spend is under the cap again. */
     async status(): Promise<{ view: JobView | null; run: boolean }> {
       const [run, result] = await load();
-      if (run && run.state === "capped" && (await underCap(meter, deps.capUsd, now()))) {
-        const resumed = freshRun(run.key, run.book, "running");
-        await store.put(JOB, resumed);
-        return { view: view(run.key, resumed, result), run: true };
+      if (run && run.state === "capped" && (await mayRun(await prescoring(run)))) {
+        const going = resumed(run);
+        await store.put(JOB, going);
+        return { view: view(run.key, going, result), run: true };
       }
       return { view: view(run?.key ?? result?.key ?? "", run, result), run: false };
     },
@@ -317,6 +357,11 @@ export function createBookJob(deps: JobDeps) {
     async step(): Promise<{ more: boolean; delayMs: number }> {
       const run = await store.get<Run>(JOB);
       if (!run || run.state !== "running") return { more: false, delayMs: 0 };
+      // A pre-score step runs only while pre-scoring's half has room for it (prescore.ts); else the run waits.
+      if ((await prescoring(run)) && !(await mayRun(true))) {
+        await store.put(JOB, { ...run, state: "capped" } satisfies Run);
+        return { more: false, delayMs: 0 };
+      }
       try {
         if (run.phase === "text") await textPhase(run);
         else if (run.phase === "search") await searchStep(run);

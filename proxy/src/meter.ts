@@ -35,23 +35,28 @@ export function capFrom(raw: string | undefined): number {
   return Number.isFinite(n) && n >= 0 ? n : DEFAULT_CAP_USD;
 }
 
+/**
+ * The meter. `spent(month)` is the month's whole spend, every run's; a `bucket` (05.10: "prescore") also tallies a
+ * share of it on its own, so `spent(month, bucket)` is that share alone. An add with a bucket counts in both.
+ */
 export type Meter = {
-  spent(month: string): Promise<number>;
-  add(month: string, usd: number): Promise<void>;
+  spent(month: string, bucket?: string): Promise<number>;
+  add(month: string, usd: number, bucket?: string): Promise<void>;
 };
 
-const spendKey = (month: string) => `spend:${month}`;
+const spendKey = (month: string, bucket?: string) => (bucket ? `spend:${bucket}:${month}` : `spend:${month}`);
 
 /** The meter over a Store (in production, the SpendMeter object's storage: one writer, so adds never race). */
 export function createMeter(store: Store): Meter {
   return {
-    async spent(month) {
-      return (await store.get<number>(spendKey(month))) ?? 0;
+    async spent(month, bucket) {
+      return (await store.get<number>(spendKey(month, bucket))) ?? 0;
     },
-    async add(month, usd) {
+    async add(month, usd, bucket) {
       if (!Number.isFinite(usd) || usd <= 0) return;
       const now = (await store.get<number>(spendKey(month))) ?? 0;
       await store.put(spendKey(month), now + usd);
+      if (bucket) await store.put(spendKey(month, bucket), ((await store.get<number>(spendKey(month, bucket))) ?? 0) + usd);
     },
   };
 }
