@@ -127,8 +127,6 @@ Decisions made upfront (do not ask):
 - **A7** An unscored book or chapter offers "Set the mood"; the lit emotions are stored as a listener mood, a piece
   the device already knows is matched by mood tags (else the soundscape plays and the card says so), nothing is
   sent to the proxy, and a later `too-little` result keeps the seed while a `scored` result replaces it.
-- **A8** Each scored book on the shelf shows its three strongest emotions over reached chapters only; a book with no
-  reached scored chapter shows none; a Mood filter keeps only books whose fingerprint holds the lit emotion.
 - **A9** "Your soundtrack", in the library's overflow menu, lists every piece that has played for a reached chapter,
   grouped by book, with title and artist, plays nothing, and clears in one row.
 
@@ -143,7 +141,7 @@ All answered; none is open.
   could keep; a daily batch with no time is not (decided here, 2026-10-24).
 
 ## Chunks
-Measure: 5 open · 4 closed · next A10
+Measure: 4 open · 5 closed · next A10
 
 - [ ] **07.2** The bed follows scenes; the mood card shows the playing scene · M · closes A2 · needs —
   - `src/lib/bed.ts`: `sceneAt(positionInChapter, chapterLength, scenes)` and the boundary crossfade;
@@ -161,9 +159,6 @@ Measure: 5 open · 4 closed · next A10
   - The sheet from the river's unscored state and an unscored row; `coverage: "listener"`; local matching in
     `src/lib/mood-match.ts` over the pieces the device holds (the catalog manifest once 05.1 lands); the replace
     rule in `src/lib/scoring-store.ts`.
-- [ ] **07.7** Fingerprints on the shelf and a Mood filter · S · closes A8 · needs —
-  - `src/lib/fingerprint.ts` over `scores:` and `reached:`; the chip row on the shelf's book row in
-    `src/app/index.tsx`; the filter chip row in the shelf's top bar, built so 05.16's state filter sits beside it.
 - [ ] **07.8** Your soundtrack: every piece that has played, by book · S · closes A9 · needs —
   - `src/lib/soundtrack-store.ts` logs on reach; `/soundtrack` route in `src/app/soundtrack.tsx`; one line in
     `MENU` (`src/ui/OverflowMenu.tsx`); link-outs join when 01.11 lands.
