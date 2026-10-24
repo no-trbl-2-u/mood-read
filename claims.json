@@ -2,6 +2,5 @@
   "01.5": "privileged_agent_session|10.0.0.208|Artemis|2026-10-23T23:39:25.289Z|s:4c4808a7~deneb",
   "06.3": "privileged_agent_session|10.0.0.208|Artemis|2026-10-23T23:59:36.017Z|s:050f8770~capella",
   "06.4": "privileged_agent_session|10.0.0.208|Artemis|2026-10-23T23:59:36.017Z|s:050f8770~capella",
-  "06.5": "privileged_agent_session|10.0.0.208|Artemis|2026-10-23T23:59:36.017Z|s:050f8770~capella",
-  "06.6": "privileged_agent_session|10.0.0.208|Artemis|2026-10-23T23:59:36.017Z|s:050f8770~capella"
+  "06.5": "privileged_agent_session|10.0.0.208|Artemis|2026-10-23T23:59:36.017Z|s:050f8770~capella"
 }
