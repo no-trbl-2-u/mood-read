@@ -1,5 +1,6 @@
-// Request validation (01.2, A22): the proxy accepts a book's title, author and chapter titles and nothing more. Any
-// other field, of any name, is refused rather than ignored, so nothing about the listener can ride along.
+// Request validation (01.2, A22): the proxy accepts a book's title, author and chapter titles, and for a book from
+// Browse its public LibriVox and Project Gutenberg catalog numbers (05.9), and nothing more. Any other field, of any
+// name, is refused rather than ignored, so nothing about the listener can ride along.
 import { EMOTIONS, MAX_SCENES, MIN_SCENE_SPAN, SCENE_SPAN_STEP, type BookRequest, type Emotion, type EmotionScore, type Scene } from "./contract.ts";
 
 export const LIMITS = {
@@ -9,9 +10,15 @@ export const LIMITS = {
   author: 300,
   chapterTitle: 300,
   chapters: 300,
+  /** Digits in a catalog number: LibriVox's run to five today and Project Gutenberg's to six. */
+  catalogIdDigits: 9,
 } as const;
 
-const ALLOWED = ["title", "author", "chapters"] as const;
+const ALLOWED = ["title", "author", "chapters", "librivoxId", "gutenbergId"] as const;
+
+/** A public catalog number: a string of digits, no sign, no leading zero, no spaces, at most LIMITS.catalogIdDigits. */
+const CATALOG_ID = new RegExp(`^[1-9][0-9]{0,${LIMITS.catalogIdDigits - 1}}$`);
+export const isCatalogId = (v: unknown): v is string => typeof v === "string" && CATALOG_ID.test(v);
 
 export type Parsed = { ok: true; book: BookRequest } | { ok: false; error: string };
 
@@ -21,8 +28,8 @@ const clean = (s: string) => s.replace(/\s+/g, " ").trim();
 export function parseBookRequest(body: unknown): Parsed {
   if (typeof body !== "object" || body === null || Array.isArray(body)) return { ok: false, error: "body must be a JSON object" };
   const extra = Object.keys(body).filter((k) => !(ALLOWED as readonly string[]).includes(k));
-  if (extra.length) return { ok: false, error: `only title, author and chapters are accepted; refused: ${extra.join(", ")}` };
-  const { title, author, chapters } = body as Record<string, unknown>;
+  if (extra.length) return { ok: false, error: `only title, author, chapters, librivoxId and gutenbergId are accepted; refused: ${extra.join(", ")}` };
+  const { title, author, chapters, librivoxId, gutenbergId } = body as Record<string, unknown>;
 
   if (typeof title !== "string" || !clean(title)) return { ok: false, error: "title must be a non-empty string" };
   if (clean(title).length > LIMITS.title) return { ok: false, error: `title is longer than ${LIMITS.title} characters` };
@@ -38,7 +45,12 @@ export function parseBookRequest(body: unknown): Parsed {
     if (t.length > LIMITS.chapterTitle) return { ok: false, error: `a chapter title is longer than ${LIMITS.chapterTitle} characters` };
     titles.push(t);
   }
-  return { ok: true, book: { title: clean(title), author: clean(author), chapters: titles } };
+  if (librivoxId !== undefined && !isCatalogId(librivoxId)) return { ok: false, error: "librivoxId must be a LibriVox catalog number (digits)" };
+  if (gutenbergId !== undefined && !isCatalogId(gutenbergId)) return { ok: false, error: "gutenbergId must be a Project Gutenberg ebook number (digits)" };
+  const book: BookRequest = { title: clean(title), author: clean(author), chapters: titles };
+  if (librivoxId !== undefined) book.librivoxId = librivoxId;
+  if (gutenbergId !== undefined) book.gutenbergId = gutenbergId;
+  return { ok: true, book };
 }
 
 const norm = (s: string) => s.normalize("NFKC").toLowerCase().replace(/\s+/g, " ").trim();
@@ -46,10 +58,15 @@ const norm = (s: string) => s.normalize("NFKC").toLowerCase().replace(/\s+/g, " 
 /**
  * The cache key and job id for a book: a SHA-256 over its normalized title, author and chapter titles. Any listener
  * who sends the same book gets the same key, so one research run serves them all; the key names the book, never
- * the listener.
+ * the listener. A book with a Project Gutenberg number (05.9) is scored from its own text, so the number joins the
+ * hash ("gutenberg:<n>" as a fourth element) and a text-scored book never shares a key with a web-scored book of the
+ * same title; a book without one hashes exactly as before 05.9, so every cached result keeps its key. The LibriVox
+ * number stays out: two recordings of the same text and chapters share one scoring.
  */
 export async function bookKey(book: BookRequest): Promise<string> {
-  const text = JSON.stringify([norm(book.title), norm(book.author), book.chapters.map(norm)]);
+  const parts: unknown[] = [norm(book.title), norm(book.author), book.chapters.map(norm)];
+  if (book.gutenbergId) parts.push(`gutenberg:${book.gutenbergId}`);
+  const text = JSON.stringify(parts);
   const digest = await crypto.subtle.digest("SHA-256", new TextEncoder().encode(text));
   return [...new Uint8Array(digest)].map((b) => b.toString(16).padStart(2, "0")).join("");
 }

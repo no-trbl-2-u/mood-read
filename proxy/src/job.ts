@@ -7,6 +7,8 @@
 //   is returned as it stands; a new run starts only under the monthly cap, else the job waits as `capped` and starts
 //   by itself once a status poll finds the month's spend under the cap again.
 // - rescore is explicit: it starts a new run even for a cached book; the old result stays until the new one lands.
+// - a book with a Project Gutenberg number is read from its own text first (05.9, text-research.ts): phase `text`
+//   stands in for `search` and `moods`, and falls back to them when the text is missing or matches nothing.
 import type { ModelClient, SearchClient } from "./clients.ts";
 import {
   SCORER_VERSION,
@@ -39,6 +41,7 @@ import {
 } from "./pieces.ts";
 import { addSources, buildQueries, moodRequest, parseMoods, sourcesFor, type Query, type Source } from "./research.ts";
 import type { Store } from "./store.ts";
+import { textStep, type TextRun, type TextSource } from "./text-research.ts";
 
 export const SEARCHES_PER_STEP = 6;
 export const MOOD_CHAPTERS_PER_STEP = 10;
@@ -49,7 +52,7 @@ export const PIECE_ROUNDS = 2;
 export const MAX_ATTEMPTS = 3;
 export const RETRY_DELAY_MS = 30_000;
 
-type Phase = "search" | "moods" | "pieces" | "done";
+type Phase = "text" | "search" | "moods" | "pieces" | "done";
 /** `scenes` is absent on a draft saved before 07.1: read through `scenesOf`, one scene. */
 type Draft = { emotions: EmotionScore[]; scenes?: Scene[]; sources: SourceLink[] };
 
@@ -74,6 +77,8 @@ export type Run = {
   startedAt: number;
   attempts: number;
   error?: string;
+  /** The text path's matching and cursor (05.9): chapter numbers only, never the text. */
+  text?: TextRun;
 };
 
 const JOB = "job";
@@ -85,6 +90,8 @@ export type JobDeps = {
   capUsd: number;
   search: SearchClient;
   model: ModelClient;
+  /** A public-domain book's own text (05.9); without it every book is researched on the web. */
+  text?: TextSource;
   now?: () => number;
 };
 
@@ -125,7 +132,7 @@ export function createBookJob(deps: JobDeps) {
       key,
       book,
       state,
-      phase: "search",
+      phase: book.gutenbergId && deps.text ? "text" : "search",
       queries,
       cursor: 0,
       sources: [],
@@ -137,7 +144,8 @@ export function createBookJob(deps: JobDeps) {
       startedAt: now(),
       attempts: 0,
     };
-    run.steps = estimateSteps(run);
+    // A text run reads its chapters in a step or a few (05.9); its count firms up once the text is matched.
+    run.steps = run.phase === "text" ? 1 + chunks(book.chapters.length, PIECE_CHAPTERS_PER_STEP) : estimateSteps(run);
     return run;
   }
 
@@ -211,6 +219,22 @@ export function createBookJob(deps: JobDeps) {
       run.cursor = 0;
       const scored = run.drafts.filter(Boolean).length;
       run.steps = run.step + 1 + chunks(scored, PIECE_CHAPTERS_PER_STEP);
+    }
+  }
+
+  async function textPhase(run: Run) {
+    const out = await textStep({ book: run.book, gutenbergId: run.book.gutenbergId!, text: run.text, source: deps.text!, complete: (req) => complete(run, req) });
+    if (out.kind === "fallback") {
+      run.phase = "search";
+      run.text = undefined;
+      return;
+    }
+    run.text = out.text;
+    for (const [i, d] of out.drafts) run.drafts[i] = d;
+    for (const i of out.unscored) run.results[i] = unscored(run, i);
+    if (out.done) {
+      run.phase = "pieces";
+      run.steps = run.step + 1 + chunks(run.drafts.filter(Boolean).length, PIECE_CHAPTERS_PER_STEP);
     }
   }
 
@@ -294,7 +318,8 @@ export function createBookJob(deps: JobDeps) {
       const run = await store.get<Run>(JOB);
       if (!run || run.state !== "running") return { more: false, delayMs: 0 };
       try {
-        if (run.phase === "search") await searchStep(run);
+        if (run.phase === "text") await textPhase(run);
+        else if (run.phase === "search") await searchStep(run);
         else if (run.phase === "moods") await moodStep(run);
         else if (run.phase === "pieces") await pieceStep(run);
         run.step += 1;

@@ -1,12 +1,13 @@
 // The scoring proxy's HTTP surface (01.2; pinned in plan/bearings.md, URL contract):
 //
 //   GET  /health            200 "ok"
-//   POST /v1/score          {title, author, chapters}: the book's job, started or cached     -> JobView
-//   POST /v1/rescore        {title, author, chapters}: a new run even for a cached book      -> JobView
+//   POST /v1/score          {title, author, chapters, librivoxId?, gutenbergId?}: the book's job, started or cached -> JobView
+//   POST /v1/rescore        the same body: a new run even for a cached book                  -> JobView
 //   GET  /v1/jobs/:jobId    the job's progress, and the scored chapters once done          -> JobView | 404
 //
-// The body may hold exactly title, author and chapter titles; anything else is a 400 (A22). The job id is the book's
-// cache key, a hash of those three, so it names a book and never a listener. Nothing here logs a request, and the
+// The body may hold exactly title, author and chapter titles, and a book from Browse's public LibriVox and Project
+// Gutenberg numbers (05.9); anything else is a 400 (A22). The job id is the book's cache key, a hash of the title,
+// author, chapter titles and Gutenberg number (validate.ts bookKey), so it names a book and never a listener. Nothing here logs a request, and the
 // Worker keeps Workers Logs off (proxy/wrangler.jsonc): the proxy keeps no listener data (the privacy policy).
 import type { BookRequest, JobView } from "./contract.ts";
 import { bookKey, isJobId, LIMITS, parseBookRequest } from "./validate.ts";

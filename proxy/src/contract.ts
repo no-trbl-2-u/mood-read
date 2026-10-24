@@ -1,7 +1,8 @@
 // The scoring proxy's contract (spec 01, Contracts; chunk 01.2): what the app sends, what a job reports and what a
 // scored book holds. The app keeps its own copy of these shapes in src/lib/types.ts; src/lib/scoring-contract.test.ts
-// holds the two in step. The proxy receives a book's title, author and chapter titles and nothing more (agents.md
-// rule 6), and returns emotions, cited source links and named pieces, never a chapter's events (Open questions 7).
+// holds the two in step. The proxy receives a book's title, author and chapter titles, and for a public-domain book
+// from Browse its public LibriVox and Project Gutenberg catalog numbers (05.9), and nothing more (agents.md rule 6);
+// it returns emotions, cited source links and named pieces, never a chapter's events (Open questions 7).
 
 /** The fixed emotion set the agent names (spec 01, Mood scoring; the same list as src/ui/theme.ts). */
 export const EMOTIONS = ["tension", "sorrow", "wonder", "joy", "dread", "calm", "romance", "triumph"] as const;
@@ -13,12 +14,19 @@ export type PieceKind = (typeof PIECE_KINDS)[number];
 /** Bumped when the research or naming changes enough that a cached book should read as older work. */
 export const SCORER_VERSION = "07.1.0";
 
-/** Everything the proxy accepts about a book: exactly these three fields. */
+/** Everything the proxy accepts about a book: exactly these fields. */
 export type BookRequest = {
   title: string;
   author: string;
   /** The audiobook's chapter titles, in play order. */
   chapters: string[];
+  /** A LibriVox book's public LibriVox catalog number (05.9), digits only; absent for an imported book. */
+  librivoxId?: string;
+  /**
+   * The public-domain text's Project Gutenberg ebook number (05.9), digits only; absent for an imported book. When
+   * present the proxy reads the book's own text from Project Gutenberg and keeps no copy of it (A10).
+   */
+  gutenbergId?: string;
 };
 
 export type EmotionScore = { emotion: Emotion; intensity: number };

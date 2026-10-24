@@ -15,6 +15,7 @@ import { route, type Jobs } from "./http.ts";
 import { createBookJob } from "./job.ts";
 import { capFrom, createMeter, type Meter } from "./meter.ts";
 import type { Store } from "./store.ts";
+import { gutenbergSource } from "./text-research.ts";
 
 export const DEFAULT_MODEL = "gpt-5-mini";
 
@@ -70,6 +71,8 @@ const configured = (env: Env) => !!env.OPENAI_API_KEY && !!env.BRAVE_SEARCH_API_
 export class BookJob {
   state: DoState;
   env: Env;
+  /** A public-domain book's text, held in this object's memory for its run only, never in its storage (05.9, A10). */
+  text = gutenbergSource();
 
   constructor(state: DoState, env: Env) {
     this.state = state;
@@ -83,6 +86,7 @@ export class BookJob {
       capUsd: capFrom(this.env.MONTHLY_CAP_USD),
       search: braveClient(this.env.BRAVE_SEARCH_API_KEY ?? ""),
       model: openAiClient(this.env.OPENAI_API_KEY ?? "", this.env.OPENAI_MODEL || DEFAULT_MODEL),
+      text: this.text,
     });
   }
 

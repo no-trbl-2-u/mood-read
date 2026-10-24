@@ -69,12 +69,15 @@ test("POST /v1/score starts the book's job; GET /v1/jobs/:id reports progress, t
   assert.equal(re.state, "running", "rescore is its own explicit call");
 });
 
-test("a body with anything beyond title, author and chapter titles is refused with 400 (A22)", async () => {
+test("a body with anything beyond title, author, chapter titles and the catalog numbers is refused with 400 (A22)", async () => {
   const { api, search } = memoryJobs();
   for (const extra of [{ deviceId: "d-1" }, { position: 12 }, { listener: "me" }]) {
     const res = await route(post("/v1/score", { ...book, ...extra }), () => api);
     assert.equal(res.status, 400);
-    assert.match(((await res.json()) as { error: string }).error, /only title, author and chapters/);
+    assert.match(((await res.json()) as { error: string }).error, /only title, author, chapters, librivoxId and gutenbergId/);
+  }
+  for (const extra of [{ gutenbergId: "pg1342" }, { librivoxId: 253 }]) {
+    assert.equal((await route(post("/v1/score", { ...book, ...extra }), () => api)).status, 400);
   }
   assert.equal(search.queries.length, 0);
 });

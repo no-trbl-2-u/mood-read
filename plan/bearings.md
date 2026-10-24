@@ -111,13 +111,17 @@ Scripts (package.json):
   pnpm deploy:check                the deploy gate (post-push)
   pnpm plan:check | settle | claims | progress | order | pulse | secrets ...   the nexus scripts
 
-Scoring proxy (01.2; proxy/src/http.ts): it receives only a book's title, author and chapter titles.
+Scoring proxy (01.2; proxy/src/http.ts): it receives only a book's title, author and chapter titles, and for a
+LibriVox book its public LibriVox and Project Gutenberg numbers (05.9).
   GET  /health             200 "ok"
-  POST /v1/score           {title, author, chapters}: start the book's job, or its cached result   -> JobView
+  POST /v1/score           {title, author, chapters, librivoxId?, gutenbergId?}: start the book's job, or its
+                           cached result                                                          -> JobView
   POST /v1/rescore         the same body: a new run even for a cached book (explicit, A13)         -> JobView
   GET  /v1/jobs/:jobId     progress, and the scored chapters once done                            -> JobView | 404
-  The job id is the book's cache key (SHA-256 of its normalized title, author and chapter titles). Any other
-  body field is a 400. The app's base URL is `expo.extra.scoringProxyUrl` in app.json.
+  The job id is the book's cache key (SHA-256 of its normalized title, author and chapter titles, plus
+  "gutenberg:<n>" when a Gutenberg number is sent). The ids are digit strings; any other body field is a 400.
+  With a Gutenberg number the proxy reads the book's text from Project Gutenberg in memory and keeps no copy
+  (proxy/src/gutenberg.ts, text-research.ts). The app's base URL is `expo.extra.scoringProxyUrl` in app.json.
 ```
 
 ## Repository shape

@@ -15,11 +15,31 @@ test("an empty author is allowed (untagged files), an empty title is not", () =>
   assert.equal(parseBookRequest({ ...book, title: "  " }).ok, false);
 });
 
-test("any field besides title, author and chapters is refused, never ignored (A22)", () => {
-  for (const extra of [{ deviceId: "abc" }, { position: 120 }, { audio: "UklGRg==" }, { rescore: true }, { email: "x@y.z" }]) {
+test("any field besides title, author, chapters and the two catalog numbers is refused, never ignored (A22)", () => {
+  for (const extra of [{ deviceId: "abc" }, { position: 120 }, { audio: "UklGRg==" }, { rescore: true }, { email: "x@y.z" }, { gutenbergText: "It was" }, { archiveId: "alice_librivox" }]) {
     const r = parseBookRequest({ ...book, ...extra });
     assert.equal(r.ok, false);
-    assert.match((r as { error: string }).error, /only title, author and chapters/);
+    assert.match((r as { error: string }).error, /only title, author, chapters, librivoxId and gutenbergId/);
+  }
+});
+
+test("a book's public LibriVox and Gutenberg numbers are accepted, each optional (05.9, A10)", () => {
+  assert.deepEqual(parseBookRequest({ ...book, librivoxId: "253", gutenbergId: "1342" }), { ok: true, book: { ...book, librivoxId: "253", gutenbergId: "1342" } });
+  assert.deepEqual(parseBookRequest({ ...book, gutenbergId: "11" }), { ok: true, book: { ...book, gutenbergId: "11" } });
+  assert.deepEqual(parseBookRequest({ ...book, librivoxId: "200" }), { ok: true, book: { ...book, librivoxId: "200" } });
+  assert.equal(parseBookRequest({ ...book, gutenbergId: "9".repeat(LIMITS.catalogIdDigits) }).ok, true);
+  const plain = parseBookRequest(book);
+  assert.ok(plain.ok && !("gutenbergId" in plain.book) && !("librivoxId" in plain.book), "an imported book carries no catalog numbers");
+});
+
+test("a catalog number is digits only, bounded: anything else is refused, never cleaned up", () => {
+  const bad = [1342, "", " 1342", "1342 ", "0", "01342", "-5", "+5", "1e3", "13.42", "0x1f", "١٣٤٢", "pg1342", "1342/../x", "9".repeat(LIMITS.catalogIdDigits + 1), null, ["1342"], { id: "1" }];
+  for (const v of bad) {
+    for (const field of ["librivoxId", "gutenbergId"]) {
+      const r = parseBookRequest({ ...book, [field]: v });
+      assert.equal(r.ok, false, `${field}=${JSON.stringify(v)}`);
+      assert.match((r as { error: string }).error, new RegExp(field));
+    }
   }
 });
 
@@ -42,6 +62,20 @@ test("the book key is a stable hash of the book, the same for any listener, igno
   assert.ok(isJobId(a));
   assert.notEqual(a, await bookKey({ ...book, chapters: ["Roast Mutton", "An Unexpected Party"] }));
   assert.notEqual(a, await bookKey({ ...book, author: "Someone Else" }));
+});
+
+test("the Gutenberg number joins the cache key: a text-scored book never collides with a web-scored one (05.9)", async () => {
+  const plain = await bookKey(book);
+  const text = await bookKey({ ...book, gutenbergId: "1342" });
+  assert.ok(isJobId(text));
+  assert.notEqual(text, plain, "the same title scored from its text keys apart from the web-scored one");
+  assert.notEqual(text, await bookKey({ ...book, gutenbergId: "1343" }));
+  assert.equal(text, await bookKey({ ...book, gutenbergId: "1342", librivoxId: "253" }), "the LibriVox number does not split the key");
+  assert.equal(plain, await bookKey({ ...book, librivoxId: "253" }));
+  // A book without a Gutenberg number keys exactly as before 05.9, so cached results keep their keys.
+  const before = JSON.stringify(["the hobbit", "j. r. r. tolkien", ["an unexpected party", "roast mutton"]]);
+  const digest = await crypto.subtle.digest("SHA-256", new TextEncoder().encode(before));
+  assert.equal(plain, [...new Uint8Array(digest)].map((b) => b.toString(16).padStart(2, "0")).join(""));
 });
 
 test("job ids are 64 hex characters, nothing else", () => {
