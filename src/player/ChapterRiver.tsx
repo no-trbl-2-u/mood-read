@@ -6,16 +6,21 @@
 // chapter scoring found too little written about. 01.4 adds the moods (spec 01 A16, A21): a reached, scored row
 // shows its two strongest emotion chips; the playing row expands to the mood card (./MoodCard.tsx) above the mixer;
 // a row not yet reached is muted with a lock mark and shows no chips of any kind, and never expands (its title
-// still jumps there, which reaches it).
+// still jumps there, which reaches it). 01.22 (A35): tapping a reached, non-playing row's chips opens the same mood
+// card in place, without moving playback; one such row at a time, a second tap closes it, and a jump closes it.
+// Since 07.2 the playing row carries a scene band; an opened row is not playing, so it shows the chapter-level card
+// (its emotions and its piece) and no scene band.
 import { useEffect, useRef, useState, type ReactNode } from "react";
 import { Pressable, ScrollView, StyleSheet, Text, TextInput, View, type ScrollViewInstance } from "react-native";
 
 import { canMergeWithNext, canSplitAt } from "@/lib/chapters";
-import type { MoodCardView } from "@/lib/mood-card";
+import { stickerLabel } from "@/lib/labels";
+import { canPeek, EMOTION_NAMES, strongest, togglePeek, type MoodCardView } from "@/lib/mood-card";
 import type { Book, PieceVerdict } from "@/lib/types";
 import type { Verdict } from "@/lib/verdict-store";
 import { Icon } from "@/ui/Icon";
 import { Button } from "@/ui/Button";
+import { pressStyle, useReduceMotion } from "@/ui/motion";
 import { EmotionChips, MoodCard } from "./MoodCard";
 import { colors, hardShadow, radii, shadows, sizes, spacing, strokes, typography } from "@/ui/theme";
 
@@ -46,9 +51,14 @@ export function ChapterRiver(props: {
   const scroll = useRef<ScrollViewInstance>(null);
   const rowY = useRef<Record<number, number>>({});
   const scrolledTo = useRef<number | null>(null);
+  // The one reached, non-playing row whose mood card is open from its chips (A35); never moves playback. It is kept
+  // with the chapter playing when it opened, so any chapter change closes it.
+  const [opened, setOpened] = useState<{ index: number | null; at: number | undefined }>({ index: null, at: undefined });
 
   // On opening a book, bring the playing row into view (layout Default); once per chapter change.
   const current = props.currentIndex;
+  const peek = opened.at === current ? opened.index : null;
+  const setPeek = (index: number | null) => setOpened({ index, at: current });
   useEffect(() => {
     if (current === undefined || scrolledTo.current === current) return;
     const y = rowY.current[current];
@@ -106,14 +116,31 @@ export function ChapterRiver(props: {
                 </View>
               )}
             </View>
-            {!playing && mood.kind === "scored" && mood.emotions.length > 0 && (
+            {canPeek(mood, playing) && mood.kind === "scored" && (
               <View style={styles.rowChips}>
-                <EmotionChips
-                  emotions={mood.emotions}
-                  limit={2}
-                  testID={`row-emotions-${c.index}`}
-                  label={mood.listener ? COPY.yours : undefined}
-                />
+                {peek === c.index ? (
+                  <View testID="chapter-peek">
+                    {/* Not playing: the chapter-level card (its emotions and its piece), never a playing-scene band. */}
+                    <MoodCard
+                      view={{ ...mood, scene: null }}
+                      onPick={(pick) => props.onPick?.(c.index, pick)}
+                      emotions={
+                        <ChipsToggle index={c.index} label={label} view={mood} open onPress={() => setPeek(togglePeek(peek, c.index))}>
+                          <EmotionChips emotions={mood.emotions} testID="mood-emotions" label={mood.listener ? COPY.yours : undefined} />
+                        </ChipsToggle>
+                      }
+                    />
+                  </View>
+                ) : (
+                  <ChipsToggle index={c.index} label={label} view={mood} open={false} onPress={() => setPeek(togglePeek(peek, c.index))}>
+                    <EmotionChips
+                      emotions={mood.emotions}
+                      limit={2}
+                      testID={`row-emotions-${c.index}`}
+                      label={mood.listener ? COPY.yours : undefined}
+                    />
+                  </ChipsToggle>
+                )}
               </View>
             )}
             {playing && !locked && (
@@ -152,11 +179,43 @@ export function ChapterRiver(props: {
 
 const COPY = {
   notReached: ", not reached yet",
+  /** A reached row's chips toggle: what it shows first (06.5: what is seen is heard), then what it opens. */
+  moodCard: (chips: string, chapter: string) => `${chips}. Mood card for ${chapter}`,
   /** The row's visible "Unscored" chip, in its name too (06.5: what is seen is heard). */
   unscored: ", Unscored",
   /** A seeded row's chips (07.6): the listener's own mood, shown at once. */
   yours: "Your mood for this chapter",
 };
+
+/**
+ * A reached, non-playing row's emotion chips as one control that opens or closes its mood card in place (A35). It
+ * never jumps: the row's title does that. Announced as expanded or collapsed, never by colour alone.
+ */
+function ChipsToggle(props: {
+  index: number;
+  label: string;
+  view: Extract<MoodCardView, { kind: "scored" }>;
+  open: boolean;
+  onPress: () => void;
+  children: ReactNode;
+}) {
+  const reduceMotion = useReduceMotion();
+  const chips = strongest(props.view.emotions, props.open ? undefined : 2)
+    .map((e) => stickerLabel(EMOTION_NAMES[e.emotion], e.intensity))
+    .join(", ");
+  return (
+    <Pressable
+      testID={`row-chips-${props.index}`}
+      role="button"
+      aria-label={COPY.moodCard(chips, props.label)}
+      aria-expanded={props.open}
+      onPress={props.onPress}
+      style={({ pressed }) => [styles.chipsToggle, pressStyle(pressed, reduceMotion)]}
+    >
+      {props.children}
+    </Pressable>
+  );
+}
 
 export type ChapterEditsApi = {
   rename: (index: number, title: string) => void;
@@ -247,6 +306,7 @@ const styles = StyleSheet.create({
   title: { ...typography.body, flexShrink: 1, fontWeight: typography.label.fontWeight },
   titleLocked: { color: colors.textMuted },
   rowChips: { paddingBottom: spacing.sm },
+  chipsToggle: { minHeight: sizes.touch, justifyContent: "center", alignSelf: "flex-start" },
   unscored: {
     marginLeft: "auto",
     paddingHorizontal: spacing.sm,

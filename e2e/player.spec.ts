@@ -2,11 +2,12 @@
 // chapters), then play and pause, +/-30 s with clamps, a chapter jump from the river, speed without pitch change,
 // the sleep timer, bookmarks, resume after a reload, and the browser's Media Session; then the bed (01.3, A8, A9)
 // under it, the mixer (01.5, A10, A11) setting both, and the soundscapes picked from its Layer chips per book or per
-// chapter (01.7, A12). The narration's and the bed's HTMLAudioElements are read directly (page.evaluate) so nothing waits
+// chapter (01.7, A12); and a reached chapter's mood card opened from its chips without moving playback (01.22, A35). The narration's and the bed's HTMLAudioElements are read directly (page.evaluate) so nothing waits
 // on real time it does not need; the bed's are the looping ones.
 import { expect, test, type Page } from "@playwright/test";
 
 import { guard } from "./guard";
+import { scoredBook } from "./scored-book";
 
 const CH1 = 35;
 const CH2 = 40;
@@ -701,6 +702,94 @@ test.describe("the player", () => {
     expect(lastHeard.volume).toBeLessThan(0.02);
     await expectChapter(page, 1);
     await expect(page.getByTestId("mini-play-pause")).toHaveAttribute("aria-label", "Play");
+  });
+
+  test("A35: a reached chapter's chips open its mood card in place without moving playback; an unreached row has no chips and never opens (A21)", async ({
+    page,
+  }) => {
+    await scoredBook(page);
+    // Reach chapter 2, then come back to chapter 1 and hold still: chapter 2 is reached, chapter 3 is not.
+    await page.getByTestId("chapter-1").click();
+    await expectChapter(page, 1);
+    await page.getByTestId("chapter-0").click();
+    await expectChapter(page, 0);
+    // The jump plays once chapter 1 has loaded: let it start, then pause it from the mini player.
+    await expect.poll(async () => (await narration(page)).paused).toBe(false);
+    await pause(page);
+    await expect(page.getByTestId("mini-play-pause")).toHaveAttribute("aria-label", "Play");
+    const before = await narration(page);
+    const title = await page.getByTestId("mini-chapter-title").textContent();
+
+    const row1 = page.getByTestId("chapter-row-1");
+    const chips1 = row1.getByTestId("row-chips-1");
+    await expect(chips1).toHaveAttribute("aria-expanded", "false");
+    await expect(chips1).toHaveAttribute("aria-label", /^Sorrow 90%, Calm 40%\. Mood card for Ch\.2/);
+    await expect(row1.getByTestId("chapter-peek")).toHaveCount(0);
+    await chips1.click();
+
+    // The same card the playing row shows: every emotion, the named piece, the alternates and the pick.
+    const card = row1.getByTestId("chapter-peek").getByTestId("mood-card");
+    await expect(card.getByTestId("mood-emotions")).toContainText("Sorrow 90%");
+    await expect(card.getByTestId("mood-emotions")).toContainText("Calm 40%");
+    await expect(card.getByTestId("mood-piece")).toContainText("Theme 1");
+    await expect(card.getByTestId("mood-alternates")).toContainText("Theme 2 (Composer 2) · Theme 3 (Composer 3)");
+    await expect(card.getByTestId("pick-auto")).toHaveAttribute("aria-pressed", "true");
+    await expect(row1.getByTestId("row-chips-1")).toHaveAttribute("aria-expanded", "true");
+    // A pick there is that chapter's, and still nothing moves.
+    await card.getByTestId("pick-composer-2--theme-2").click();
+    await expect(card.getByTestId("pick-composer-2--theme-2")).toHaveAttribute("aria-pressed", "true");
+
+    // Playback has not moved: chapter 1 still plays (paused) where it was; chapter 2 is open, not playing.
+    await expectChapter(page, 0);
+    await expect(row1.getByTestId("chapter-expanded")).toHaveCount(0);
+    await expect(row1).not.toHaveAttribute("aria-current", "true");
+    await expect(page.getByTestId("mini-chapter-title")).toHaveText(title!);
+    const after = await narration(page);
+    expect(after.paused).toBe(true);
+    expect(Math.abs(after.currentTime - before.currentTime)).toBeLessThan(0.05);
+
+    // A second tap closes it to the row's two strongest chips.
+    await row1.getByTestId("row-chips-1").click();
+    await expect(row1.getByTestId("chapter-peek")).toHaveCount(0);
+    await expect(row1.getByTestId("row-emotions-1")).toContainText("Sorrow 90%");
+
+    // A chapter not yet reached: no chips, nothing to tap, never opens (A21).
+    const row2 = page.getByTestId("chapter-row-2");
+    await expect(row2.getByTestId("locked-2")).toBeVisible();
+    await expect(row2.getByTestId("row-chips-2")).toHaveCount(0);
+    await expect(row2.locator("[data-testid^='emotion-']")).toHaveCount(0);
+    await expect(row2.getByTestId("chapter-peek")).toHaveCount(0);
+    await expect(row2.getByTestId("chapter-expanded")).toHaveCount(0);
+
+    // Open chapter 2's card again; its title still jumps playback, and the jump closes the open card.
+    await row1.getByTestId("row-chips-1").click();
+    await expect(row1.getByTestId("chapter-peek")).toBeVisible();
+    await page.getByTestId("chapter-1").click();
+    await expectChapter(page, 1);
+    await expect(page.getByTestId("chapter-peek")).toHaveCount(0);
+    await pause(page);
+  });
+
+  test("A35: an opened chapter is not playing, so its card shows the chapter's emotions and piece and no scene band (07.2)", async ({
+    page,
+  }) => {
+    await scoredBook(page, { scenes: true });
+    // Chapter 1 has three scenes: playing, its card carries the playing scene's band.
+    await expect(page.getByTestId("chapter-row-0").getByTestId("mood-scene")).toBeVisible();
+    // Move on to chapter 2; chapter 1 is reached and no longer playing.
+    await page.getByTestId("chapter-1").click();
+    await expectChapter(page, 1);
+    await expect.poll(async () => (await narration(page)).paused).toBe(false);
+    await pause(page);
+
+    const row0 = page.getByTestId("chapter-row-0");
+    await row0.getByTestId("row-chips-0").click();
+    const card = row0.getByTestId("chapter-peek").getByTestId("mood-card");
+    await expect(card.getByTestId("mood-emotions")).toContainText("Tension 80%");
+    await expect(card.getByTestId("mood-piece")).toBeVisible();
+    await expect(card.getByTestId("mood-scene")).toHaveCount(0);
+    await expect(row0.locator("[data-testid^='scene-emotion-']")).toHaveCount(0);
+    await expectChapter(page, 1);
   });
 });
 

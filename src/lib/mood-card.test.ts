@@ -5,6 +5,7 @@ import { EMOTIONS as THEME_EMOTIONS, emotionHues } from "../ui/theme.ts";
 import type { Kv } from "./library-store.ts";
 import {
   alternatesLine,
+  canPeek,
   EMOTION_NAMES,
   intensityPercent,
   misfitOffers,
@@ -12,6 +13,7 @@ import {
   pieceLine,
   sceneBand,
   strongest,
+  togglePeek,
 } from "./mood-card.ts";
 import { stickerLabel } from "./labels.ts";
 import { createScoringStore } from "./scoring-store.ts";
@@ -217,4 +219,19 @@ test("A7: a listener's seed shows at once, reached or not, marked as theirs, its
   assert.equal(none.kind === "scored" && none.piece, null, "no piece matched: the soundscape plays");
   const researched = moodCardView(true, score());
   assert.equal(researched.kind === "scored" && researched.listener, undefined);
+});
+
+test("A35: a reached, scored, non-playing row opens its mood card from its chips; one row at a time; a locked row never (A21)", () => {
+  const scored = moodCardView(true, score());
+  assert.equal(canPeek(scored, false), true);
+  // The playing row is always open: its chips are the card's, not a toggle.
+  assert.equal(canPeek(scored, true), false);
+  assert.equal(canPeek(moodCardView(false, score()), false), false);
+  assert.equal(canPeek({ kind: "none" }, false), false);
+  assert.equal(canPeek({ kind: "unscored" }, false), false);
+  assert.equal(canPeek({ kind: "scored", emotions: [], piece: null, alternates: [], pick: "auto", playing: null }, false), false);
+
+  assert.equal(togglePeek(null, 2), 2);
+  assert.equal(togglePeek(2, 2), null);
+  assert.equal(togglePeek(1, 2), 2);
 });

@@ -11,6 +11,9 @@
 // A7): an unscored chapter's card offers "Set the mood" (src/player/SetMoodSheet.tsx); a seeded chapter's card says
 // "Your mood", names the matched piece or says the chapter plays its soundscape, and takes no verdict, so the
 // listener's own emotions never leave the device.
+// 01.22 (A35): a reached, non-playing row opens the same card in place from its chips, without moving playback; it
+// is not playing, so it shows the chapter's emotions and piece and never a scene band.
+import type { ReactNode } from "react";
 import { StyleSheet, Text, View } from "react-native";
 
 import { alternatesLine, EMOTION_NAMES, misfitOffers, pieceLine, strongest, type MoodCardView } from "@/lib/mood-card";
@@ -91,6 +94,8 @@ export function MoodCard(props: {
   onVerdict?: (pieceId: string, tapped: Verdict) => void;
   /** Opens "Set the mood" for this chapter (07.6, A7): offered on an unscored chapter and on the listener's own seed. */
   onSetMood?: () => void;
+  /** Drawn in place of the emotion chips: a reached row's chips toggle that open its card (01.22, A35). */
+  emotions?: ReactNode;
 }) {
   const v = props.view;
   if (v.kind === "unscored") {
@@ -111,7 +116,7 @@ export function MoodCard(props: {
           {COPY.yours}
         </Text>
       )}
-      <EmotionChips emotions={v.emotions} testID="mood-emotions" label={yours ? COPY.yoursEmotions : undefined} />
+      {props.emotions ?? <EmotionChips emotions={v.emotions} testID="mood-emotions" label={yours ? COPY.yoursEmotions : undefined} />}
       {v.scene && v.scene.length > 0 && (
         <View style={styles.sceneBand} testID="mood-scene">
           <Text style={styles.heading}>{COPY.scene}</Text>

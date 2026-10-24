@@ -123,3 +123,16 @@ export function sceneBand(
   const shown = strongest(scenes[scene].emotions);
   return shown.length > 0 ? shown : null;
 }
+
+/**
+ * Whether a row's emotion chips open its mood card in place (01.22, spec 01 A35): a reached, scored row with emotions
+ * that is not the playing row (which is always open). A row not yet reached shows no chips and never opens (A21).
+ */
+export function canPeek(view: MoodCardView, playing: boolean): boolean {
+  return !playing && view.kind === "scored" && view.emotions.length > 0;
+}
+
+/** The row open after a tap on row `index`'s chips: one at a time, and a second tap on the open row closes it. */
+export function togglePeek(open: number | null, index: number): number | null {
+  return open === index ? null : index;
+}
