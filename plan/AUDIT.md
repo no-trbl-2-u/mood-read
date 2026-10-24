@@ -7,24 +7,6 @@
 
 ## Pending — [needs-user-call]
 
-### [needs-user-call] Review the 06.2 layout picks
-- category: design
-- logged: 2026-10-23 (06.2, `design/layouts/DECISION.md` v2, `design/layouts/v2/*.png`)
-- what: five layout choices and two copy calls in the v2 boards.
-- default taken: book-level actions (scoring, Build playlist) in one action band under the river's title row;
-  a thin bar for a row's download progress; Build playlist progress in the band plus a mark per row; book
-  management in a menu on each library row (no long-press); "Import a book" primary over "Browse free books".
-  Copy: the library is titled "Your shelf"; Rescore says the current moods stay until the new ones land; the cap
-  state says scoring resumes on its own (both depend on 01.2 and 01.17). Overrule any of these; it is recorded in
-  DECISION.md.
-
-### [needs-user-call] Review the 06.1 design system pick
-- category: design
-- logged: 2026-10-23 (06.1, `design/system/DECISION.md`, `design/system/board.png`)
-- what: the board draws three "full gen z chaotic" options: A acid sticker, B zine collage, C y2k chrome.
-- default taken: A, the board's recommendation (loudest with no image assets or gradient library; most contrast
-  headroom). Overrule by naming B or C; the overrule is recorded in DECISION.md and 06.4 applies it.
-
 ### [needs-user-call] After the v1 MVP: Spotify III.5, iOS and the Apple Developer Program
 - category: product
 - logged: 2026-10-23 (the owner's answers to the streaming study, `docs/streaming-sources.md` section 5)
