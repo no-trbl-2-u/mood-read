@@ -59,6 +59,8 @@ export type MoodCardView =
       alternates: Piece[];
       /** `auto` or one of the alternates' ids. */
       pick: "auto" | string;
+      /** The piece that plays for the chapter: the picked alternate, else the named piece; what a verdict is on (A5). */
+      playing: Piece | null;
     };
 
 /** What a chapter's row may show, given whether it is reached and its stored score (or null). */
@@ -71,5 +73,15 @@ export function moodCardView(reached: boolean, score: ChapterScore | null): Mood
   const piece = pl ? (byId.get(pl.piece) ?? null) : null;
   const alternates = pl ? pl.alternates.map((id) => byId.get(id)).filter((p): p is Piece => !!p) : [];
   const pick = pl && pl.pick !== "auto" && alternates.some((p) => p.id === pl.pick) ? pl.pick : "auto";
-  return { kind: "scored", emotions: strongest(score.mood.emotions), piece, alternates, pick };
+  const playing = pick === "auto" ? piece : (alternates.find((p) => p.id === pick) ?? piece);
+  return { kind: "scored", emotions: strongest(score.mood.emotions), piece, alternates, pick, playing };
+}
+
+/**
+ * What "Doesn't fit" offers in place (07.4, A5): every piece of the chapter but the one playing, the named piece first,
+ * then the alternates, so the next step is a pick (the named piece picks Auto).
+ */
+export function misfitOffers(v: Extract<MoodCardView, { kind: "scored" }>): Piece[] {
+  if (!v.piece || !v.playing) return [];
+  return [v.piece, ...v.alternates].filter((p) => p.id !== v.playing!.id);
 }

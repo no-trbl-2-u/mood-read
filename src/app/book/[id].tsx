@@ -9,6 +9,8 @@ import { moodCardView } from "@/lib/mood-card";
 import { isReached } from "@/lib/reached";
 import { notes, useNoteDismissed } from "@/lib/notes";
 import { scoring, scoringStore, useBookScores, useScoringJob } from "@/lib/scoring";
+import { nextVerdict } from "@/lib/verdict-store";
+import { useBookVerdicts, verdicts } from "@/lib/verdicts";
 import { BookmarksSheet } from "@/player/BookmarksSheet";
 import { ChapterRiver } from "@/player/ChapterRiver";
 import { CompanionBand } from "@/player/CompanionBand";
@@ -49,6 +51,7 @@ export default function BookScreen() {
   const job = useScoringJob(id ?? "");
   const scores = useBookScores(id ?? "");
   const furthest = useFurthestReached(id ?? "");
+  const bookVerdicts = useBookVerdicts(id ?? "");
 
   // A scoring job remembered from before (the app closed mid-run) is picked up again when its book opens (A15).
   useEffect(() => {
@@ -155,6 +158,10 @@ export default function BookScreen() {
             const c = book.chapters[i];
             if (c) scoringStore.savePick(book.id, c, pick);
           }}
+          verdicts={bookVerdicts}
+          onVerdict={(i, pieceId, tapped) =>
+            verdicts.setVerdict(book.id, i, pieceId, nextVerdict(verdicts.verdictFor(book.id, i, pieceId), tapped))
+          }
           mixer={
             active ? (
               <Mixer

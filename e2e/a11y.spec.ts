@@ -3,7 +3,8 @@
 // empty on the web build), the licenses, Credits (05.5), a book that is not on the device, and a real book's river
 // with the playing row expanded (the mixer inline), its Speed & Sleep sheet and its Bookmarks sheet, and a scored book
 // (01.4): the playing row's mood card (emotion stickers, the named piece, alternates and the pick chips), a
-// reached row's stickers and a locked row, and Browse and a LibriVox book's page (05.8, archive.org stubbed by
+// reached row's stickers and a locked row; 07.4's verdict targets with "Fits" lit, and with "Doesn't fit" lit and the
+// other pieces offered in place; and Browse and a LibriVox book's page (05.8, archive.org stubbed by
 // e2e/librivox-fixtures.ts, same as e2e/browse.spec.ts). On each one:
 //   - axe (WCAG 2.0, 2.1 and 2.2, A and AA) finds no serious or critical issue;
 //   - every control (button, link, switch, checkbox, slider, tab, menu item, and any other focusable element, which
@@ -209,6 +210,31 @@ const STATES: State[] = [
       await expect(row0.getByTestId("mood-alternates")).toBeVisible();
       await expect(page.getByTestId("row-emotions-1")).toBeVisible();
       await expect(page.getByTestId("locked-2")).toBeVisible();
+      const play = page.getByTestId("mini-play-pause");
+      if ((await play.getAttribute("aria-label")) === "Pause") await play.click();
+      await expect(play).toHaveAttribute("aria-label", "Play");
+    },
+  },
+  {
+    name: "/book/<id> scored: the mood card with \"Fits\" lit (07.4)",
+    open: async (page) => {
+      await scoredBook(page);
+      const row0 = page.getByTestId("chapter-row-0");
+      await row0.getByTestId("verdict-fits").click();
+      await expect(row0.getByTestId("verdict-fits")).toHaveAttribute("aria-pressed", "true");
+      const play = page.getByTestId("mini-play-pause");
+      if ((await play.getAttribute("aria-label")) === "Pause") await play.click();
+      await expect(play).toHaveAttribute("aria-label", "Play");
+    },
+  },
+  {
+    name: "/book/<id> scored: \"Doesn't fit\" lit, the other pieces offered in place (07.4)",
+    open: async (page) => {
+      await scoredBook(page);
+      const row0 = page.getByTestId("chapter-row-0");
+      await row0.getByTestId("verdict-misfit").click();
+      await expect(row0.getByTestId("verdict-misfit")).toHaveAttribute("aria-pressed", "true");
+      await expect(row0.getByTestId("mood-misfit-offers")).toBeVisible();
       const play = page.getByTestId("mini-play-pause");
       if ((await play.getAttribute("aria-label")) === "Pause") await play.click();
       await expect(play).toHaveAttribute("aria-label", "Play");

@@ -150,7 +150,7 @@ test("A12: the layer is saved per book with any chapter's own; a mix saved befor
   assert.deepEqual(store.getMix("b4"), DEFAULT_MIX);
 });
 
-test("removing a book drops its position, speed, mix and bookmarks", () => {
+test("removing a book drops its position, speed, mix, bookmarks and verdicts", () => {
   const kv = memoryKv();
   const store = createLibraryStore(kv);
   store.addBook(book("b1", "Dune"));
@@ -158,12 +158,14 @@ test("removing a book drops its position, speed, mix and bookmarks", () => {
   store.saveSpeed("b1", 2);
   store.saveMix("b1", { ...DEFAULT_MIX, balance: 0, master: 0.5, duck: true });
   store.addBookmark("b1", 3, "a");
+  kv.setItem("verdicts:b1", JSON.stringify([{ chapterIndex: 0, pieceId: "p1", verdict: "fits", at: 1 }]));
   store.removeBook("b1");
   assert.equal(store.getBook("b1"), undefined);
   assert.equal(kv.data.has("pos:b1"), false);
   assert.equal(kv.data.has("speed:b1"), false);
   assert.equal(kv.data.has("mix:b1"), false);
   assert.equal(kv.data.has("bookmarks:b1"), false);
+  assert.equal(kv.data.has("verdicts:b1"), false);
   assert.deepEqual(store.bookmarks("b1"), []);
 });
 

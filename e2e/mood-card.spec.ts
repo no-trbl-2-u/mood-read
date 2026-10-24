@@ -2,7 +2,8 @@
 // files (one chapter each) and its scores are seeded on the device the way a finished scoring run stores them
 // (src/lib/scoring-store.ts, `scores:<book id>`), so no proxy is involved. A chapter not yet reached shows no
 // emotions and does not expand; the playing chapter shows its emotions, named piece and alternates; a picked
-// alternate is saved across a reload, and Auto returns to auto.
+// alternate is saved across a reload, and Auto returns to auto. 07.4 (spec 07 A5): "Fits" and "Doesn't fit" keep a
+// verdict per chapter across a reload, and "Doesn't fit" offers the chapter's other pieces in place.
 import { expect, test, type Page } from "@playwright/test";
 
 import { guard } from "./guard";
@@ -87,5 +88,68 @@ test.describe("the chapter mood card", () => {
     await expect(again.getByTestId("pick-auto")).toHaveAttribute("aria-pressed", "true");
     await expect(again.getByTestId("pick-composer-3--theme-3")).toHaveAttribute("aria-pressed", "false");
     expect(await storedPick(page, id, 0)).toBe("auto");
+  });
+
+  test("A5: Fits and Doesn't fit keep a verdict per chapter across a reload; Doesn't fit offers the other pieces in place", async ({ page }) => {
+    const id = await scoredBook(page);
+    const storedVerdicts = () =>
+      page.evaluate((id) => {
+        const raw = localStorage.getItem(`verdicts:${id}`);
+        return raw ? (JSON.parse(raw) as { chapterIndex: number; pieceId: string; verdict: string }[]).map(({ chapterIndex, pieceId, verdict }) => ({ chapterIndex, pieceId, verdict })) : [];
+      }, id);
+
+    // Chapter 1: Theme 1 plays (Auto). "Fits" lights; nothing else opens.
+    const row0 = page.getByTestId("chapter-row-0");
+    await expect(row0.getByTestId("mood-verdict")).toContainText("Does Theme 1 fit this chapter?");
+    const fits0 = row0.getByTestId("verdict-fits");
+    await expect(fits0).toHaveAttribute("aria-label", "Fits: Theme 1 suits this chapter");
+    await expect(fits0).toHaveAttribute("aria-pressed", "false");
+    await fits0.click();
+    await expect(fits0).toHaveAttribute("aria-pressed", "true");
+    await expect(row0.getByTestId("verdict-misfit")).toHaveAttribute("aria-pressed", "false");
+    await expect(row0.getByTestId("mood-misfit-offers")).toHaveCount(0);
+
+    // Chapter 2: "Doesn't fit" lights and offers Theme 2 and Theme 3 right there.
+    await page.getByTestId("chapter-1").click();
+    const row1 = page.getByTestId("chapter-row-1");
+    const misfit1 = row1.getByTestId("verdict-misfit");
+    await expect(misfit1).toHaveAttribute("aria-label", "Doesn't fit: Theme 1 does not suit this chapter");
+    await misfit1.click();
+    await expect(misfit1).toHaveAttribute("aria-pressed", "true");
+    await expect(row1.getByTestId("verdict-fits")).toHaveAttribute("aria-pressed", "false");
+    const offers = row1.getByTestId("mood-misfit-offers");
+    await expect(offers).toContainText("Try one of these instead");
+    await expect(offers.getByTestId("offer-composer-2--theme-2")).toHaveAttribute("aria-label", "Try Theme 2 by Composer 2 for this chapter instead");
+    await expect(offers.getByTestId("offer-composer-3--theme-3")).toBeVisible();
+    await expect(offers.getByTestId("offer-composer-1--theme-1")).toHaveCount(0);
+    expect(await storedVerdicts()).toEqual([
+      { chapterIndex: 0, pieceId: "composer-1--theme-1", verdict: "fits" },
+      { chapterIndex: 1, pieceId: "composer-1--theme-1", verdict: "misfit" },
+    ]);
+
+    // Kept per chapter across a reload.
+    await page.reload();
+    await page.getByTestId("chapter-0").click();
+    await expect(page.getByTestId("chapter-row-0").getByTestId("verdict-fits")).toHaveAttribute("aria-pressed", "true");
+    await page.getByTestId("chapter-1").click();
+    const again = page.getByTestId("chapter-row-1");
+    await expect(again.getByTestId("verdict-misfit")).toHaveAttribute("aria-pressed", "true");
+    await expect(again.getByTestId("mood-misfit-offers")).toBeVisible();
+
+    // The offer is a pick: Theme 2 plays for the chapter now, and has no verdict yet; the misfit on Theme 1 stays kept.
+    await again.getByTestId("offer-composer-2--theme-2").click();
+    await expect(again.getByTestId("pick-composer-2--theme-2")).toHaveAttribute("aria-pressed", "true");
+    expect(await storedPick(page, id, 1)).toBe("composer-2--theme-2");
+    await expect(again.getByTestId("mood-verdict")).toContainText("Does Theme 2 fit this chapter?");
+    await expect(again.getByTestId("verdict-misfit")).toHaveAttribute("aria-pressed", "false");
+    await expect(again.getByTestId("mood-misfit-offers")).toHaveCount(0);
+    expect(await storedVerdicts()).toContainEqual({ chapterIndex: 1, pieceId: "composer-1--theme-1", verdict: "misfit" });
+
+    // Tapping the lit target again takes the verdict back.
+    await page.getByTestId("chapter-0").click();
+    const fits = page.getByTestId("chapter-row-0").getByTestId("verdict-fits");
+    await fits.click();
+    await expect(fits).toHaveAttribute("aria-pressed", "false");
+    expect(await storedVerdicts()).toEqual([{ chapterIndex: 1, pieceId: "composer-1--theme-1", verdict: "misfit" }]);
   });
 });

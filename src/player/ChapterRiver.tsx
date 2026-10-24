@@ -12,7 +12,8 @@ import { Pressable, ScrollView, StyleSheet, Text, TextInput, View, type ScrollVi
 
 import { canMergeWithNext, canSplitAt } from "@/lib/chapters";
 import type { MoodCardView } from "@/lib/mood-card";
-import type { Book } from "@/lib/types";
+import type { Book, PieceVerdict } from "@/lib/types";
+import type { Verdict } from "@/lib/verdict-store";
 import { Icon } from "@/ui/Icon";
 import { Button } from "@/ui/Button";
 import { EmotionChips, MoodCard } from "./MoodCard";
@@ -32,6 +33,10 @@ export function ChapterRiver(props: {
   moods?: readonly MoodCardView[];
   /** The listener picks an alternate, or Auto, for a chapter (A16). */
   onPick?: (index: number, pick: "auto" | string) => void;
+  /** The book's kept verdicts (07.4, A5): the playing row lights the one on its playing piece. */
+  verdicts?: readonly PieceVerdict[];
+  /** The listener taps "Fits" or "Doesn't fit" on a chapter's playing piece (A5). */
+  onVerdict?: (index: number, pieceId: string, tapped: Verdict) => void;
   onJump: (index: number) => void;
   /** Chapter edits; absent until the book is open in the player. */
   edits?: ChapterEditsApi;
@@ -104,7 +109,16 @@ export function ChapterRiver(props: {
             )}
             {playing && !locked && (
               <View style={styles.expanded} testID="chapter-expanded">
-                <MoodCard view={mood} onPick={(pick) => props.onPick?.(c.index, pick)} />
+                <MoodCard
+                  view={mood}
+                  onPick={(pick) => props.onPick?.(c.index, pick)}
+                  verdict={
+                    mood.kind === "scored" && mood.playing
+                      ? (props.verdicts?.find((v) => v.chapterIndex === c.index && v.pieceId === mood.playing!.id)?.verdict ?? null)
+                      : null
+                  }
+                  onVerdict={props.onVerdict ? (pieceId, tapped) => props.onVerdict!(c.index, pieceId, tapped) : undefined}
+                />
                 {props.mixer}
                 {props.edits && (
                   <ChapterEdits

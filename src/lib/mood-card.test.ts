@@ -7,6 +7,7 @@ import {
   alternatesLine,
   EMOTION_NAMES,
   intensityPercent,
+  misfitOffers,
   moodCardView,
   pieceLine,
   strongest,
@@ -138,4 +139,28 @@ test("a pick that is not an alternate, or for a chapter with no playlist or a ch
   assert.equal(store.savePick("b", { index: 0, title: "Renamed" }, "p2"), false);
   assert.equal(store.savePick("none", { index: 0, title: "The Storm" }, "p2"), false);
   assert.equal(store.chapterScore("b", { index: 0, title: "The Storm" })!.playlist!.pick, "auto");
+});
+
+test("A5: the playing piece is the pick when there is one, else the named piece", () => {
+  const auto = moodCardView(true, score());
+  assert.ok(auto.kind === "scored" && auto.playing?.id === "p1");
+  const picked = moodCardView(true, score({}, { chapterIndex: 0, piece: "p1", alternates: ["p2", "p3"], pick: "p3" }));
+  assert.ok(picked.kind === "scored" && picked.playing?.id === "p3");
+  const none = moodCardView(true, score({}, null));
+  assert.ok(none.kind === "scored" && none.playing === null);
+});
+
+test("A5: \"Doesn't fit\" offers every other piece of the chapter, the named piece first, then the alternates", () => {
+  const auto = moodCardView(true, score());
+  assert.ok(auto.kind === "scored");
+  if (auto.kind !== "scored") return;
+  assert.deepEqual(misfitOffers(auto).map((p) => p.id), ["p2", "p3"]);
+  const picked = moodCardView(true, score({}, { chapterIndex: 0, piece: "p1", alternates: ["p2", "p3"], pick: "p2" }));
+  assert.ok(picked.kind === "scored");
+  if (picked.kind !== "scored") return;
+  assert.deepEqual(misfitOffers(picked).map((p) => p.id), ["p1", "p3"]);
+  const lone = moodCardView(true, score({}, { chapterIndex: 0, piece: "p1", alternates: [], pick: "auto" }));
+  assert.ok(lone.kind === "scored" && misfitOffers(lone).length === 0);
+  const none = moodCardView(true, score({}, null));
+  assert.ok(none.kind === "scored" && misfitOffers(none).length === 0);
 });

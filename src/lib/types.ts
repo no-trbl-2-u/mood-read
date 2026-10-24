@@ -149,6 +149,13 @@ export type ChapterPlaylist = {
 };
 
 /**
+ * The listener's say on a chapter's playing piece (07.4, spec 07 A5): "Fits" or "Doesn't fit", kept on the device per
+ * book (`verdicts:<book id>`, src/lib/verdict-store.ts), at most one per chapter and piece. `at` is when it was given,
+ * in epoch ms; it never leaves the device (07.5 sends only aggregate rows with no book, chapter or time).
+ */
+export type PieceVerdict = { chapterIndex: number; pieceId: string; verdict: "fits" | "misfit"; at: number };
+
+/**
  * What the device keeps per chapter. `playlist` is null when the mood is `too-little` (unscored), and when the
  * emotions were found but no piece passed the no-vocals checks (A20).
  */
