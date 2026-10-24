@@ -7,6 +7,7 @@ import { deriveChapters, mergeWithNext, renameChapter, splitChapter } from "./ch
 import { bookTags, checkImport, inspectFiles } from "./import-plan";
 import { getItem, removeItem, setItem } from "./kv";
 import { createLibraryStore } from "./library-store";
+import { createReachedStore } from "./reached";
 import {
   deleteBookFiles,
   pickFiles,
@@ -24,6 +25,15 @@ import { newId, totalDuration } from "./timeline";
 import type { Book, BookFile, Bookmark } from "./types";
 
 export const library = createLibraryStore({ getItem, setItem, removeItem });
+
+/** How far into each book the listener has reached (01.4, A21): src/lib/reached.ts. */
+export const reached = createReachedStore({ getItem, setItem, removeItem });
+
+/** The furthest chapter start playback has entered in this book, in seconds, or null. */
+export function useFurthestReached(bookId: string): number | null {
+  const read = () => reached.furthest(bookId);
+  return useSyncExternalStore(reached.subscribe, read, read);
+}
 
 export function useBooks(): Book[] {
   return useSyncExternalStore(library.subscribe, library.books, library.books);

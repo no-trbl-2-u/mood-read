@@ -80,6 +80,24 @@ export function createScoringStore(kv: Kv) {
       const s = read<BookScores>(scoresKey(bookId));
       return s?.chapters.find((c) => c.mood.chapterIndex === chapter.index && c.mood.chapterTitle === chapter.title) ?? null;
     },
+    /**
+     * Saves the listener's pick for a chapter (01.4, A16): one of its alternates, or `auto` for the named piece. Only
+     * the chapter's playlist changes, never its ChapterMood. False (and nothing saved) when the chapter has no stored
+     * playlist under its current title, or the pick is not one of its alternates.
+     */
+    savePick(bookId: string, chapter: Pick<Chapter, "index" | "title">, pick: "auto" | string): boolean {
+      const s = read<BookScores>(scoresKey(bookId));
+      if (!s) return false;
+      const at = s.chapters.findIndex((c) => c.mood.chapterIndex === chapter.index && c.mood.chapterTitle === chapter.title);
+      const playlist = at < 0 ? null : s.chapters[at].playlist;
+      if (!playlist) return false;
+      const next = pick === playlist.piece ? "auto" : pick;
+      if (next !== "auto" && !playlist.alternates.includes(next)) return false;
+      if (playlist.pick === next) return true;
+      const chapters = s.chapters.map((c, i) => (i === at ? { ...c, playlist: { ...playlist, pick: next } } : c));
+      write(scoresKey(bookId), { ...s, chapters });
+      return true;
+    },
     forget(bookId: string) {
       write(jobKey(bookId), null);
       write(scoresKey(bookId), null);
