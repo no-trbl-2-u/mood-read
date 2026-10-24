@@ -1,10 +1,13 @@
-// Browse and a LibriVox book's page (spec 05, 05.8, A9) on the web build, hermetic: archive.org (search,
-// metadata and the chapter/cover downloads) is a route stub (e2e/librivox-fixtures.ts), so nothing leaves
-// localhost (librivox.org's own API is never called at all, agents.md rule 6).
+// Browse and a LibriVox book's page (spec 05, 05.8, A9; 05.10, A11; 05.20, A22) on the web build, hermetic:
+// archive.org (search, the popular list, metadata and the chapter/cover downloads) and the scoring proxy's read-only
+// routes are route stubs (e2e/librivox-fixtures.ts), so nothing leaves localhost (librivox.org's own API is never
+// called at all, agents.md rule 6).
 import { expect, test } from "@playwright/test";
 
 import { guard } from "./guard";
-import { IDENTIFIER, METADATA_BODY, stubArchiveOrg, stubOverall } from "./librivox-fixtures";
+import { CATALOG_ID, IDENTIFIER, METADATA_BODY, POPULAR_DOC, PRESCORED_ONLY_DOC, PROXY, stubArchiveOrg, stubOverall, stubPrescored } from "./librivox-fixtures";
+
+const NOT_JSON = { status: 200, headers: { "access-control-allow-origin": "*" }, body: "not json" };
 
 test.describe("browse", () => {
   let problems: string[] = [];
@@ -21,15 +24,15 @@ test.describe("browse", () => {
     await page.getByRole("button", { name: "More" }).click();
     await page.getByRole("menuitem", { name: "Browse free books" }).click();
     await expect(page).toHaveURL(/\/browse$/);
-    await expect(page.getByTestId("browse-prompt")).toBeVisible();
+    await expect(page.getByTestId("browse-popular")).toBeVisible();
 
     await page.getByTestId("browse-query").fill("Wind in the Willows");
     await expect(page.getByTestId(`browse-result-${IDENTIFIER}`)).toBeVisible();
     await expect(page.getByTestId(`browse-result-${IDENTIFIER}`)).toContainText("Kenneth Grahame");
 
-    // Clearing the field goes back to the prompt rather than showing stale results.
+    // Clearing the field goes back to the popular list rather than showing stale results.
     await page.getByTestId("browse-clear").click();
-    await expect(page.getByTestId("browse-prompt")).toBeVisible();
+    await expect(page.getByTestId("browse-popular")).toBeVisible();
     await page.getByTestId("browse-query").fill("Kenneth Grahame"); // the same book, found by author this time
     await expect(page.getByTestId(`browse-result-${IDENTIFIER}`)).toBeVisible();
 
@@ -55,7 +58,9 @@ test.describe("browse", () => {
     const asked = await stubOverall(page, ["101"]);
 
     await page.goto("/browse");
+    await expect(page.getByTestId("browse-popular")).toBeVisible();
     await page.getByTestId("browse-query").fill("Book");
+    await expect(page.getByTestId("browse-popular")).toHaveCount(0);
     const scored = page.getByTestId("browse-result-scored_book_librivox");
     const plain = page.getByTestId("browse-result-plain_book_librivox");
     await expect(plain).toBeVisible();
@@ -67,8 +72,9 @@ test.describe("browse", () => {
     await expect(scored).not.toContainText("Calm");
     await expect(page.getByTestId("browse-scored-plain_book_librivox")).toHaveCount(0);
     await expect(plain).not.toContainText("Scored");
-    // One batched read for the page, with the LibriVox numbers only.
-    expect(asked).toEqual([["101", "202"]]);
+    // One batched read for the search's page, with the LibriVox numbers only (the popular list made its own).
+    expect(asked.at(-1)).toEqual(["101", "202"]);
+    expect(asked.flat().every((id) => /^[0-9]+$/.test(id))).toBe(true);
 
     // The book's page shows the whole book's mood: Scored and at most three overall emotions, never a chapter's.
     await scored.click();
@@ -81,8 +87,61 @@ test.describe("browse", () => {
     await page.waitForLoadState("networkidle");
   });
 
+  test("A22: Browse opens on Popular on LibriVox, pre-scored books first; a search replaces it, clearing restores it", async ({ page }) => {
+    // The listing names a pre-scored book archive.org's popular page lacks (found by its number) and the fixture book.
+    const limits = await stubPrescored(page, [PRESCORED_ONLY_DOC.call_number, CATALOG_ID]);
+    await page.goto("/browse");
+    const popular = page.getByTestId("browse-popular");
+    await expect(popular).toBeVisible();
+    await expect(page.getByRole("heading", { name: "Popular on LibriVox" })).toBeVisible();
+    const rows = popular.locator('[data-testid^="browse-result-"]');
+    await expect(rows).toHaveCount(3);
+    await expect(rows.nth(0)).toHaveAttribute("data-testid", `browse-result-${PRESCORED_ONLY_DOC.identifier}`);
+    await expect(rows.nth(1)).toHaveAttribute("data-testid", `browse-result-${IDENTIFIER}`);
+    await expect(rows.nth(2)).toHaveAttribute("data-testid", `browse-result-${POPULAR_DOC.identifier}`);
+    // The pre-scored rows carry Scored and the book's overall emotions; the popular book after them carries none.
+    await expect(page.getByTestId(`browse-scored-${PRESCORED_ONLY_DOC.identifier}`)).toBeVisible();
+    await expect(page.getByTestId(`browse-scored-${IDENTIFIER}`)).toContainText("Wonder 80%");
+    await expect(page.getByTestId(`browse-scored-${POPULAR_DOC.identifier}`)).toHaveCount(0);
+    expect(limits).toEqual(["20"]);
+
+    await page.getByTestId("browse-query").fill("Kenneth Grahame");
+    await expect(page.getByTestId("browse-popular")).toHaveCount(0);
+    await expect(page.getByTestId(`browse-result-${IDENTIFIER}`)).toBeVisible();
+    await expect(page.getByTestId(`browse-result-${POPULAR_DOC.identifier}`)).toHaveCount(0);
+    await expect(page.getByRole("heading", { name: "Popular on LibriVox" })).toHaveCount(0);
+
+    await page.getByTestId("browse-clear").click();
+    await expect(popular).toBeVisible();
+    await expect(rows).toHaveCount(3);
+    await expect(rows.nth(0)).toHaveAttribute("data-testid", `browse-result-${PRESCORED_ONLY_DOC.identifier}`);
+    expect(limits).toEqual(["20"]); // loaded once per visit
+    await page.waitForLoadState("networkidle");
+  });
+
+  test("A22: a failed listing still shows the popular list, unscored and in download order", async ({ page }) => {
+    await page.route(`${PROXY}/v1/prescored*`, (route) => route.fulfill(NOT_JSON));
+    await page.goto("/browse");
+    const rows = page.getByTestId("browse-popular").locator('[data-testid^="browse-result-"]');
+    await expect(rows).toHaveCount(2);
+    await expect(rows.nth(0)).toHaveAttribute("data-testid", `browse-result-${POPULAR_DOC.identifier}`);
+    await expect(rows.nth(1)).toHaveAttribute("data-testid", `browse-result-${IDENTIFIER}`);
+    await page.waitForLoadState("networkidle");
+    await expect(page.locator('[data-testid^="browse-scored-"]')).toHaveCount(0);
+  });
+
+  test("A22: with the listing and archive.org both failing, Browse shows its plain prompt", async ({ page }) => {
+    await page.route(`${PROXY}/v1/prescored*`, (route) => route.fulfill(NOT_JSON));
+    await page.route("https://archive.org/advancedsearch.php*", (route) => route.fulfill(NOT_JSON));
+    await page.goto("/browse");
+    await expect(page.getByTestId("browse-prompt")).toBeVisible();
+    await expect(page.getByTestId("browse-popular")).toHaveCount(0);
+    await page.waitForLoadState("networkidle");
+  });
+
   test("Browse still works when the proxy's overall read fails: every row reads unscored", async ({ page }) => {
-    await page.route("https://mood-read-proxy.invalid/v1/overall*", (route) => route.fulfill({ status: 200, headers: { "access-control-allow-origin": "*" }, body: "not json" }));
+    await page.route(`${PROXY}/v1/overall*`, (route) => route.fulfill(NOT_JSON));
+    await page.route(`${PROXY}/v1/prescored*`, (route) => route.fulfill(NOT_JSON));
     await page.goto("/browse");
     await page.getByTestId("browse-query").fill("Wind in the Willows");
     await expect(page.getByTestId(`browse-result-${IDENTIFIER}`)).toBeVisible();

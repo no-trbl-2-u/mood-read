@@ -1,7 +1,7 @@
 import assert from "node:assert/strict";
 import { test } from "node:test";
 
-import { fetchOverall, readOverall } from "./overall-api.ts";
+import { fetchOverall, fetchPrescored, PRESCORED_LIMIT, readOverall, readPrescored } from "./overall-api.ts";
 
 const BASE = "https://proxy.example/";
 
@@ -54,4 +54,38 @@ test("only the book's overall emotions are read: the fixed set, at most three, s
   assert.deepEqual(out, { "1": [{ emotion: "dread", intensity: 0.9 }, { emotion: "joy", intensity: 0.5 }, { emotion: "sorrow", intensity: 0.4 }] });
   assert.doesNotMatch(JSON.stringify(out), /secret|chapter/i);
   assert.deepEqual(readOverall(null, ["1"]), {});
+});
+
+test("the pre-scored listing (05.20): one plain GET, bounded, read in the proxy's order, anything off dropped", async () => {
+  const calls: { url: string; init?: RequestInit }[] = [];
+  const fetchImpl = async (url: string, init?: RequestInit) => {
+    calls.push({ url, init });
+    return Response.json({
+      books: [
+        { id: "9", emotions: [{ emotion: "joy", intensity: 0.2 }, { emotion: "wonder", intensity: 0.7 }], chapterTitle: "A secret" },
+        { id: "3", emotions: [{ emotion: "dread", intensity: 0.5 }] },
+        { id: "9", emotions: [{ emotion: "calm", intensity: 0.5 }] },
+        { id: "0", emotions: [{ emotion: "calm", intensity: 0.5 }] },
+        { id: "5", emotions: [{ emotion: "not-an-emotion", intensity: 0.5 }] },
+        { id: 7, emotions: [{ emotion: "calm", intensity: 0.5 }] },
+      ],
+    });
+  };
+  const out = await fetchPrescored(BASE, fetchImpl);
+  assert.equal(calls.length, 1);
+  assert.equal(calls[0].url, `https://proxy.example/v1/prescored?limit=${PRESCORED_LIMIT}`);
+  assert.equal(calls[0].init, undefined, "a plain GET: no body, no key, no header");
+  assert.deepEqual(out, [
+    { id: "9", emotions: [{ emotion: "wonder", intensity: 0.7 }, { emotion: "joy", intensity: 0.2 }] },
+    { id: "3", emotions: [{ emotion: "dread", intensity: 0.5 }] },
+  ]);
+  assert.equal(readPrescored({ books: Array.from({ length: 80 }, (_, i) => ({ id: String(i + 1), emotions: [{ emotion: "joy", intensity: 0.5 }] })) }).length, PRESCORED_LIMIT);
+});
+
+test("a failed listing is null (the proxy is down), an empty one is empty", async () => {
+  assert.equal(await fetchPrescored(BASE, async () => new Response("down", { status: 503 })), null);
+  assert.equal(await fetchPrescored(BASE, async () => { throw new Error("offline"); }), null);
+  assert.equal(await fetchPrescored(BASE, async () => new Response("not json")), null);
+  assert.deepEqual(await fetchPrescored(BASE, async () => Response.json({ books: [] })), []);
+  assert.equal(await fetchPrescored(BASE, async () => Response.json({ books: { "1": {} } })), null, "not a listing");
 });

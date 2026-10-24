@@ -116,11 +116,12 @@ const STATES: State[] = [
     },
   },
   {
-    name: "/browse (05.8): the pre-query prompt",
+    name: "/browse (05.8, 05.20): Popular on LibriVox before any search, a pre-scored row first",
     open: async (page) => {
       await stubArchiveOrg(page);
       await page.goto("/browse");
-      await expect(page.getByTestId("browse-prompt")).toBeVisible();
+      await expect(page.getByTestId("browse-popular")).toBeVisible();
+      await expect(page.getByTestId(`browse-scored-${IDENTIFIER}`)).toBeVisible();
     },
   },
   {

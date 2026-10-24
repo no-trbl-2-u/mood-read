@@ -2,6 +2,7 @@ import assert from "node:assert/strict";
 import { test } from "node:test";
 
 import {
+  byCatalogIds,
   catalogNumber,
   chapterBytes,
   chapterFiles,
@@ -94,6 +95,25 @@ test("popular lists the LibriVox collection by downloads, most first, a page at 
   assert.ok(url.searchParams.getAll("fl[]").includes("call_number"));
   assert.deepEqual(results.map((r) => r.catalogId), [null, "1215"]);
   await assert.rejects(popular(fakeFetch({}, 503), 10), /503/);
+});
+
+test("byCatalogIds finds LibriVox books by their catalog numbers in one call, keeping only the asked-for (05.20)", async () => {
+  const calls: string[] = [];
+  const fetchImpl = async (url: string) => {
+    calls.push(url);
+    return new Response(JSON.stringify(SEARCH_BODY), { status: 200 });
+  };
+  const results = await byCatalogIds(fetchImpl, ["1215", "abc", "1215", "77"]);
+  assert.equal(calls.length, 1);
+  const url = new URL(calls[0]!);
+  assert.equal(url.origin + url.pathname, "https://archive.org/advancedsearch.php");
+  assert.equal(url.searchParams.get("q"), "collection:librivoxaudio AND call_number:(1215 OR 77)");
+  assert.ok(url.searchParams.getAll("fl[]").includes("call_number"));
+  assert.deepEqual(results.map((r) => r.identifier), ["dracula_1215_librivox"], "a result without an asked-for number is dropped");
+  let called = false;
+  assert.deepEqual(await byCatalogIds(async () => ((called = true), new Response("{}")), ["x", ""]), []);
+  assert.equal(called, false, "no number, no call");
+  await assert.rejects(byCatalogIds(fakeFetch({}, 503), ["1"]), /503/);
 });
 
 test("a non-ok search answer throws, and a malformed one throws rather than guessing", async () => {

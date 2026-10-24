@@ -6,6 +6,7 @@ import { browseRowCaption } from "@/lib/librivox-labels";
 import { search, type LibriVoxSearchResult } from "@/lib/librivox-api";
 import { EMOTION_NAMES } from "@/lib/mood-card";
 import { fetchOverall, type Overall } from "@/lib/overall-api";
+import { loadPopular, type PopularList } from "@/lib/popular-list";
 import { SCORING_PROXY_URL } from "@/lib/scoring";
 import type { EmotionScore } from "@/lib/types";
 import { Button } from "@/ui/Button";
@@ -17,8 +18,10 @@ import { TopBar } from "@/ui/TopBar";
 
 // Browse (spec 05, 05.8; design/layouts/DECISION.md "Browse"): search LibriVox by title, author or genre at
 // once (src/lib/librivox-api.ts's search scopes one archive.org call to all three) and push a result's page.
-// Before any search, the design's default is a "Popular on LibriVox" list, which needs 05.10's pre-scoring cache
-// (not built); this screen shows a plain prompt instead (a decision recorded in this chunk's commit). A pre-scored
+// Before any search, Browse lists "Popular on LibriVox" (05.20, A22): the pre-scored books first, then archive.org's
+// most-downloaded LibriVox books, each once (src/lib/popular-list.ts), loaded once per visit; a search replaces it and
+// clearing the field brings it back. If the proxy is down the list shows unscored; if archive.org is down too (or
+// answers nothing) the plain prompt stands in. A pre-scored
 // book's row (05.10, A11) shows "Scored" and its top two overall emotions, the whole book's and never a chapter's,
 // from one batched proxy read per page of results (src/lib/overall-api.ts: LibriVox numbers only, no run started);
 // if that read fails every row simply reads as unscored. A row shows no cover thumbnail: fetching one would be a
@@ -32,6 +35,8 @@ const COPY = {
   fieldCaption: "Title, author or genre. Free public-domain recordings from LibriVox.",
   clear: "Clear search",
   prompt: "Search LibriVox for a free audiobook.",
+  popular: "Popular on LibriVox",
+  popularLoading: "Loading popular books…",
   searching: "Searching LibriVox…",
   noResults: (q: string) => `No LibriVox books match "${q}". Try a title, an author or a genre.`,
   errorTitle: "Browse needs a connection.",
@@ -52,7 +57,21 @@ export default function BrowseScreen() {
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [overall, setOverall] = useState<Overall>({});
+  /** The default list: undefined while it loads, null when there is none to show (the prompt stands in). */
+  const [popularList, setPopularList] = useState<PopularList | null | undefined>(undefined);
   const requestId = useRef(0);
+
+  // The default list loads once per visit, whatever the field holds, so clearing a search shows it at once.
+  useEffect(() => {
+    let live = true;
+    loadPopular(SCORING_PROXY_URL, (url, init) => fetch(url, init)).then(
+      (list) => live && setPopularList(list.rows.length ? list : null),
+      () => live && setPopularList(null),
+    );
+    return () => {
+      live = false;
+    };
+  }, []);
 
   const runSearch = (q: string) => {
     const id = ++requestId.current;
@@ -115,7 +134,7 @@ export default function BrowseScreen() {
         </View>
         <Text style={styles.fieldCaption}>{COPY.fieldCaption}</Text>
 
-        {error ? (
+        {error && trimmed ? (
           <View style={styles.centered} testID="browse-error">
             <Text style={styles.errorTitle} role="alert">
               {COPY.errorTitle}
@@ -123,6 +142,22 @@ export default function BrowseScreen() {
             <Text style={styles.muted}>{COPY.errorBody}</Text>
             <Button testID="browse-retry" kind="secondary" label={COPY.tryAgain} onPress={() => runSearch(trimmed)} />
           </View>
+        ) : !trimmed && popularList === undefined ? (
+          <Text style={styles.muted} role="status" testID="browse-popular-loading">
+            {COPY.popularLoading}
+          </Text>
+        ) : !trimmed && popularList ? (
+          <FlatList
+            testID="browse-popular"
+            data={popularList.rows}
+            keyExtractor={(r) => r.identifier}
+            ListHeaderComponent={
+              <Text style={styles.sectionTitle} role="heading" aria-level={2}>
+                {COPY.popular}
+              </Text>
+            }
+            renderItem={({ item }) => <ResultRow result={item} emotions={item.catalogId ? popularList.overall[item.catalogId] : undefined} />}
+          />
         ) : !trimmed ? (
           <View style={styles.centered} testID="browse-prompt">
             <Text style={styles.muted}>{COPY.prompt}</Text>
@@ -198,6 +233,7 @@ const styles = StyleSheet.create({
   input: { flex: 1, minHeight: sizes.touch, ...typography.body, paddingVertical: spacing.sm },
   clear: { minWidth: sizes.touch, minHeight: sizes.touch, alignItems: "center", justifyContent: "center", marginRight: -spacing.sm },
   fieldCaption: typography.caption,
+  sectionTitle: { ...typography.label, fontSize: typography.body.fontSize, paddingTop: spacing.sm, paddingBottom: spacing.xxs },
   centered: { flex: 1, alignItems: "center", justifyContent: "center", gap: spacing.sm, paddingTop: spacing.xl },
   muted: { ...typography.body, color: colors.textMuted, textAlign: "center" },
   errorTitle: { ...typography.body, color: colors.danger, textAlign: "center" },

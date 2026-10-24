@@ -158,6 +158,23 @@ export async function popular(fetchImpl: Fetch, rows: number, page = 1): Promise
   return readSearchResponse(await res.json());
 }
 
+/**
+ * The LibriVox books with these catalog numbers (05.20: the pre-scored books Browse opens on, which the proxy names by
+ * number only), in one advancedsearch.php call on archive.org's `call_number`. Only results carrying an asked-for
+ * number come back; no number, no call.
+ */
+export async function byCatalogIds(fetchImpl: Fetch, ids: string[]): Promise<LibriVoxSearchResult[]> {
+  const asked = [...new Set(ids.map(catalogNumber).filter((id): id is string => id !== null))].slice(0, 50);
+  if (!asked.length) return [];
+  const q = `collection:librivoxaudio AND call_number:(${asked.join(" OR ")})`;
+  const params = new URLSearchParams({ q, rows: String(asked.length * 2), output: "json" });
+  params.append("sort[]", "downloads desc");
+  for (const field of SEARCH_FIELDS) params.append("fl[]", field);
+  const res = await fetchImpl(`https://archive.org/advancedsearch.php?${params.toString()}`, { headers: archiveHeaders() });
+  if (!res.ok) throw new Error(`archive.org's search answered ${res.status}`);
+  return readSearchResponse(await res.json()).filter((r) => r.catalogId !== null && asked.includes(r.catalogId));
+}
+
 /** One LibriVox book's metadata, chapters, cover and license (its archive.org identifier, from a search result). */
 export async function getItem(fetchImpl: Fetch, identifier: string): Promise<LibriVoxItem> {
   const res = await fetchImpl(`https://archive.org/metadata/${encodeURIComponent(identifier)}`, { headers: archiveHeaders() });

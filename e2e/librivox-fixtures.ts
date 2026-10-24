@@ -76,6 +76,28 @@ export const METADATA_BODY = {
   ],
 };
 
+/** A popular LibriVox book that is not pre-scored: archive.org's most downloaded, ahead of the fixture book (05.20). */
+export const POPULAR_DOC = {
+  identifier: "popular_plain_librivox",
+  title: "Popular Plain Book",
+  creator: "P. Author",
+  runtime: "2:00:00",
+  description: null,
+  call_number: "6666",
+};
+/** A pre-scored book that is not on archive.org's popular page: found only by its LibriVox number (05.20). */
+export const PRESCORED_ONLY_DOC = {
+  identifier: "prescored_only_librivox",
+  title: "Prescored Only Book",
+  creator: "Q. Author",
+  runtime: "3:00:00",
+  description: null,
+  call_number: "7777",
+};
+/** archive.org's most-downloaded LibriVox books as the stub answers them: the plain book, then the fixture book. */
+export const POPULAR_DOCS = [POPULAR_DOC, SEARCH_BODY.response.docs[0]!];
+const KNOWN_DOCS = [...POPULAR_DOCS, PRESCORED_ONLY_DOC];
+
 const SEARCHABLE_TEXT = "the wind in the willows kenneth grahame";
 
 /** The query the app asked for, pulled out of archive.org's own `q` syntax ("title:(<query>)"). */
@@ -98,14 +120,39 @@ export async function stubOverall(page: Page, scored: string[] = [CATALOG_ID]): 
   return asked;
 }
 
-/** Stubs archive.org's search, one book's metadata, its chapter/cover downloads, and the proxy's overall read. */
+/**
+ * Stubs the proxy's listing of pre-scored books (05.20): the given LibriVox numbers, in order, each with OVERALL.
+ * Returns the limits Browse asked for, one entry per call.
+ */
+export async function stubPrescored(page: Page, ids: string[] = [CATALOG_ID]): Promise<string[]> {
+  const asked: string[] = [];
+  await page.route(`${PROXY}/v1/prescored*`, async (route: Route) => {
+    asked.push(new URL(route.request().url()).searchParams.get("limit") ?? "");
+    return route.fulfill({ status: 200, headers: CORS, json: { books: ids.map((id) => ({ id, emotions: OVERALL })) } });
+  });
+  return asked;
+}
+
+/**
+ * Stubs archive.org's search (a query, the popular list, a lookup by LibriVox number), one book's metadata, its
+ * chapter/cover downloads, and the proxy's overall read and pre-scored listing.
+ */
 export async function stubArchiveOrg(page: Page): Promise<void> {
   await stubOverall(page);
+  await stubPrescored(page);
   const audio = wav(4);
   await page.route("https://archive.org/**", async (route: Route) => {
     const url = new URL(route.request().url());
     if (url.pathname === "/advancedsearch.php") {
-      const matches = SEARCHABLE_TEXT.includes(queryFrom(url.searchParams.get("q")).toLowerCase());
+      const q = url.searchParams.get("q") ?? "";
+      const byNumber = /call_number:\(([^)]*)\)/.exec(q);
+      if (byNumber) {
+        const ids = byNumber[1]!.split(" OR ");
+        const docs = KNOWN_DOCS.filter((d) => ids.includes(d.call_number));
+        return route.fulfill({ status: 200, json: { response: { numFound: docs.length, docs } } });
+      }
+      if (q === "collection:librivoxaudio") return route.fulfill({ status: 200, json: { response: { numFound: POPULAR_DOCS.length, docs: POPULAR_DOCS } } });
+      const matches = SEARCHABLE_TEXT.includes(queryFrom(q).toLowerCase());
       return route.fulfill({ status: 200, json: matches ? SEARCH_BODY : { response: { numFound: 0, docs: [] } } });
     }
     if (url.pathname === `/metadata/${IDENTIFIER}`) return route.fulfill({ status: 200, json: METADATA_BODY });
