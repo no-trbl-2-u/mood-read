@@ -2,9 +2,13 @@
 // reading: a scored chapter with no scenes is one scene, the whole chapter, and plays its own piece throughout.
 import type { ChapterMood, ChapterPlaylist, Scene } from "./types.ts";
 
-/** A chapter's scenes in order: its own, else one scene equal to the chapter; none when it is unscored. */
+/**
+ * A chapter's scenes in order: its own, else one scene equal to the chapter; none when it is unscored. A listener's
+ * seed (07.6) is one scene, the whole chapter, so its matched piece plays throughout.
+ */
 export function scenesOf(mood: ChapterMood): Scene[] {
-  if (mood.coverage !== "scored" || mood.emotions.length === 0) return [];
+  if (mood.coverage === "too-little" || mood.emotions.length === 0) return [];
+  if (mood.coverage === "listener") return [{ emotions: mood.emotions, span: 1 }];
   if (Array.isArray(mood.scenes) && mood.scenes.length > 0) return mood.scenes;
   return [{ emotions: mood.emotions, span: 1 }];
 }

@@ -2,7 +2,7 @@
 // title, author and chapter titles, and for a LibriVox book whose text is on Project Gutenberg its public LibriVox
 // and Gutenberg catalog numbers (05.9), and nothing more (agents.md rule 6): never audio. One configured base URL, no
 // key (A22). Pure: `fetch` is handed in, so tests run it against a fake proxy.
-import { EMOTIONS, MAX_SCENES, type Book, type JobView, type RemoteChapter, type Scene } from "./types.ts";
+import { EMOTIONS, MAX_SCENES, type Book, type JobView, type RemoteChapter, type ResearchCoverage, type Scene } from "./types.ts";
 
 export type ScoringRequest = { title: string; author: string; chapters: string[]; librivoxId?: string; gutenbergId?: string };
 
@@ -26,6 +26,8 @@ export function scoringRequest(book: Scorable): ScoringRequest {
 type Fetch = (input: string, init?: RequestInit) => Promise<Response>;
 
 const STATES = ["running", "done", "capped", "failed"];
+/** The coverages a proxy answer may carry (proxy/src/contract.ts); never a listener seed (07.6). */
+export const RESEARCH_COVERAGE: readonly string[] = ["scored", "too-little"] satisfies ResearchCoverage[];
 
 const inSet = (e: { emotion?: unknown }) => (EMOTIONS as readonly string[]).includes(e?.emotion as string);
 
@@ -74,6 +76,8 @@ export function readJobView(body: unknown): JobView {
     for (const c of v.result.chapters) {
       if (typeof c?.index !== "number" || !c.mood || !Array.isArray(c.mood.emotions)) throw new Error("a chapter came back malformed");
       if (c.mood.emotions.some((e) => !inSet(e))) throw new Error("an emotion outside the fixed set");
+      // Only the research's coverages: a listener's seed (07.6) is the device's own and never comes from the proxy.
+      if (!RESEARCH_COVERAGE.includes(c.mood.coverage)) throw new Error("a chapter came back with a coverage the proxy never sends");
       chapters.push(readChapter(c));
     }
     out.result = { ...v.result, chapters };

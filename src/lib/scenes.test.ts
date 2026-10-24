@@ -45,3 +45,9 @@ test("scene pieces: the playlist's own, else the chapter's piece for every scene
 test("a pick covers the chapter: every scene plays the picked alternate (D18)", () => {
   assert.deepEqual(scenePiecesOf(playlist({ scenePieces: ["s1", "s2"], pick: "a2" }), 2), ["a2", "a2"]);
 });
+
+test("a listener's seed (07.6) is one scene, the whole chapter, whatever scenes it might carry", () => {
+  const m = mood({ coverage: "listener", emotions: [{ emotion: "joy", intensity: 0.4 }] });
+  assert.deepEqual(scenesOf(m), [{ emotions: m.emotions, span: 1 }]);
+  assert.deepEqual(scenesOf({ ...m, emotions: [] }), []);
+});

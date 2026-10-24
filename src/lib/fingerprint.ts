@@ -12,10 +12,9 @@ export const FINGERPRINT_SIZE = 3;
 /**
  * The coverages a fingerprint counts, most preferred first: the book counts only its chapters of the first coverage
  * any of its chapters has, so a listener's seed never mixes with a researched mood unless the book has no
- * researched chapter (spec 07, Decisions). When 07.6 adds `coverage: "listener"`, it joins this list after
- * "scored", and nothing else changes.
+ * researched chapter (spec 07, Decisions): 07.6's `coverage: "listener"` comes after "scored".
  */
-export const FINGERPRINT_COVERAGE: readonly ChapterMood["coverage"][] = ["scored"];
+export const FINGERPRINT_COVERAGE: readonly ChapterMood["coverage"][] = ["scored", "listener"];
 
 /**
  * The book's fingerprint: per emotion, the sum of its intensities across the reached chapters, strongest first
@@ -25,7 +24,7 @@ export const FINGERPRINT_COVERAGE: readonly ChapterMood["coverage"][] = ["scored
  */
 export function fingerprint(
   book: { chapters: readonly Pick<Chapter, "index" | "title" | "start">[] },
-  scores: BookScores | null,
+  scores: Pick<BookScores, "chapters"> | null,
   furthest: number | null,
   playing?: Pick<Chapter, "start"> | null,
 ): EmotionScore[] {

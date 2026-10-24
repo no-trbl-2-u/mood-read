@@ -1,11 +1,42 @@
 // Scores on the device (01.2, A13, A15): per book, the scoring job (so it resumes after the app closes) and, once
 // done, each chapter's ChapterMood, its Pieces and its ChapterPlaylist, so a book is scored once, not on every play.
+// 07.6 (spec 07 A7) adds the listener's seeds (`seeds:<book id>`): moods the listener set for an unscored book or
+// chapter ("Set the mood", src/lib/mood-match.ts), kept apart from the research so a seed alone is never a scoring
+// run, and read with it (`chapters`). The replace rule: a later research result replaces a chapter's seed only when it
+// comes back `scored`; a `too-little` result keeps the seed.
 // Pure: over the same key-value backend as the library (src/lib/library-store.ts), reached only through src/lib/.
 import type { Kv } from "./library-store.ts";
 import type { Book, BookScores, Chapter, ChapterScore, JobView, ScoringJob } from "./types.ts";
 
 export const jobKey = (bookId: string) => `scorejob:${bookId}`;
 export const scoresKey = (bookId: string) => `scores:${bookId}`;
+export const seedsKey = (bookId: string) => `seeds:${bookId}`;
+
+const sameChapter = (a: ChapterScore, b: ChapterScore) => a.mood.chapterIndex === b.mood.chapterIndex && a.mood.chapterTitle === b.mood.chapterTitle;
+
+/**
+ * A book's chapters as the device reads them, by chapter index: each research chapter, except that a seed under the
+ * same index and title stands in for one the research did not score (`too-little`), and a seed fills a chapter the
+ * research never returned. A seed never shows over a researched (`scored`) mood.
+ */
+export function mergeSeeds(scores: Pick<BookScores, "chapters"> | null, seeds: readonly ChapterScore[] | null): ChapterScore[] {
+  const research = scores?.chapters ?? [];
+  const mine = seeds ?? [];
+  const out = research.map((c) => (c.mood.coverage === "scored" ? c : (mine.find((s) => sameChapter(s, c)) ?? c)));
+  for (const s of mine) if (!research.some((c) => sameChapter(c, s))) out.push(s);
+  return out.sort((a, b) => a.mood.chapterIndex - b.mood.chapterIndex);
+}
+
+/** The replace rule (A7): the seeds a research result leaves standing, every one but those it scored. */
+export function keepSeeds(seeds: readonly ChapterScore[], scores: Pick<BookScores, "chapters"> | null): ChapterScore[] {
+  const scored = (scores?.chapters ?? []).filter((c) => c.mood.coverage === "scored");
+  return seeds.filter((s) => !scored.some((c) => sameChapter(c, s)));
+}
+
+/** The chapters a seed may go on: those without a researched mood under their current title. */
+export function seedable<C extends Pick<Chapter, "index" | "title">>(chapters: readonly C[], scores: Pick<BookScores, "chapters"> | null): C[] {
+  return chapters.filter((c) => !scores?.chapters.some((s) => s.mood.coverage === "scored" && s.mood.chapterIndex === c.index && s.mood.chapterTitle === c.title));
+}
 
 /**
  * A chapter title as the proxy compares it (proxy/src/validate.ts bookKey): the proxy collapses whitespace, and a
@@ -61,11 +92,25 @@ export function createScoringStore(kv: Kv) {
     return v;
   }
 
+  // The merged read per book (`chapters`), stable between writes; any write drops it.
+  const merged = new Map<string, ChapterScore[]>();
+
   function write(key: string, value: unknown) {
     if (value === null) kv.removeItem(key);
     else kv.setItem(key, JSON.stringify(value));
     cache.set(key, value);
+    merged.clear();
     listeners.forEach((l) => l());
+  }
+
+  const seedsOf = (bookId: string): ChapterScore[] => read<ChapterScore[]>(seedsKey(bookId)) ?? [];
+
+  /** Saves a research result and applies the replace rule to the book's seeds. */
+  function saveScores(bookId: string, scores: BookScores) {
+    write(scoresKey(bookId), scores);
+    const seeds = seedsOf(bookId);
+    const kept = keepSeeds(seeds, scores);
+    if (kept.length !== seeds.length) write(seedsKey(bookId), kept.length ? kept : null);
   }
 
   return {
@@ -78,7 +123,22 @@ export function createScoringStore(kv: Kv) {
     job: (bookId: string): ScoringJob | null => read<ScoringJob>(jobKey(bookId)),
     saveJob: (bookId: string, job: ScoringJob | null) => write(jobKey(bookId), job),
     scores: (bookId: string): BookScores | null => read<BookScores>(scoresKey(bookId)),
-    saveScores: (bookId: string, scores: BookScores) => write(scoresKey(bookId), scores),
+    saveScores,
+    /** The listener's seeds for a book (07.6), in chapter order. */
+    seeds: seedsOf,
+    /** Keeps the listener's seeds (07.6): each replaces any seed already on its chapter. Nothing leaves the device. */
+    seed(bookId: string, add: readonly ChapterScore[]) {
+      const rest = seedsOf(bookId).filter((s) => !add.some((a) => sameChapter(a, s)));
+      write(seedsKey(bookId), [...rest, ...add].sort((a, b) => a.mood.chapterIndex - b.mood.chapterIndex));
+    },
+    /** The book's chapters as they read with the seeds (mergeSeeds): what the river, the bed and the shelf show. */
+    chapters(bookId: string): ChapterScore[] {
+      const hit = merged.get(bookId);
+      if (hit) return hit;
+      const out = mergeSeeds(read<BookScores>(scoresKey(bookId)), seedsOf(bookId));
+      merged.set(bookId, out);
+      return out;
+    },
     /** A chapter's stored score, only while the chapter still has the title it was scored under. */
     chapterScore(bookId: string, chapter: Pick<Chapter, "index" | "title">): ChapterScore | null {
       const s = read<BookScores>(scoresKey(bookId));
@@ -105,6 +165,7 @@ export function createScoringStore(kv: Kv) {
     forget(bookId: string) {
       write(jobKey(bookId), null);
       write(scoresKey(bookId), null);
+      write(seedsKey(bookId), null);
     },
   };
 }

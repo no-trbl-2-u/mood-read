@@ -202,3 +202,19 @@ test("A2: no band for a chapter with one scene, no scenes, no score, too little 
   assert.equal(sceneBand(score({ scenes: SCENES, coverage: "too-little" }), CH, 110, null), null);
   assert.equal(sceneBand(score({ scenes: SCENES }), undefined, 110, null), null);
 });
+
+test("A7: a listener's seed shows at once, reached or not, marked as theirs, its matched piece the one that plays (07.6)", () => {
+  const seed = score({ coverage: "listener", sources: [], emotions: [{ emotion: "calm", intensity: 0.4 }] }, { chapterIndex: 0, piece: "p1", alternates: [], pick: "auto" });
+  for (const reached of [false, true]) {
+    const v = moodCardView(reached, seed);
+    assert.equal(v.kind, "scored");
+    if (v.kind !== "scored") return;
+    assert.equal(v.listener, true);
+    assert.equal(v.playing?.id, "p1");
+    assert.deepEqual(v.alternates, []);
+  }
+  const none = moodCardView(true, { ...seed, pieces: [], playlist: null });
+  assert.equal(none.kind === "scored" && none.piece, null, "no piece matched: the soundscape plays");
+  const researched = moodCardView(true, score());
+  assert.equal(researched.kind === "scored" && researched.listener, undefined);
+});

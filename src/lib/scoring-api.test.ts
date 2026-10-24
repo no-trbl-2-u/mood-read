@@ -145,3 +145,8 @@ test("scenes that break the contract are dropped (the chapter reads as one scene
   const mismatched = doneWith(sceneMood(twoScenes), { piece: scenePiece("p"), alternates: [], scenePieces: [scenePiece("s")] });
   assert.equal(mismatched.result!.chapters[0].pieces?.scenePieces, undefined, "scene pieces must match the scenes one for one");
 });
+
+test("a proxy answer never carries a listener's seed: coverage \"listener\" (07.6) is refused", () => {
+  assert.throws(() => doneWith({ ...sceneMood(twoScenes), coverage: "listener" } as never, null), /coverage/);
+  assert.throws(() => doneWith({ ...sceneMood(twoScenes), coverage: undefined } as never, null), /coverage/);
+});

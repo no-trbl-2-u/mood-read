@@ -66,11 +66,19 @@ export type MoodCardView =
       playing: Piece | null;
       /** The playing scene's emotions, strongest first (07.2, sceneBand); absent or null, no band. */
       scene?: EmotionScore[] | null;
+      /**
+       * The listener's own seed (07.6, A7), not a researched mood: the card says "Your mood", calls the piece the
+       * matched one (or says the soundscape plays), and offers no verdict, so a seed's emotions never leave the device.
+       */
+      listener?: true;
     };
 
-/** What a chapter's row may show, given whether it is reached and its stored score (or null). */
+/**
+ * What a chapter's row may show, given whether it is reached and its stored score (or null). A listener's seed is
+ * their own words, so it shows at once, reached or not (spec 07, Contracts: Spoilers).
+ */
 export function moodCardView(reached: boolean, score: ChapterScore | null): MoodCardView {
-  if (!reached) return { kind: "locked" };
+  if (!reached && score?.mood.coverage !== "listener") return { kind: "locked" };
   if (!score) return { kind: "none" };
   if (score.mood.coverage === "too-little") return { kind: "unscored" };
   const byId = new Map(score.pieces.map((p) => [p.id, p]));
@@ -79,7 +87,8 @@ export function moodCardView(reached: boolean, score: ChapterScore | null): Mood
   const alternates = pl ? pl.alternates.map((id) => byId.get(id)).filter((p): p is Piece => !!p) : [];
   const pick = pl && pl.pick !== "auto" && alternates.some((p) => p.id === pl.pick) ? pl.pick : "auto";
   const playing = pick === "auto" ? piece : (alternates.find((p) => p.id === pick) ?? piece);
-  return { kind: "scored", emotions: strongest(score.mood.emotions), piece, alternates, pick, playing };
+  const view: MoodCardView = { kind: "scored", emotions: strongest(score.mood.emotions), piece, alternates, pick, playing };
+  return score.mood.coverage === "listener" ? { ...view, listener: true } : view;
 }
 
 /**

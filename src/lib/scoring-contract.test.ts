@@ -8,10 +8,10 @@ import { fileURLToPath } from "node:url";
 
 import * as proxy from "../../proxy/src/contract.ts";
 import { parseBookRequest } from "../../proxy/src/validate.ts";
-import { scoringRequest, type ScoringRequest } from "./scoring-api.ts";
+import { RESEARCH_COVERAGE, scoringRequest, type ScoringRequest } from "./scoring-api.ts";
 import { EMOTIONS as PROXY_EMOTIONS, PIECE_KINDS } from "../../proxy/src/contract.ts";
 import { EMOTIONS as THEME_EMOTIONS } from "../ui/theme.ts";
-import { EMOTIONS, MAX_SCENES, MIN_SCENE_SPAN, SCENE_SPAN_STEP, type ChapterMood, type Piece, type RemoteChapter, type Scene } from "./types.ts";
+import { EMOTIONS, MAX_SCENES, MIN_SCENE_SPAN, SCENE_SPAN_STEP, type ChapterMood, type Piece, type RemoteChapter, type ResearchCoverage, type Scene } from "./types.ts";
 
 const ROOT = path.join(path.dirname(fileURLToPath(import.meta.url)), "..", "..");
 
@@ -85,6 +85,17 @@ test("a book cached before 07.1, with no scenes and no scene pieces, is still a 
   assert.equal(toProxy(old).pieces?.scenePieces, undefined);
 });
 
+// Typechecked both ways: the proxy's coverages are the research's, and "listener" (07.6) is the app's alone.
+const coverageToApp = (c: proxy.ChapterMood["coverage"]): ResearchCoverage => c;
+const coverageToProxy = (c: ResearchCoverage): proxy.ChapterMood["coverage"] => c;
+
+test("the proxy never sends a listener's seed: its coverages are scored and too-little, and the app reads only those (07.6)", () => {
+  const research: proxy.ChapterMood["coverage"][] = ["scored", "too-little"];
+  assert.deepEqual(research.map(coverageToApp).map(coverageToProxy), [...RESEARCH_COVERAGE]);
+  const seed: ChapterMood["coverage"] = "listener";
+  assert.equal(RESEARCH_COVERAGE.includes(seed), false);
+});
+
 function files(dir: string): string[] {
   return fs.readdirSync(dir, { withFileTypes: true }).flatMap((e) => {
     const p = path.join(dir, e.name);
@@ -112,4 +123,11 @@ test("the app reaches the proxy at one configured base URL, a public config valu
   const app = JSON.parse(fs.readFileSync(path.join(ROOT, "app.json"), "utf8"));
   const url = app.expo.extra.scoringProxyUrl;
   assert.match(url, /^https:\/\/[^/]+$/);
+});
+
+test("a listener's seed never leaves the device: no file that makes a request reads the seeds or the matcher (07.6, A7)", () => {
+  const shipped = files(path.join(ROOT, "src")).filter((f) => /\.(ts|tsx)$/.test(f) && !/\.test\.ts$/.test(f));
+  const requesting = shipped.filter((f) => /fetch(Impl)?\(/.test(fs.readFileSync(f, "utf8")));
+  assert.ok(requesting.some((f) => f.endsWith("scoring-api.ts")), "the scan sees the scoring request");
+  for (const f of requesting) assert.doesNotMatch(fs.readFileSync(f, "utf8"), /seeds|mood-match|"listener"/, path.relative(ROOT, f));
 });

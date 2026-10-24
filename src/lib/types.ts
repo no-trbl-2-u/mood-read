@@ -116,6 +116,14 @@ export const MIN_SCENE_SPAN = 0.1;
  */
 export type Scene = { emotions: EmotionScore[]; span: number };
 
+/** What the research found for a chapter: the only coverages the proxy ever sends (proxy/src/contract.ts). */
+export type ResearchCoverage = "scored" | "too-little";
+
+/**
+ * A chapter's mood. `coverage: "listener"` (07.6, spec 07 A7) is a mood the listener seeded on the device ("Set the
+ * mood", src/lib/mood-match.ts): no sources, kept apart from the research (`seeds:<book id>`, src/lib/scoring-store.ts),
+ * never sent anywhere and never received from the proxy.
+ */
 export type ChapterMood = {
   chapterIndex: number;
   chapterTitle: string;
@@ -127,7 +135,7 @@ export type ChapterMood = {
    */
   scenes?: Scene[];
   sources: SourceLink[];
-  coverage: "scored" | "too-little";
+  coverage: ResearchCoverage | "listener";
   model: string;
   version: string;
   /** ms since epoch. */
@@ -193,10 +201,13 @@ export type JobState = "running" | "done" | "capped" | "failed";
 
 export type JobProgress = { step: number; steps: number; chaptersDone: number; chapters: number };
 
+/** A chapter mood as the research returns it: never a listener's seed (07.6). */
+export type ResearchMood = ChapterMood & { coverage: ResearchCoverage };
+
 export type RemoteChapter = {
   index: number;
   title: string;
-  mood: ChapterMood;
+  mood: ResearchMood;
   /** `scenePieces`: one per scene, in order, when the mood has scenes (07.1). */
   pieces: { piece: Piece; alternates: Piece[]; scenePieces?: Piece[] } | null;
 };

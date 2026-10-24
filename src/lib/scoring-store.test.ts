@@ -2,7 +2,9 @@ import assert from "node:assert/strict";
 import { test } from "node:test";
 
 import type { Kv } from "./library-store.ts";
-import { createScoringStore, toBookScores } from "./scoring-store.ts";
+import { knownPieces, matchPiece, seedScore } from "./mood-match.ts";
+import { createScoringRunner } from "./scoring-runner.ts";
+import { createScoringStore, keepSeeds, mergeSeeds, toBookScores } from "./scoring-store.ts";
 import type { Book, JobView } from "./types.ts";
 
 const ID = "a".repeat(64);
@@ -87,4 +89,98 @@ test("a book cached before 07.1 keeps no scene pieces and still saves a pick", (
   const store = createScoringStore(mapKv());
   store.saveScores("b", scores);
   assert.equal(store.savePick("b", { index: 0, title: "One" }, "q0"), true);
+});
+
+// ---- the listener's seed (07.6, spec 07 A7): kept apart from the research, replaced only by a `scored` result ----
+
+const seedOf = (index: number, title: string, pieceId: string | null = null) =>
+  seedScore({ index, title }, [{ emotion: "dread", intensity: 0.8 }], pieceId ? piece(pieceId) : null, 5);
+
+function mixedView(titles: string[], coverages: ("scored" | "too-little")[]): JobView {
+  const v = doneView(titles);
+  v.result!.chapters = v.result!.chapters.map((c, i) =>
+    coverages[i] === "scored" ? c : { ...c, mood: { ...c.mood, emotions: [], coverage: "too-little" }, pieces: null },
+  );
+  return v;
+}
+
+test("a seed is kept apart from the research and read with it: it fills a too-little or unscored chapter", () => {
+  const store = createScoringStore(mapKv());
+  const book = chapters(["One", "Two", "Three"]);
+  assert.deepEqual(store.chapters("b"), []);
+  store.seed("b", [seedOf(2, "Three")]);
+  assert.equal(store.scores("b"), null, "a seed alone is no scoring run: the band still offers to score the book");
+  assert.deepEqual(store.chapters("b").map((c) => [c.mood.chapterIndex, c.mood.coverage]), [[2, "listener"]]);
+  store.saveScores("b", toBookScores(book, mixedView(["One", "Two", "Three"], ["scored", "too-little", "too-little"]), null)!);
+  store.seed("b", [seedOf(1, "Two")]);
+  assert.deepEqual(
+    store.chapters("b").map((c) => [c.mood.chapterIndex, c.mood.coverage]),
+    [
+      [0, "scored"],
+      [1, "listener"],
+      [2, "listener"],
+    ],
+  );
+  assert.equal(store.chapters("b"), store.chapters("b"), "a stable snapshot between writes");
+});
+
+test("seeding a chapter again replaces its seed; a seed never shows over a researched mood", () => {
+  const store = createScoringStore(mapKv());
+  store.seed("b", [seedOf(0, "One", "x")]);
+  store.seed("b", [seedOf(0, "One", "y")]);
+  assert.deepEqual(store.seeds("b").map((s) => s.playlist?.piece), ["y"]);
+  const merged = mergeSeeds(toBookScores(chapters(["One"]), doneView(["One"]), null), store.seeds("b"));
+  assert.deepEqual(merged.map((c) => c.mood.coverage), ["scored"]);
+});
+
+test("the replace rule: a later `scored` result replaces the seed, a `too-little` result keeps it (A7)", () => {
+  const store = createScoringStore(mapKv());
+  const titles = ["One", "Two"];
+  store.seed("b", [seedOf(0, "One"), seedOf(1, "Two")]);
+  store.saveScores("b", toBookScores(chapters(titles), mixedView(titles, ["too-little", "too-little"]), null)!);
+  assert.deepEqual(store.chapters("b").map((c) => c.mood.coverage), ["listener", "listener"]);
+  // A rescore: the first chapter comes back scored.
+  store.saveScores("b", toBookScores(chapters(titles), mixedView(titles, ["scored", "too-little"]), store.scores("b"))!);
+  assert.deepEqual(store.seeds("b").map((s) => s.mood.chapterIndex), [1]);
+  assert.deepEqual(store.chapters("b").map((c) => c.mood.coverage), ["scored", "listener"]);
+  assert.deepEqual(keepSeeds([seedOf(0, "Renamed")], store.scores("b")), [seedOf(0, "Renamed")], "a seed under another title is not that chapter");
+});
+
+test("the runner's finished job applies the replace rule too", async () => {
+  const store = createScoringStore(mapKv());
+  const book = { id: "b", ...chapters(["One", "Two"]) } as Book;
+  store.seed("b", [seedOf(0, "One"), seedOf(1, "Two")]);
+  const runner = createScoringRunner({
+    api: { start: async () => mixedView(["One", "Two"], ["scored", "too-little"]), status: async () => null },
+    store,
+  });
+  await runner.start(book, true);
+  assert.deepEqual(store.chapters("b").map((c) => c.mood.coverage), ["scored", "listener"]);
+});
+
+test("seeding sends nothing: no fetch while a book and a chapter are seeded and read back", () => {
+  const real = globalThis.fetch;
+  let calls = 0;
+  globalThis.fetch = (async () => {
+    calls++;
+    throw new Error("no request may leave for a seed");
+  }) as typeof fetch;
+  try {
+    const store = createScoringStore(mapKv());
+    store.saveScores("other", toBookScores(chapters(["One"]), doneView(["One"]), null)!);
+    const pool = knownPieces([store.scores("other")]);
+    const lit = [{ emotion: "calm" as const, intensity: 0.4 }];
+    store.seed("b", [seedScore({ index: 0, title: "One" }, lit, matchPiece(lit, pool), 1), seedScore({ index: 1, title: "Two" }, lit, matchPiece(lit, pool), 1)]);
+    assert.equal(store.chapters("b")[0].playlist?.piece, "p0");
+    assert.equal(calls, 0);
+  } finally {
+    globalThis.fetch = real;
+  }
+});
+
+test("forgetting a book forgets its seeds", () => {
+  const store = createScoringStore(mapKv());
+  store.seed("b", [seedOf(0, "One")]);
+  store.forget("b");
+  assert.deepEqual(store.chapters("b"), []);
 });

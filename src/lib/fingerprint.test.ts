@@ -72,10 +72,15 @@ test("fewer than three emotions shows fewer; ties keep the fixed emotion order; 
   assert.deepEqual(fingerprint(book, tie, 0), [e("tension", 0.5), e("triumph", 0.5)]);
 });
 
-test("only researched chapters count (a listener's seed, 07.6, joins through FINGERPRINT_COVERAGE)", () => {
-  // A coverage the fingerprint does not count is never summed, even on a reached chapter.
-  const seeded = scores(score(0, [e("joy", 0.9)], "listener" as ChapterMood["coverage"]), score(1, [e("calm", 0.4)]));
+test("a listener's seed never mixes with a researched mood: researched chapters count first (07.6)", () => {
+  const seeded = scores(score(0, [e("joy", 0.9)], "listener"), score(1, [e("calm", 0.4)]));
   assert.deepEqual(fingerprint(book, seeded, 100), [e("calm", 0.4)]);
+});
+
+test("a book with no researched chapter wears its seeds, reached chapters only (07.6)", () => {
+  const seeded = scores(score(0, [e("joy", 0.8)], "listener"), score(1, [], "too-little"), score(2, [e("dread", 0.4)], "listener"));
+  assert.deepEqual(fingerprint(book, seeded, 0), [e("joy", 0.8)]);
+  assert.deepEqual(fingerprint(book, { chapters: seeded.chapters }, 200), [e("joy", 0.8), e("dread", 0.4)]);
 });
 
 test("A8: the Mood filter keeps only books whose fingerprint holds the lit emotion, strongest match first", () => {
