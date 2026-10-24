@@ -28,11 +28,15 @@ function proxy(cap = 20) {
   const search = fakeSearch();
   const model = fakeModel({ thin: ["Opening Credits"] });
   const jobFor = (key: string) => {
-    if (!jobs.has(key)) jobs.set(key, createBookJob({ store: memoryStore(), meter, capUsd: cap, search, model }));
+    // No rescore minimum age here: these tests rescore at once; the proxy's own tests hold the limits (A34).
+    if (!jobs.has(key)) jobs.set(key, createBookJob({ store: memoryStore(), meter, capUsd: cap, search, model, rescoreMinAgeMs: 0 }));
     return jobs.get(key)!;
   };
   const api: Jobs = {
-    start: async (key, b, rescore) => (await jobFor(key).start(key, b, rescore)).view,
+    start: async (key, b, rescore, client) => {
+      const out = await jobFor(key).start(key, b, rescore, client);
+      return "refused" in out ? out : out.view;
+    },
     status: async (key) => (jobs.has(key) ? (await jobFor(key).status()).view : null),
   };
   const bodies: unknown[] = [];

@@ -16,16 +16,26 @@
     // cached books still return. Change it here and redeploy, or in the dashboard; no app rebuild.
     "MONTHLY_CAP_USD": "20",
     // The OpenAI model the research agent uses; its price per token is in src/meter.ts (unknown models price high).
-    "OPENAI_MODEL": "gpt-5-mini"
+    "OPENAI_MODEL": "gpt-5-mini",
+    // The limits on new research runs (src/limiter.ts, A34), so made-up books and repeated rescores cannot spend the
+    // cap. A cached book never counts. Per client is per connection address, held only as a salted hash for the hour.
+    "RUNS_PER_CLIENT_PER_HOUR": "3",
+    "RUNS_PER_HOUR": "30",
+    // How many days a cached result must age before a rescore may replace it.
+    "RESCORE_MIN_AGE_DAYS": "7"
   },
-  // Storage for the jobs, the per-book cache and the spend meter (why Durable Objects: src/index.ts). Declared here
-  // only: Cloudflare creates both classes on the owner's first `wrangler deploy` (the migration below); there is
-  // nothing to create by hand, and no KV namespace or database id to fill in.
+  // Storage for the jobs, the per-book cache, the spend meter and the run limiter (why Durable Objects: src/index.ts).
+  // Declared here only: Cloudflare creates the classes on the owner's `wrangler deploy` (the migrations below); there
+  // is nothing to create by hand, and no KV namespace or database id to fill in.
   "durable_objects": {
     "bindings": [
       { "name": "BOOK_JOBS", "class_name": "BookJob" },
-      { "name": "SPEND_METER", "class_name": "SpendMeter" }
+      { "name": "SPEND_METER", "class_name": "SpendMeter" },
+      { "name": "RATE_LIMITER", "class_name": "RateLimiter" }
     ]
   },
-  "migrations": [{ "tag": "v1", "new_sqlite_classes": ["BookJob", "SpendMeter"] }]
+  "migrations": [
+    { "tag": "v1", "new_sqlite_classes": ["BookJob", "SpendMeter"] },
+    { "tag": "v2", "new_sqlite_classes": ["RateLimiter"] }
+  ]
 }

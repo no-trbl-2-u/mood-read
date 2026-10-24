@@ -7,7 +7,11 @@
 //   is returned as it stands; a new run starts only under the monthly cap, else the job waits as `capped` and starts
 //   by itself once a status poll finds the month's spend under the cap again.
 // - rescore is explicit: it starts a new run even for a cached book; the old result stays until the new one lands.
-import type { ModelClient, SearchClient } from "./clients.ts";
+//   A cached book is rescored only once its result is at least the minimum age (01.21, A34).
+// - every start that would begin a new run (running or waiting at the cap) must first be admitted by the limiter
+//   (limiter.ts, 01.21, A34); a cached book or a run already going never asks it. A refused start stores nothing.
+// - a model call that fails is metered too: the usage the provider reported, else a conservative estimate (01.21).
+import { usageOf, type ModelClient, type SearchClient } from "./clients.ts";
 import {
   SCORER_VERSION,
   type BookRequest,
@@ -21,7 +25,8 @@ import {
   type SourceLink,
 } from "./contract.ts";
 import { matchChapters } from "./match.ts";
-import { BRAVE_USD_PER_QUERY, monthOf, openAiCost, underCap, type Meter } from "./meter.ts";
+import { DAY_MS, DEFAULT_RESCORE_MIN_AGE_DAYS, UNKNOWN_CLIENT, type Limiter, type Refusal } from "./limiter.ts";
+import { BRAVE_USD_PER_QUERY, estimateUsage, monthOf, openAiCost, underCap, type Meter } from "./meter.ts";
 import {
   MIN_ALTERNATES,
   askEmotions,
@@ -85,10 +90,16 @@ export type JobDeps = {
   capUsd: number;
   search: SearchClient;
   model: ModelClient;
+  /** Admits new runs per client and per hour; without one (some tests) every new run is admitted. */
+  limiter?: Limiter;
+  /** How old a cached result must be before a rescore may replace it; 7 days unless given. */
+  rescoreMinAgeMs?: number;
   now?: () => number;
 };
 
 export type Schedule = { view: JobView; run: boolean };
+/** What a start answers: the job, or why no run was started and when to ask again. */
+export type Started = Schedule | { refused: Refusal };
 
 const chunks = (n: number, size: number) => Math.ceil(n / size);
 
@@ -158,7 +169,14 @@ export function createBookJob(deps: JobDeps) {
   }
 
   async function complete(run: Run, req: Parameters<ModelClient["complete"]>[0]) {
-    const out = await deps.model.complete(req);
+    let out;
+    try {
+      out = await deps.model.complete(req);
+    } catch (e) {
+      // A failed call may still have been billed: count what the provider reported, else a conservative estimate.
+      await charge(run, openAiCost(deps.model.model, usageOf(e) ?? estimateUsage(req)));
+      throw e;
+    }
     await charge(run, openAiCost(deps.model.model, out.usage));
     return out.value;
   }
@@ -270,11 +288,25 @@ export function createBookJob(deps: JobDeps) {
     await store.put(JOB, { ...run, state: "done", phase: "done", queries: [], sources: [], drafts: [], step: run.steps } satisfies Run);
   }
 
+  const rescoreMinAgeMs = deps.rescoreMinAgeMs ?? DEFAULT_RESCORE_MIN_AGE_DAYS * DAY_MS;
+
   return {
-    async start(key: string, book: BookRequest, rescore = false): Promise<Schedule> {
+    /**
+     * Starts the book's job, or answers its cached result or the run already going. `client` names the caller only
+     * for the limiter, which keeps no more than a salted hash of it for the hour; it is never stored here.
+     */
+    async start(key: string, book: BookRequest, rescore = false, client = UNKNOWN_CLIENT): Promise<Started> {
       const [run, result] = await load();
       if (run && run.state === "running") return { view: view(key, run, result)!, run: false };
       if (result && !rescore) return { view: view(key, undefined, result)!, run: false };
+      if (result && rescore) {
+        const age = now() - result.scoredAt;
+        if (age < rescoreMinAgeMs) return { refused: { reason: "rescore-too-soon", retryAfterMs: rescoreMinAgeMs - age } };
+      }
+      if (deps.limiter) {
+        const admitted = await deps.limiter.admit(client, now());
+        if (!admitted.ok) return { refused: { reason: admitted.reason, retryAfterMs: admitted.retryAfterMs } };
+      }
       return begin(key, book, result);
     },
 

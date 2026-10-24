@@ -8,7 +8,7 @@ import { TopBar } from "@/ui/TopBar";
 // stores' data-safety forms are filled from, so every line here must stay true of the code (agents.md rule 6).
 // Headings may play (design/system/DECISION.md, Voice); the statements stay plain. All its copy lives here.
 
-const EFFECTIVE = "23 October 2026";
+const EFFECTIVE = "24 October 2026";
 const ISSUES_URL = "https://github.com/no-trbl-2-u/mood-read/issues";
 
 type Section = { heading: string; lines: string[] };
@@ -37,6 +37,7 @@ const SECTIONS: Section[] = [
       "Mood Read scores a book only when you ask it to. Its scoring proxy then receives that book's title, author and chapter titles, nothing more.",
       "The proxy uses those details to search the web for what is written about the book, such as chapter summaries and reviews, and to name each chapter's mood and a piece of music to match. To do that it passes the title, author and chapter titles on to Brave Search and OpenAI.",
       "It never receives your audio, your files, your listening position, your bookmarks or anything that identifies you. Cloudflare, which runs the proxy, handles the connection your device makes to it, as any web host does; the proxy keeps no log of those requests.",
+      "So that no one can run up its costs, the proxy counts how many new books each connection asks it to score in an hour. It counts by a scrambled form of the connection's address, made with a key that is thrown away when the hour ends, never alongside the book, and it deletes the count when the hour is over.",
       "A scored book's moods and pieces are kept by the proxy and shared with anyone who scores the same book, so each book is researched once. They hold the book's details and what was found about it, nothing about who asked.",
     ],
   },

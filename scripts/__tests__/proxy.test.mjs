@@ -39,8 +39,15 @@ describe('the proxy worker', () => {
     const c = config();
     assert.equal(c.vars.MONTHLY_CAP_USD, '20');
     const bindings = Object.fromEntries(c.durable_objects.bindings.map((b) => [b.name, b.class_name]));
-    assert.deepEqual(bindings, { BOOK_JOBS: 'BookJob', SPEND_METER: 'SpendMeter' });
-    assert.deepEqual(c.migrations.flatMap((m) => m.new_sqlite_classes ?? []).sort(), ['BookJob', 'SpendMeter']);
+    assert.deepEqual(bindings, { BOOK_JOBS: 'BookJob', SPEND_METER: 'SpendMeter', RATE_LIMITER: 'RateLimiter' });
+    assert.deepEqual(c.migrations.flatMap((m) => m.new_sqlite_classes ?? []).sort(), ['BookJob', 'RateLimiter', 'SpendMeter']);
+  });
+
+  it('holds the run limits as config values the owner can change: 3 per client an hour, 30 in all, rescore after 7 days (A34)', () => {
+    const { vars } = config();
+    assert.equal(vars.RUNS_PER_CLIENT_PER_HOUR, '3');
+    assert.equal(vars.RUNS_PER_HOUR, '30');
+    assert.equal(vars.RESCORE_MIN_AGE_DAYS, '7');
   });
 
   it('carries no secret in its config: the keys are Worker secrets only', () => {
