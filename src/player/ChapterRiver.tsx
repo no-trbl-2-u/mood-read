@@ -3,7 +3,7 @@
 // carries no times: every time readout sits in the mini player (A28). The expanded row carries the inline mixer
 // (01.5: balance, master volume, duck under voice; 01.7: the Layer chips) and the chapter edits (01.6, spec 01 A6):
 // rename, merge with the next chapter, and split at the current position. Emotion chips, the mood card and lock
-// marks join from 01.4.
+// marks join from 01.4; 01.2 adds the dashed "Unscored" chip on a chapter scoring found too little written about.
 import { useEffect, useRef, useState, type ReactNode } from "react";
 import { Pressable, ScrollView, StyleSheet, Text, TextInput, View, type ScrollViewInstance } from "react-native";
 
@@ -20,6 +20,8 @@ export function ChapterRiver(props: {
   position: number;
   /** The inline mixer with its Layer chips, shown in the playing row; absent until the book is open in the player. */
   mixer?: ReactNode;
+  /** Chapters scoring found too little written about: they carry an "Unscored" chip (A19). */
+  unscored?: ReadonlySet<number>;
   onJump: (index: number) => void;
   /** Chapter edits; absent until the book is open in the player. */
   edits?: ChapterEditsApi;
@@ -70,6 +72,11 @@ export function ChapterRiver(props: {
                 {playing && (
                   <View testID="playing-mark">
                     <Icon name="play" size="small" color={colors.accent} filled />
+                  </View>
+                )}
+                {props.unscored?.has(c.index) && (
+                  <View style={styles.unscored} testID={`unscored-${c.index}`}>
+                    <Text style={styles.unscoredText}>Unscored</Text>
                   </View>
                 )}
               </View>
@@ -184,6 +191,16 @@ const styles = StyleSheet.create({
   titleLine: { flexDirection: "row", alignItems: "center", gap: spacing.md, minHeight: sizes.touch },
   titleWrap: { flex: 1, flexDirection: "row", alignItems: "center", gap: spacing.sm },
   title: { ...typography.body, flexShrink: 1, fontWeight: typography.label.fontWeight },
+  unscored: {
+    marginLeft: "auto",
+    paddingHorizontal: spacing.sm,
+    paddingVertical: spacing.xxs,
+    borderRadius: radii.pill,
+    borderWidth: strokes.outline,
+    borderStyle: "dashed",
+    borderColor: colors.textMuted,
+  },
+  unscoredText: { ...typography.caption, fontWeight: typography.label.fontWeight },
   expanded: { marginTop: spacing.xs, gap: spacing.xs },
   editRow: { flexDirection: "row", flexWrap: "wrap", alignItems: "center", gap: spacing.sm, marginTop: spacing.md },
   input: {

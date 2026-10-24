@@ -3,6 +3,7 @@
 // in tests), so `node --test` exercises the same code the app runs. Screens reach it through ./library.ts.
 import type { BedChoice } from "./bed.ts";
 import { normalizeMix, type Mix } from "./mix.ts";
+import { jobKey, scoresKey } from "./scoring-store.ts";
 import { clamp, MAX_SPEED, MIN_SPEED, newId } from "./timeline.ts";
 import type { Book, Bookmark, Chapter } from "./types.ts";
 
@@ -100,6 +101,8 @@ export function createLibraryStore(kv: Kv, now: () => number = Date.now, makeId:
       kv.removeItem(marksKey(id));
       kv.removeItem(speedKey(id));
       kv.removeItem(mixKey(id));
+      kv.removeItem(jobKey(id));
+      kv.removeItem(scoresKey(id));
       const { [id]: _removed, ...bookmarks } = state.bookmarks;
       state = { ...state, bookmarks };
       saveBooks(state.books.filter((b) => b.id !== id));

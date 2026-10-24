@@ -1,7 +1,11 @@
 import { useFonts } from "expo-font";
 import { Stack } from "expo-router";
 import { StatusBar } from "expo-status-bar";
+import { useEffect } from "react";
 import { StyleSheet, View } from "react-native";
+
+import { library } from "@/lib/library";
+import { scoring } from "@/lib/scoring";
 
 import { PlayerProvider } from "@/player/PlayerProvider";
 import { colors, fonts } from "@/ui/theme";
@@ -16,6 +20,10 @@ const DISPLAY_FACE = require("../../assets/fonts/BricolageGrotesque_800ExtraBold
 
 export default function RootLayout() {
   const [loaded, failed] = useFonts({ [fonts.display]: DISPLAY_FACE });
+  // Scoring runs on the proxy whether or not the app is open; on start, pick up any job left running (A15).
+  useEffect(() => {
+    scoring.resumeAll(library.books());
+  }, []);
   if (!loaded && !failed) return <View style={styles.root} />;
   return (
     <PlayerProvider>

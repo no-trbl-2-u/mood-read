@@ -5,10 +5,12 @@ import { StyleSheet, Text, View } from "react-native";
 import { chapterBed, pickFor } from "@/lib/bed";
 import { speedLabel } from "@/lib/labels";
 import { chapterEdits, useBook } from "@/lib/library";
+import { scoring, useBookScores, useScoringJob } from "@/lib/scoring";
 import { BookmarksSheet } from "@/player/BookmarksSheet";
 import { ChapterRiver } from "@/player/ChapterRiver";
 import { LayerPicker } from "@/player/LayerPicker";
 import { MiniPlayer } from "@/player/MiniPlayer";
+import { ScoringBand } from "@/player/ScoringBand";
 import { Mixer } from "@/player/Mixer";
 import { usePlayer } from "@/player/PlayerProvider";
 import { SOUNDSCAPE_IDS } from "@/player/soundscapes";
@@ -37,6 +39,13 @@ export default function BookScreen() {
   const p = usePlayer();
   const [sheet, setSheet] = useState<"speed" | "bookmarks" | null>(null);
   const { open } = p;
+  const job = useScoringJob(id ?? "");
+  const scores = useBookScores(id ?? "");
+
+  // A scoring job remembered from before (the app closed mid-run) is picked up again when its book opens (A15).
+  useEffect(() => {
+    if (book) scoring.resume(book);
+  }, [book]);
 
   useEffect(() => {
     if (id && book) open(id);
@@ -58,6 +67,12 @@ export default function BookScreen() {
   const position = active ? p.position : 0;
   const chapter = active ? p.chapter : book.chapters[0];
   const chapterIndex = chapter?.index ?? null;
+  // Chapters scoring tried and found too little written about: an "Unscored" chip, never a guessed mood (A19).
+  const unscored = new Set(
+    (scores?.chapters ?? [])
+      .filter((c) => c.mood.coverage === "too-little" && book.chapters[c.mood.chapterIndex]?.title === c.mood.chapterTitle)
+      .map((c) => c.mood.chapterIndex),
+  );
   const speedButton = p.sleep ? `${speedLabel(p.speed)} · Sleep` : speedLabel(p.speed);
 
   return (
@@ -82,6 +97,13 @@ export default function BookScreen() {
           </>
         }
       />
+      <ScoringBand
+        chapters={book.chapters.length}
+        job={job}
+        scores={scores}
+        onStart={() => void scoring.start(book)}
+        onRescore={() => void scoring.start(book, true)}
+      />
       {active && p.error && (
         <Text style={styles.error} role="alert">
           {COPY.playError(p.error)}
@@ -92,6 +114,7 @@ export default function BookScreen() {
           book={book}
           currentIndex={chapter?.index}
           position={position}
+          unscored={unscored}
           mixer={
             active ? (
               <Mixer
