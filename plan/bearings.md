@@ -102,6 +102,8 @@ App routes (expo-router, src/app/; the same paths on the web build):
   /downloads        the download queue and the storage meter, from the shelf's overflow menu and Settings'
                      Storage row; empty until the music catalog and LibriVox browse exist (05.6)
   /licenses         the open-source notices word for word, from Settings; /licenses.txt on the web build (06.4)
+  /soundtrack       Your soundtrack: every piece that has played for a reached chapter, by book; from the
+                     shelf's overflow menu; plays nothing (07.8)
   /credits          every catalog piece, soundscape and LibriVox reader as its license asks, from the shelf's
                      overflow menu and Settings' About; never on the player or the river (05.5)
 

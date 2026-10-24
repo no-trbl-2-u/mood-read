@@ -50,3 +50,4 @@ identity · deleted in <sha>`; recover its text with
 - 2026-10-24 · 07.4 · Fits and Doesn't fit on the mood card, kept per chapter · be37c6d4..be37c6d4
 - 2026-10-24 · 07.7 · Shelf shows each book's mood fingerprint; Mood filter finds books · e77ac9f4..e77ac9f4
 - 2026-10-24 · 05.9 · Public-domain books score from their own Gutenberg text · da2c3390..ed19936a
+- 2026-10-24 · 07.8 · Your soundtrack lists every piece played, by book · a35118d3..a35118d3

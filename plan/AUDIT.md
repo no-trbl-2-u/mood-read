@@ -67,6 +67,14 @@
 
 ## Pending — findings
 
+### [4.2] A chapter is reached (and its pieces logged) only while the book's screen is open
+- category: correctness
+- impact: 4 (playback that runs into the next chapter while the listener is on another screen leaves that chapter
+  unreached, so its emotions, its fingerprint share and its soundtrack entry wait until the book is opened again)
+- ease: 6 (move `reached.reach` and the soundtrack log from `src/app/book/[id].tsx` into `PlayerProvider`)
+- seen: 2026-10-24 (07.8 builder, heads-down rigel)
+- next: /iterate
+
 ### [4.0] Verdicts keyed by chapter index can light on the wrong chapter after a chapter edit
 - category: correctness
 - impact: 4 (a merge or split shifts indices, so a kept "Fits" or "Doesn't fit" can show on another chapter that
