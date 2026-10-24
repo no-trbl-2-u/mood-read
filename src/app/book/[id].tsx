@@ -7,18 +7,20 @@ import { speedLabel } from "@/lib/labels";
 import { chapterEdits, reached, useBook, useFurthestReached } from "@/lib/library";
 import { moodCardView } from "@/lib/mood-card";
 import { isReached } from "@/lib/reached";
-import { scoring, scoringStore, useBookScores, useScoringJob } from "@/lib/scoring";
+import { scoring, scoringNote, scoringStore, useBookScores, useScoringJob, useScoringNote } from "@/lib/scoring";
+import { canRescore, scoringBandView, showsNote } from "@/lib/scoring-band";
 import { BookmarksSheet } from "@/player/BookmarksSheet";
 import { ChapterRiver } from "@/player/ChapterRiver";
 import { CompanionBand } from "@/player/CompanionBand";
 import { LayerPicker } from "@/player/LayerPicker";
 import { MiniPlayer } from "@/player/MiniPlayer";
-import { ScoringBand } from "@/player/ScoringBand";
 import { Mixer } from "@/player/Mixer";
 import { usePlayer } from "@/player/PlayerProvider";
 import { SOUNDSCAPE_IDS } from "@/player/soundscapes";
 import { SpeedSleepSheet } from "@/player/SpeedSleepSheet";
 import { Button } from "@/ui/Button";
+import { OverflowMenu, type MenuItem } from "@/ui/OverflowMenu";
+import { ScoringBand } from "@/ui/ScoringBand";
 import { colors, spacing, typography } from "@/ui/theme";
 import { TopBar, TopBarButton } from "@/ui/TopBar";
 
@@ -32,10 +34,17 @@ const COPY = {
   bookmarks: "Bookmarks",
   speedSleep: "Speed and sleep timer",
   playError: (error: string) => `This book could not play: ${error} Try opening it again from your shelf.`,
+  more: "More",
+  rescore: "Rescore",
+  rescoreCaption: "Reads every chapter's mood again.",
+  rescoreQuestion: (n: number) => (n === 1 ? "Rescore this chapter?" : `Rescore all ${n} chapters?`),
+  rescoreDetail: "It uses this month's scoring budget. The moods you see now stay until the new ones land.",
+  cancel: "Cancel",
 };
 
-// One book's chapter river: the top bar (back to your shelf, the book title, Speed & Sleep and Bookmarks), the
-// river, and the docked mini player. The two sheets rise over the river; the mini player stays below them.
+// One book's chapter river: the top bar (back to your shelf, the book title, Speed & Sleep, Bookmarks and the river's
+// overflow menu, with the action band under its title line: scoring, 01.17), the river, and the docked mini player.
+// The two sheets rise over the river; the mini player stays below them.
 export default function BookScreen() {
   const { id } = useLocalSearchParams<{ id: string }>();
   const book = useBook(id);
@@ -45,11 +54,17 @@ export default function BookScreen() {
   const job = useScoringJob(id ?? "");
   const scores = useBookScores(id ?? "");
   const furthest = useFurthestReached(id ?? "");
+  const note = useScoringNote();
 
   // A scoring job remembered from before (the app closed mid-run) is picked up again when its book opens (A15).
   useEffect(() => {
     if (book) scoring.resume(book);
   }, [book]);
+
+  // The first run on this device carries the note that only the title, author and chapter titles are sent (A30).
+  useEffect(() => {
+    if (id) scoringNote.claim(id, job);
+  }, [id, job]);
 
   useEffect(() => {
     if (id && book) open(id);
@@ -87,6 +102,22 @@ export default function BookScreen() {
     ),
   );
   const speedButton = p.sleep ? `${speedLabel(p.speed)} · Sleep` : speedLabel(p.speed);
+  const band = scoringBandView(job, scores, book.chapters.length);
+  // The river's overflow (design/layouts/DECISION.md, "Scoring: Rescore"): Rescore asks once, inline, since it re-runs
+  // paid research. Book management joins it with 05.7. The river is not dimmed behind it, as the shelf is: an emotion
+  // chip's label at 85% falls under AA (Tension's, 4.48:1).
+  const menu: MenuItem[] = canRescore(job, scores)
+    ? [
+        {
+          key: "rescore",
+          label: COPY.rescore,
+          caption: COPY.rescoreCaption,
+          icon: "sparkles",
+          onPress: () => void scoring.start(book, true),
+          confirm: { question: COPY.rescoreQuestion(book.chapters.length), detail: COPY.rescoreDetail, confirm: COPY.rescore, cancel: COPY.cancel },
+        },
+      ]
+    : [];
 
   return (
     <View style={styles.screen}>
@@ -107,17 +138,22 @@ export default function BookScreen() {
               icon="bookmark"
               onPress={() => setSheet(sheet === "bookmarks" ? null : "bookmarks")}
             />
+            {menu.length > 0 && <OverflowMenu testID="river-more" label={COPY.more} items={menu} />}
           </>
+        }
+        band={
+          band && (
+            <ScoringBand
+              view={band}
+              note={showsNote(note, book.id, job)}
+              onStart={() => void scoring.start(book)}
+              onRetry={() => void scoring.start(book, (band.kind === "failed" || band.kind === "unreachable") && band.rescore)}
+              onDismissNote={scoringNote.dismiss}
+            />
+          )
         }
       />
       {active && p.companion && <CompanionBand timer={p.companionTimer} onTimer={p.setCompanionTimer} />}
-      <ScoringBand
-        chapters={book.chapters.length}
-        job={job}
-        scores={scores}
-        onStart={() => void scoring.start(book)}
-        onRescore={() => void scoring.start(book, true)}
-      />
       {active && p.error && (
         <Text style={styles.error} role="alert">
           {COPY.playError(p.error)}

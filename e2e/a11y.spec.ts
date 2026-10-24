@@ -1,9 +1,10 @@
 // The accessibility bar (06.5, spec 06 A5) on the web build, on every route and the key states: the empty shelf,
 // its overflow menu, Import, Settings (with the default soundscape open), the privacy policy, Downloads (05.6,
 // empty on the web build), the licenses, a book that is not on the device, and a real book's river with the
-// playing row expanded (the mixer inline), its Speed & Sleep sheet and its Bookmarks sheet, and a scored book
-// (01.4): the playing row's mood card (emotion stickers, the named piece, alternates and the pick chips), a
-// reached row's stickers and a locked row. On each one:
+// playing row expanded (the mixer inline), its Speed & Sleep sheet and its Bookmarks sheet, scoring in the river's
+// top bar (01.17: under way with the first-run note, and paused at the cap), and a scored book (01.4): the playing
+// row's mood card (emotion stickers, the named piece, alternates and the pick chips), a reached row's stickers
+// and a locked row, and the river's overflow with Rescore's inline confirmation. On each one:
 //   - axe (WCAG 2.0, 2.1 and 2.2, A and AA) finds no serious or critical issue;
 //   - every control (button, link, switch, checkbox, slider, tab, menu item, and any other focusable element, which
 //     is what a Pressable is on the web) is at least 44 x 44 CSS px (A5, `sizes.touch`; WCAG 2.5.5);
@@ -63,6 +64,22 @@ async function importBook(page: Page) {
   await expect(page).toHaveURL(/\/book\/[a-z0-9]+$/);
   await expect(page.getByTestId("chapter-row-0").getByTestId("chapter-expanded")).toBeVisible();
   await expect(page.getByTestId("mini-play-pause").locator("[role=progressbar]")).toHaveCount(0);
+}
+
+/**
+ * Seeds a scoring job for the open book the way the runner stores one (src/lib/scoring-store.ts, `scorejob:<id>`),
+ * with no proxy job id so nothing is polled, and reloads: the band shows the run's state with no proxy involved.
+ */
+async function seedJob(page: Page, state: "running" | "capped") {
+  const id = new URL(page.url()).pathname.split("/").pop()!;
+  await page.evaluate(
+    ({ id, state }) => {
+      const job = { jobId: null, state, progress: { step: 2, steps: 5, chaptersDone: 1, chapters: 2 }, rescore: false, startedAt: 1, updatedAt: 1 };
+      localStorage.setItem(`scorejob:${id}`, JSON.stringify(job));
+    },
+    { id, state },
+  );
+  await page.reload();
 }
 
 type State = { name: string; open: (page: Page) => Promise<void> };
@@ -157,6 +174,32 @@ const STATES: State[] = [
       await importBook(page);
       await page.getByTestId("top-back").click();
       await expect(page.getByRole("link", { name: "Access Book" })).toBeVisible();
+    },
+  },
+  {
+    name: "/book/<id>: scoring under way, with the first-run note",
+    open: async (page) => {
+      await importBook(page);
+      await seedJob(page, "running");
+      await expect(page.getByTestId("scoring-progress")).toBeVisible();
+      await expect(page.getByTestId("scoring-note")).toBeVisible();
+    },
+  },
+  {
+    name: "/book/<id>: scoring paused at the monthly cap",
+    open: async (page) => {
+      await importBook(page);
+      await seedJob(page, "capped");
+      await expect(page.getByTestId("scoring-capped")).toBeVisible();
+    },
+  },
+  {
+    name: "/book/<id> scored: the river's overflow with Rescore asking first",
+    open: async (page) => {
+      await scoredBook(page);
+      await page.getByTestId("river-more").click();
+      await page.getByRole("menuitem", { name: "Rescore" }).click();
+      await expect(page.getByTestId("menu-rescore-confirm")).toBeVisible();
     },
   },
   {

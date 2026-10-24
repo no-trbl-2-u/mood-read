@@ -1,10 +1,26 @@
 import { useRef, useState, type ComponentRef } from "react";
 import { Modal, Pressable, StyleSheet, Text, useWindowDimensions, View } from "react-native";
 
+import { Button } from "./Button";
 import { Icon, type IconName } from "./Icon";
 import { colors, hardShadow, radii, shadows, sizes, spacing, strokes, typography } from "./theme";
 
-export type MenuItem = { key: string; label: string; icon?: IconName; onPress: () => void; ruleBefore?: boolean };
+/**
+ * An item that asks first (Delete book, Rescore): pressing it grows a short question and two buttons under it, in
+ * the menu (design/layouts/DECISION.md, Navigation, v2: never a dialog or a sheet). Only the confirm runs `onPress`.
+ */
+export type MenuConfirm = { question: string; detail?: string; confirm: string; cancel: string; danger?: boolean };
+
+export type MenuItem = {
+  key: string;
+  label: string;
+  /** A muted line under the label ("Reads every chapter's mood again."). */
+  caption?: string;
+  icon?: IconName;
+  onPress: () => void;
+  ruleBefore?: boolean;
+  confirm?: MenuConfirm;
+};
 
 type Anchor = { top: number; right: number };
 
@@ -22,9 +38,11 @@ export function OverflowMenu(props: {
   const button = useRef<ComponentRef<typeof Pressable>>(null);
   const { width } = useWindowDimensions();
   const [anchor, setAnchor] = useState<Anchor | null>(null);
+  const [asking, setAsking] = useState<string | null>(null);
 
   const setOpen = (next: Anchor | null) => {
     setAnchor(next);
+    setAsking(null);
     props.onOpenChange?.(next !== null);
   };
   const open = () =>
@@ -55,16 +73,48 @@ export function OverflowMenu(props: {
                 <Pressable
                   testID={`menu-${item.key}`}
                   role="menuitem"
-                  aria-label={item.label}
+                  aria-label={item.caption ? undefined : item.label}
+                  aria-expanded={item.confirm ? asking === item.key : undefined}
                   style={styles.item}
                   onPress={() => {
+                    if (item.confirm) return setAsking(asking === item.key ? null : item.key);
                     close();
                     item.onPress();
                   }}
                 >
                   {item.icon && <Icon name={item.icon} />}
-                  <Text style={styles.itemText}>{item.label}</Text>
+                  <View style={styles.itemText}>
+                    <Text style={styles.itemLabel}>{item.label}</Text>
+                    {item.caption && <Text style={typography.caption}>{item.caption}</Text>}
+                  </View>
                 </Pressable>
+                {item.confirm && asking === item.key && (
+                  <View role="group" aria-label={item.confirm.question} style={styles.confirm} testID={`menu-${item.key}-confirm`}>
+                    <Text style={typography.label}>{item.confirm.question}</Text>
+                    {item.confirm.detail && <Text style={typography.caption}>{item.confirm.detail}</Text>}
+                    <View style={styles.confirmButtons}>
+                      <Button
+                        small
+                        kind={item.confirm.danger ? "danger" : "primary"}
+                        label={item.confirm.confirm}
+                        role="menuitem"
+                        testID={`menu-${item.key}-yes`}
+                        onPress={() => {
+                          close();
+                          item.onPress();
+                        }}
+                      />
+                      <Button
+                        small
+                        kind="secondary"
+                        role="menuitem"
+                        label={item.confirm.cancel}
+                        testID={`menu-${item.key}-no`}
+                        onPress={close}
+                      />
+                    </View>
+                  </View>
+                )}
               </View>
             ))}
           </View>
@@ -100,6 +150,9 @@ const styles = StyleSheet.create({
     paddingHorizontal: spacing.md,
     borderRadius: radii.md,
   },
-  itemText: { ...typography.label, fontSize: typography.body.fontSize },
+  itemText: { flex: 1, gap: spacing.xxs, paddingVertical: spacing.sm },
+  itemLabel: { ...typography.label, fontSize: typography.body.fontSize },
+  confirm: { gap: spacing.xs, paddingHorizontal: spacing.md, paddingBottom: spacing.sm },
+  confirmButtons: { flexDirection: "row", flexWrap: "wrap", gap: spacing.sm, paddingTop: spacing.xs },
   rule: { borderTopWidth: strokes.hairline, borderTopColor: colors.border, marginVertical: spacing.xs, marginHorizontal: spacing.sm },
 });

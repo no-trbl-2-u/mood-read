@@ -7,7 +7,9 @@ import { colors, radii, sizes, spacing, strokes, typography } from "./theme";
 
 /**
  * A screen's top bar: an optional back control (Lucide `chevron-left` and the parent's title, or the chevron alone
- * where the title line is full, as on the river), the title, and optional trailing actions.
+ * where the title line is full, as on the river), the title, and optional trailing actions. Under the title line, the
+ * river's action band (design/layouts/DECISION.md, "The river's top bar, v2"): one book-level action and its progress,
+ * above a dashed hairline, inside the bar so it never scrolls.
  */
 export function TopBar(props: {
   title: string;
@@ -15,6 +17,7 @@ export function TopBar(props: {
   large?: boolean;
   back?: { label: string; a11yLabel?: string; iconOnly?: boolean; onPress: () => void };
   trailing?: ReactNode;
+  band?: ReactNode;
 }) {
   const insets = useSafeAreaInsets();
   return (
@@ -37,6 +40,7 @@ export function TopBar(props: {
         </Text>
         {props.trailing && <View style={styles.trailing}>{props.trailing}</View>}
       </View>
+      {props.band && <View style={styles.band}>{props.band}</View>}
     </View>
   );
 }
@@ -70,6 +74,15 @@ const styles = StyleSheet.create({
     alignItems: "center",
     gap: spacing.sm,
     paddingHorizontal: spacing.md,
+  },
+  band: {
+    gap: spacing.sm,
+    paddingHorizontal: spacing.md,
+    paddingTop: spacing.sm,
+    paddingBottom: spacing.md,
+    borderTopWidth: strokes.hairline,
+    borderTopColor: colors.border,
+    borderStyle: "dashed",
   },
   back: {
     minHeight: sizes.touch,

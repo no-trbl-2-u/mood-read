@@ -17,7 +17,8 @@ export function Button(props: {
   /** The 44 px size for rows and bands; 48 px otherwise. */
   small?: boolean;
   disabled?: boolean;
-  role?: "button" | "link";
+  /** `menuitem` for a confirmation's buttons inside a menu (src/ui/OverflowMenu.tsx). */
+  role?: "button" | "link" | "menuitem";
   a11yLabel?: string;
   expanded?: boolean;
   testID?: string;

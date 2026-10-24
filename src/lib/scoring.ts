@@ -6,6 +6,7 @@ import { useSyncExternalStore } from "react";
 
 import { getItem, removeItem, setItem } from "./kv";
 import { createScoringApi } from "./scoring-api";
+import { createScoringNoteStore, type ScoringNote } from "./scoring-band";
 import { createScoringRunner } from "./scoring-runner";
 import { createScoringStore } from "./scoring-store";
 import type { BookScores, ScoringJob } from "./types";
@@ -19,6 +20,13 @@ export const scoring = createScoringRunner({
   api: createScoringApi(SCORING_PROXY_URL, (input, init) => fetch(input, init)),
   store: scoringStore,
 });
+
+/** The first-run note's state on this device (01.17): which run carries it, and whether it was dismissed. */
+export const scoringNote = createScoringNoteStore({ getItem, setItem, removeItem });
+
+export function useScoringNote(): ScoringNote {
+  return useSyncExternalStore(scoringNote.subscribe, scoringNote.get, scoringNote.get);
+}
 
 export function useScoringJob(bookId: string): ScoringJob | null {
   const read = () => scoringStore.job(bookId);

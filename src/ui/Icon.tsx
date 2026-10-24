@@ -11,6 +11,7 @@ import {
   EllipsisVertical,
   ExternalLink,
   HardDrive,
+  Hourglass,
   Lock,
   Pause,
   Play,
@@ -19,6 +20,10 @@ import {
   RotateCw,
   Settings,
   Wifi,
+  ShieldCheck,
+  Sparkles,
+  TriangleAlert,
+  X,
   type LucideIcon,
 } from "lucide-react-native";
 
@@ -33,6 +38,7 @@ const SET = {
   download: Download,
   "external-link": ExternalLink,
   "hard-drive": HardDrive,
+  hourglass: Hourglass,
   lock: Lock,
   more: EllipsisVertical,
   pause: Pause,
@@ -42,6 +48,10 @@ const SET = {
   "skip-forward": RotateCw,
   settings: Settings,
   wifi: Wifi,
+  "shield-check": ShieldCheck,
+  sparkles: Sparkles,
+  "triangle-alert": TriangleAlert,
+  x: X,
 } satisfies Record<string, LucideIcon>;
 
 export type IconName = keyof typeof SET;
