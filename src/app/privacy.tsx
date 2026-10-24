@@ -26,9 +26,9 @@ const SECTIONS: Section[] = [
     heading: "Your books stay home",
     lines: [
       "When you import a book, Mood Read copies its audio files onto your device: into the app's own storage on a phone, and into your browser's storage on the web.",
-      "The book's details (title, author, narrator, cover and chapters), your listening position, your bookmarks and your playback speed are stored on your device too.",
+      "The book's details (title, author, narrator, cover and chapters), your listening position, your bookmarks, your playback speed and your settings are stored on your device too.",
       "None of this is sent anywhere. Your audio never leaves your device and is never transcribed. Uninstalling the app, or clearing your browser's data for the site, removes it.",
-      "Features still to come, such as chapter moods, picks and settings, will be kept on your device in the same way.",
+      "Features still to come, such as chapter moods and picks, will be kept on your device in the same way.",
     ],
   },
   {

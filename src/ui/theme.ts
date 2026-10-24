@@ -69,6 +69,27 @@ export const radii = {
   pill: 999,
 } as const;
 
+/** Fixed control sizes (design/layouts/DECISION.md, v2). No touch target is under `touch`. */
+export const sizes = {
+  /** The smallest touch target (WCAG 2.2, spec 06 A5). */
+  touch: 44,
+  /** A menu row and an icon button. */
+  menuRow: 48,
+  /** A settings row. */
+  settingRow: 56,
+  /** A popover menu's width. */
+  menuWidth: 250,
+  /** The settings switch: its track and knob. */
+  switchWidth: 52,
+  switchHeight: 32,
+  switchKnob: 22,
+  /** One dot of the overflow ("More") glyph. */
+  dot: 4,
+} as const;
+
+/** Opacities: a row that is not available yet, and the list behind an open menu. */
+export const opacities = { disabled: 0.55, behindMenu: 0.55 } as const;
+
 /** Outline and rule widths. */
 export const strokes = {
   hairline: 1,

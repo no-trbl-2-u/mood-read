@@ -1,8 +1,8 @@
 import { Pressable, StyleSheet, Text } from "react-native";
 
-import { colors, spacing } from "./theme";
+import { colors, radii, sizes, spacing } from "./theme";
 
-/** A selectable chip: speed presets, sleep timer choices, the mixer's duck. */
+/** A selectable chip: speed presets, sleep timer choices, the mixer's duck, the default soundscape. */
 export function Chip(props: { label: string; a11yLabel?: string; on: boolean; onPress: () => void; testID?: string }) {
   return (
     <Pressable
@@ -20,10 +20,10 @@ export function Chip(props: { label: string; a11yLabel?: string; on: boolean; on
 
 const styles = StyleSheet.create({
   chip: {
-    minHeight: 40,
+    minHeight: sizes.touch,
     justifyContent: "center",
     paddingHorizontal: spacing.md,
-    borderRadius: 20,
+    borderRadius: radii.pill,
     backgroundColor: colors.surface,
     borderWidth: 1,
     borderColor: colors.border,

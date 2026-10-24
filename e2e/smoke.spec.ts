@@ -10,6 +10,7 @@ const ROUTES = [
   { path: "/", title: "Library", also: "Import a book" },
   { path: "/import", title: "Import", also: "Choose files" },
   { path: "/book/sample-1", title: "Book not found", also: "Back to Library" },
+  { path: "/settings", title: "Settings", also: "Downloads on Wi-Fi only" },
   { path: "/privacy", title: "Privacy policy", also: "What the scoring proxy gets" },
 ];
 
@@ -24,8 +25,8 @@ for (const route of ROUTES) {
   });
 }
 
-// The privacy policy (A6) says what the scoring proxy receives, and the Import screen links to it until Settings
-// (06.3) does.
+// The privacy policy (A6) says what the scoring proxy receives, and the Import screen links to it (as Settings
+// does, e2e/settings.spec.ts).
 test("/privacy says what the proxy receives, and Import links to it", async ({ page }) => {
   const problems = await guard(page);
   await page.goto("/import");

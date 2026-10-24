@@ -8,16 +8,21 @@ import type { Book } from "@/lib/types";
 import { usePlayer } from "@/player/PlayerProvider";
 import { Cover } from "@/ui/Cover";
 import { PlusGlyph } from "@/ui/glyphs";
-import { colors, radii, spacing } from "@/ui/theme";
+import { OverflowMenu, type MenuItem } from "@/ui/OverflowMenu";
+import { colors, opacities, radii, spacing } from "@/ui/theme";
 import { TopBar, TopBarButton } from "@/ui/TopBar";
 
 // The library: every book on the device, most recently played first. Empty, it is one centred "Import a book".
-// Importing is its own full screen, pushed from here (01.6).
+// Importing is its own full screen, pushed from here (01.6). The top bar's overflow menu is the one home for
+// Browse, Downloads, Settings and Credits (spec 06); an entry joins it when its route ships, one line each.
+const MENU: MenuItem[] = [{ key: "settings", label: "Settings", onPress: () => router.push("/settings") }];
+
 export default function LibraryScreen() {
   const books = useBooks();
   const player = usePlayer();
   // Positions are not reactive (they are saved every half second); re-read them whenever the library shows.
   const [, setVisits] = useState(0);
+  const [menuOpen, setMenuOpen] = useState(false);
   useFocusEffect(useCallback(() => setVisits((n) => n + 1), []));
 
   const importBook = () => router.push("/import");
@@ -30,34 +35,37 @@ export default function LibraryScreen() {
       <TopBar
         title="Library"
         trailing={
-          books.length > 0 ? (
-            <TopBarButton testID="import" label="Import" onPress={importBook} />
-          ) : undefined
+          <>
+            {books.length > 0 && <TopBarButton testID="import" label="Import" onPress={importBook} />}
+            <OverflowMenu testID="library-more" items={MENU} onOpenChange={setMenuOpen} />
+          </>
         }
       />
-      {books.length === 0 ? (
-        <View style={styles.empty}>
-          <View style={styles.placeholder}>
-            <PlusGlyph size={24} color={colors.textMuted} />
+      <View style={[styles.screen, menuOpen && styles.behindMenu]}>
+        {books.length === 0 ? (
+          <View style={styles.empty}>
+            <View style={styles.placeholder}>
+              <PlusGlyph size={24} color={colors.textMuted} />
+            </View>
+            <Text style={styles.emptyTitle}>No books yet</Text>
+            <Text style={styles.muted}>Import an audiobook file to start a chapter river.</Text>
+            <Pressable
+              testID="import-book"
+              role="button"
+              style={styles.primary}
+              onPress={importBook}
+            >
+              <Text style={styles.primaryText}>Import a book</Text>
+            </Pressable>
           </View>
-          <Text style={styles.emptyTitle}>No books yet</Text>
-          <Text style={styles.muted}>Import an audiobook file to start a chapter river.</Text>
-          <Pressable
-            testID="import-book"
-            role="button"
-            style={styles.primary}
-            onPress={importBook}
-          >
-            <Text style={styles.primaryText}>Import a book</Text>
-          </Pressable>
-        </View>
-      ) : (
-        <FlatList
-          data={books}
-          keyExtractor={(b) => b.id}
-          renderItem={({ item }) => <BookRow book={item} resuming={item.id === resumingId} />}
-        />
-      )}
+        ) : (
+          <FlatList
+            data={books}
+            keyExtractor={(b) => b.id}
+            renderItem={({ item }) => <BookRow book={item} resuming={item.id === resumingId} />}
+          />
+        )}
+      </View>
     </View>
   );
 }
@@ -90,6 +98,7 @@ function BookRow({ book, resuming }: { book: Book; resuming: boolean }) {
 
 const styles = StyleSheet.create({
   screen: { flex: 1, backgroundColor: colors.background },
+  behindMenu: { opacity: opacities.behindMenu },
   empty: {
     flex: 1,
     alignItems: "center",
