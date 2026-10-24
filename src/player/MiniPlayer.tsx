@@ -10,7 +10,7 @@ import { chapterClock, sleepReadout } from "@/lib/readouts";
 import { clamp, SKIP_SECONDS } from "@/lib/timeline";
 import type { Book, Chapter, SleepTimer } from "@/lib/types";
 import { Cover } from "@/ui/Cover";
-import { PauseGlyph, PlayGlyph } from "@/ui/glyphs";
+import { Icon } from "@/ui/Icon";
 import { colors, spacing } from "@/ui/theme";
 
 export function MiniPlayer(props: {
@@ -60,7 +60,8 @@ export function MiniPlayer(props: {
         style={styles.skip}
         onPress={() => props.onSkip(-SKIP_SECONDS)}
       >
-        <Text style={styles.skipText}>-{SKIP_SECONDS}</Text>
+        <Icon name="skip-back" size="small" />
+        <Text style={styles.skipText}>{SKIP_SECONDS}</Text>
       </Pressable>
       <Pressable
         testID="mini-play-pause"
@@ -72,11 +73,9 @@ export function MiniPlayer(props: {
         {props.loading ? (
           <ActivityIndicator color={colors.onAccent} />
         ) : props.playing ? (
-          <PauseGlyph size={14} color={colors.onAccent} />
+          <Icon name="pause" color={colors.onAccent} filled />
         ) : (
-          <View style={styles.playNudge}>
-            <PlayGlyph size={16} color={colors.onAccent} />
-          </View>
+          <Icon name="play" color={colors.onAccent} filled />
         )}
       </Pressable>
       <Pressable
@@ -86,7 +85,8 @@ export function MiniPlayer(props: {
         style={styles.skip}
         onPress={() => props.onSkip(SKIP_SECONDS)}
       >
-        <Text style={styles.skipText}>+{SKIP_SECONDS}</Text>
+        <Icon name="skip-forward" size="small" />
+        <Text style={styles.skipText}>{SKIP_SECONDS}</Text>
       </Pressable>
     </View>
   );
@@ -185,5 +185,4 @@ const styles = StyleSheet.create({
     justifyContent: "center",
     backgroundColor: colors.accent,
   },
-  playNudge: { paddingLeft: 3 },
 });

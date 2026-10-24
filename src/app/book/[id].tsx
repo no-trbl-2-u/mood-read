@@ -67,6 +67,7 @@ export default function BookScreen() {
             <TopBarButton
               testID="open-bookmarks"
               label="Bookmarks"
+              icon="bookmark"
               onPress={() => setSheet(sheet === "bookmarks" ? null : "bookmarks")}
             />
           </>

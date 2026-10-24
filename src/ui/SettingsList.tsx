@@ -1,8 +1,8 @@
 import { Children, type ReactNode } from "react";
 import { Pressable, StyleSheet, Text, View } from "react-native";
 
-import { Chevron } from "./glyphs";
-import { colors, icons, opacities, radii, sizes, spacing, strokes, typography } from "./theme";
+import { Icon } from "./Icon";
+import { colors, opacities, radii, sizes, spacing, strokes, typography } from "./theme";
 
 // The settings screen's parts (design/layouts/DECISION.md, Settings): grouped cards under section labels, rows
 // 56 px or taller. Each row is one control with its own label and role, the whole row its touch target.
@@ -78,7 +78,7 @@ export function LinkRow(props: {
         <Text style={styles.title}>{props.title}</Text>
       </View>
       {props.value && <Text style={styles.value}>{props.value}</Text>}
-      <Chevron size={icons.small / 2} color={colors.textMuted} open={props.expanded} />
+      <Icon name={props.expanded ? "chevron-down" : "chevron-right"} size="small" color={colors.textMuted} />
     </Pressable>
   );
 }

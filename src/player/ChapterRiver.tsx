@@ -9,7 +9,7 @@ import { Pressable, ScrollView, StyleSheet, Text, TextInput, View, type ScrollVi
 
 import { canMergeWithNext, canSplitAt } from "@/lib/chapters";
 import type { Book } from "@/lib/types";
-import { PlayGlyph } from "@/ui/glyphs";
+import { Icon } from "@/ui/Icon";
 import { colors, spacing } from "@/ui/theme";
 
 export function ChapterRiver(props: {
@@ -68,7 +68,7 @@ export function ChapterRiver(props: {
                 </Text>
                 {playing && (
                   <View style={styles.mark} testID="playing-mark">
-                    <PlayGlyph size={8} color={colors.accent} />
+                    <Icon name="play" size="small" color={colors.accent} filled />
                   </View>
                 )}
               </View>

@@ -3,7 +3,7 @@ import { Image, StyleSheet, Text, View } from "react-native";
 import { useFileUri } from "@/lib/library";
 import type { Book } from "@/lib/types";
 
-import { PlayGlyph } from "./glyphs";
+import { Icon } from "./Icon";
 import { colors, radii } from "./theme";
 
 /**
@@ -41,7 +41,7 @@ export function Cover({
       )}
       {marked && (
         <View style={styles.mark} testID="cover-play-mark">
-          <PlayGlyph size={8} color={colors.onAccent} />
+          <Icon name="play" size="mark" color={colors.onAccent} filled />
         </View>
       )}
     </View>

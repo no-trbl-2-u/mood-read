@@ -2,13 +2,16 @@ import type { ReactNode } from "react";
 import { Pressable, StyleSheet, Text, View } from "react-native";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
 
-import { BackChevron } from "./glyphs";
+import { Icon, type IconName } from "./Icon";
 import { colors, spacing } from "./theme";
 
-/** A screen's top bar: an optional back control, the title, and optional trailing actions. */
+/**
+ * A screen's top bar: an optional back control (Lucide `chevron-left` and the parent's title, or the chevron alone
+ * where the title line is full, as on the river), the title, and optional trailing actions.
+ */
 export function TopBar(props: {
   title: string;
-  back?: { label: string; onPress: () => void };
+  back?: { label: string; a11yLabel?: string; iconOnly?: boolean; onPress: () => void };
   trailing?: ReactNode;
 }) {
   const insets = useSafeAreaInsets();
@@ -19,13 +22,13 @@ export function TopBar(props: {
           <Pressable
             testID="top-back"
             role="button"
-            aria-label={props.back.label}
+            aria-label={props.back.a11yLabel ?? props.back.label}
             onPress={props.back.onPress}
             style={styles.back}
             hitSlop={8}
           >
-            <BackChevron size={10} color={colors.text} />
-            <Text style={styles.backText}>{props.back.label}</Text>
+            <Icon name="back" />
+            {!props.back.iconOnly && <Text style={styles.backText}>{props.back.label}</Text>}
           </Pressable>
         )}
         <Text style={styles.title} numberOfLines={1} role="heading">
@@ -37,8 +40,14 @@ export function TopBar(props: {
   );
 }
 
-/** A plain text button for the top bar's trailing side. */
-export function TopBarButton(props: { label: string; a11yLabel?: string; onPress: () => void; testID?: string }) {
+/** A trailing action: an icon button (the label is then its screen-reader name) or a short text button. */
+export function TopBarButton(props: {
+  label: string;
+  icon?: IconName;
+  a11yLabel?: string;
+  onPress: () => void;
+  testID?: string;
+}) {
   return (
     <Pressable
       testID={props.testID}
@@ -48,7 +57,7 @@ export function TopBarButton(props: { label: string; a11yLabel?: string; onPress
       style={styles.action}
       hitSlop={6}
     >
-      <Text style={styles.actionText}>{props.label}</Text>
+      {props.icon ? <Icon name={props.icon} /> : <Text style={styles.actionText}>{props.label}</Text>}
     </Pressable>
   );
 }

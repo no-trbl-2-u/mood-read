@@ -7,7 +7,7 @@ import { library, useBooks } from "@/lib/library";
 import type { Book } from "@/lib/types";
 import { usePlayer } from "@/player/PlayerProvider";
 import { Cover } from "@/ui/Cover";
-import { PlusGlyph } from "@/ui/glyphs";
+import { Icon } from "@/ui/Icon";
 import { OverflowMenu, type MenuItem } from "@/ui/OverflowMenu";
 import { colors, opacities, radii, spacing } from "@/ui/theme";
 import { TopBar, TopBarButton } from "@/ui/TopBar";
@@ -15,7 +15,9 @@ import { TopBar, TopBarButton } from "@/ui/TopBar";
 // The library: every book on the device, most recently played first. Empty, it is one centred "Import a book".
 // Importing is its own full screen, pushed from here (01.6). The top bar's overflow menu is the one home for
 // Browse, Downloads, Settings and Credits (spec 06); an entry joins it when its route ships, one line each.
-const MENU: MenuItem[] = [{ key: "settings", label: "Settings", onPress: () => router.push("/settings") }];
+const MENU: MenuItem[] = [
+  { key: "settings", label: "Settings", icon: "settings", onPress: () => router.push("/settings") },
+];
 
 export default function LibraryScreen() {
   const books = useBooks();
@@ -36,7 +38,7 @@ export default function LibraryScreen() {
         title="Library"
         trailing={
           <>
-            {books.length > 0 && <TopBarButton testID="import" label="Import" onPress={importBook} />}
+            {books.length > 0 && <TopBarButton testID="import" label="Import" icon="plus" onPress={importBook} />}
             <OverflowMenu testID="library-more" items={MENU} onOpenChange={setMenuOpen} />
           </>
         }
@@ -45,7 +47,7 @@ export default function LibraryScreen() {
         {books.length === 0 ? (
           <View style={styles.empty}>
             <View style={styles.placeholder}>
-              <PlusGlyph size={24} color={colors.textMuted} />
+              <Icon name="plus" color={colors.textMuted} />
             </View>
             <Text style={styles.emptyTitle}>No books yet</Text>
             <Text style={styles.muted}>Import an audiobook file to start a chapter river.</Text>

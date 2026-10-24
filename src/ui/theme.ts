@@ -90,8 +90,6 @@ export const sizes = {
   switchWidth: 52,
   switchHeight: 32,
   switchKnob: 22,
-  /** One dot of the overflow ("More") glyph. */
-  dot: 4,
   /** A top bar's title line. */
   topBar: 52,
   /** A primary or secondary button's height. */
@@ -179,7 +177,14 @@ export const typography = {
 } as const;
 
 /** Icons: Lucide (lucide-react-native v1.x), drawn through src/ui/Icon.tsx. */
-export const icons = { size: 24, small: 18, strokeWidth: 2.5 } as const;
+export const icons = {
+  size: 24,
+  /** Inline in text, and inside a 44 px control that also holds a label. */
+  small: 18,
+  /** The play mark inside a cover's 20 px badge. */
+  mark: 10,
+  strokeWidth: 2.5,
+} as const;
 
 /** Cubic-bezier control points. */
 export const easings = {

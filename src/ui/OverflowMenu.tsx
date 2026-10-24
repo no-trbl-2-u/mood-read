@@ -1,10 +1,10 @@
 import { useRef, useState, type ComponentRef } from "react";
 import { Modal, Pressable, StyleSheet, Text, useWindowDimensions, View } from "react-native";
 
-import { MoreGlyph } from "./glyphs";
+import { Icon, type IconName } from "./Icon";
 import { colors, radii, shadows, sizes, spacing, strokes, typography } from "./theme";
 
-export type MenuItem = { key: string; label: string; onPress: () => void; ruleBefore?: boolean };
+export type MenuItem = { key: string; label: string; icon?: IconName; onPress: () => void; ruleBefore?: boolean };
 
 type Anchor = { top: number; right: number };
 
@@ -43,7 +43,7 @@ export function OverflowMenu(props: {
         onPress={open}
         style={styles.button}
       >
-        <MoreGlyph color={colors.text} />
+        <Icon name="more" />
       </Pressable>
       <Modal transparent visible={anchor !== null} onRequestClose={close} animationType="none">
         <Pressable style={StyleSheet.absoluteFill} onPress={close} aria-label="Close menu" />
@@ -62,6 +62,7 @@ export function OverflowMenu(props: {
                     item.onPress();
                   }}
                 >
+                  {item.icon && <Icon name={item.icon} />}
                   <Text style={styles.itemText}>{item.label}</Text>
                 </Pressable>
               </View>
@@ -93,7 +94,9 @@ const styles = StyleSheet.create({
   },
   item: {
     minHeight: sizes.menuRow,
-    justifyContent: "center",
+    flexDirection: "row",
+    alignItems: "center",
+    gap: spacing.md,
     paddingHorizontal: spacing.md,
     borderRadius: radii.md,
   },
