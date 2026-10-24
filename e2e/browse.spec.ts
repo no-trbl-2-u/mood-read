@@ -4,7 +4,7 @@
 import { expect, test } from "@playwright/test";
 
 import { guard } from "./guard";
-import { IDENTIFIER, stubArchiveOrg } from "./librivox-fixtures";
+import { IDENTIFIER, METADATA_BODY, stubArchiveOrg, stubOverall } from "./librivox-fixtures";
 
 test.describe("browse", () => {
   let problems: string[] = [];
@@ -41,6 +41,53 @@ test.describe("browse", () => {
     await expect(page.getByTestId("browse-chapter-0")).toContainText("The River Bank");
     await expect(page.getByTestId("browse-chapter-1")).toContainText("The Open Road");
     await page.waitForLoadState("networkidle");
+  });
+
+  test("A11: a pre-scored row shows Scored and the book's overall emotions; an unscored row shows none", async ({ page }) => {
+    const docs = [
+      { identifier: "scored_book_librivox", title: "Scored Book", creator: "A. Author", runtime: "1:00:00", description: null, call_number: "101" },
+      { identifier: "plain_book_librivox", title: "Plain Book", creator: "A. Author", runtime: "1:00:00", description: null, call_number: "202" },
+    ];
+    await page.route("https://archive.org/advancedsearch.php*", (route) => route.fulfill({ status: 200, json: { response: { numFound: 2, docs } } }));
+    await page.route("https://archive.org/metadata/scored_book_librivox", (route) =>
+      route.fulfill({ status: 200, json: { ...METADATA_BODY, metadata: { ...METADATA_BODY.metadata, identifier: "scored_book_librivox", title: "Scored Book", call_number: "101" } } }),
+    );
+    const asked = await stubOverall(page, ["101"]);
+
+    await page.goto("/browse");
+    await page.getByTestId("browse-query").fill("Book");
+    const scored = page.getByTestId("browse-result-scored_book_librivox");
+    const plain = page.getByTestId("browse-result-plain_book_librivox");
+    await expect(plain).toBeVisible();
+    await expect(page.getByTestId("browse-scored-scored_book_librivox")).toBeVisible();
+    await expect(scored).toContainText("Scored");
+    // The top two overall emotions with their intensity, the book's own; the third is for the book's page.
+    await expect(scored).toContainText("Wonder 80%");
+    await expect(scored).toContainText("Joy 60%");
+    await expect(scored).not.toContainText("Calm");
+    await expect(page.getByTestId("browse-scored-plain_book_librivox")).toHaveCount(0);
+    await expect(plain).not.toContainText("Scored");
+    // One batched read for the page, with the LibriVox numbers only.
+    expect(asked).toEqual([["101", "202"]]);
+
+    // The book's page shows the whole book's mood: Scored and at most three overall emotions, never a chapter's.
+    await scored.click();
+    await expect(page.getByRole("heading", { name: "Scored Book" })).toBeVisible();
+    await expect(page.getByTestId("browse-book-scored")).toContainText("Scored");
+    await expect(page.getByTestId("browse-book-scored")).toContainText("Calm 30%");
+    await expect(page.getByText("Chapters stay a surprise until you reach them.")).toBeVisible();
+    await expect(page.getByText(/Not scored yet\./)).toHaveCount(0);
+    await expect(page.getByTestId("browse-chapter-0")).not.toContainText("%");
+    await page.waitForLoadState("networkidle");
+  });
+
+  test("Browse still works when the proxy's overall read fails: every row reads unscored", async ({ page }) => {
+    await page.route("https://mood-read-proxy.invalid/v1/overall*", (route) => route.fulfill({ status: 200, headers: { "access-control-allow-origin": "*" }, body: "not json" }));
+    await page.goto("/browse");
+    await page.getByTestId("browse-query").fill("Wind in the Willows");
+    await expect(page.getByTestId(`browse-result-${IDENTIFIER}`)).toBeVisible();
+    await page.waitForLoadState("networkidle");
+    await expect(page.getByTestId(`browse-scored-${IDENTIFIER}`)).toHaveCount(0);
   });
 
   test("No LibriVox books match a search with no results", async ({ page }) => {

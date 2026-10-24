@@ -124,12 +124,14 @@ const STATES: State[] = [
     },
   },
   {
-    name: "/browse (05.8): a search's results",
+    name: "/browse (05.8, 05.10): a search's results, a pre-scored row",
     open: async (page) => {
       await stubArchiveOrg(page);
       await page.goto("/browse");
       await page.getByTestId("browse-query").fill("Wind in the Willows");
       await expect(page.getByTestId(`browse-result-${IDENTIFIER}`)).toBeVisible();
+      // A pre-scored row (05.10): "Scored" and its overall emotion stickers are in the walk too.
+      await expect(page.getByTestId(`browse-scored-${IDENTIFIER}`)).toBeVisible();
     },
   },
   {

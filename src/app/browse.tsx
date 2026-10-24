@@ -4,18 +4,26 @@ import { FlatList, Pressable, StyleSheet, Text, TextInput, View } from "react-na
 
 import { browseRowCaption } from "@/lib/librivox-labels";
 import { search, type LibriVoxSearchResult } from "@/lib/librivox-api";
+import { EMOTION_NAMES } from "@/lib/mood-card";
+import { fetchOverall, type Overall } from "@/lib/overall-api";
+import { SCORING_PROXY_URL } from "@/lib/scoring";
+import type { EmotionScore } from "@/lib/types";
 import { Button } from "@/ui/Button";
 import { Icon } from "@/ui/Icon";
+import { ScoredChip } from "@/ui/ScoredChip";
+import { Sticker } from "@/ui/Sticker";
 import { colors, coverTint, radii, sizes, spacing, strokes, typography } from "@/ui/theme";
 import { TopBar } from "@/ui/TopBar";
 
 // Browse (spec 05, 05.8; design/layouts/DECISION.md "Browse"): search LibriVox by title, author or genre at
 // once (src/lib/librivox-api.ts's search scopes one archive.org call to all three) and push a result's page.
 // Before any search, the design's default is a "Popular on LibriVox" list, which needs 05.10's pre-scoring cache
-// (not built); this screen shows a plain prompt instead (a decision recorded in this chunk's commit). A row's
-// "Scored" chip and "On your shelf" check (05.10, needs scoring) are out of scope too: every row reads as
-// unscored. A row shows no cover thumbnail: fetching one would be a metadata call per row, and Browse makes at
-// most one archive.org call per keystroke (debounced) plus one per opened book, never one per result.
+// (not built); this screen shows a plain prompt instead (a decision recorded in this chunk's commit). A pre-scored
+// book's row (05.10, A11) shows "Scored" and its top two overall emotions, the whole book's and never a chapter's,
+// from one batched proxy read per page of results (src/lib/overall-api.ts: LibriVox numbers only, no run started);
+// if that read fails every row simply reads as unscored. A row shows no cover thumbnail: fetching one would be a
+// metadata call per row, and Browse makes at most one archive.org call per keystroke (debounced) plus one per
+// opened book, never one per result.
 const COPY = {
   title: "Browse",
   back: "Your shelf",
@@ -29,7 +37,11 @@ const COPY = {
   errorTitle: "Browse needs a connection.",
   errorBody: "Your shelf still plays offline.",
   tryAgain: "Try again",
+  scored: "Scored",
 };
+
+/** A row shows this many of a pre-scored book's overall emotions (the design's "top two"). */
+const ROW_EMOTIONS = 2;
 
 /** Typing fires at most one archive.org search per this long a pause (the brief's "~400ms", never per keystroke). */
 const DEBOUNCE_MS = 400;
@@ -39,6 +51,7 @@ export default function BrowseScreen() {
   const [results, setResults] = useState<LibriVoxSearchResult[] | null>(null);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
+  const [overall, setOverall] = useState<Overall>({});
   const requestId = useRef(0);
 
   const runSearch = (q: string) => {
@@ -51,6 +64,11 @@ export default function BrowseScreen() {
         if (requestId.current !== id) return;
         setResults(found);
         setLoading(false);
+        setOverall({});
+        // One read for the whole page; a failure reads as nothing scored (fetchOverall never throws).
+        fetchOverall(SCORING_PROXY_URL, (url, init) => fetch(url, init), found.map((r) => r.catalogId)).then((o) => {
+          if (requestId.current === id) setOverall(o);
+        });
       },
       (e) => {
         if (requestId.current !== id) return;
@@ -121,7 +139,7 @@ export default function BrowseScreen() {
           <FlatList
             data={results ?? []}
             keyExtractor={(r) => r.identifier}
-            renderItem={({ item }) => <ResultRow result={item} />}
+            renderItem={({ item }) => <ResultRow result={item} emotions={item.catalogId ? overall[item.catalogId] : undefined} />}
           />
         )}
       </View>
@@ -129,7 +147,7 @@ export default function BrowseScreen() {
   );
 }
 
-function ResultRow({ result }: { result: LibriVoxSearchResult }) {
+function ResultRow({ result, emotions }: { result: LibriVoxSearchResult; emotions?: EmotionScore[] }) {
   const hue = [...result.identifier].reduce((h, c) => (h * 31 + c.charCodeAt(0)) % 360, 0);
   const initials = result.title
     .split(/\s+/)
@@ -150,6 +168,14 @@ function ResultRow({ result }: { result: LibriVoxSearchResult }) {
       <View style={styles.rowText}>
         <Text style={styles.rowTitle}>{result.title}</Text>
         <Text style={styles.rowCaption}>{browseRowCaption(result.creator, result.runtime)}</Text>
+        {emotions && emotions.length > 0 && (
+          <View style={styles.chips} testID={`browse-scored-${result.identifier}`}>
+            <ScoredChip label={COPY.scored} />
+            {emotions.slice(0, ROW_EMOTIONS).map((e, i) => (
+              <Sticker key={e.emotion} emotion={e.emotion} label={EMOTION_NAMES[e.emotion]} intensity={e.intensity} index={i} />
+            ))}
+          </View>
+        )}
       </View>
     </Pressable>
   );
@@ -196,4 +222,5 @@ const styles = StyleSheet.create({
   rowText: { flex: 1, gap: spacing.xxs },
   rowTitle: { ...typography.body, fontWeight: typography.label.fontWeight },
   rowCaption: typography.caption,
+  chips: { flexDirection: "row", flexWrap: "wrap", alignItems: "center", gap: spacing.sm, paddingTop: spacing.xxs },
 });

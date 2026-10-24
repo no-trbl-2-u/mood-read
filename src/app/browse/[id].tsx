@@ -6,19 +6,26 @@ import { downloadQueue, useDownloads } from "@/lib/downloads";
 import { useLibriVoxBook } from "@/lib/library";
 import { chapterFiles, chapterTitle, getItem, parseLength, readersLine, type LibriVoxItem } from "@/lib/librivox-api";
 import { bookLengthLine } from "@/lib/librivox-labels";
+import { EMOTION_NAMES } from "@/lib/mood-card";
+import { fetchOverall } from "@/lib/overall-api";
+import { SCORING_PROXY_URL } from "@/lib/scoring";
+import type { EmotionScore } from "@/lib/types";
 import { pendingBookFrom, pendingBookIdFor, stashLibriVoxBook } from "@/lib/librivox-download";
 import { useSettings } from "@/lib/settings";
 import { formatBytes } from "@/lib/storage";
 import { newId } from "@/lib/timeline";
 import { Button } from "@/ui/Button";
 import { Cover } from "@/ui/Cover";
+import { ScoredChip } from "@/ui/ScoredChip";
+import { Sticker } from "@/ui/Sticker";
 import { colors, radii, sizes, spacing, strokes, typography } from "@/ui/theme";
 import { TopBar } from "@/ui/TopBar";
 
 // A LibriVox book (spec 05, 05.8; design/layouts/DECISION.md "A LibriVox book"), pushed from Browse: its cover,
 // author, readers, length, and a Download button that enqueues the whole book through the shared download queue
-// (05.6). Moods are out of scope here (05.9/05.10 not built): the mood section always reads unscored, even
-// though "Score this book" does nothing yet. Pause/Resume/Retry reuse src/lib/downloads.ts's own queue and
+// (05.6). The mood section shows a pre-scored book's overall emotions (05.10, A11: "Scored" and at most three, the
+// whole book's, never a chapter's), read once from the proxy by its LibriVox number; otherwise, or if that read
+// fails, it reads unscored. Pause/Resume/Retry reuse src/lib/downloads.ts's own queue and
 // store rather than a second progress UI; "See all downloads" links to the Downloads screen that already draws
 // one.
 const COPY = {
@@ -29,6 +36,8 @@ const COPY = {
   noChapters: "Mood Read could not find this book's chapters. Try another book.",
   moodTitle: "The whole book's mood",
   unscored: "Not scored yet. Once it's on your shelf, “Score this book” reads its mood.",
+  scored: "Scored",
+  surprise: "Chapters stay a surprise until you reach them.",
   download: "Download",
   wifiCaption: "Downloads on Wi-Fi only. Change it in Settings.",
   chaptersTitle: "Chapters",
@@ -49,6 +58,21 @@ export default function BrowseBookScreen() {
   const wifiOnly = useSettings().wifiOnly;
   const shelfBook = useLibriVoxBook(id);
   const download = useDownloads().find((d) => d.target.kind === "book" && d.target.bookId === downloadingId) ?? null;
+  const [overall, setOverall] = useState<{ id: string; emotions: EmotionScore[] } | null>(null);
+  const catalogId = shelfBook?.source.kind === "librivox" ? (shelfBook.source.catalogId ?? null) : (item?.catalogId ?? null);
+
+  // The whole book's mood, once per LibriVox number; nothing (unscored) on any failure.
+  useEffect(() => {
+    if (!catalogId) return;
+    let live = true;
+    fetchOverall(SCORING_PROXY_URL, (url, init) => fetch(url, init), [catalogId]).then((o) => {
+      if (live && o[catalogId]) setOverall({ id: catalogId, emotions: o[catalogId] });
+    });
+    return () => {
+      live = false;
+    };
+  }, [catalogId]);
+  const overallEmotions = overall && overall.id === catalogId ? overall.emotions : null;
 
   // This screen is pushed fresh for each identifier, so one fetch per mount is enough; item/loadError start at
   // their "nothing yet" values already, with no reset to synchronize here. A book already on the shelf needs no
@@ -145,7 +169,19 @@ export default function BrowseBookScreen() {
           <Text style={styles.sectionTitle} role="heading" aria-level={2}>
             {COPY.moodTitle}
           </Text>
-          <Text style={styles.muted}>{COPY.unscored}</Text>
+          {overallEmotions ? (
+            <>
+              <View style={styles.chips} testID="browse-book-scored">
+                <ScoredChip label={COPY.scored} />
+                {overallEmotions.map((e, i) => (
+                  <Sticker key={e.emotion} emotion={e.emotion} label={EMOTION_NAMES[e.emotion]} intensity={e.intensity} index={i} />
+                ))}
+              </View>
+              <Text style={styles.caption}>{COPY.surprise}</Text>
+            </>
+          ) : (
+            <Text style={styles.muted}>{COPY.unscored}</Text>
+          )}
         </View>
 
         {downloadError && (
@@ -257,6 +293,7 @@ const styles = StyleSheet.create({
   author: typography.body,
   caption: typography.caption,
   section: { gap: spacing.sm },
+  chips: { flexDirection: "row", flexWrap: "wrap", alignItems: "center", gap: spacing.sm },
   sectionTitle: { ...typography.label, fontSize: typography.body.fontSize },
   downloadBlock: { gap: spacing.sm },
   downloadCard: {

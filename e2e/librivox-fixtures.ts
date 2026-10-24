@@ -4,6 +4,17 @@
 import type { Page, Route } from "@playwright/test";
 
 export const IDENTIFIER = "windinthewillows_test_librivox";
+/** The fixture book's LibriVox catalog number as a search result carries it (archive.org's `call_number`). */
+export const CATALOG_ID = "5555";
+/** The scoring proxy's placeholder base URL (app.json `expo.extra.scoringProxyUrl`), stubbed here like archive.org. */
+export const PROXY = "https://mood-read-proxy.invalid";
+const CORS = { "access-control-allow-origin": "*" };
+/** The fixture book's overall emotions as the proxy's read-only route answers them (05.10): pre-scored. */
+export const OVERALL = [
+  { emotion: "wonder", intensity: 0.8 },
+  { emotion: "joy", intensity: 0.6 },
+  { emotion: "calm", intensity: 0.3 },
+];
 // A minimal, valid 1x1 PNG: the stored cover is rendered by src/ui/Cover.tsx once the book is on the shelf, so
 // it has to be bytes a browser can actually decode as an image, not arbitrary filler.
 export const COVER_PNG = Buffer.from("iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAQAAAC1HAwCAAAAC0lEQVR42mNk+A8AAQUAAarVyFEAAAAASUVORK5CYII=", "base64");
@@ -33,7 +44,14 @@ export const SEARCH_BODY = {
   response: {
     numFound: 1,
     docs: [
-      { identifier: IDENTIFIER, title: "The Wind in the Willows", creator: "Kenneth Grahame", runtime: "0:08", description: "A classic children's novel." },
+      {
+        identifier: IDENTIFIER,
+        title: "The Wind in the Willows",
+        creator: "Kenneth Grahame",
+        runtime: "0:08",
+        description: "A classic children's novel.",
+        call_number: CATALOG_ID,
+      },
     ],
   },
 };
@@ -65,8 +83,24 @@ function queryFrom(q: string | null): string {
   return q ? (/title:\(([^)]*)\)/.exec(q)?.[1] ?? "") : "";
 }
 
-/** Stubs archive.org's search, one book's metadata, and its chapter/cover downloads; nothing else answers. */
+/**
+ * Stubs the proxy's read-only overall route (05.10): the given LibriVox numbers are pre-scored with OVERALL, any other
+ * is not. Returns the ids lists Browse asked for, one entry per call.
+ */
+export async function stubOverall(page: Page, scored: string[] = [CATALOG_ID]): Promise<string[][]> {
+  const asked: string[][] = [];
+  await page.route(`${PROXY}/v1/overall*`, async (route: Route) => {
+    const ids = (new URL(route.request().url()).searchParams.get("ids") ?? "").split(",");
+    asked.push(ids);
+    const books = Object.fromEntries(ids.filter((id) => scored.includes(id)).map((id) => [id, { emotions: OVERALL }]));
+    return route.fulfill({ status: 200, headers: CORS, json: { books } });
+  });
+  return asked;
+}
+
+/** Stubs archive.org's search, one book's metadata, its chapter/cover downloads, and the proxy's overall read. */
 export async function stubArchiveOrg(page: Page): Promise<void> {
+  await stubOverall(page);
   const audio = wav(4);
   await page.route("https://archive.org/**", async (route: Route) => {
     const url = new URL(route.request().url());
