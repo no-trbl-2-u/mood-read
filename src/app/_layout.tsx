@@ -1,4 +1,3 @@
-import { BricolageGrotesque_800ExtraBold } from "@expo-google-fonts/bricolage-grotesque/800ExtraBold";
 import { useFonts } from "expo-font";
 import { Stack } from "expo-router";
 import { StatusBar } from "expo-status-bar";
@@ -9,10 +8,14 @@ import { colors, fonts } from "@/ui/theme";
 
 // A two-level stack with no tab bar: the library ("Your shelf"), then a book's chapter river, the Import screen or
 // Settings (design/layouts/DECISION.md). Each screen draws its own top bar, so the stack's header is off.
-// The display face (Bricolage Grotesque, OFL) is bundled and loaded here before the first screen draws; if it
-// fails to load, the screens draw in the system font rather than not at all.
+// The display face (Bricolage Grotesque, OFL) is loaded here before the first screen draws; if it fails to load,
+// the screens draw in the system font rather than not at all. The file is a byte-for-byte copy of
+// @expo-google-fonts/bricolage-grotesque's (src/lib/fonts.test.ts) kept in assets/fonts/ with its OFL text, because
+// the web export puts a package's assets under dist/assets/node_modules/, which Cloudflare Pages never uploads.
+const DISPLAY_FACE = require("../../assets/fonts/BricolageGrotesque_800ExtraBold.ttf");
+
 export default function RootLayout() {
-  const [loaded, failed] = useFonts({ [fonts.display]: BricolageGrotesque_800ExtraBold });
+  const [loaded, failed] = useFonts({ [fonts.display]: DISPLAY_FACE });
   if (!loaded && !failed) return <View style={styles.root} />;
   return (
     <PlayerProvider>
