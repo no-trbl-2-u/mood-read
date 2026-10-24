@@ -131,8 +131,6 @@ Decisions made upfront (do not ask):
   app sends no audio.
 - **A11** Browse shows a pre-scored book's overall emotions, never a chapter's, and pre-scoring stays within half of
   the monthly cap.
-- **A12** A Credits screen, reached from the library's overflow menu, credits every catalog piece, soundscape and
-  LibriVox reader as its license asks.
 - **A13** A book in one long file can be split on the device into one file per chapter, keeping its chapters,
   position and bookmarks.
 - **A14** The owner has the rights-checker's verdict on Spotify chapter playlists (Developer Policy III.5 and III.7)
@@ -167,7 +165,7 @@ All answered; none is open.
   and 05.15 wait in the Held lane.
 
 ## Chunks
-Measure: 18 open · 3 closed · next A22
+Measure: 17 open · 4 closed · next A22
 
 - [ ] **05.2** Seed the catalog across every emotion and intensity · L · closes A2 · needs 05.19
   - Sources the 01.13 study ranks, and D7's hand-picked CC-BY / CC-BY-SA tracks; every one through `catalog:add`.
@@ -176,9 +174,6 @@ Measure: 18 open · 3 closed · next A22
 - [ ] **05.4** One button builds and pre-downloads a book's playlist · M · closes A4, A5 · needs 01.10, 05.3
 - [ ] **05.7** Library management: remove a download, keep the book; shared pieces survive deletion · M ·
   closes A7, A8 · needs 05.4
-- [ ] **05.5** Credits, off to the side in the library's overflow menu · S · closes A12 · needs —
-  - One line in `MENU` (`src/ui/OverflowMenu.tsx`, 06.3) adds Credits; Settings' disabled Credits row becomes
-    its link.
 - [ ] **05.9** Score public-domain books from their own text · M · closes A10 · needs —
   - Update the privacy policy (`src/app/privacy.tsx`) for the LibriVox / Gutenberg ids the proxy now receives.
 - [ ] **05.10** Pre-scored books and their moods in Browse · M · closes A11 · needs 05.9
