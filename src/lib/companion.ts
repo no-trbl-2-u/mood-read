@@ -15,6 +15,12 @@
 // chapter in the river, the 30 s skips, the scrubber). With the chapter timer off it holds just short of the
 // chapter's end, the bed looping, until the listener taps on; with it on it runs into the next chapter when this
 // one's length is up, so the bed crossfades there by itself, and stops at the book's end.
+//
+// The bed enters and leaves (07.3): companion mode takes the same ramps as the narration. Its play, and a tap that
+// moves the clock, ramp the bed in from silence over BED_ENTER_MS (src/lib/bed.ts entersNow, enterGain); its pause,
+// like the book's end in either mode, fades the bed out over BED_EXIT_MS before it stops (bedExitMs). Quiet opening
+// and the sleep fade read the companion clock's place as they read the narration's.
+import { BED_EXIT_MS } from "./bed.ts";
 import { chapterAt, clamp, END_SLACK } from "./timeline.ts";
 
 /** expo-audio's InterruptionMode (node_modules/expo-audio/build/Audio.types.d.ts). */
@@ -117,4 +123,22 @@ export function companionRate(c: CompanionClock, now: number, rate: number, book
 /** True when the timer has run the book out: the clock should stop. */
 export function companionFinished(c: CompanionClock, now: number, book: CompanionBook, timer: boolean): boolean {
   return c.playing && timer && companionPosition(c, now, book, timer) >= book.duration;
+}
+
+/**
+ * How long the bed fades out when its clock stops (07.3): over BED_EXIT_MS at the book's end, and on every
+ * companion-mode pause, where the bed is all that plays; a narration pause stops it with the narration, at once.
+ */
+export function bedExitMs(companion: boolean, atBookEnd: boolean): number {
+  return companion || atBookEnd ? BED_EXIT_MS : 0;
+}
+
+/**
+ * Whether the clock runs on into the next chapter by itself (src/lib/bed.ts closingGain): the narration does, and a
+ * companion clock with its chapter timer on; one with the timer off holds at the chapter's end. The last chapter
+ * runs into nothing.
+ */
+export function runsOn(companion: boolean, timer: boolean, lastChapter: boolean): boolean {
+  if (lastChapter) return false;
+  return !companion || timer;
 }

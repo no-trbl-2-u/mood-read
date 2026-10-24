@@ -1,9 +1,10 @@
 import assert from "node:assert/strict";
 import { test } from "node:test";
 
-import { planBed, IDLE_BED, type BedState } from "./bed.ts";
+import { BED_EXIT_MS, entersNow, planBed, IDLE_BED, type BedState } from "./bed.ts";
 import { createClock, type ClockEvent, type ClockState } from "./clock.ts";
 import {
+  bedExitMs,
   COMPANION_HOLD,
   COMPANION_SESSION,
   companionFinished,
@@ -14,6 +15,7 @@ import {
   companionRate,
   NARRATION_SESSION,
   rebase,
+  runsOn,
   sessionFor,
   startCompanion,
 } from "./companion.ts";
@@ -144,4 +146,34 @@ test("A27: a chapter tap in companion mode crosses the bed into that chapter's s
   clock.publish({ bookId: "b", position, playing: true, rate: 1, chapterIndex: chapterAt(BOOK.chapters, position)!.index }, "tick");
   assert.equal(seen.at(-1)!.event, "chapter");
   assert.equal(seen.at(-1)!.commands[0].type, "change");
+});
+
+test("07.3: companion mode's play ramps the bed in and its pause fades it out over BED_EXIT_MS, as at the book's end", () => {
+  const clock = (playing: boolean, position = 10): ClockState => ({ bookId: "b1", position, playing, rate: 1, chapterIndex: 0 });
+  // The bed follows the companion clock: its play is an entry, ramped from silence.
+  assert.equal(entersNow(false, clock(true), "play"), true);
+  // A tap that moves the clock while it plays (a chapter, a skip, the scrubber) enters afresh too.
+  assert.equal(entersNow(true, clock(true, 100), "seek"), true);
+  assert.equal(entersNow(true, clock(true, 11), "tick"), false);
+  // Its pause fades out; a narration pause stops the bed at once; the book's end fades out in both modes.
+  assert.equal(bedExitMs(true, false), BED_EXIT_MS);
+  assert.equal(bedExitMs(false, false), 0);
+  assert.equal(bedExitMs(false, true), BED_EXIT_MS);
+  assert.equal(bedExitMs(true, true), BED_EXIT_MS);
+  const ctx = { chapterStart: 0, soundFor: () => "hum", loopSeconds: () => 4 };
+  const playing: BedState = { soundId: "hum", playing: true };
+  assert.deepEqual(planBed(playing, clock(false), "pause", { ...ctx, exitMs: bedExitMs(true, false) }).commands, [
+    { type: "pause", fadeMs: BED_EXIT_MS },
+  ]);
+  assert.deepEqual(planBed(playing, clock(false), "pause", { ...ctx, exitMs: bedExitMs(false, false) }).commands, [
+    { type: "pause" },
+  ]);
+});
+
+test("07.3: the clock runs on into the next chapter for the narration and a timed companion clock, never past the last", () => {
+  assert.equal(runsOn(false, false, false), true);
+  assert.equal(runsOn(true, true, false), true);
+  assert.equal(runsOn(true, false, false), false);
+  assert.equal(runsOn(false, false, true), false);
+  assert.equal(runsOn(true, true, true), false);
 });

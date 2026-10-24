@@ -6,7 +6,17 @@
 // The narration owns the clock: play, pause, seek and chapter change drive the bed; nothing here reports back.
 // The narration's speed is read only to be ignored: the bed always plays at BED_RATE, never sped up or
 // pitch-shifted (A9).
+//
+// How the bed enters and leaves (07.3, A3, A4): every ramp is a pure function of elapsed ms, multiplied into one
+// enter-exit gain (bedEnvelope) that src/lib/mix.ts bedVolume composes with the level, the crossfade and the duck.
+// The bed ramps in from silence on play, after a pause and after a seek (BED_ENTER_MS); a sleep timer fades it to
+// silence over its last SLEEP_FADE_S (or its whole length; an End of chapter timer over the chapter's last 60 s);
+// with quiet opening on it holds silent for the first OPENING_HOLD_S of every chapter, then ramps in, and fades out
+// over the last BED_ENTER_MS before a boundary the clock runs across, so the hold starts silent rather than cut; and
+// at the book's end (and on a companion-mode pause, src/lib/companion.ts) it fades out over BED_EXIT_MS while the
+// engine plays it on, instead of stopping with the narration.
 import type { ClockEvent, ClockState } from "./clock.ts";
+import type { SleepTimer } from "./types.ts";
 import { SOUNDSCAPE_OFF } from "./settings-store.ts";
 import { DEFAULT_SOUNDSCAPE_ID } from "./soundscapes.ts";
 
@@ -14,6 +24,14 @@ import { DEFAULT_SOUNDSCAPE_ID } from "./soundscapes.ts";
 export const BED_RATE = 1;
 /** How long a chapter-boundary crossfade takes (ms). */
 export const CROSSFADE_MS = 2000;
+/** How long the bed takes to ramp in from silence: on play, after a pause or a seek, and after the opening hold (ms). */
+export const BED_ENTER_MS = 1500;
+/** A sleep timer fades the bed out over its last this many seconds (a shorter timer over its whole length). */
+export const SLEEP_FADE_S = 60;
+/** Quiet opening: the bed holds silent for the first this many seconds of every chapter. */
+export const OPENING_HOLD_S = 20;
+/** At the book's end (and a companion-mode pause) the bed fades out over this long instead of stopping (ms). */
+export const BED_EXIT_MS = 4000;
 
 /** What the bed carries: a soundscape (v1), the chapter's piece (01.10, plays nothing yet) or nothing. */
 export type BedLayer = "soundscape" | "music" | "off";
@@ -159,6 +177,114 @@ function round(n: number): number {
   return Math.round(n * 1e6) / 1e6;
 }
 
+// ---- The bed enters and leaves (07.3, A3, A4) ---------------------------------------------------------------
+
+/** An equal-power ramp up: 0 at `elapsedMs` 0, 1 once `durationMs` has passed (the crossfade's incoming curve). */
+export function rampIn(elapsedMs: number, durationMs: number): number {
+  return crossfadeGains(Number.isFinite(elapsedMs) ? elapsedMs : 0, durationMs).in;
+}
+
+/** An equal-power ramp down: 1 at `elapsedMs` 0, 0 once `durationMs` has passed. */
+export function rampOut(elapsedMs: number, durationMs: number): number {
+  return crossfadeGains(Number.isFinite(elapsedMs) ? elapsedMs : 0, durationMs).out;
+}
+
+/** The enter ramp, `sinceEnterMs` after a play, a resume or a seek; null (no entry under way) is full. */
+export function enterGain(sinceEnterMs: number | null): number {
+  return sinceEnterMs === null ? 1 : rampIn(sinceEnterMs, BED_ENTER_MS);
+}
+
+/**
+ * Quiet opening (A4): silent for the first OPENING_HOLD_S of the chapter, then the enter ramp. Off, always full.
+ * Read from the place in the chapter, so a seek past the hold skips it and a seek back to the start brings it back.
+ */
+export function openingGain(intoChapterMs: number, quietOpening: boolean): number {
+  if (!quietOpening) return 1;
+  return rampIn(intoChapterMs - OPENING_HOLD_S * 1000, BED_ENTER_MS);
+}
+
+/**
+ * Before a boundary the clock runs across into a held opening, the bed fades out over the chapter's last
+ * BED_ENTER_MS, so the next chapter's hold begins silent instead of cutting the bed off. Full when quiet opening
+ * is off or the clock does not run on by itself (the book's last chapter, where BED_EXIT_MS takes over; a
+ * companion clock with its chapter timer off, which holds at the chapter's end with the bed looping).
+ */
+export function closingGain(chapterLeftMs: number, quietOpening: boolean, runsOn: boolean): number {
+  if (!quietOpening || !runsOn) return 1;
+  return rampIn(chapterLeftMs, BED_ENTER_MS);
+}
+
+/** A sleep timer's fade: ms left until it fires, and the fade's length. */
+export type SleepFade = { leftMs: number; fadeMs: number };
+
+type ChapterSpan = { index: number; start: number; end: number };
+
+/**
+ * The fade a sleep timer puts on the bed (A3): a minutes timer over its last SLEEP_FADE_S of wall clock, or its
+ * whole length when shorter; an End of chapter timer over the chapter's last SLEEP_FADE_S of book time, or the
+ * whole chapter when shorter. Null with no timer.
+ */
+export function sleepFade(
+  timer: SleepTimer | null,
+  now: number,
+  position: number,
+  chapters: readonly ChapterSpan[],
+): SleepFade | null {
+  if (!timer) return null;
+  if (timer.kind === "minutes") {
+    return { leftMs: timer.endsAt - now, fadeMs: Math.min(SLEEP_FADE_S, Math.max(0, timer.minutes) * 60) * 1000 };
+  }
+  const chapter = chapters.find((c) => c.index === timer.chapterIndex);
+  const length = chapter ? chapter.end - chapter.start : SLEEP_FADE_S;
+  return { leftMs: (timer.end - position) * 1000, fadeMs: Math.min(SLEEP_FADE_S, Math.max(0, length)) * 1000 };
+}
+
+/** The sleep timer's gain: full until its fade begins, then down to silence as it fires. No timer, full. */
+export function sleepGain(fade: SleepFade | null): number {
+  if (!fade) return 1;
+  if (!(fade.leftMs > 0)) return 0;
+  return rampOut(fade.fadeMs - fade.leftMs, fade.fadeMs);
+}
+
+/** The exit ramp at the book's end (and a companion-mode pause), `sinceExitMs` after the clock stopped. */
+export function exitGain(sinceExitMs: number, durationMs: number = BED_EXIT_MS): number {
+  return rampOut(sinceExitMs, durationMs);
+}
+
+/** What the enter-exit gain is read from, sampled by the engine while the bed plays. */
+export type EnvelopeInput = {
+  /** Ms since the bed last entered (play, resume, seek), or null. */
+  sinceEnterMs: number | null;
+  /** Ms of book time into the playing chapter, and left in it. */
+  intoChapterMs: number;
+  chapterLeftMs: number;
+  /** The book's quiet opening (Mix.quietOpening). */
+  quietOpening: boolean;
+  /** The clock runs on into the next chapter by itself (see closingGain). */
+  runsOn: boolean;
+  sleep: SleepFade | null;
+};
+
+/** The bed's enter-exit gain: the enter ramp, the quiet opening and its closing fade, and the sleep fade, multiplied. */
+export function bedEnvelope(i: EnvelopeInput): number {
+  return round(
+    enterGain(i.sinceEnterMs) *
+      openingGain(i.intoChapterMs, i.quietOpening) *
+      closingGain(i.chapterLeftMs, i.quietOpening, i.runsOn) *
+      sleepGain(i.sleep),
+  );
+}
+
+/**
+ * True when the bed enters afresh, its ramp starting from silence: the clock starts playing (a cold start, a
+ * resume after a pause), or it seeks or loads while playing. A tick, a chapter crossed by playing on, a speed
+ * change or a layer pick never restarts it.
+ */
+export function entersNow(wasPlaying: boolean, clock: ClockState, event: ClockEvent): boolean {
+  if (!clock.playing || !clock.bookId) return false;
+  return !wasPlaying || event === "seek" || event === "load";
+}
+
 /** What the bed is doing now. */
 export type BedState = { soundId: string | null; playing: boolean };
 
@@ -172,7 +298,8 @@ export type BedCommand =
   | { type: "change"; to: string | null; offset: number; play: boolean; fade: boolean }
   | { type: "seek"; offset: number }
   | { type: "play" }
-  | { type: "pause" };
+  /** `fadeMs` (07.3): fade the bed out over this long, playing on, before it stops; absent, stop at once. */
+  | { type: "pause"; fadeMs?: number };
 
 export type BedContext = {
   /** The start (book seconds) of the chapter the clock is in. */
@@ -181,6 +308,8 @@ export type BedContext = {
   soundFor: (chapterIndex: number | null) => string | null;
   /** A sound's loop length in seconds. */
   loopSeconds: (soundId: string) => number;
+  /** How long the bed fades out when the clock stops here (src/lib/companion.ts bedExitMs); 0 or absent, at once. */
+  exitMs?: number;
 };
 
 /**
@@ -206,6 +335,9 @@ export function planBed(
 
   const commands: BedCommand[] = [];
   if (soundId !== null && (event === "seek" || event === "load")) commands.push({ type: "seek", offset });
-  if (playing !== prev.playing) commands.push({ type: playing ? "play" : "pause" });
+  if (playing !== prev.playing) {
+    const fadeMs = ctx.exitMs ?? 0;
+    commands.push(playing ? { type: "play" } : fadeMs > 0 ? { type: "pause", fadeMs } : { type: "pause" });
+  }
   return { state, commands };
 }

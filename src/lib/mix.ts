@@ -18,16 +18,21 @@ export type Mix = BedSetting & {
   master: number;
   /** Dip the bed while the narrator speaks (A11). */
   duck: boolean;
+  /**
+   * Quiet opening (07.3, A4): hold the bed silent for the first 20 s of every chapter so the narrator's chapter
+   * title lands clean, then ramp it in (src/lib/bed.ts openingGain). On by default; a mix saved before it reads on.
+   */
+  quietOpening: boolean;
 };
 
 /** The part of a Mix that sets the two layers' volumes. */
 export type MixLevels = Pick<Mix, "balance" | "master" | "duck">;
 
 /**
- * The bed sits under the narration at 60% until the listener moves the balance; master full; duck off (opt-in); Night
- * Wind under every chapter.
+ * The bed sits under the narration at 60% until the listener moves the balance; master full; duck off (opt-in); quiet
+ * opening on; Night Wind under every chapter.
  */
-export const DEFAULT_MIX: Mix = { balance: -0.4, master: 1, duck: false, ...DEFAULT_BED };
+export const DEFAULT_MIX: Mix = { balance: -0.4, master: 1, duck: false, quietOpening: true, ...DEFAULT_BED };
 
 /** One step of the balance and master sliders (keyboard and screen-reader increments). */
 export const MIX_STEP = 0.1;
@@ -47,6 +52,7 @@ export function normalizeMix(raw: unknown, fallbackBed?: BedChoice): Mix {
     balance: num(r.balance, DEFAULT_MIX.balance, -1, 1),
     master: num(r.master, DEFAULT_MIX.master, 0, 1),
     duck: typeof r.duck === "boolean" ? r.duck : DEFAULT_MIX.duck,
+    quietOpening: typeof r.quietOpening === "boolean" ? r.quietOpening : DEFAULT_MIX.quietOpening,
     ...normalizeBed(raw, fallbackBed),
   };
 }
@@ -62,9 +68,12 @@ export function mixLevels(mix: MixLevels): { narration: number; bed: number } {
   return { narration: round(narration * m.master), bed: round(bed * m.master) };
 }
 
-/** A bed deck's volume: the mix's bed level, times its crossfade gain, times the duck's gain. */
-export function bedVolume(level: number, crossfadeGain: number, duckGain: number = 1): number {
-  const v = clamp(level, 0, 1) * clamp(crossfadeGain, 0, 1) * clamp(duckGain, 0, 1);
+/**
+ * A bed deck's volume, one multiplied chain: the mix's bed level, times its crossfade gain, times the duck's gain,
+ * times the enter-exit gain (07.3: the enter, opening, sleep and exit ramps, src/lib/bed.ts bedEnvelope).
+ */
+export function bedVolume(level: number, crossfadeGain: number, duckGain: number = 1, enterExit: number = 1): number {
+  const v = clamp(level, 0, 1) * clamp(crossfadeGain, 0, 1) * clamp(duckGain, 0, 1) * clamp(enterExit, 0, 1);
   return Math.round(v * 1e6) / 1e6;
 }
 

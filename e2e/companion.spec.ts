@@ -3,7 +3,8 @@
 // chapter (crossfading), the chapter timer moves it on by the book's lengths, and turning companion mode off brings
 // back the narration with its Media Session (A4). The web has no OS audio session, so "mixes with the other app" is
 // the device check's; here it is the bed only, claiming nothing. Audio elements are read directly, as in
-// e2e/player.spec.ts: the bed's are the looping ones.
+// e2e/player.spec.ts: the bed's are the looping ones. Quiet opening (07.3) is turned off for the book, so the bed is
+// heard from a chapter's start; its play ramps the bed in and its pause fades it out over 4 s (07.3).
 import { expect, test, type Page } from "@playwright/test";
 
 import { guard } from "./guard";
@@ -157,6 +158,12 @@ async function importBook(page: Page) {
   await expectChapter(page, 0);
 }
 
+/** Quiet opening off for the open book (07.3): the bed enters at a chapter's start instead of holding 20 s. */
+async function quietOpeningOff(page: Page) {
+  await page.getByTestId("mix-quiet-off").click();
+  await expect(page.getByTestId("mix-quiet-off")).toHaveAttribute("aria-pressed", "true");
+}
+
 async function backToShelf(page: Page) {
   await page.getByRole("button", { name: "Back to your shelf" }).click();
   await expect(page.getByRole("heading", { name: "Your shelf" })).toBeVisible();
@@ -184,6 +191,7 @@ test.describe("companion mode", () => {
     await page.goto("/");
     await setCompanion(page, true);
     await importBook(page);
+    await quietOpeningOff(page);
     await expect(page.getByTestId("companion-band")).toContainText("no narration");
 
     // Play: the bed alone, no narration element playing, no Media Session claimed.
@@ -218,8 +226,12 @@ test.describe("companion mode", () => {
     await expect.poll(() => bedPlaying(page), { timeout: 15_000 }).toBe("tide");
     expect(await narrationPlaying(page)).toBe(false);
     expect(await mediaSession(page)).toEqual({ actions: [], title: null });
+    // 07.3: the pause fades the bed out over 4 s, still playing at part volume, and then stops it.
     await page.getByTestId("mini-play-pause").click();
-    await expect.poll(async () => (await bedDecks(page)).every((d) => d.paused)).toBe(true);
+    await expect
+      .poll(async () => (await bedDecks(page)).some((d) => !d.paused && d.volume > 0 && d.volume < BED_DEFAULT))
+      .toBe(true);
+    await expect.poll(async () => (await bedDecks(page)).every((d) => d.paused), { timeout: 10_000 }).toBe(true);
 
     // Off: the narration plays again, with its Media Session handlers and title (A4).
     await backToShelf(page);
@@ -241,6 +253,7 @@ test.describe("companion mode", () => {
   }) => {
     await page.goto("/");
     await importBook(page);
+    await quietOpeningOff(page);
     await page.getByTestId("mini-play-pause").click();
     await expect.poll(() => narrationPlaying(page)).toBe(true);
     expect((await mediaSession(page)).actions).toEqual(expect.arrayContaining(["pause", "play"]));

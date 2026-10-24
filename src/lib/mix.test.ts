@@ -21,8 +21,8 @@ import {
   VOICE_THRESHOLD,
 } from "./mix.ts";
 
-test("the default mix: the bed under the narration at 60%, master full, duck off", () => {
-  assert.deepEqual(DEFAULT_MIX, { balance: -0.4, master: 1, duck: false, ...DEFAULT_BED });
+test("the default mix: the bed under the narration at 60%, master full, duck off, quiet opening on", () => {
+  assert.deepEqual(DEFAULT_MIX, { balance: -0.4, master: 1, duck: false, quietOpening: true, ...DEFAULT_BED });
   assert.deepEqual(mixLevels(DEFAULT_MIX), { narration: 1, bed: 0.6 });
 });
 
@@ -32,6 +32,16 @@ test("a stored mix is normalized: broken or missing fields take the default, num
   assert.deepEqual(normalizeMix({ balance: 5, master: -2, duck: true }), { ...DEFAULT_MIX, balance: 1, master: 0, duck: true });
   assert.deepEqual(normalizeMix({ balance: Number.NaN, master: "1", duck: "yes" }), DEFAULT_MIX);
   assert.deepEqual(normalizeMix({ balance: 0.12345, master: 0.98765 }), { ...DEFAULT_MIX, balance: 0.123, master: 0.988 });
+});
+
+test("A4: quiet opening is on by default; a mix saved before it existed reads on; off is kept", () => {
+  assert.equal(DEFAULT_MIX.quietOpening, true);
+  // A mix saved before 07.3 has no quietOpening field.
+  const old = { balance: -0.2, master: 0.8, duck: true, layer: "soundscape", soundscapeId: "rain" };
+  assert.equal(normalizeMix(old).quietOpening, true);
+  assert.equal(normalizeMix({ quietOpening: "no" }).quietOpening, true);
+  assert.equal(normalizeMix({ quietOpening: false }).quietOpening, false);
+  assert.equal(normalizeMix(normalizeMix({ quietOpening: false })).quietOpening, false);
 });
 
 test("A10: the balance turns one side down and master scales both", () => {
@@ -53,6 +63,16 @@ test("a bed deck's volume composes the bed level with the crossfade and the duck
   assert.equal(bedVolume(0.5, mid.in), Math.round(0.5 * mid.in * 1e6) / 1e6);
   assert.equal(bedVolume(2, 2, 2), 1);
   assert.equal(bedVolume(-1, 1, 1), 0);
+});
+
+test("A3: the enter-exit gain is the fourth factor of one multiplied chain", () => {
+  // Absent, it is full: every caller before 07.3 reads the same.
+  assert.equal(bedVolume(0.6, 1, 1), bedVolume(0.6, 1, 1, 1));
+  assert.equal(bedVolume(0.6, 1, 1, 0), 0);
+  assert.equal(bedVolume(0.6, 1, 1, 0.5), 0.3);
+  assert.equal(bedVolume(0.8, 0.5, 0.5, 0.5), 0.1);
+  assert.equal(bedVolume(1, 1, 1, 2), 1);
+  assert.equal(bedVolume(1, 1, 1, -1), 0);
 });
 
 test("the sliders read as words", () => {

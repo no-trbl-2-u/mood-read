@@ -160,6 +160,12 @@ async function importBook(page: Page) {
   await expectChapter(page, 0);
 }
 
+/** Quiet opening off for the open book (07.3): the bed enters at a chapter's start instead of holding 20 s. */
+async function quietOpeningOff(page: Page) {
+  await page.getByTestId("mix-quiet-off").click();
+  await expect(page.getByTestId("mix-quiet-off")).toHaveAttribute("aria-pressed", "true");
+}
+
 async function pause(page: Page) {
   if (!(await narration(page)).paused) await page.getByTestId("mini-play-pause").click();
   await expect.poll(async () => (await narration(page)).paused).toBe(true);
@@ -385,6 +391,7 @@ test.describe("the player", () => {
     page,
   }) => {
     await importBook(page);
+    await quietOpeningOff(page);
     // A new book plays Night Wind under every chapter; the playing row's Layer line names it.
     await expect(page.getByTestId("chapter-row-0").getByTestId("layer-line")).toContainText("Layer");
     await expect(page.getByTestId("chapter-row-0").getByTestId("layer-sound")).toHaveText("Night Wind");
@@ -413,7 +420,10 @@ test.describe("the player", () => {
     await pause(page);
     await expect.poll(async () => (await bedDecks(page)).every((d) => d.paused)).toBe(true);
 
-    // A seek moves the bed within its 24 s loop: 30 s into the chapter is 6 s into the loop.
+    // A seek moves the bed within its 24 s loop: 30 s into the chapter is 6 s into the loop. (Back to the start
+    // first: the bed's 1.5 s entry, 07.3, let the narration run on past 0.)
+    await page.getByTestId("mini-back-30").click();
+    await expectTime(page, 0);
     await page.getByTestId("mini-fwd-30").click();
     await expectTime(page, 30);
     await expect
@@ -470,6 +480,7 @@ test.describe("the player", () => {
     page,
   }) => {
     await importBook(page);
+    await quietOpeningOff(page);
     const row = page.getByTestId("chapter-row-0");
     // Inline in the playing row, with the Layer chips; nothing opens a sheet.
     for (const id of ["mixer", "mix-balance", "mix-master", "mix-duck-on", "mix-duck-off", "layer-line"]) {
@@ -526,6 +537,7 @@ test.describe("the player", () => {
     page,
   }) => {
     await importBook(page);
+    await quietOpeningOff(page);
     await page.getByTestId("mix-duck-on").click();
     await expect(page.getByTestId("mix-duck-on")).toHaveAttribute("aria-pressed", "true");
     // Paused, nothing is heard: the layer is level.
@@ -533,6 +545,8 @@ test.describe("the player", () => {
     // The test narration is a steady tone, a narrator who never pauses: the layer dips under it.
     await page.getByTestId("mini-play-pause").click();
     await expect.poll(async () => (await narration(page)).paused).toBe(false);
+    // Past the bed's 1.5 s entry from silence (07.3), so the dip read is the duck's.
+    await expect.poll(async () => (await narration(page)).currentTime).toBeGreaterThan(2);
     await expect.poll(() => bedVolume(page, "night-wind"), { timeout: 5_000 }).toBeLessThan(BED_DEFAULT * 0.5);
     expect(await bedVolume(page, "night-wind")).toBeGreaterThan(0);
     // Duck off: straight back to the mix's level.
@@ -545,6 +559,7 @@ test.describe("the player", () => {
     page,
   }) => {
     await importBook(page);
+    await quietOpeningOff(page);
     const row0 = page.getByTestId("chapter-row-0");
     // Inline in the playing row with the mixer: Off and the six, Night Wind on for a new book.
     const names = ["Off", "Rain", "Hearth Fire", "Night Wind", "Tide", "Static Hush", "Low Café"];
@@ -601,4 +616,139 @@ test.describe("the player", () => {
     await expect.poll(() => bedPlaying(page), { timeout: 10_000 }).toBe("hearth-fire");
     await pause(page);
   });
+
+  test("A3, A4: quiet opening holds the bed 20 s into every chapter then ramps it in; a seek ramps it from silence; the book's end and a sleep timer fade it out", async ({
+    page,
+  }) => {
+    test.setTimeout(120_000);
+    await importBook(page);
+    // On by default, in the mixer beside duck.
+    await expect(page.getByTestId("mix-quiet-on")).toHaveAttribute("aria-pressed", "true");
+    // At 3x the 20 s hold passes in under 7 s; the bed stays at 1x and its ramps run on the wall clock.
+    await page.getByTestId("open-speed-sleep").click();
+    await page.getByTestId("speed-3").click();
+    await page.getByTestId("sheet-done").click();
+
+    // A4: from Ch.1's start the bed plays silent through the hold, ramps in past 20 s, then holds the mix's level.
+    let rec = recordGain(page, { untilTime: 26 });
+    await page.getByTestId("mini-play-pause").click();
+    let samples = await rec;
+    const hold = samples.filter((s) => s.time > 0.5 && s.time < 19.5);
+    expect(hold.length).toBeGreaterThan(10);
+    expect(hold.every((s) => s.bedPlaying && s.volume === 0)).toBe(true);
+    expect(samples.some((s) => s.time > 20 && s.time < 22 && s.volume > 0 && s.volume < BED_DEFAULT)).toBe(true);
+    const after = samples.filter((s) => s.time > 23);
+    expect(after.length).toBeGreaterThan(0);
+    expect(after.every((s) => Math.abs(s.volume - BED_DEFAULT) < 1e-6)).toBe(true);
+    await pause(page);
+
+    // Every chapter holds: a jump to Ch.2's start is silent again.
+    await page.getByTestId("chapter-1").click();
+    await expectChapter(page, 1);
+    await expect.poll(async () => (await narration(page)).currentTime).toBeGreaterThan(1);
+    expect(await bedLevel(page)).toEqual({ playing: true, volume: 0 });
+
+    // A4, A3: a seek past the hold skips it, the bed ramping in from silence; at the book's end (10 s on at 3x) it
+    // plays on after the narration stops, fading out, and then stops.
+    rec = recordGain(page, { untilBedPaused: true, maxMs: 15_000 });
+    await page.getByTestId("mini-fwd-30").click();
+    samples = await rec;
+    const ramp = samples.findIndex((s) => s.time > 30 && s.volume > 0 && s.volume < BED_DEFAULT);
+    const full = samples.findIndex((s) => Math.abs(s.volume - BED_DEFAULT) < 1e-6);
+    expect(ramp).toBeGreaterThanOrEqual(0);
+    expect(full).toBeGreaterThan(ramp);
+    const tail = samples.filter((s) => s.narrationPaused && s.bedPlaying);
+    expect(tail.some((s) => s.volume > 0 && s.volume < BED_DEFAULT)).toBe(true);
+    expect(samples.at(-1)!.bedPlaying).toBe(false);
+
+    // A seek back to the chapter's start brings the hold back.
+    await page.getByTestId("chapter-1").click();
+    await expect.poll(async () => (await narration(page)).currentTime).toBeGreaterThan(1);
+    expect(await bedLevel(page)).toEqual({ playing: true, volume: 0 });
+    await pause(page);
+
+    // A4: off, the bed enters at once, ramped over 1.5 s, long before 20 s.
+    await page.getByTestId("chapter-row-1").getByTestId("mix-quiet-off").click();
+    await expect(page.getByTestId("mix-quiet-off")).toHaveAttribute("aria-pressed", "true");
+    rec = recordGain(page, { untilTime: 10 });
+    await page.getByTestId("chapter-1").click();
+    samples = await rec;
+    expect(samples.some((s) => s.time < 8 && s.volume > 0 && s.volume < BED_DEFAULT)).toBe(true);
+    expect(samples.some((s) => s.time < 8 && Math.abs(s.volume - BED_DEFAULT) < 1e-6)).toBe(true);
+    await pause(page);
+
+    // A3: an End of chapter timer on the 35 s Ch.1 fades the bed over the whole chapter (shorter than 60 s), and
+    // the narration stops with the bed already silent.
+    await page.getByTestId("chapter-0").click();
+    await expectChapter(page, 0);
+    // The jump loads Ch.1's file and plays it; pause once it does.
+    await expect.poll(async () => (await narration(page)).currentTime).toBeGreaterThan(0.5);
+    await pause(page);
+    await page.getByTestId("open-speed-sleep").click();
+    await page.getByTestId("sleep-chapter").click();
+    await page.getByTestId("sheet-done").click();
+    await page.getByTestId("mini-back-30").click();
+    await expectTime(page, 0);
+    await page.getByTestId("mini-fwd-30").click();
+    await expectTime(page, 30);
+    rec = recordGain(page, { untilBedPaused: true, maxMs: 15_000 });
+    await page.getByTestId("mini-play-pause").click();
+    samples = await rec;
+    const fading = samples.filter((s) => s.bedPlaying && s.time > 31 && !s.narrationPaused);
+    expect(fading.length).toBeGreaterThan(0);
+    expect(fading.every((s) => s.volume < BED_DEFAULT * 0.3)).toBe(true);
+    const lastHeard = samples.filter((s) => s.bedPlaying).at(-1)!;
+    expect(lastHeard.volume).toBeLessThan(0.02);
+    await expectChapter(page, 1);
+    await expect(page.getByTestId("mini-play-pause")).toHaveAttribute("aria-label", "Play");
+  });
 });
+
+type GainSample = { time: number; narrationPaused: boolean; bedPlaying: boolean; volume: number };
+
+/**
+ * The bed's gain readout over time (07.3): every 40 ms, the newest narration element's time and play state, and the
+ * loudest playing bed deck's volume (0 with none playing). Stops once the narration reaches `untilTime` seconds into
+ * its file, once every bed deck has stopped, or after `maxMs`.
+ */
+function recordGain(
+  page: Page,
+  opts: { untilTime?: number; untilBedPaused?: boolean; maxMs?: number },
+): Promise<GainSample[]> {
+  return page.evaluate(
+    ({ untilTime, untilBedPaused, maxMs }) =>
+      new Promise<GainSample[]>((resolve) => {
+        const out: GainSample[] = [];
+        const started = Date.now();
+        let heard = false;
+        const t = setInterval(() => {
+          const all = (window as unknown as { __audios: HTMLAudioElement[] }).__audios.filter((a) => a.ontimeupdate);
+          const narr = all.filter((a) => !a.loop).at(-1);
+          const live = all.filter((a) => a.loop && !a.paused);
+          const sample = {
+            time: narr?.currentTime ?? -1,
+            narrationPaused: narr?.paused ?? true,
+            bedPlaying: live.length > 0,
+            volume: live.reduce((v, a) => Math.max(v, a.volume), 0),
+          };
+          out.push(sample);
+          heard ||= sample.bedPlaying;
+          const done =
+            (untilTime !== undefined && sample.time >= untilTime) ||
+            (untilBedPaused && heard && !sample.bedPlaying) ||
+            Date.now() - started > (maxMs ?? 20_000);
+          if (done) {
+            clearInterval(t);
+            resolve(out);
+          }
+        }, 40);
+      }),
+    opts,
+  );
+}
+
+/** Whether the bed plays now, and the loudest playing deck's volume. */
+async function bedLevel(page: Page): Promise<{ playing: boolean; volume: number }> {
+  const live = (await bedDecks(page)).filter((d) => !d.paused);
+  return { playing: live.length > 0, volume: live.reduce((v, d) => Math.max(v, d.volume), 0) };
+}

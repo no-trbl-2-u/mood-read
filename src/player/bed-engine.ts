@@ -2,9 +2,14 @@
 // out src/lib/bed.ts's commands and decides nothing itself. Its rate is always BED_RATE: the narration's speed never
 // reaches it (A9). Each deck's volume is its crossfade gain times the level the mixer sets (01.5: the bed's share of
 // balance and master, times the duck), composed by src/lib/mix.ts.
+//
+// The enter-exit gain (07.3): while the bed plays, the engine samples the envelope it is given (src/lib/bed.ts
+// bedEnvelope: the enter ramp, the quiet opening, the sleep fade) every FADE_STEP_MS and multiplies it into every
+// deck, so a ramp moves smoothly between the clock's ticks. A pause with a fade (the book's end, a companion-mode
+// pause) plays the bed on under the exit ramp (exitGain) and stops it once silent.
 import { createAudioPlayer, type AudioPlayer, type AudioSource } from "expo-audio";
 
-import { BED_RATE, crossfadeGains, CROSSFADE_MS, type BedCommand } from "@/lib/bed";
+import { BED_RATE, crossfadeGains, CROSSFADE_MS, exitGain, type BedCommand } from "@/lib/bed";
 import { bedVolume } from "@/lib/mix";
 
 const FADE_STEP_MS = 50;
@@ -14,8 +19,10 @@ type Fade = { from: AudioPlayer; to: AudioPlayer | null; started: number; timer:
 
 export type BedEngine = {
   apply: (command: BedCommand) => void;
-  /** The mixer's level for the bed (0 to 1): its share of balance and master, times the duck. */
-  setLevel: (level: number) => void;
+  /** The mixer's level for the bed (0 to 1): its share of balance and master; and the duck's gain. */
+  setLevel: (level: number, duck?: number) => void;
+  /** Where the enter-exit gain is read from while the bed plays (src/lib/bed.ts bedEnvelope). */
+  setEnvelope: (read: () => number) => void;
   dispose: () => void;
 };
 
@@ -24,12 +31,18 @@ export function createBedEngine(source: (soundId: string) => AudioSource | undef
     createAudioPlayer(null, { updateInterval: 1000 }),
     createAudioPlayer(null, { updateInterval: 1000 }),
   ];
-  // Each deck's crossfade gain; its volume is that times the mixer's level.
+  // Each deck's crossfade gain; its volume is that times the mixer's level, the duck and the enter-exit gain.
   const gains = new Map<AudioPlayer, number>(decks.map((d) => [d, 1]));
   let level = 1;
+  let duck = 1;
+  let envelope = 1;
+  let exit = 1;
+  let readEnvelope: () => number = () => 1;
+  const volumeOf = (deck: AudioPlayer) => bedVolume(level, gains.get(deck) ?? 1, duck, envelope * exit);
+  const applyVolumes = () => decks.forEach((d) => (d.volume = volumeOf(d)));
   const setGain = (deck: AudioPlayer, gain: number) => {
     gains.set(deck, gain);
-    deck.volume = bedVolume(level, gain);
+    deck.volume = volumeOf(deck);
   };
   let active = 0;
   let fade: Fade | null = null;
@@ -37,6 +50,38 @@ export function createBedEngine(source: (soundId: string) => AudioSource | undef
   let loading = 0;
   let wantPlay = false;
   let wantOffset = 0;
+
+  // The envelope's sampler, running while the bed plays or fades out.
+  let ticker: ReturnType<typeof setInterval> | null = null;
+  let exiting: { started: number; fadeMs: number } | null = null;
+  const sample = () => {
+    const before = envelope * exit;
+    envelope = readEnvelope();
+    if (exiting) exit = exitGain(Date.now() - exiting.started, exiting.fadeMs);
+    // Held steady (the most of a listen), nothing is written: each write crosses to the native player.
+    if (envelope * exit !== before) applyVolumes();
+    if (exiting && exit <= 0) finishExit();
+    else if (!wantPlay && !exiting) stopTicker();
+  };
+  const startTicker = () => {
+    sample();
+    if (!ticker && (wantPlay || exiting)) ticker = setInterval(sample, FADE_STEP_MS);
+  };
+  const stopTicker = () => {
+    if (ticker) clearInterval(ticker);
+    ticker = null;
+  };
+  // The exit ramp done (or cut short by a change): the bed stops, and the next entry starts from its own ramp.
+  const finishExit = () => {
+    if (!exiting) return;
+    exiting = null;
+    exit = 1;
+    if (!wantPlay) {
+      decks.forEach((d) => d.pause());
+      stopTicker();
+    }
+    applyVolumes();
+  };
 
   const finishFade = () => {
     if (!fade) return;
@@ -59,10 +104,12 @@ export function createBedEngine(source: (soundId: string) => AudioSource | undef
   };
 
   const change = (to: string | null, offset: number, play: boolean, withFade: boolean) => {
+    finishExit();
     finishFade();
     const out = decks[active];
     wantPlay = play;
     wantOffset = offset;
+    if (play) startTicker();
     const src = to ? source(to) : undefined;
     if (!src) {
       loading = 0;
@@ -117,21 +164,40 @@ export function createBedEngine(source: (soundId: string) => AudioSource | undef
           return;
         case "play":
           wantPlay = true;
+          exiting = null;
+          exit = 1;
+          startTicker();
           if (!loading) decks[active].play();
           return;
         case "pause":
           wantPlay = false;
           finishFade();
+          if (command.fadeMs && command.fadeMs > 0 && !loading && decks[active].playing) {
+            // Play on under the exit ramp; the sampler stops the bed once it is silent.
+            decks.forEach((d) => d !== decks[active] && d.pause());
+            exiting = { started: Date.now(), fadeMs: command.fadeMs };
+            startTicker();
+            return;
+          }
+          exiting = null;
+          exit = 1;
           decks.forEach((d) => d.pause());
           return;
       }
     },
-    setLevel(next) {
-      if (next === level) return;
+    setLevel(next, nextDuck = 1) {
+      if (next === level && nextDuck === duck) return;
       level = next;
-      decks.forEach((d) => (d.volume = bedVolume(level, gains.get(d) ?? 1)));
+      duck = nextDuck;
+      applyVolumes();
+    },
+    setEnvelope(read) {
+      readEnvelope = read;
+      if (wantPlay) sample();
     },
     dispose() {
+      stopTicker();
+      exiting = null;
       finishFade();
       loading = 0;
       decks.forEach((d) => d.remove());

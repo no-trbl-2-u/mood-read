@@ -2,7 +2,22 @@ import assert from "node:assert/strict";
 import { test } from "node:test";
 
 import {
+  BED_ENTER_MS,
+  BED_EXIT_MS,
+  bedEnvelope,
   BED_RATE,
+  closingGain,
+  enterGain,
+  entersNow,
+  exitGain,
+  OPENING_HOLD_S,
+  openingGain,
+  rampIn,
+  rampOut,
+  SLEEP_FADE_S,
+  sleepFade,
+  sleepGain,
+  type EnvelopeInput,
   bedOffset,
   bedSoundFor,
   crossfadeGains,
@@ -272,4 +287,150 @@ test("the bed follows a real clock and never publishes to it", () => {
   clock.publish(at(100.1, { rate: 2, playing: false }), "pause");
   assert.deepEqual(log, ["change:hum:false", "play", "change:drift:true", "pause"]);
   assert.equal(clock.current().rate, 2);
+});
+
+// ---- The bed enters and leaves (07.3, A3, A4) ---------------------------------------------------------------
+
+test("07.3: the constants are the spec's", () => {
+  assert.equal(BED_ENTER_MS, 1500);
+  assert.equal(SLEEP_FADE_S, 60);
+  assert.equal(OPENING_HOLD_S, 20);
+  assert.equal(BED_EXIT_MS, 4000);
+});
+
+test("A3: ramps are equal-power and pure in elapsed ms, clamped at both ends", () => {
+  assert.equal(rampIn(0, 1000), 0);
+  assert.equal(rampIn(1000, 1000), 1);
+  assert.equal(rampIn(-50, 1000), 0);
+  assert.equal(rampIn(5000, 1000), 1);
+  assert.equal(rampOut(0, 1000), 1);
+  assert.equal(rampOut(1000, 1000), 0);
+  assert.equal(rampIn(Number.NaN, 1000), 0);
+  let last = -1;
+  for (let ms = 0; ms <= 1000; ms += 50) {
+    const g = rampIn(ms, 1000);
+    assert.ok(g >= last, "rises without a step back");
+    assert.ok(Math.abs(g * g + rampOut(ms, 1000) ** 2 - 1) < 1e-5);
+    last = g;
+  }
+});
+
+test("A3: the bed enters from silence over BED_ENTER_MS; with no entry under way it is full", () => {
+  assert.equal(enterGain(0), 0);
+  assert.ok(enterGain(BED_ENTER_MS / 2) > 0 && enterGain(BED_ENTER_MS / 2) < 1);
+  assert.equal(enterGain(BED_ENTER_MS), 1);
+  assert.equal(enterGain(60_000), 1);
+  assert.equal(enterGain(null), 1);
+});
+
+test("A3: the bed enters on a cold start, after a pause and after a seek; nothing else restarts it", () => {
+  const playing = at(9);
+  assert.equal(entersNow(false, playing, "play"), true);
+  // A resume that arrives as a tick (the narration starting after a load) is still an entry.
+  assert.equal(entersNow(false, playing, "tick"), true);
+  assert.equal(entersNow(true, at(40), "seek"), true);
+  assert.equal(entersNow(true, at(40), "load"), true);
+  for (const event of ["tick", "chapter", "rate", "play"] as const) assert.equal(entersNow(true, at(101), event), false);
+  // Paused, or no book: nothing enters.
+  assert.equal(entersNow(false, at(9, { playing: false }), "seek"), false);
+  assert.equal(entersNow(false, at(9, { bookId: null }), "play"), false);
+});
+
+test("A4: quiet opening holds the bed silent for the chapter's first 20 s, then ramps it in; off, it is full", () => {
+  const hold = OPENING_HOLD_S * 1000;
+  for (const ms of [0, 1, 5000, hold - 1, hold]) assert.equal(openingGain(ms, true), 0);
+  assert.ok(openingGain(hold + BED_ENTER_MS / 2, true) > 0);
+  assert.ok(openingGain(hold + BED_ENTER_MS / 2, true) < 1);
+  assert.equal(openingGain(hold + BED_ENTER_MS, true), 1);
+  // A seek past the hold skips it: the place in the chapter is past it. A seek back to the start brings it back.
+  assert.equal(openingGain(30_000, true), 1);
+  assert.equal(openingGain(0, true), 0);
+  // Off, the bed enters at once (only the enter ramp applies).
+  for (const ms of [0, 5000, hold, 30_000]) assert.equal(openingGain(ms, false), 1);
+});
+
+test("A4: before a boundary into a held opening the bed fades out, so the hold starts silent rather than cut", () => {
+  assert.equal(closingGain(10_000, true, true), 1);
+  assert.equal(closingGain(BED_ENTER_MS, true, true), 1);
+  assert.ok(closingGain(BED_ENTER_MS / 2, true, true) < 1);
+  assert.equal(closingGain(0, true, true), 0);
+  // Off, or a clock that does not run on (the last chapter; a companion clock holding at the end): full.
+  assert.equal(closingGain(0, false, true), 1);
+  assert.equal(closingGain(0, true, false), 1);
+});
+
+test("A3: a minutes timer fades over its last 60 s, or a shorter timer over its whole length", () => {
+  const now = 1_000_000;
+  const fifteen = { kind: "minutes" as const, minutes: 15, endsAt: now + 15 * 60_000 };
+  assert.deepEqual(sleepFade(fifteen, now, 0, []), { leftMs: 15 * 60_000, fadeMs: 60_000 });
+  assert.equal(sleepGain(sleepFade(fifteen, now, 0, [])), 1);
+  assert.equal(sleepGain(sleepFade(fifteen, fifteen.endsAt - 60_000, 0, [])), 1);
+  const mid = sleepGain(sleepFade(fifteen, fifteen.endsAt - 30_000, 0, []));
+  assert.ok(mid > 0 && mid < 1);
+  // It fires with the bed silent.
+  assert.equal(sleepGain(sleepFade(fifteen, fifteen.endsAt, 0, [])), 0);
+  assert.equal(sleepGain(sleepFade(fifteen, fifteen.endsAt + 500, 0, [])), 0);
+  // Half a minute: the fade is the whole timer, so it starts falling at once.
+  const short = { kind: "minutes" as const, minutes: 0.5, endsAt: now + 30_000 };
+  assert.deepEqual(sleepFade(short, now, 0, []), { leftMs: 30_000, fadeMs: 30_000 });
+  assert.equal(sleepGain(sleepFade(short, now, 0, [])), 1);
+  assert.ok(sleepGain(sleepFade(short, now + 1000, 0, [])) < 1);
+  assert.equal(sleepGain(null), 1);
+});
+
+test("A3: an End of chapter timer fades over the chapter's last 60 s, or the whole of a shorter chapter", () => {
+  const chapters = [
+    { index: 0, start: 0, end: 100 },
+    { index: 1, start: 100, end: 130 },
+  ];
+  const long = { kind: "chapterEnd" as const, chapterIndex: 0, end: 100 };
+  assert.deepEqual(sleepFade(long, 0, 10, chapters), { leftMs: 90_000, fadeMs: 60_000 });
+  assert.equal(sleepGain(sleepFade(long, 0, 40, chapters)), 1);
+  assert.ok(sleepGain(sleepFade(long, 0, 70, chapters)) < 1);
+  assert.equal(sleepGain(sleepFade(long, 0, 100, chapters)), 0);
+  const short = { kind: "chapterEnd" as const, chapterIndex: 1, end: 130 };
+  assert.deepEqual(sleepFade(short, 0, 100, chapters), { leftMs: 30_000, fadeMs: 30_000 });
+  assert.equal(sleepGain(sleepFade(short, 0, 130, chapters)), 0);
+  assert.equal(sleepFade(null, 0, 0, chapters), null);
+});
+
+test("A3: at the book's end the bed fades out over BED_EXIT_MS instead of cutting", () => {
+  assert.equal(exitGain(0), 1);
+  assert.ok(exitGain(BED_EXIT_MS / 2) > 0 && exitGain(BED_EXIT_MS / 2) < 1);
+  assert.equal(exitGain(BED_EXIT_MS), 0);
+  assert.equal(exitGain(10_000), 0);
+  // The engine is told: the clock stopping at the end pauses the bed with that fade, playing on until it is done.
+  const playing: BedState = { soundId: "drift", playing: true };
+  const end = at(220, { playing: false, chapterIndex: 1 });
+  assert.deepEqual(planBed(playing, end, "tick", { ...ctxAt(end), exitMs: BED_EXIT_MS }).commands, [
+    { type: "pause", fadeMs: BED_EXIT_MS },
+  ]);
+  // With no exit fade the pause is at once, as before.
+  const hum: BedState = { soundId: "hum", playing: true };
+  assert.deepEqual(planBed(hum, at(50, { playing: false }), "pause", ctxAt(at(50))).commands, [{ type: "pause" }]);
+});
+
+test("A3, A4: the enter-exit gain multiplies the enter ramp, the opening hold, its closing fade and the sleep fade", () => {
+  const base: EnvelopeInput = {
+    sinceEnterMs: null,
+    intoChapterMs: 60_000,
+    chapterLeftMs: 60_000,
+    quietOpening: true,
+    runsOn: true,
+    sleep: null,
+  };
+  assert.equal(bedEnvelope(base), 1);
+  // A play at the chapter's start: silent through the hold, in full once it and its ramp are done.
+  assert.equal(bedEnvelope({ ...base, sinceEnterMs: 0, intoChapterMs: 0 }), 0);
+  assert.equal(bedEnvelope({ ...base, sinceEnterMs: 19_000, intoChapterMs: 19_000 }), 0);
+  assert.equal(bedEnvelope({ ...base, sinceEnterMs: 21_500, intoChapterMs: 21_500 }), 1);
+  // Off: the bed enters at once, over the enter ramp only.
+  assert.equal(bedEnvelope({ ...base, quietOpening: false, sinceEnterMs: BED_ENTER_MS, intoChapterMs: 0 }), 1);
+  // A seek past the hold: only the enter ramp.
+  assert.equal(bedEnvelope({ ...base, sinceEnterMs: 750, intoChapterMs: 40_000 }), enterGain(750));
+  // The product of every factor.
+  const i = { ...base, sinceEnterMs: 700, intoChapterMs: 20_900, sleep: { leftMs: 20_000, fadeMs: 60_000 } };
+  const product = enterGain(700) * openingGain(20_900, true) * sleepGain(i.sleep);
+  assert.equal(bedEnvelope(i), Math.round(product * 1e6) / 1e6);
+  assert.equal(bedEnvelope({ ...base, sleep: { leftMs: 0, fadeMs: 60_000 } }), 0);
 });

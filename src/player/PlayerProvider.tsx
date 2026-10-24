@@ -9,23 +9,31 @@
 // silent companion clock over the book's chapters (src/lib/companion.ts) that the same bed follows, the session
 // mixes with the other app, and nothing claims the lock screen or the Media Session. Turning it off reopens the
 // book on the narration's own session, place and lock-screen controls.
+// The bed enters and leaves (07.3, A3, A4): it ramps in from silence on play, a resume and a seek; it fades out over
+// a sleep timer's last minute (src/lib/bed.ts sleepFade reads SleepTimer); with the book's quiet opening on it holds
+// silent for each chapter's first 20 s; and at the book's end, or a companion-mode pause, it fades out over 4 s
+// instead of stopping with the clock. The engine samples that envelope from here (bedEnvelope) while the bed plays.
 import { setAudioModeAsync, useAudioPlayer, useAudioPlayerStatus, type AudioPlayer } from "expo-audio";
 import { createContext, useCallback, useContext, useEffect, useMemo, useRef, useState, type ReactNode } from "react";
 import { AppState, Platform } from "react-native";
 
 import {
+  bedEnvelope,
   bedSoundFor,
   defaultBedFor,
+  entersNow,
   IDLE_BED,
   pickLayer,
   planBed,
   setChapterOnly,
+  sleepFade,
   type BedSetting,
   type BedState,
   type LayerPick,
 } from "@/lib/bed";
 import { createClock, type Clock, type ClockEvent, type ClockState } from "@/lib/clock";
 import {
+  bedExitMs,
   companionFinished,
   companionMove,
   companionPause,
@@ -33,6 +41,7 @@ import {
   companionPosition,
   companionRate,
   rebase,
+  runsOn,
   sessionFor,
   startCompanion,
   type CompanionClock,
@@ -45,6 +54,7 @@ import {
   bookPosition,
   chapterAt,
   clamp,
+  END_SLACK,
   locate,
   MAX_SPEED,
   MIN_SPEED,
@@ -164,6 +174,9 @@ export function PlayerProvider({ children }: { children: ReactNode }) {
   const bedLevel = useRef(mixLevels(DEFAULT_MIX).bed);
   const engineRef = useRef<BedEngine | null>(null);
   const bedRef = useRef<BedSetting>(DEFAULT_MIX);
+  // The open book's quiet opening (Mix.quietOpening), and when the bed last entered (07.3): read by its envelope.
+  const quietRef = useRef(DEFAULT_MIX.quietOpening);
+  const enteredAt = useRef<number | null>(null);
   // Re-plans the bed against the clock as it stands, after a layer pick (set by the bed's effect).
   const replanBed = useRef<() => void>(() => {});
   const ducker = useMemo(() => createDucker(), []);
@@ -497,15 +510,40 @@ export function PlayerProvider({ children }: { children: ReactNode }) {
   // only listens; nothing it does reaches the narration, and the narration's speed never reaches it (A9).
   useEffect(() => {
     const engine = createBedEngine((id) => soundscape(id)?.loop);
-    engine.setLevel(bedLevel.current * ducker.gain());
+    engine.setLevel(bedLevel.current, ducker.gain());
+    // The enter-exit gain, read live: the enter ramp, the quiet opening and its closing fade, the sleep fade.
+    engine.setEnvelope(() => {
+      const b = bookRef.current;
+      if (!b || b.chapters.length === 0) return 1;
+      const now = Date.now();
+      const pos = livePosition();
+      const c = chapterAt(b.chapters, pos);
+      if (!c) return 1;
+      const last = c.index === b.chapters[b.chapters.length - 1].index;
+      return bedEnvelope({
+        sinceEnterMs: enteredAt.current === null ? null : now - enteredAt.current,
+        intoChapterMs: (pos - c.start) * 1000,
+        chapterLeftMs: (Math.min(c.end, b.duration) - pos) * 1000,
+        quietOpening: quietRef.current,
+        runsOn: runsOn(companionRef.current !== null, timerRef.current, last),
+        sleep: sleepFade(sleepRef.current, now, pos, b.chapters),
+      });
+    });
     engineRef.current = engine;
     let state: BedState = IDLE_BED;
+    let wasPlaying = false;
     const follow = (s: ClockState, event: ClockEvent) => {
-      const chapters = bookRef.current?.id === s.bookId ? (bookRef.current?.chapters ?? []) : [];
+      const b = bookRef.current?.id === s.bookId ? bookRef.current : undefined;
+      const chapters = b?.chapters ?? [];
+      // A play, a resume or a seek while playing: the bed ramps in from silence (A3).
+      if (entersNow(wasPlaying, s, event)) enteredAt.current = Date.now();
+      wasPlaying = s.playing;
+      const atBookEnd = !!b && s.position >= b.duration - END_SLACK;
       const plan = planBed(state, s, event, {
         chapterStart: chapters.find((c) => c.index === s.chapterIndex)?.start ?? 0,
         soundFor: (i) => bedSoundFor(i, bedRef.current, SOUNDSCAPE_IDS),
         loopSeconds: (id) => soundscape(id)?.loopSeconds ?? 0,
+        exitMs: bedExitMs(companionRef.current !== null, atBookEnd),
       });
       state = plan.state;
       plan.commands.forEach(engine.apply);
@@ -518,11 +556,12 @@ export function PlayerProvider({ children }: { children: ReactNode }) {
       engineRef.current = null;
       engine.dispose();
     };
-  }, [clock, ducker]);
+  }, [clock, ducker, livePosition]);
 
   // A layer pick (or the open book's mix) moves the bed now, crossfading if it is heard (A12).
   useEffect(() => {
     bedRef.current = mix;
+    quietRef.current = mix.quietOpening;
     replanBed.current();
   }, [mix]);
 
@@ -533,7 +572,7 @@ export function PlayerProvider({ children }: { children: ReactNode }) {
     bedLevel.current = levels.bed;
     setVolume(player, levels.narration);
     if (!mix.duck) ducker.reset();
-    engineRef.current?.setLevel(levels.bed * ducker.gain());
+    engineRef.current?.setLevel(levels.bed, ducker.gain());
   }, [mix, player, ducker]);
 
   // Duck under voice (A11): while the narration plays with duck on, its level is measured on the device and the bed
@@ -544,7 +583,7 @@ export function PlayerProvider({ children }: { children: ReactNode }) {
     if (!duckListening) return;
     return listenToVoice(player, (frames) => {
       const gain = ducker.hear(frames, Date.now(), true);
-      engineRef.current?.setLevel(bedLevel.current * gain);
+      engineRef.current?.setLevel(bedLevel.current, gain);
     });
   }, [duckListening, player, ducker]);
   useEffect(() => {
