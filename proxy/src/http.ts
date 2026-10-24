@@ -17,11 +17,11 @@
 // salted hash of it for the hour (limiter.ts).
 //
 // Verdicts (07.5, spec 07 A6): a batch holds exactly rows of a piece id, an emotion set and a verdict, anything else is
-// a 400; it is rate-limited per client (limit.ts, until 01.21) and folded into counts, never kept as rows. Every job
+// a 400; it is rate-limited per client and per hour by 01.21's limiter in its own bucket (limiter.ts
+// VERDICT_POST_LIMITS: verdict posts never count against scoring runs) and folded into counts, never kept as rows. Every job
 // view the proxy answers orders each chapter's alternates by those counts (pieces.ts orderJobView).
 import type { BookRequest, JobView, VerdictRow } from "./contract.ts";
-import { clientOf, type Limiter } from "./limit.ts";
-import { retryAfterSeconds, UNKNOWN_CLIENT, type Refusal, type RefusalReason } from "./limiter.ts";
+import { retryAfterSeconds, UNKNOWN_CLIENT, type Limiter, type Refusal, type RefusalReason } from "./limiter.ts";
 import { alternateIds, orderJobView } from "./pieces.ts";
 import type { PieceCounts } from "./store.ts";
 import { bookKey, isJobId, LIMITS, parseBookRequest, parseVerdictBatch } from "./validate.ts";
@@ -37,6 +37,7 @@ export type Jobs = {
 export type Verdicts = {
   add(rows: readonly VerdictRow[]): Promise<void>;
   counts(pieceIds: readonly string[]): Promise<Record<string, PieceCounts>>;
+  /** 01.21's limiter, over the verdict bucket (limiter.ts VERDICT_POST_LIMITS), never the scoring runs'. */
   limiter: Limiter;
 };
 
@@ -80,9 +81,21 @@ async function readBook(request: Request): Promise<{ ok: true; book: BookRequest
   return parsed.ok ? { ok: true, book: parsed.book } : { ok: false, res: json(400, { error: parsed.error }) };
 }
 
-/** POST /v1/verdicts: limited per client, validated, folded into counts; 204 with no body. */
+const VERDICT_REFUSED: Record<"client-limit" | "global-limit", string> = {
+  "client-limit": "too many verdict posts from this connection this hour; try again later",
+  "global-limit": "verdicts are busy this hour; try again later",
+};
+
+/** POST /v1/verdicts: limited per client and per hour (its own bucket), validated, folded into counts; 204, no body. */
 async function postVerdicts(request: Request, verdicts: Verdicts): Promise<Response> {
-  if (!(await verdicts.limiter.take(clientOf(request)))) return json(429, { error: "too many verdict posts; try again later" });
+  const admitted = await verdicts.limiter.admit(request.headers.get("cf-connecting-ip") || UNKNOWN_CLIENT, Date.now());
+  if (!admitted.ok) {
+    const reason = admitted.reason === "global-limit" ? "global-limit" : "client-limit";
+    const seconds = retryAfterSeconds(admitted.retryAfterMs);
+    const res = json(429, { error: VERDICT_REFUSED[reason], reason, retryAfterSeconds: seconds });
+    res.headers.set("retry-after", String(seconds));
+    return res;
+  }
   const read = await readJson(request);
   if (!read.ok) return read.res;
   const parsed = parseVerdictBatch(read.body);

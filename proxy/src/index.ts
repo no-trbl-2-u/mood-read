@@ -12,14 +12,13 @@
 // books' overall emotions by LibriVox number, so Browse reads a page of them in one call (prescore.ts). A fourth,
 // RateLimiter, counts new runs per client and per hour (limiter.ts, 01.21, A34), also a single writer; it holds only
 // the current hour's salted hashes, and its alarm deletes them when the hour ends. A fifth,
-// VerdictCounts (07.5), holds the listeners' verdicts as counts per piece and emotion set, and the verdict post's
-// rate limiter in its memory: one writer, so no add is lost.
+// VerdictCounts (07.5), holds the listeners' verdicts as counts per piece and emotion set: one writer, so no add is
+// lost. Verdict posts are limited by a RateLimiter object of their own (bucket "verdicts"), apart from scoring runs.
 import { braveClient, openAiClient } from "./clients.ts";
 import type { BookRequest, JobView, VerdictRow } from "./contract.ts";
 import { route, type Jobs, type Verdicts } from "./http.ts";
 import { createBookJob } from "./job.ts";
-import { createRateLimiter, limitsFrom, rescoreMinAgeFrom, type Limiter, type Refusal } from "./limiter.ts";
-import { memoryLimiter, type Limiter as VerdictLimiter } from "./limit.ts";
+import { createRateLimiter, limitsFrom, rescoreMinAgeFrom, VERDICT_POST_LIMITS, type Limiter, type LimiterBucket, type Refusal } from "./limiter.ts";
 import { capFrom, createMeter, type Meter } from "./meter.ts";
 import { createOverallIndex, overallEmotions, prescoreBudget, type IndexPut, type OverallView, type PrescoredList } from "./prescore.ts";
 import { routePrescore, type PrescoreDeps } from "./prescore-http.ts";
@@ -61,8 +60,8 @@ const METER_NAME = "spend-meter";
 const INDEX_NAME = "prescored";
 const VERDICTS_NAME = "verdicts";
 
-/** The verdict counts and their limiter, reached in their own object (07.5). */
-function remoteVerdicts(ns: DoNamespace): Verdicts {
+/** The verdict counts, reached in their own object, and the verdict bucket's limiter (07.5). */
+function remoteVerdicts(ns: DoNamespace, env: Env): Verdicts {
   const stub = () => ns.get(ns.idFromName(VERDICTS_NAME));
   return {
     async add(rows) {
@@ -72,16 +71,11 @@ function remoteVerdicts(ns: DoNamespace): Verdicts {
       const res = await stub().fetch("https://verdicts/counts", { method: "POST", body: JSON.stringify(pieceIds) });
       return (await res.json()) as Record<string, PieceCounts>;
     },
-    limiter: {
-      async take(client) {
-        const res = await stub().fetch("https://verdicts/take", { method: "POST", body: JSON.stringify({ client }) });
-        return ((await res.json()) as { ok: boolean }).ok;
-      },
-    },
+    limiter: remoteLimiter(env, "verdicts"),
   };
 }
 
-const verdictsOf = (env: Env | undefined) => (env?.VERDICTS ? () => remoteVerdicts(env.VERDICTS as DoNamespace) : undefined);
+const verdictsOf = (env: Env | undefined) => (env?.VERDICTS ? () => remoteVerdicts(env.VERDICTS as DoNamespace, env) : undefined);
 
 /** The meter, reached in its own object. */
 function remoteMeter(env: Env): Meter {
@@ -99,13 +93,18 @@ function remoteMeter(env: Env): Meter {
 }
 
 const LIMITER_NAME = "rate-limiter";
+/** The verdict posts' limiter (07.5): its own RateLimiter object, so its window and counts are apart from the runs'. */
+const VERDICT_LIMITER_NAME = "verdict-limiter";
 
-/** The limiter, reached in its own object. The client's address travels in the request and is hashed there. */
-function remoteLimiter(env: Env): Limiter {
+/**
+ * The limiter for a bucket, reached in its own object. The client's address travels in the request and is hashed
+ * there.
+ */
+function remoteLimiter(env: Env, bucket: LimiterBucket = "runs"): Limiter {
   return {
     async admit(client, nowMs) {
-      const stub = env.RATE_LIMITER.get(env.RATE_LIMITER.idFromName(LIMITER_NAME));
-      const res = await stub.fetch("https://limiter/admit", { method: "POST", body: JSON.stringify({ client, now: nowMs }) });
+      const stub = env.RATE_LIMITER.get(env.RATE_LIMITER.idFromName(bucket === "verdicts" ? VERDICT_LIMITER_NAME : LIMITER_NAME));
+      const res = await stub.fetch("https://limiter/admit", { method: "POST", body: JSON.stringify({ client, now: nowMs, bucket }) });
       return (await res.json()) as Awaited<ReturnType<Limiter["admit"]>>;
     },
   };
@@ -260,7 +259,10 @@ export class PrescoreIndex {
   }
 }
 
-/** New runs per client and per hour, in one object so every count is serialized (limiter.ts). */
+/**
+ * New runs per client and per hour, in one object so every count is serialized (limiter.ts). The verdict posts' bucket
+ * (07.5) is another object of this class, named apart, counted at VERDICT_POST_LIMITS.
+ */
 export class RateLimiter {
   state: DoState;
   env: Env;
@@ -270,14 +272,14 @@ export class RateLimiter {
     this.env = env;
   }
 
-  limiter() {
-    return createRateLimiter(this.state.storage, limitsFrom(this.env));
+  limiter(bucket: LimiterBucket = "runs") {
+    return createRateLimiter(this.state.storage, bucket === "verdicts" ? VERDICT_POST_LIMITS : limitsFrom(this.env));
   }
 
   async fetch(request: Request): Promise<Response> {
-    const { client, now } = (await request.json()) as { client: string; now?: number };
+    const { client, now, bucket } = (await request.json()) as { client: string; now?: number; bucket?: LimiterBucket };
     const at = typeof now === "number" ? now : Date.now();
-    const limiter = this.limiter();
+    const limiter = this.limiter(bucket === "verdicts" ? "verdicts" : "runs");
     const out = await limiter.admit(client, at);
     // The hour's window (its salt and hashes) is deleted when the hour ends, whether or not another request comes.
     if (out.ok && (await this.state.storage.getAlarm()) === null) await this.state.storage.setAlarm(limiter.windowEnd(at));
@@ -291,11 +293,10 @@ export class RateLimiter {
 
 /**
  * The listeners' verdicts as counts (07.5, spec 07 A6), in one object so every add is serialized. Its storage holds
- * counts per (piece, emotion set) and nothing else; the verdict post's rate limiter lives in its memory only.
+ * counts per (piece, emotion set) and nothing else.
  */
 export class VerdictCounts {
   state: DoState;
-  limiter: VerdictLimiter = memoryLimiter();
 
   constructor(state: DoState, _env: Env) {
     this.state = state;
@@ -304,10 +305,6 @@ export class VerdictCounts {
   async fetch(request: Request): Promise<Response> {
     const { pathname } = new URL(request.url);
     const counts = createVerdictCounts(this.state.storage);
-    if (pathname === "/take") {
-      const { client } = (await request.json()) as { client: string };
-      return Response.json({ ok: await this.limiter.take(client) });
-    }
     if (pathname === "/add") {
       await counts.add((await request.json()) as VerdictRow[]);
       return new Response(null, { status: 204 });

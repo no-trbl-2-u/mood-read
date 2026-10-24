@@ -169,7 +169,7 @@ test("a verdict body with any field beyond rows of pieceId, emotions and verdict
 
 test("verdict posts are rate-limited per client (429), apart from /v1/score", async () => {
   const { api } = memoryJobs();
-  const v = memoryVerdicts({ max: 2, windowMs: 60_000 });
+  const v = memoryVerdicts({ perClient: 2, global: 1000, windowMs: 60_000 });
   const from = (ip: string) => post("/v1/verdicts", { rows: [row] }, { "content-type": "application/json", "cf-connecting-ip": ip });
   assert.equal((await route(from("1.1.1.1"), () => api, () => v)).status, 204);
   assert.equal((await route(from("1.1.1.1"), () => api, () => v)).status, 204);
@@ -186,7 +186,7 @@ test("without verdict storage, POST /v1/verdicts is a 503 and job views keep the
 
 test("a job view orders each chapter's alternates by the verdicts, demoting a two-to-one misfit; the piece stays", async () => {
   const { api, jobFor } = memoryJobs();
-  const v = memoryVerdicts({ max: 100, windowMs: 60_000 });
+  const v = memoryVerdicts({ perClient: 100, global: 1000, windowMs: 60_000 });
   const started = (await (await route(post("/v1/score", book), () => api, () => v)).json()) as JobView;
   const job = jobFor(started.jobId);
   while ((await job.step()).more);

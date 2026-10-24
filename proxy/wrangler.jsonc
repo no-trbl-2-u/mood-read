@@ -34,9 +34,10 @@
       { "name": "SPEND_METER", "class_name": "SpendMeter" },
       // The pre-scored books' overall emotions by LibriVox number, for Browse (05.10, src/prescore.ts).
       { "name": "PRESCORED", "class_name": "PrescoreIndex" },
-      // New runs per client and per hour, as salted hourly hashes (01.21, src/limiter.ts).
+      // New runs per client and per hour, as salted hourly hashes (01.21, src/limiter.ts); verdict posts (07.5) count
+      // in another object of this class, apart from the runs.
       { "name": "RATE_LIMITER", "class_name": "RateLimiter" },
-      // The listeners' verdicts as counts per piece and emotion set, and the verdict post's limiter (07.5, src/store.ts).
+      // The listeners' verdicts as counts per piece and emotion set (07.5, src/store.ts).
       { "name": "VERDICTS", "class_name": "VerdictCounts" }
     ]
   },

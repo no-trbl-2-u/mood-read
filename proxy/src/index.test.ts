@@ -222,7 +222,7 @@ test("verdicts through the Worker: counted in the VerdictCounts object, no key n
   assert.equal((await worker.fetch(post("/v1/verdicts", { rows: [{ ...row, bookId: "x" }] }), env)).status, 400);
   assert.equal(outbound.length, 0, "a verdict reaches no other service");
 
-  // The limiter lives in the object's memory: past it, a client waits.
+  // 01.21's limiter, in the verdict bucket: past ten posts an hour, a client waits.
   const from = () => new Request(`${BASE}/v1/verdicts`, { method: "POST", headers: { "content-type": "application/json", "cf-connecting-ip": "7.7.7.7" }, body: JSON.stringify({ rows: [row] }) });
   const statuses: number[] = [];
   for (let i = 0; i < 12; i++) statuses.push((await worker.fetch(from(), env)).status);
@@ -247,4 +247,28 @@ test("a scored book's job view through the Worker orders alternates by the count
 test("without the VERDICTS binding, POST /v1/verdicts is a 503", async () => {
   const env = makeEnv();
   assert.equal((await worker.fetch(post("/v1/verdicts", { rows: [] }), env)).status, 503);
+});
+
+test("verdict posts use 01.21's limiter in a bucket of their own: they never eat into scoring runs, nor runs into them (07.5)", async () => {
+  const env = makeEnv({ RUNS_PER_CLIENT_PER_HOUR: "1" });
+  env.VERDICTS = namespace((state) => new VerdictCounts(state, env));
+  const row = { pieceId: "a--b", emotions: ["dread"], verdict: "fits" };
+  for (let i = 0; i < 5; i++) assert.equal((await worker.fetch(post("/v1/verdicts", { rows: [row] }, "203.0.113.9"), env)).status, 204);
+  assert.equal((await worker.fetch(post("/v1/score", { ...book, title: "Made Up 1" }, "203.0.113.9"), env)).status, 200, "the run is still allowed");
+  assert.equal((await worker.fetch(post("/v1/score", { ...book, title: "Made Up 2" }, "203.0.113.9"), env)).status, 429, "the run limit is its own");
+  assert.equal((await worker.fetch(post("/v1/verdicts", { rows: [row] }, "203.0.113.9"), env)).status, 204, "verdicts still go");
+
+  const verdictWindow = env.RATE_LIMITER.objects.get("verdict-limiter")!;
+  const runWindow = env.RATE_LIMITER.objects.get("rate-limiter")!;
+  assert.equal(((await verdictWindow.storage.get("window")) as { total: number }).total, 6);
+  assert.equal(((await runWindow.storage.get("window")) as { total: number }).total, 1);
+  assert.ok(!JSON.stringify(await verdictWindow.storage.get("window")).includes("203.0.113.9"), "only salted hashes are kept");
+  assert.notEqual(verdictWindow.storage.alarm, null, "the verdict window is deleted when its hour ends, too");
+
+  // Past its own limit a client's verdict post is a 429 with Retry-After.
+  for (let i = 0; i < 4; i++) await worker.fetch(post("/v1/verdicts", { rows: [row] }, "203.0.113.9"), env);
+  const over = await worker.fetch(post("/v1/verdicts", { rows: [row] }, "203.0.113.9"), env);
+  assert.equal(over.status, 429);
+  assert.ok(Number(over.headers.get("retry-after")) >= 1);
+  assert.equal(((await over.json()) as { reason: string }).reason, "client-limit");
 });

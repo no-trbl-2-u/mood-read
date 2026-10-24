@@ -4,7 +4,7 @@ import type { Completion, CompletionRequest, ModelClient, SearchClient, SearchHi
 import type { Emotion } from "./contract.ts";
 import type { BookJob } from "./job.ts";
 import type { Verdicts } from "./http.ts";
-import { memoryLimiter } from "./limit.ts";
+import { createRateLimiter, VERDICT_POST_LIMITS, type RunLimits } from "./limiter.ts";
 import { createVerdictCounts, memoryStore } from "./store.ts";
 
 export function fakeSearch(hitsFor: (q: string) => SearchHit[] = defaultHits): SearchClient & { queries: string[] } {
@@ -127,9 +127,9 @@ export function admitted(job: BookJob) {
   };
 }
 
-/** The verdict counts in memory (07.5), with the real limiter at the given rate, and the store to look into. */
-export function memoryVerdicts(rate = { max: 10, windowMs: 60 * 60 * 1000 }): Verdicts & { store: ReturnType<typeof memoryStore> } {
+/** The verdict counts in memory (07.5), with 01.21's limiter at the given limits in its own store, and the counts' store. */
+export function memoryVerdicts(limits: RunLimits = VERDICT_POST_LIMITS): Verdicts & { store: ReturnType<typeof memoryStore> } {
   const store = memoryStore();
   const counts = createVerdictCounts(store);
-  return { store, add: counts.add, counts: counts.counts, limiter: memoryLimiter(rate) };
+  return { store, add: counts.add, counts: counts.counts, limiter: createRateLimiter(memoryStore(), limits) };
 }

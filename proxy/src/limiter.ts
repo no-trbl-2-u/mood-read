@@ -22,6 +22,18 @@ export const DEFAULT_RESCORE_MIN_AGE_DAYS = 7;
 
 export type RunLimits = { perClient: number; global: number; windowMs: number };
 
+/**
+ * What a limiter counts: new scoring runs, or verdict posts (07.5, spec 07 A6). Each bucket is its own RateLimiter
+ * object with its own window, so verdict posts never use up scoring runs, or the other way round.
+ */
+export type LimiterBucket = "runs" | "verdicts";
+
+/**
+ * Verdict posts per client and in all, per hour (07.5). The app posts at most once a day, so a client's ten is a wide
+ * margin; the ceiling across every client only stops a flood (a refused post waits for the next day's).
+ */
+export const VERDICT_POST_LIMITS: RunLimits = { perClient: 10, global: 1000, windowMs: HOUR_MS };
+
 export type RefusalReason = "rescore-too-soon" | "client-limit" | "global-limit";
 /** Why a start was refused, and how long until it may be asked again. */
 export type Refusal = { reason: RefusalReason; retryAfterMs: number };
