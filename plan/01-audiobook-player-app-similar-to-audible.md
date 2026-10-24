@@ -102,8 +102,6 @@ just name the pieces/scores/songs/instrumentals (It's important that there's no 
 - **A24** Each chapter's mood card links out to its reference piece ("In the spirit of") on Spotify, YouTube /
   YouTube Music and Apple Music, and Mood Read plays none of it; a listener can save a book's reference pieces as
   a playlist in their own YouTube or Apple Music account.
-- **A31** A pause pressed while the next chapter's file is still loading holds, and the web play
-  button never flickers while audio buffers.
 - **A33** (Claude since D15: read "OpenAI's and Brave's" below as Anthropic's.) Scoring a real book on mood-read.pages.dev returns researched chapter moods and named pieces
   from the deployed proxy, with spend metered at OpenAI's and Brave's current prices.
 - **A36** Companion mode is checked with Audible on a real iOS and Android phone: both play
@@ -205,7 +203,7 @@ Every question below is answered; none is open. Elsewhere in the plan, "Open que
    no emotions on its card (A21).
 
 ## Chunks
-Measure: 10 open · 28 closed · next A39
+Measure: 9 open · 29 closed · next A39
 
 Build order follows the owner's two-part v1, and the lines below are in that order. **Part 1, the player:** 01.1,
 01.6, 01.3, 01.5, 01.7: the player, then real books in it, then the second layer, its mixer and the soundscapes it
@@ -245,10 +243,6 @@ pieces). Ids keep the order they were written in. The app itself (Expo at the re
     Check iOS, and decide whether Android needs another path.
   - Listen to 01.7's six synthesized soundscapes under narration (nobody has heard them yet): the wrap of each
     loop, and whether Low Café reads as a distant room rather than a crowd. Swap any that sound wrong.
-- [ ] **01.18** Pause holds through a file handoff; no play-button flicker on web · S ·
-  closes A31 · needs —
-  - Seen in 01.3: `goTo` loads the next file with play on even after a pause; the mini player reads the web
-    status flag, which reads paused whenever the element is short of data (the clock no longer does).
 - [ ] **01.20** Turn scoring on: keys to the Worker, deploy the proxy, set the app's proxy URL · S ·
   closes A33 · needs 01.24 · secrets ANTHROPIC_API_KEY
   - The owner chose (2026-10-24) to go live on Claude, after the rate limit: the deploy below syncs

@@ -65,6 +65,15 @@
   or pre-push job, keeping `proxy/src/*.test.ts` per commit.
 - default taken: the gate stays whole; the loop runs it as sequential foreground legs and waits out each hook.
 
+### [needs-user-call] agents.md rule 6 no longer lists everything the scoring proxy receives
+- category: product
+- logged: 2026-10-24 (heads-down 07, rigel, 07.5)
+- what: rule 6 says the proxy "receives a book's title, author and chapter titles, nothing more". Since 05.9 it
+  also gets a LibriVox book's public LibriVox and Gutenberg numbers, and since 07.5 the daily verdict rows
+  (`{pieceId, emotions, verdict}`, no book, chapter, device or time; "Share what fits" turns them off). The rule
+  book is the owner's to edit; `plan/bearings.md` and the privacy policy already say both.
+- default taken: rule 6 is left as written; bearings' proxy contract and `src/app/privacy.tsx` carry the detail.
+
 ## Pending — findings
 
 ### [4.2] A chapter is reached (and its pieces logged) only while the book's screen is open

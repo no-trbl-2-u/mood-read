@@ -124,6 +124,9 @@ LibriVox book its public LibriVox and Project Gutenberg numbers (05.9).
                            cached result                                                          -> JobView
   POST /v1/rescore         the same body: a new run even for a cached book (explicit, A13)         -> JobView
   GET  /v1/jobs/:jobId     progress, and the scored chapters once done                            -> JobView | 404
+  POST /v1/verdicts        {rows: [{pieceId, emotions, verdict}]} at most 200, no other field (07.5): counts per
+                           piece and emotion set, never a row; at most daily from a device, never with "Share what
+                           fits" off; 01.21's limiter in its own bucket (verdict posts)       -> 204 | 400 | 429
   POST /v1/prescore        owner only (Authorization: Bearer PRESCORE_TOKEN; 05.10), the /v1/score body with its
                            librivoxId: a pre-score run, billed to pre-scoring's half of the cap -> {jobId, state,
                            progress, budget} | 401 | 429 once the half is spent       (proxy/src/prescore-http.ts)
@@ -255,6 +258,22 @@ The design system (06.1, option A "acid sticker", owner direction "full gen z ch
 - **No AI or search key ships in the app** (A22).
 - **Secrets by name only:** a chunk names the secrets it needs on its line; values come through
   `node scripts/secrets.mjs run`, never a terminal.
+- **Mood depth (spec 07, complete 2026-10-24; decisions D18, D19, D22-D32):**
+  - A chapter may have 1 to 4 ordered scenes, each emotions and a span (spans sum to 1, rounded to 0.05, under 0.1
+    merged into a neighbour), never text; absent scenes read as one scene (`src/lib/scenes.ts`). Each scene has a
+    piece through the same no-vocals checks; a listener's pick covers every scene of the chapter (D18).
+  - A scene's emotions show only once the clock reaches its start; the card's band shows the playing scene only.
+  - The bed's gain is level x crossfade x duck x enter-exit (`bedVolume`): it ramps in over 1.5 s on play, a resume
+    or a seek; a sleep timer fades it over its last 60 s; quiet opening (per book, default on) holds it silent for
+    the first 20 s of book time in every chapter; the book's end fades it over 4 s.
+  - Fits / Doesn't fit is kept per chapter and playing piece on the device; it leaves only as daily
+    `{pieceId, emotions, verdict}` rows with no book, chapter, device or time, never with "Share what fits" off
+    (D19); the proxy keeps counts only and reorders alternates, never removing a piece the scorer named.
+  - A listener's seed (`coverage: "listener"`) is the listener's own: "Your mood" on the card, never sent, never
+    judged with a verdict, replaced only by a `scored` result, counted in a fingerprint only when the book has no
+    researched chapter.
+  - The shelf's fingerprint is a book's three strongest emotions over reached chapters only; Your soundtrack logs a
+    piece id and book the first time its (reached) chapter or scene plays, no time or position, and clears in one row.
 
 ## Commit verb vocabulary (locked)
 

@@ -58,3 +58,6 @@ identity · deleted in <sha>`; recover its text with
 - 2026-10-24 · 07.6 · Set the mood seeds an unscored book or chapter · 96646fa7..0ad84c10
 - 2026-10-24 · 01.21 · The proxy limits new runs per client and early rescores · f6633b70..edec73b0
 - 2026-10-24 · 01.22 · A reached chapter's mood card opens from its chips · 39bce218..f1e14d05
+- 2026-10-24 · 01.18 · A pause holds through a file handoff; no button flicker · d2870de2..7defefd4
+- 2026-10-24 · 07.5 · Verdicts reach the proxy as daily counts that order alternates · eecded0e..eecded0e
+- 2026-10-24 · 07 · spec complete: Mood depth: scenes, a bed that enters and leaves, verdicts, seeded moods, a mood lens on the shelf · absorbed into plan/bearings.md standing decisions and the route contract, and identity/decisions/2026.md D18, D19, D22-D32 · deleted in "plan: settle 01.18, 07.5"
