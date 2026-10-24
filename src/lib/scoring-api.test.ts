@@ -21,6 +21,35 @@ test("the request is exactly the title, author and chapter titles", () => {
   });
 });
 
+test("A10: a LibriVox book with a Gutenberg number sends both public catalog numbers, and nothing else new", () => {
+  const librivox = { ...book, source: { kind: "librivox", librivoxId: "alice_in_wonderland_librivox", catalogId: "200", gutenbergId: "11" } } satisfies Pick<Book, "title" | "author" | "chapters" | "source">;
+  const req = scoringRequest({ ...librivox, id: "x", narrator: "N", files: [{ ref: "blob:audio", name: "a.mp3", duration: 10 }], cover: "c" } as unknown as Book);
+  assert.deepEqual(req, { title: "Dracula", author: "Bram Stoker", chapters: ["Chapter 1"], librivoxId: "200", gutenbergId: "11" });
+  // The archive.org identifier, files and audio never ride along.
+  assert.doesNotMatch(JSON.stringify(req), /alice_in_wonderland_librivox|blob:|a\.mp3/);
+});
+
+test("an imported book, or a LibriVox book whose text has no Gutenberg number, sends title, author and chapters only", () => {
+  const plain = { title: "Dracula", author: "Bram Stoker", chapters: ["Chapter 1"] };
+  assert.deepEqual(scoringRequest({ ...book, source: { kind: "import" } }), plain);
+  assert.deepEqual(scoringRequest({ ...book, source: { kind: "librivox", librivoxId: "dracula_librivox", catalogId: "123" } }), plain);
+  assert.deepEqual(scoringRequest({ ...book, source: { kind: "librivox", librivoxId: "dracula_librivox" } }), plain);
+});
+
+test("start posts the catalog numbers in its body for a LibriVox book", async () => {
+  const bodies: unknown[] = [];
+  const api = createScoringApi("https://proxy.example", async (_url, init) => {
+    bodies.push(JSON.parse(String(init?.body)));
+    return Response.json(running);
+  });
+  await api.start({ ...book, source: { kind: "librivox", librivoxId: "a", catalogId: "200", gutenbergId: "11" } });
+  await api.start({ ...book, source: { kind: "import" } });
+  assert.deepEqual(bodies, [
+    { title: "Dracula", author: "Bram Stoker", chapters: ["Chapter 1"], librivoxId: "200", gutenbergId: "11" },
+    { title: "Dracula", author: "Bram Stoker", chapters: ["Chapter 1"] },
+  ]);
+});
+
 test("start posts to /v1/score (or /v1/rescore) at the base URL; status reads /v1/jobs/:id; 404 is null", async () => {
   const calls: { url: string; init?: RequestInit }[] = [];
   const api = createScoringApi("https://proxy.example/", async (url, init) => {

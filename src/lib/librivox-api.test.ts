@@ -2,12 +2,15 @@ import assert from "node:assert/strict";
 import { test } from "node:test";
 
 import {
+  catalogNumber,
   chapterBytes,
   chapterFiles,
   chapterTitle,
   coverFile,
   downloadUrl,
   getItem,
+  gutenbergIdFor,
+  gutenbergIdFrom,
   parseLength,
   readerNames,
   readersLine,
@@ -35,6 +38,7 @@ const METADATA_BODY = {
     description: "Read by June Ashby and 6 other volunteers. A fantasy novel for children.",
     runtime: "2:54:12",
     licenseurl: "https://creativecommons.org/publicdomain/zero/1.0/",
+    call_number: "200",
   },
   files: [
     { name: "aiw_01_carroll_64kb.mp3", title: "01 - Down the Rabbit-Hole", track: "1", length: "572.4", format: "64Kbps MP3", size: "4580000" },
@@ -95,6 +99,40 @@ test("getItem reads one archive.org metadata call and validates its shape", asyn
   await assert.rejects(getItem(fakeFetch({}, 500), "x"), /500/);
   assert.throws(() => readItem({ metadata: { identifier: "x" }, files: [] }), /unexpected answer/);
   assert.throws(() => readItem({ metadata: { identifier: "x", title: "T" }, files: [{ format: "MP3" }] }), /name or format/);
+});
+
+test("an item's LibriVox catalog number comes from archive.org's call_number, digits only (05.9)", () => {
+  assert.equal(readItem(METADATA_BODY).catalogId, "200");
+  assert.equal(readItem({ ...METADATA_BODY, metadata: { ...METADATA_BODY.metadata, call_number: 253 } }).catalogId, "253");
+  for (const bad of [undefined, "", "0", "LV-200", "200a", "-1", "1".repeat(10)]) {
+    assert.equal(readItem({ ...METADATA_BODY, metadata: { ...METADATA_BODY.metadata, call_number: bad } }).catalogId, null, String(bad));
+  }
+  assert.equal(catalogNumber(" 4469 "), "4469");
+});
+
+test("a Gutenberg number is read from LibriVox's link to the text, in every form it uses, and nothing else", () => {
+  assert.equal(gutenbergIdFrom("https://www.gutenberg.org/etext/1342"), "1342");
+  assert.equal(gutenbergIdFrom("http://www.gutenberg.org/ebooks/11"), "11");
+  assert.equal(gutenbergIdFrom("https://gutenberg.org/files/84/84-h/84-h.htm"), "84");
+  for (const bad of [null, "", "https://archive.org/details/x", "https://www.gutenberg.org/ebooks/search/?query=x", "https://gutenberg.org.evil.example/ebooks/5", "https://www.gutenberg.org/ebooks/11x", "https://gutenberg.ca/ebooks/5"]) {
+    assert.equal(gutenbergIdFrom(bad), null, String(bad));
+  }
+});
+
+test("gutenbergIdFor asks LibriVox's catalog for one book by its number and reads its text link", async () => {
+  const calls: string[] = [];
+  const answer = { books: [{ id: "200", title: "Alice", url_text_source: "https://www.gutenberg.org/etext/11" }] };
+  const id = await gutenbergIdFor(async (url) => {
+    calls.push(url);
+    return new Response(JSON.stringify(answer));
+  }, "200");
+  assert.equal(id, "11");
+  assert.deepEqual(calls, ["https://librivox.org/api/feed/audiobooks/?id=200&format=json"]);
+  assert.equal(await gutenbergIdFor(fakeFetch({ books: [{ id: "200", url_text_source: "https://example.org/text" }] }), "200"), null, "a text elsewhere is no Gutenberg number");
+  assert.equal(await gutenbergIdFor(fakeFetch({ books: [{ id: "999", url_text_source: "https://www.gutenberg.org/etext/11" }] }), "200"), null, "another book's answer is ignored");
+  assert.equal(await gutenbergIdFor(fakeFetch({}), "200"), null);
+  assert.equal(await gutenbergIdFor(async () => assert.fail("no request for a bad number"), "x/../y"), null);
+  await assert.rejects(gutenbergIdFor(fakeFetch({}, 500), "200"), /500/);
 });
 
 test("chapterFiles picks one MP3 derivative in track order, never the Ogg entries or the cover", () => {

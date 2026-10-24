@@ -8,7 +8,7 @@ import { TopBar } from "@/ui/TopBar";
 // stores' data-safety forms are filled from, so every line here must stay true of the code (agents.md rule 6).
 // Headings may play (design/system/DECISION.md, Voice); the statements stay plain. All its copy lives here.
 
-const EFFECTIVE = "23 October 2026";
+const EFFECTIVE = "24 October 2026";
 const ISSUES_URL = "https://github.com/no-trbl-2-u/mood-read/issues";
 
 type Section = { heading: string; lines: string[] };
@@ -27,15 +27,17 @@ const SECTIONS: Section[] = [
     lines: [
       "When you import a book, Mood Read copies its audio files onto your device: into the app's own storage on a phone, and into your browser's storage on the web.",
       "The book's details (title, author, narrator, cover and chapters), your listening position, your bookmarks, your playback speed and your settings are stored on your device too.",
-      "None of this is sent anywhere, except a book's title, author and chapter titles when you ask Mood Read to score that book (below). Your audio never leaves your device and is never transcribed. Uninstalling the app, or clearing your browser's data for the site, removes it.",
+      "None of this is sent anywhere, except a book's title, author and chapter titles (and, for a public-domain book from Browse, its public catalog numbers) when you ask Mood Read to score that book (below). Your audio never leaves your device and is never transcribed. Uninstalling the app, or clearing your browser's data for the site, removes it.",
+      "When you use Browse, Mood Read searches LibriVox's recordings on archive.org, which hosts them, and downloads the book you choose from there. As the book arrives it asks LibriVox's catalog, by the book's LibriVox catalog number alone, where its text comes from. These requests carry your search words and the book's catalog details, nothing about you.",
       "A scored book's chapter moods and named pieces are kept on your device in the same way, and features still to come, such as picks, will be too.",
     ],
   },
   {
     heading: "What the scoring proxy gets",
     lines: [
-      "Mood Read scores a book only when you ask it to. Its scoring proxy then receives that book's title, author and chapter titles, nothing more.",
+      "Mood Read scores a book only when you ask it to. Its scoring proxy then receives that book's title, author and chapter titles, nothing more; for a public-domain book from Browse whose text is on Project Gutenberg, it also receives the book's LibriVox catalog number and Project Gutenberg ebook number, public numbers that name the book, not you.",
       "The proxy uses those details to search the web for what is written about the book, such as chapter summaries and reviews, and to name each chapter's mood and a piece of music to match. To do that it passes the title, author and chapter titles on to Brave Search and OpenAI.",
+      "For a book with a Project Gutenberg number, the proxy instead reads the book's own public-domain text from Project Gutenberg and passes each chapter's text to OpenAI to name its mood. It holds that text only while it scores the book and keeps no copy of it: what it keeps is each chapter's emotions and a link to the book's page on Project Gutenberg.",
       "It never receives your audio, your files, your listening position, your bookmarks or anything that identifies you. Cloudflare, which runs the proxy, handles the connection your device makes to it, as any web host does; the proxy keeps no log of those requests.",
       "A scored book's moods and pieces are kept by the proxy and shared with anyone who scores the same book, so each book is researched once. They hold the book's details and what was found about it, nothing about who asked.",
     ],

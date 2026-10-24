@@ -48,6 +48,8 @@ test("/privacy says what the proxy receives, and Import links to it", async ({ p
   await page.getByTestId("privacy-link").click();
   await expect(page).toHaveURL(/\/privacy$/);
   await expect(page.getByText(/receives that book's title, author and chapter titles, nothing more/)).toBeVisible();
+  await expect(page.getByText(/LibriVox catalog number and Project Gutenberg ebook number/)).toBeVisible();
+  await expect(page.getByText(/reads the book's own public-domain text from Project Gutenberg .* keeps no copy of it/)).toBeVisible();
   await expect(page.getByText("Mood Read keeps no listener data.", { exact: false })).toBeVisible();
   await page.waitForLoadState("networkidle");
   expect(problems).toEqual([]);

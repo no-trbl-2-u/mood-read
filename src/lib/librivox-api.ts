@@ -1,7 +1,10 @@
-// The app's only contact with LibriVox (05.8, A9): archive.org, which hosts every LibriVox recording and is the
-// rights-checker's cleared target (archive.org/developers.html, archive.org/developers/bots.html). librivox.org's
-// own API is never called (its terms came back unclear; agents.md rule 6 treats unclear as no). Pure: `fetch` is
-// injected, so tests run it against fixture JSON, never a live network.
+// The app's contact with LibriVox (05.8, A9): archive.org, which hosts every LibriVox recording and is the
+// rights-checker's cleared target (archive.org/developers.html, archive.org/developers/bots.html), for search,
+// metadata and downloads. librivox.org's own API is called once per downloaded book, for one field: the link to the
+// text it was read from, whose Project Gutenberg number lets the proxy score the book from its text (05.9). Its terms
+// came back unclear in 05.8; the rights-checker found them clear in 05.9 (LibriVox's 2026-09-16 API post invites
+// third-party apps, asking for requests spaced several seconds apart, which one call per download is). Pure: `fetch`
+// is injected, so tests run it against fixture JSON, never a live network.
 export type LibriVoxSearchResult = {
   identifier: string;
   title: string;
@@ -31,6 +34,8 @@ export type LibriVoxItem = {
   description: string | null;
   runtime: string | null;
   licenseurl: string | null;
+  /** LibriVox's own catalog number, which archive.org keeps as `call_number`; null when absent or not digits. */
+  catalogId: string | null;
   files: LibriVoxFile[];
 };
 
@@ -98,6 +103,12 @@ function readFile(f: unknown): LibriVoxFile {
   };
 }
 
+/** A public catalog number: digits only, no leading zero, at most nine (the proxy refuses anything else). */
+export function catalogNumber(v: unknown): string | null {
+  const s = typeof v === "number" && Number.isInteger(v) ? String(v) : typeof v === "string" ? v.trim() : "";
+  return /^[1-9][0-9]{0,8}$/.test(s) ? s : null;
+}
+
 /** Checks archive.org's metadata answer's shape; anything off is an error rather than a half-read result. */
 export function readItem(body: unknown): LibriVoxItem {
   const v = body as { metadata?: Record<string, unknown>; files?: unknown };
@@ -112,6 +123,7 @@ export function readItem(body: unknown): LibriVoxItem {
     description: asString(m.description),
     runtime: asString(m.runtime),
     licenseurl: asString(m.licenseurl),
+    catalogId: catalogNumber(m.call_number),
     files: v.files.map(readFile),
   };
 }
@@ -153,6 +165,26 @@ const COVER_FORMATS = ["Item Tile", "Item Image", "JPEG Thumb"];
 /** The cover image file: "Item Image" preferred, else the first of the other known cover formats. */
 export function coverFile(files: LibriVoxFile[]): LibriVoxFile | null {
   return files.find((f) => f.format === "Item Image") ?? files.find((f) => COVER_FORMATS.includes(f.format)) ?? null;
+}
+
+/** The Project Gutenberg ebook number in a link to its text (gutenberg.org/ebooks/1342, /etext/11, /files/84/...). */
+export function gutenbergIdFrom(url: unknown): string | null {
+  const m = typeof url === "string" ? /^https?:\/\/(?:www\.)?gutenberg\.org\/(?:ebooks|etext|files)\/(\d+)(?:[/.?#]|$)/i.exec(url.trim()) : null;
+  return m ? catalogNumber(m[1]) : null;
+}
+
+/**
+ * A LibriVox book's text's Project Gutenberg number, from LibriVox's catalog (its `url_text_source`), or null when the
+ * text is not on Project Gutenberg. One request per book; only the catalog number goes out.
+ */
+export async function gutenbergIdFor(fetchImpl: Fetch, catalogId: string): Promise<string | null> {
+  const id = catalogNumber(catalogId);
+  if (!id) return null;
+  const res = await fetchImpl(`https://librivox.org/api/feed/audiobooks/?id=${id}&format=json`);
+  if (!res.ok) throw new Error(`LibriVox's catalog answered ${res.status}`);
+  const body = (await res.json()) as { books?: { id?: unknown; url_text_source?: unknown }[] };
+  const book = Array.isArray(body?.books) ? body.books.find((b) => String(b?.id) === id) : undefined;
+  return book ? gutenbergIdFrom(book.url_text_source) : null;
 }
 
 /** A file's download URL (05.8, the rights-checker's cleared endpoint): each path segment URL-encoded. */

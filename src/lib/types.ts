@@ -21,8 +21,18 @@ export type Chapter = {
 };
 
 /** Where a book came from (spec 05 Contracts): a listener's own file, or a LibriVox download (05.8), kept by its
- *  archive.org identifier so a re-download or a "Score this book" (05.9) can look it back up. */
-export type BookSource = { kind: "import" } | { kind: "librivox"; librivoxId: string };
+ *  archive.org identifier so a re-download can look it back up, with its public LibriVox catalog number and its
+ *  text's Project Gutenberg number when they are known (05.9): scoring sends both, and the proxy reads the text. */
+export type BookSource =
+  | { kind: "import" }
+  | {
+      kind: "librivox";
+      librivoxId: string;
+      /** LibriVox's own catalog number (archive.org's `call_number`), digits; absent on a book downloaded before 05.9. */
+      catalogId?: string;
+      /** The text's Project Gutenberg ebook number, digits, from LibriVox's catalog; absent when it has none. */
+      gutenbergId?: string;
+    };
 
 export type Book = {
   id: string;

@@ -7,6 +7,8 @@ import { test } from "node:test";
 import { fileURLToPath } from "node:url";
 
 import * as proxy from "../../proxy/src/contract.ts";
+import { parseBookRequest } from "../../proxy/src/validate.ts";
+import { scoringRequest, type ScoringRequest } from "./scoring-api.ts";
 import { EMOTIONS as PROXY_EMOTIONS, PIECE_KINDS } from "../../proxy/src/contract.ts";
 import { EMOTIONS as THEME_EMOTIONS } from "../ui/theme.ts";
 import { EMOTIONS, MAX_SCENES, MIN_SCENE_SPAN, SCENE_SPAN_STEP, type ChapterMood, type Piece, type RemoteChapter, type Scene } from "./types.ts";
@@ -16,6 +18,18 @@ const ROOT = path.join(path.dirname(fileURLToPath(import.meta.url)), "..", "..")
 test("one fixed emotion set: the app's, the theme's and the proxy's agree", () => {
   assert.deepEqual([...EMOTIONS], [...PROXY_EMOTIONS]);
   assert.deepEqual([...EMOTIONS], [...THEME_EMOTIONS]);
+});
+
+// The request: what the app sends is what the proxy accepts, both ways (05.9).
+const requestToProxy = (r: ScoringRequest): proxy.BookRequest => r;
+const requestToApp = (r: proxy.BookRequest): ScoringRequest => r;
+
+test("the proxy accepts exactly what the app sends, catalog numbers included (05.9, A10)", () => {
+  const chapters = [{ bookId: "b", index: 0, title: "Down the Rabbit-Hole", fileIndex: 0, start: 0, end: 1 }];
+  const sent = scoringRequest({ title: "Alice", author: "Lewis Carroll", chapters, source: { kind: "librivox", librivoxId: "alice_librivox", catalogId: "200", gutenbergId: "11" } });
+  assert.deepEqual(parseBookRequest(requestToApp(requestToProxy(sent))), { ok: true, book: sent });
+  const imported = scoringRequest({ title: "Alice", author: "", chapters, source: { kind: "import" } });
+  assert.deepEqual(parseBookRequest(imported), { ok: true, book: imported });
 });
 
 test("piece kinds agree", () => {

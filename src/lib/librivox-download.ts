@@ -8,7 +8,7 @@
 // and calls `library.addBook`, exactly where `importFiles` does for a listener's own file (src/lib/library.ts).
 import { getItem, removeItem, setItem } from "./kv";
 import { library } from "./library";
-import { chapterFiles, chapterTitle, coverFile, downloadUrl, parseLength, readerNames, type LibriVoxItem } from "./librivox-api";
+import { chapterFiles, chapterTitle, coverFile, downloadUrl, gutenbergIdFor, parseLength, readerNames, type LibriVoxItem } from "./librivox-api";
 import { downloadFileInto, probeDuration, resolveFile } from "./media";
 import { extension } from "./meta/read";
 import type { Transfer } from "./download-queue";
@@ -24,6 +24,8 @@ export type PendingLibriVoxBook = {
   /** The volunteers who read it, from the item's "Read by ..." line: the book's narrator, thanked on /credits
    *  (05.5). Absent on a download stashed before 05.5. */
   readers?: string | null;
+  /** LibriVox's catalog number (05.9), for finding the text's Project Gutenberg number. Absent before 05.9. */
+  catalogId?: string | null;
 };
 
 const REGISTRY_KEY = "librivox-pending";
@@ -57,6 +59,7 @@ export function pendingBookFrom(item: LibriVoxItem): PendingLibriVoxBook {
     files,
     cover: cover ? { name: cover.name } : null,
     readers: readerNames(item.description),
+    catalogId: item.catalogId,
   };
 }
 
@@ -149,9 +152,33 @@ export const librivoxTransfer: Transfer = async (download, onProgress, signal) =
     duration: at,
     addedAt: Date.now(),
     lastPlayedAt: null,
-    source: { kind: "librivox", librivoxId: pending.identifier },
+    source: librivoxSource(pending, await textNumber(pending)),
     onDevice: true,
   };
   library.addBook(book);
   forgetLibriVoxBook(bookId);
 };
+
+/**
+ * The text's Project Gutenberg number, looked up once as the book lands (05.9). Best effort: a failed lookup (no
+ * network, LibriVox down, a browser refusing the cross-site request) leaves the book without one, and it is scored
+ * from the web as before; the download never fails for it.
+ */
+async function textNumber(pending: PendingLibriVoxBook): Promise<string | null> {
+  if (!pending.catalogId) return null;
+  try {
+    return await gutenbergIdFor((url, init) => fetch(url, init), pending.catalogId);
+  } catch {
+    return null;
+  }
+}
+
+/** A downloaded book's source: its archive.org identifier, and its catalog numbers when known (05.9). */
+export function librivoxSource(pending: Pick<PendingLibriVoxBook, "identifier" | "catalogId">, gutenbergId: string | null): Book["source"] {
+  return {
+    kind: "librivox",
+    librivoxId: pending.identifier,
+    ...(pending.catalogId ? { catalogId: pending.catalogId } : {}),
+    ...(gutenbergId ? { gutenbergId } : {}),
+  };
+}

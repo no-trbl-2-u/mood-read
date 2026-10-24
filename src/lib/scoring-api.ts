@@ -1,11 +1,26 @@
 // The app's side of the scoring proxy (01.2): the only request Mood Read makes about a book. It sends the book's
-// title, author and chapter titles and nothing more (agents.md rule 6), to one configured base URL, and holds no key
-// (A22). Pure: `fetch` is handed in, so tests run it against a fake proxy.
+// title, author and chapter titles, and for a LibriVox book whose text is on Project Gutenberg its public LibriVox
+// and Gutenberg catalog numbers (05.9), and nothing more (agents.md rule 6): never audio. One configured base URL, no
+// key (A22). Pure: `fetch` is handed in, so tests run it against a fake proxy.
 import { EMOTIONS, MAX_SCENES, type Book, type JobView, type RemoteChapter, type Scene } from "./types.ts";
 
-/** Exactly what the proxy receives about a book. */
-export function scoringRequest(book: Pick<Book, "title" | "author" | "chapters">): { title: string; author: string; chapters: string[] } {
-  return { title: book.title, author: book.author, chapters: book.chapters.map((c) => c.title) };
+export type ScoringRequest = { title: string; author: string; chapters: string[]; librivoxId?: string; gutenbergId?: string };
+
+type Scorable = Pick<Book, "title" | "author" | "chapters"> & Partial<Pick<Book, "source">>;
+
+/**
+ * Exactly what the proxy receives about a book. A LibriVox book with a Project Gutenberg number adds both public
+ * catalog numbers, so the proxy scores it from its own text (A10); an imported book, or a LibriVox book without one,
+ * sends title, author and chapter titles only.
+ */
+export function scoringRequest(book: Scorable): ScoringRequest {
+  const out: ScoringRequest = { title: book.title, author: book.author, chapters: book.chapters.map((c) => c.title) };
+  const source = book.source;
+  if (source?.kind === "librivox" && source.gutenbergId) {
+    if (source.catalogId) out.librivoxId = source.catalogId;
+    out.gutenbergId = source.gutenbergId;
+  }
+  return out;
 }
 
 type Fetch = (input: string, init?: RequestInit) => Promise<Response>;
@@ -76,7 +91,7 @@ export function createScoringApi(baseUrl: string, fetchImpl: Fetch) {
   }
   return {
     /** Starts scoring a book (or gets its cached result); `rescore` asks for a new run explicitly. */
-    async start(book: Pick<Book, "title" | "author" | "chapters">, rescore = false): Promise<JobView> {
+    async start(book: Scorable, rescore = false): Promise<JobView> {
       const v = await call(rescore ? "/v1/rescore" : "/v1/score", {
         method: "POST",
         headers: { "content-type": "application/json" },
