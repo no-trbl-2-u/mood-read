@@ -56,3 +56,5 @@ identity · deleted in <sha>`; recover its text with
 - 2026-10-24 · 05.20 · Browse opens on Popular on LibriVox, pre-scored books first · afc0e9e9..a518afe4
 - 2026-10-24 · 01.19 · A chapter's own soundscape follows merges and splits · 9e388846..314788b8
 - 2026-10-24 · 07.6 · Set the mood seeds an unscored book or chapter · 96646fa7..0ad84c10
+- 2026-10-24 · 01.21 · The proxy limits new runs per client and early rescores · f6633b70..edec73b0
+- 2026-10-24 · 01.22 · A reached chapter's mood card opens from its chips · 39bce218..f1e14d05
