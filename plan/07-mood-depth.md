@@ -87,7 +87,7 @@ Decisions made upfront (do not ask):
 - A scene is never shown as text. Scenes carry emotions and a span, nothing else.
 - Scene spans come from the sources' proportions as the model judges them, rounded to 0.05; spans under 0.1 are
   merged into their neighbour. Four scenes at most per chapter.
-- A pick covers the chapter: picking an alternate replaces every scene's piece with it (D?scene-pick).
+- A pick covers the chapter: picking an alternate replaces every scene's piece with it (D18).
 - A verdict row carries no book, chapter, device or time. The proxy never stores a raw row, only counts.
 - Verdicts weigh the order of alternates; they never remove a piece the scorer named, so a listener can always
   reach it.
