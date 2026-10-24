@@ -108,7 +108,7 @@ just name the pieces/scores/songs/instrumentals (It's important that there's no 
 - **A31** A pause pressed while the next chapter's file is still loading holds, and the web play
   button never flickers while audio buffers.
 - **A32** A chapter's own soundscape stays with that chapter when chapters are merged or split.
-- **A33** Scoring a real book on mood-read.pages.dev returns researched chapter moods and named pieces
+- **A33** (Claude since D15: read "OpenAI's and Brave's" below as Anthropic's.) Scoring a real book on mood-read.pages.dev returns researched chapter moods and named pieces
   from the deployed proxy, with spend metered at OpenAI's and Brave's current prices.
 - **A34** A caller cannot spend the monthly budget with made-up books or repeated rescores: the proxy
   limits how often one client starts runs, and rescoring a cached book waits a minimum age.
@@ -116,6 +116,10 @@ just name the pieces/scores/songs/instrumentals (It's important that there's no 
 - **A36** Companion mode is checked with Audible on a real iOS and Android phone: both play
   together whichever starts first, through a pause, a call and Bluetooth, the bed keeps playing with the screen
   off, and the narration's lock-screen controls are unchanged when companion mode is off.
+- **A37** The scoring proxy researches and names pieces through the Claude API with Claude's
+  own web search: one `ANTHROPIC_API_KEY` Worker secret, no OpenAI or Brave key, the model one config value,
+  spend metered at Anthropic's rates (tokens and searches) against the same monthly cap, and the hermetic tests
+  green on a fake Claude client.
 
 ## Owner decisions (all answered)
 
@@ -206,7 +210,7 @@ Every question below is answered; none is open. Elsewhere in the plan, "Open que
    no emotions on its card (A21).
 
 ## Chunks
-Measure: 12 open · 24 closed · next A37
+Measure: 13 open · 24 closed · next A38
 
 Build order follows the owner's two-part v1, and the lines below are in that order. **Part 1, the player:** 01.1,
 01.6, 01.3, 01.5, 01.7: the player, then real books in it, then the second layer, its mixer and the soundscapes it
@@ -258,7 +262,9 @@ pieces). Ids keep the order they were written in. The app itself (Expo at the re
   - Seen in 01.7: `Mix.chapterBeds` is keyed by chapter index, and 01.6's merge and split shift indices, so an
     override lands on the wrong chapter.
 - [ ] **01.20** Turn scoring on: keys to the Worker, deploy the proxy, set the app's proxy URL · S ·
-  closes A33 · needs — · secrets OPENAI_API_KEY, BRAVE_SEARCH_API_KEY
+  closes A33 · needs 01.21, 01.24 · secrets ANTHROPIC_API_KEY
+  - The owner chose (2026-10-24) to go live on Claude, after the rate limit: the deploy below syncs
+    `ANTHROPIC_API_KEY` instead of the OpenAI and Brave keys, and the price check is against Anthropic's rates.
   - The owner's production step 01.2 left (it spends against the $20 cap): `pnpm secrets:sync` through the vault,
     `wrangler deploy --config proxy/wrangler.jsonc` (creates the `BookJob` and `SpendMeter` Durable Objects), then
     `expo.extra.scoringProxyUrl` in `app.json` set to the Worker's URL (the placeholder resolves nowhere).
@@ -278,3 +284,12 @@ pieces). Ids keep the order they were written in. The app itself (Expo at the re
   - Main risk: expo-audio stops Android background playback after about 3 minutes without lock-screen controls,
     which companion mode turns off. If the bed stops, decide between a foreground service with no media session
     and accepting the limit; note the limit in `docs/workarounds.md`.
+- [ ] **01.24** The scoring proxy moves to Claude: one key, Claude's web search · M ·
+  closes A37 · needs 01.21 · secrets ANTHROPIC_API_KEY
+  - `proxy/src/clients.ts` gains a Claude client on `@anthropic-ai/sdk` (structured outputs through
+    `output_config.format`); research replaces Brave with the `web_search` server tool, keeping only links and the
+    model's findings, never page text (Open questions 4).
+  - The model is `CLAUDE_MODEL` in `proxy/wrangler.jsonc`, default `claude-opus-5-5`, changed without a rebuild;
+    `proxy/src/meter.ts` prices tokens and web searches per Anthropic's published rates.
+  - No-vocals checks, chapter matching, caching and the cap stay as 01.2 built them; the OpenAI and Brave clients
+    and their secrets go.
