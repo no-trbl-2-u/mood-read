@@ -94,6 +94,43 @@ export async function storeCover(bookId: string, picture: Picture): Promise<stri
   return ref;
 }
 
+/**
+ * Downloads a URL into the book's IndexedDB store (05.8, LibriVox's chapter and cover files), the web build's
+ * equivalent of media.ts's native `downloadFileInto`: same signature, same `idb:<bookId>/<name>` ref convention
+ * as `storeFile`/`storeCover`, so a downloaded LibriVox book resolves and deletes exactly like an imported one.
+ */
+export async function downloadFileInto(
+  bookId: string,
+  name: string,
+  url: string,
+  onProgress: (bytes: number, totalBytes: number | null) => void,
+  signal: AbortSignal,
+): Promise<{ ref: string }> {
+  const res = await fetch(url, { signal });
+  if (!res.ok) throw new Error(`Could not download ${url} (${res.status})`);
+  const total = Number(res.headers.get('content-length')) || null;
+  let blob: Blob;
+  if (res.body) {
+    const reader = res.body.getReader();
+    const chunks: Uint8Array[] = [];
+    let bytes = 0;
+    for (;;) {
+      const { done, value } = await reader.read();
+      if (done) break;
+      chunks.push(value);
+      bytes += value.length;
+      onProgress(bytes, total);
+    }
+    blob = new Blob(chunks as BlobPart[]);
+  } else {
+    blob = await res.blob();
+    onProgress(blob.size, blob.size);
+  }
+  const ref = `idb:${bookId}/${name}`;
+  await tx('readwrite', (s) => s.put(blob, ref));
+  return { ref };
+}
+
 export async function resolveFile(ref: string): Promise<string> {
   if (!ref.startsWith('idb:')) return ref;
   const cached = urls.get(ref);

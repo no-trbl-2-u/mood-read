@@ -15,7 +15,9 @@ import { isWav, wavEnvelope, type Envelope } from './silence';
 /** A picked file: its name and bytes, and where the platform reads it from. */
 export type PickedAudio = PickedFile & { uri: string };
 
-function bookDir(bookId: string): Directory {
+/** Where a book's files live on this device; src/lib/librivox-download.ts reuses this for a downloaded book's
+ *  chapter and cover files rather than inventing a second convention for the same folder. */
+export function bookDir(bookId: string): Directory {
   return new Directory(Paths.document, 'books', bookId);
 }
 
@@ -81,6 +83,30 @@ export async function storeCover(bookId: string, picture: Picture): Promise<stri
   if (target.exists) target.delete();
   target.write(picture.data);
   return target.uri;
+}
+
+/**
+ * Downloads a URL straight into the book's folder (05.8, LibriVox's chapter and cover files, which arrive by URL
+ * rather than from a picked file): the same destination pattern src/lib/download-transfer.ts's
+ * `createFileTransfer` already uses for a single-URL download, generalized to a caller-chosen file name inside
+ * `bookDir`. Returns the ref to keep in a `BookFile.ref` or `Book.cover`.
+ */
+export async function downloadFileInto(
+  bookId: string,
+  name: string,
+  url: string,
+  onProgress: (bytes: number, totalBytes: number | null) => void,
+  signal: AbortSignal,
+): Promise<{ ref: string }> {
+  const dir = bookDir(bookId);
+  dir.create({ idempotent: true, intermediates: true });
+  const target = new File(dir, name);
+  await File.downloadFileAsync(url, target, {
+    idempotent: true,
+    signal,
+    onProgress: (p) => onProgress(p.bytesWritten, p.totalBytes < 0 ? null : p.totalBytes),
+  });
+  return { ref: target.uri };
 }
 
 /** A playable (or displayable) URI for a stored ref. */

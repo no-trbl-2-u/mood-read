@@ -7,6 +7,7 @@ import { createDownloadQueue, recoverRunning, type Transfer } from "./download-q
 import { createDownloadStore } from "./download-store";
 import { getItem, removeItem, setItem } from "./kv";
 import { useBooks } from "./library";
+import { librivoxTransfer } from "./librivox-download";
 import { settings } from "./settings";
 import { booksStorageBytes } from "./storage-size";
 import { musicBytesFrom, type StorageMeter } from "./storage";
@@ -19,15 +20,17 @@ export const downloadStore = createDownloadStore({ getItem, setItem, removeItem 
 recoverRunning(downloadStore);
 
 /**
- * No chunk has a real download source yet (05.1-05.4 the music catalog, 05.8 LibriVox browse), so nothing ever
- * calls `enqueue` today and this transfer never runs. It is here so the queue is wired for real, ready for
- * those chunks to hand it a resolver (src/lib/download-transfer.ts builds the real one once they do).
+ * Every "book" target is a LibriVox download (05.8): an imported book is on the device the moment it is added,
+ * so nothing else ever queues one. A "piece" target has no source yet (05.1-05.4's music catalog).
  */
-const noSourceYet: Transfer = () => Promise.reject(new Error("No download source for this item yet"));
+const transfer: Transfer = (download, onProgress, signal) =>
+  download.target.kind === "book"
+    ? librivoxTransfer(download, onProgress, signal)
+    : Promise.reject(new Error("No download source for this item yet"));
 
 export const downloadQueue = createDownloadQueue({
   store: downloadStore,
-  transfer: noSourceYet,
+  transfer,
   wifiOnly: () => settings.get().wifiOnly,
 });
 
