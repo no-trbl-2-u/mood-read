@@ -108,6 +108,9 @@
 - impact: 5 (a done chunk still reads as a need; order and readers may hold the dependent chunk back)
 - ease: 6 (scripts/plan/settle.mjs dropNeeds: match `needs <ids> ·` when the chunk line continues on the next line)
 - seen: 2026-10-23, settling 01.1: 04.1 kept `needs 01.1 ·` before its wrapped `secrets EXPO_TOKEN` line, while 05's single-line needs were tidied; fixed by hand in bca090c
+- seen again: 2026-10-23, settling 06.6: 05.14's single-line `needs 04.1, 06.5, 06.6 · secrets EXPO_TOKEN` kept
+  06.6 (settle reported "left the needs"); fixed by hand in a116f13. The match fails whenever `secrets` follows
+  `needs`, wrapped or not.
 - next: /iterate, with a red-first test in scripts/__tests__
 
 ### [5.6] heartbeat.yml reads a secret in a job-level env

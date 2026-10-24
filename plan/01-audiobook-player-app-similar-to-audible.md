@@ -258,7 +258,9 @@ pieces). Ids keep the order they were written in. The app itself (Expo at the re
     Developer Policy III.5, until the owner revisits it after v1); YouTube playlists through the Data API within
     its daily quota; Apple Music playlists only once the Apple Developer Program is joined (after v1); SoundCloud
     gets a plain soundcloud.com link, no API.
-- [ ] **01.14** Companion mode: Mood Read's bed beside another app · M · closes A27 · needs 06.3
+- [ ] **01.14** Companion mode: Mood Read's bed beside another app · M · closes A27 · needs —
+  - Wire Settings' saved Companion mode switch (06.3, `src/lib/settings.ts` `companionMode`) to the audio
+    session, and drop its "It arrives in a later update" caption in `src/app/settings.tsx`.
   - As `docs/workarounds.md` (Companion mode) sets it: iOS `.playback` with `mixWithOthers`; Android requests no
     `AUDIOFOCUS_GAIN`; Expo needs `doNotMix` for lock-screen controls, so this is a mode the listener turns on,
     never the default. Automatic chapter following is out (iOS has no API; Android's notification access is unclear).

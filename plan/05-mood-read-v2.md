@@ -181,21 +181,28 @@ Measure: 20 open · 0 closed · next A21
 - [ ] **05.3** The scorer names catalog pieces only, and re-matches books scored before v2 · M · closes A3 ·
   needs 01.2, 05.2
 - [ ] **05.6** The download manager: queue, pause and resume, retry, Wi-Fi only, storage meter · M · closes A6 ·
-  needs 06.3
+  needs —
+  - Read `wifiOnly` from `src/lib/settings.ts` (06.3, on by default); add Downloads to the library's overflow menu
+    (`MENU` in `src/ui/OverflowMenu.tsx`) and turn Settings' disabled Storage row into the link to `/downloads`.
 - [ ] **05.4** One button builds and pre-downloads a book's playlist · M · closes A4, A5 · needs 01.10, 05.3, 05.6
 - [ ] **05.7** Library management: remove a download, keep the book; shared pieces survive deletion · M ·
   closes A7, A8 · needs 05.4
 - [ ] **05.5** Credits, off to the side in the library's overflow menu · S · closes A12 · needs 05.1
+  - One line in `MENU` (`src/ui/OverflowMenu.tsx`, 06.3) adds Credits; Settings' disabled Credits row becomes
+    its link.
 - [ ] **05.8** Browse and search LibriVox, and download a book into the library · L · closes A9 · needs 05.6
   - The empty library offers "Browse free books" beside "Import a book", as 06.2 draws it.
+  - Browse joins the library's overflow menu: one line in `MENU` (`src/ui/OverflowMenu.tsx`, 06.3).
 - [ ] **05.9** Score public-domain books from their own text · M · closes A10 · needs 01.2, 05.8
   - Update the privacy policy (`src/app/privacy.tsx`) for the LibriVox / Gutenberg ids the proxy now receives.
 - [ ] **05.10** Pre-scored books and their moods in Browse · M · closes A11 · needs 05.9
 - [ ] **05.11** Split a one-file book into chapter files on the device · M · closes A13 · needs 04.1
 - [ ] **05.12** Spotify chapter playlists: the rights check · S · closes A14 · needs —
   - A study, same shape as 01.9: builds nothing; `unclear` counts as no and leaves 05.13 waiting.
-- [ ] **05.13** Spotify chapter playlists, sized to each chapter · M · closes A15 · needs 05.12, 01.11, 05.3, 06.3
+- [ ] **05.13** Spotify chapter playlists, sized to each chapter · M · closes A15 · needs 05.12, 01.11, 05.3
   - Rewrite the privacy policy's Spotify section (`src/app/privacy.tsx`) to say what a connected account shares.
+  - Replace Settings' disabled "Spotify, Not available yet" row (06.3, `src/app/settings.tsx`) with connect and
+    disconnect.
 - [ ] **05.14** Google Play release · M · closes A16 · needs 04.1, 06.5 · secrets EXPO_TOKEN
 - [ ] **05.15** TestFlight and the App Store · M · closes A17 · needs 05.14 · secrets EXPO_TOKEN
   - Needs the owner in the Apple Developer Program (D6, `plan/AUDIT.md`).

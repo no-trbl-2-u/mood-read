@@ -72,9 +72,6 @@ Decisions made upfront (do not ask):
 
 ## Acceptance
 
-- **A3** A Settings screen, reached from the library's overflow menu, holds Wi-Fi-only downloads (on by default),
-  companion mode, the default soundscape, storage, connected accounts and the privacy policy, each saved on the
-  device.
 - **A4** Every built screen uses the design system's tokens, type and icons, with no colour or size outside
   `src/ui/theme.ts`.
 - **A5** Every control has a screen-reader label; text scales to 200% without clipping; contrast meets WCAG 2.2 AA;
@@ -87,9 +84,8 @@ Decisions made upfront (do not ask):
   icons are Lucide.
 
 ## Chunks
-Measure: 3 open · 3 closed · next A7
+Measure: 2 open · 4 closed · next A7
 
-- [ ] **06.3** Settings, from the library's overflow menu · S · closes A3 · needs —
 - [ ] **06.4** Apply the design system to every built screen · M · closes A4 · needs —
   - Install `lucide-react-native` v1.x and `react-native-svg`; no brand icons. Ship the Lucide ISC, Feather MIT
     and react-native-svg MIT notices word for word (copied from each package's LICENSE) on an in-app licenses
