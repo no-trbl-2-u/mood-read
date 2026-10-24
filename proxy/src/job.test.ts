@@ -185,7 +185,7 @@ test("the cap stops new runs, not one already going", async () => {
   assert.equal((await next.job.start(await bookKey({ ...book, title: "Carmilla" }), { ...book, title: "Carmilla" })).view.state, "capped");
 });
 
-test("a vocal piece is never named: when too few pass the vocals checks, the chapter names none and is unscored (A20)", async () => {
+test("a vocal piece is never named: when too few pass the vocals checks, the chapter names none (A20)", async () => {
   const { job } = setup({ model: { clean: 4, vocalByCheck: [] } });
   await job.start(await bookKey(book), book);
   await drain(job);
@@ -199,10 +199,19 @@ test("a vocal piece is never named: when too few pass the vocals checks, the cha
   await strict.job.start(await bookKey(book), book);
   await drain(strict.job);
   const none = (await strict.job.status()).view!.result!;
-  for (const c of none.chapters) {
-    assert.equal(c.pieces, null);
-    assert.equal(c.mood.coverage, "too-little");
-    assert.deepEqual(c.mood.emotions, []);
+  for (const c of none.chapters) assert.equal(c.pieces, null);
+});
+
+test("a chapter with researched emotions but too few no-vocals pieces keeps its emotions and names no piece (A13, A20)", async () => {
+  const { job } = setup({ model: { clean: 1 } });
+  await job.start(await bookKey(book), book);
+  await drain(job);
+  const result = (await job.status()).view!.result!;
+  for (const c of result.chapters) {
+    assert.equal(c.pieces, null, "too few pieces passed: none is named");
+    assert.equal(c.mood.coverage, "scored", "the research found enough: not stored as too little written");
+    assert.deepEqual(c.mood.emotions.map((e) => e.emotion), ["tension", "dread"]);
+    assert.ok(c.mood.sources.length > 0, "the emotions keep their cited sources");
   }
 });
 

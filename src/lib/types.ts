@@ -116,7 +116,10 @@ export type ChapterPlaylist = {
   pick: "auto" | string;
 };
 
-/** What the device keeps per chapter. `playlist` is null exactly when the mood is `too-little` (unscored). */
+/**
+ * What the device keeps per chapter. `playlist` is null when the mood is `too-little` (unscored), and when the
+ * emotions were found but no piece passed the no-vocals checks (A20).
+ */
 export type ChapterScore = { mood: ChapterMood; pieces: Piece[]; playlist: ChapterPlaylist | null };
 
 export type BookScores = {

@@ -56,7 +56,10 @@ export type ChapterResult = {
   index: number;
   title: string;
   mood: ChapterMood;
-  /** Null exactly when the mood is `too-little`: an unscored chapter names no piece. */
+  /**
+   * Null when the mood is `too-little` (an unscored chapter names no piece), and when the emotions were found but too
+   * few pieces passed the no-vocals checks (A20): the mood stays `scored`, no piece is named.
+   */
   pieces: ChapterPieces | null;
 };
 

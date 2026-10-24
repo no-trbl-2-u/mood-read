@@ -229,8 +229,9 @@ export function createBookJob(deps: JobDeps) {
     }
     for (const i of indices) {
       const pieces = choosePieces(passed.get(i)!, run.drafts[i]!.emotions);
-      // A chapter with no piece that passed every guard names none and stays unscored: never a vocal piece (A20).
-      run.results[i] = pieces ? { index: i, title: run.book.chapters[i], mood: mood(run, i, run.drafts[i]), pieces } : unscored(run, i);
+      // A chapter with too few pieces that passed every guard names none, never a vocal piece (A20), but keeps the
+      // emotions the research found and their sources (A13): its mood is scored, only its pieces are missing.
+      run.results[i] = { index: i, title: run.book.chapters[i], mood: mood(run, i, run.drafts[i]), pieces };
       run.drafts[i] = null;
     }
   }
