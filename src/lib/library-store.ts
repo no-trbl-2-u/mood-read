@@ -111,11 +111,19 @@ export function createLibraryStore(kv: Kv, now: () => number = Date.now, makeId:
     },
     /**
      * Replaces a book's chapters after the listener renames, merges or splits them (spec 01 A6). The list must
-     * cover the book end to end; one that does not is ignored, so a bad edit never loses audio.
+     * cover the book end to end; one that does not is ignored, so a bad edit never loses audio. A merge or split
+     * passes `moveBeds` (src/lib/bed.ts bedsAfterMerge, bedsAfterSplit) so the chapters' own beds, keyed by chapter
+     * index, move with their chapters in the same edit (A32); a book never mixed has none and is left unmixed.
      */
-    setChapters(id: string, chapters: Chapter[]): void {
+    setChapters(id: string, chapters: Chapter[], moveBeds?: (beds: Record<string, BedChoice>) => Record<string, BedChoice>): void {
       const b = state.books.find((x) => x.id === id);
       if (!b || !coversBook(chapters, b.duration)) return;
+      const stored = moveBeds ? read<unknown>(mixKey(id), null) : null;
+      const beds = stored ? normalizeMix(stored).chapterBeds : {};
+      // Only the beds change: a mix with no layer of its own keeps following the default soundscape setting.
+      if (moveBeds && Object.keys(beds).length) {
+        kv.setItem(mixKey(id), JSON.stringify({ ...(stored as object), chapterBeds: moveBeds(beds) }));
+      }
       saveBooks(state.books.map((x) => (x.id === id ? { ...x, chapters } : x)));
     },
     /** Marks a book as just played, which moves it to the top of the library. */

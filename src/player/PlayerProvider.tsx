@@ -520,6 +520,16 @@ export function PlayerProvider({ children }: { children: ReactNode }) {
     };
   }, [clock, ducker]);
 
+  // A merge or split moves the chapters' own beds in the store with the chapters (A32); the open book's mix takes
+  // them, so the bed follows and the next pick does not save the old ones back.
+  useEffect(() => {
+    if (!bookId) return;
+    return library.subscribe(() => {
+      const beds = library.getMix(bookId).chapterBeds;
+      setMixState((prev) => (JSON.stringify(prev.chapterBeds) === JSON.stringify(beds) ? prev : { ...prev, chapterBeds: beds }));
+    });
+  }, [bookId]);
+
   // A layer pick (or the open book's mix) moves the bed now, crossfading if it is heard (A12).
   useEffect(() => {
     bedRef.current = mix;
