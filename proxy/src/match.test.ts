@@ -56,3 +56,20 @@ test("the same title word for word wins over numbering", () => {
   assert.equal(m.get(0)?.sourceTitle, "Opening Credits");
   assert.equal(m.get(1)?.sourceTitle, "Chapter 1");
 });
+
+test("unnumbered audiobook chapters never take the sources' chapters by position: no neighbour's mood (A19)", () => {
+  const titles = ["Opening Credits", "The Boy Who Lived", "The Vanishing Glass"];
+  const m = matchChapters([f("Chapter One", 1), f("Chapter Two", 2)], titles, [0, 1, 2]);
+  assert.equal(m.size, 0, "nothing names these chapters: they stay unscored rather than shifted by one");
+});
+
+test("a short title never takes a longer title's summary when that title is in the book (A19)", () => {
+  const m = matchChapters([f("Homecoming", 5)], ["Home", "Chapter 5: Homecoming"], [0, 1]);
+  assert.equal(m.get(1)?.sourceTitle, "Homecoming");
+  assert.equal(m.has(0), false);
+});
+
+test("containment matches whole words only", () => {
+  assert.equal(matchChapters([f("Homecoming", 0)], ["Home"], [0]).size, 0);
+  assert.equal(matchChapters([f("The Storm Breaks", 0)], ["Chapter 4: The Storm"], [0]).get(0)?.sourceTitle, "The Storm Breaks");
+});
