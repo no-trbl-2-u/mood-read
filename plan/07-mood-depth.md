@@ -118,9 +118,6 @@ Decisions made upfront (do not ask):
 
 ## Acceptance
 
-- **A1** A chapter whose sources describe a sequence is scored as 1 to 4 ordered scenes, each with emotions and a
-  span, spans summing to 1, the chapter's own emotions unchanged; a chapter without a sequence has one scene; no
-  scene carries text.
 - **A2** Playback crossfades to the next scene's piece when the clock crosses a scene boundary, and back on a seek
   back; a chapter-wide pick plays for every scene; the mood card shows the playing scene's emotions and nothing for
   a scene not yet reached.
@@ -153,16 +150,9 @@ All answered; none is open.
   could keep; a daily batch with no time is not (decided here, 2026-10-24).
 
 ## Chunks
-Measure: 9 open · 0 closed · next A10
+Measure: 8 open · 1 closed · next A10
 
-- [ ] **07.1** Scenes in the contract and the scorer: ordered emotions with spans, one piece per scene · M ·
-  closes A1 · needs —
-  - Contract first: `Scene`, `ChapterMood.scenes`, `ChapterPlaylist.scenePieces` in `src/lib/types.ts` and
-    `proxy/src/contract.ts`, held in step by `src/lib/scoring-contract.test.ts`; `proxy/src/research.ts` asks for
-    the sequence when the sources describe one and `proxy/src/validate.ts` enforces spans (sum 1, ≤ 4, ≥ 0.1 after
-    merging); `proxy/src/pieces.ts` names one piece per scene through the same no-vocals checks (A20); hermetic
-    fixtures in `proxy/src/fakes.ts`. Books already cached keep working with no scenes.
-- [ ] **07.2** The bed follows scenes; the mood card shows the playing scene · M · closes A2 · needs 07.1
+- [ ] **07.2** The bed follows scenes; the mood card shows the playing scene · M · closes A2 · needs —
   - `src/lib/bed.ts`: `sceneAt(positionInChapter, chapterLength, scenes)` and the boundary crossfade;
     `src/player/bed-engine.ts` drives it from the clock; `src/player/MoodCard.tsx` adds the scene band; reached
     scenes extend `src/lib/reached.ts` with the furthest position within the playing chapter. Until 01.10 plays

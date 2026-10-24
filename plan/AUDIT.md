@@ -45,6 +45,16 @@
 - default taken: 01.23 stays unclaimed and off the loop's pick list in practice (no code to ship without the
   phone); the loop keeps working other chunks until this is checked.
 
+### [needs-user-call] Shrink the verify gate: the kit's script tests take about 7 minutes on Windows
+- category: tooling
+- logged: 2026-10-24 (heads-down 07, rigel, 07.1)
+- what: `pnpm test:scripts` takes about 430 s on the owner's Windows machine (the claims branch 213 s, the CLI
+  127 s, settle 95 s; they spawn git), so the whole `pnpm verify` runs 8 to 12 minutes, over a 10-minute
+  foreground budget, and the pre-commit hook runs it again on every commit. agents.md rule 3 says shrink the gate,
+  never background it: move the kit's own script tests (`scripts/__tests__`) off the per-commit path to a nightly
+  or pre-push job, keeping `proxy/src/*.test.ts` per commit.
+- default taken: the gate stays whole; the loop runs it as sequential foreground legs and waits out each hook.
+
 ## Pending — findings
 
 ### [4.5] The web export puts package assets under dist/assets/node_modules/, which Pages never uploads
