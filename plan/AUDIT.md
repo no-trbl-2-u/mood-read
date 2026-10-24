@@ -30,6 +30,21 @@
   (spec 01 A2, A4).
 - owner (2026-10-23): build now, check later from this queue (option 1). Both builds finished; 12bde103 is main's 04.1 code.
 
+### [needs-user-call] Check companion mode with Audible on a real phone (01.23, spec 01 A36)
+- category: product
+- logged: 2026-10-24 (march, cloud tick)
+- what: A36 only closes on a real iOS and Android phone: both apps play together whichever starts first, through
+  a pause, a call and Bluetooth, the bed keeps playing with the screen off, and the narration's lock-screen
+  controls are unchanged when companion mode is off. 01.14 built and tested the rest of A27 on web; nothing left to
+  build without the phone. The same preview APK as the row above (04.1 A2) carries companion mode; no new build
+  needed to check it.
+- open: whether Android's background bed stops after about 3 minutes without lock-screen controls (expo-audio's
+  limit when companion mode turns the narration's media session off). If it does, the owner decides between a
+  foreground service with no media session and accepting the limit (noted in `docs/workarounds.md`); that decision
+  waits on what the phone shows, so it is not guessed here.
+- default taken: 01.23 stays unclaimed and off the loop's pick list in practice (no code to ship without the
+  phone); the loop keeps working other chunks until this is checked.
+
 ## Pending — findings
 
 ### [4.5] The web export puts package assets under dist/assets/node_modules/, which Pages never uploads
