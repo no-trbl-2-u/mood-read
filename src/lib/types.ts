@@ -94,11 +94,28 @@ export type EmotionScore = { emotion: Emotion; intensity: number };
 /** A cited source: its link and page title, never a copy of its text. */
 export type SourceLink = { url: string; title: string };
 
+/** Scenes per chapter, at most (spec 07, Decisions). */
+export const MAX_SCENES = 4;
+/** A scene's span is a multiple of this; a span under MIN_SCENE_SPAN is merged into its neighbour. */
+export const SCENE_SPAN_STEP = 0.05;
+export const MIN_SCENE_SPAN = 0.1;
+
+/**
+ * One part of a chapter, in order (spec 07, 07.1): its own emotions and its span, the fraction of the chapter it
+ * covers; a chapter's spans sum to 1. A scene carries no text (A21), only emotions and a span.
+ */
+export type Scene = { emotions: EmotionScore[]; span: number };
+
 export type ChapterMood = {
   chapterIndex: number;
   chapterTitle: string;
-  /** Strongest first; empty when coverage is `too-little`. */
+  /** The whole chapter's, strongest first; empty when coverage is `too-little`. */
   emotions: EmotionScore[];
+  /**
+   * The chapter's scenes in order (1 to MAX_SCENES) when scored. Absent on a `too-little` chapter and on a book
+   * scored before 07.1: read it through `scenesOf` (src/lib/scenes.ts), which gives one scene equal to the chapter.
+   */
+  scenes?: Scene[];
   sources: SourceLink[];
   coverage: "scored" | "too-little";
   model: string;
@@ -124,6 +141,11 @@ export type ChapterPlaylist = {
   piece: string;
   alternates: string[];
   pick: "auto" | string;
+  /**
+   * One piece id per scene, the same length as the mood's `scenes` (07.1). Absent on a book scored before 07.1: read
+   * it through `scenePiecesOf` (src/lib/scenes.ts), which gives the chapter's piece for every scene.
+   */
+  scenePieces?: string[];
 };
 
 /**
@@ -152,7 +174,8 @@ export type RemoteChapter = {
   index: number;
   title: string;
   mood: ChapterMood;
-  pieces: { piece: Piece; alternates: Piece[] } | null;
+  /** `scenePieces`: one per scene, in order, when the mood has scenes (07.1). */
+  pieces: { piece: Piece; alternates: Piece[]; scenePieces?: Piece[] } | null;
 };
 
 export type JobView = {
