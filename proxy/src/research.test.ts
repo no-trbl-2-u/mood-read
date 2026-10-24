@@ -98,10 +98,62 @@ test("a chapter is scored only with emotions and a real cited source; otherwise 
     sources,
   );
   assert.deepEqual(found, [
-    { sourceTitle: "One", sourceNumber: 1, coverage: "scored", emotions: [{ emotion: "joy", intensity: 0.5 }], sources: [{ url: "https://a.example", title: "A" }] },
-    { sourceTitle: "Two", sourceNumber: 2, coverage: "too-little", emotions: [], sources: [] },
-    { sourceTitle: "Three", sourceNumber: 3, coverage: "too-little", emotions: [], sources: [] },
-    { sourceTitle: "Four", sourceNumber: 0, coverage: "too-little", emotions: [], sources: [] },
+    {
+      sourceTitle: "One",
+      sourceNumber: 1,
+      coverage: "scored",
+      emotions: [{ emotion: "joy", intensity: 0.5 }],
+      scenes: [{ emotions: [{ emotion: "joy", intensity: 0.5 }], span: 1 }],
+      sources: [{ url: "https://a.example", title: "A" }],
+    },
+    { sourceTitle: "Two", sourceNumber: 2, coverage: "too-little", emotions: [], scenes: [], sources: [] },
+    { sourceTitle: "Three", sourceNumber: 3, coverage: "too-little", emotions: [], scenes: [], sources: [] },
+    { sourceTitle: "Four", sourceNumber: 0, coverage: "too-little", emotions: [], scenes: [], sources: [] },
   ]);
   assert.deepEqual(parseMoods(null, sources), []);
+});
+
+test("the reading asks for ordered scenes only when the sources describe a sequence, emotions and spans only (07.1)", () => {
+  const r = moodRequest(book, [1], [{ id: "S1", url: "https://a.example", title: "A", snippet: "s", chapter: 1 }]);
+  assert.match(r.system, /Only when the results describe a chapter as a sequence/);
+  assert.match(r.system, /two to 4/);
+  assert.match(r.system, /spans summing to 1/);
+  assert.match(r.system, /Otherwise give no scenes/);
+  assert.match(r.system, /return emotions and spans only/);
+  const item = (r.schema as { properties: { chapters: { items: { required: string[]; properties: Record<string, { items: { properties: object; additionalProperties: boolean } }> } } } }).properties.chapters.items;
+  assert.ok(item.required.includes("scenes"));
+  assert.deepEqual(Object.keys(item.properties.scenes.items.properties).sort(), ["emotions", "span"], "a scene has no text field to fill");
+  assert.equal(item.properties.scenes.items.additionalProperties, false);
+});
+
+test("a scored chapter's scenes come back in order with spans summing to 1, the chapter's emotions unchanged (A1)", () => {
+  const sources: Source[] = [{ id: "S1", url: "https://a.example", title: "A", snippet: "s", chapter: null }];
+  const emotions = [{ emotion: "dread", intensity: 0.8 }, { emotion: "calm", intensity: 0.4 }];
+  const [seq, flat] = parseMoods(
+    {
+      chapters: [
+        {
+          sourceTitle: "One",
+          sourceNumber: 1,
+          coverage: "scored",
+          emotions,
+          scenes: [
+            { emotions: [{ emotion: "calm", intensity: 0.6 }], span: 0.4, summary: "a quiet supper" },
+            { emotions: [{ emotion: "tension", intensity: 0.7 }], span: 0.35 },
+            { emotions: [{ emotion: "dread", intensity: 0.9 }], span: 0.25 },
+          ],
+          sourceIds: ["S1"],
+        },
+        { sourceTitle: "Two", sourceNumber: 2, coverage: "scored", emotions, scenes: [], sourceIds: ["S1"] },
+      ],
+    },
+    sources,
+  );
+  assert.deepEqual(seq.emotions, emotions);
+  assert.deepEqual(seq.scenes, [
+    { emotions: [{ emotion: "calm", intensity: 0.6 }], span: 0.4 },
+    { emotions: [{ emotion: "tension", intensity: 0.7 }], span: 0.35 },
+    { emotions: [{ emotion: "dread", intensity: 0.9 }], span: 0.25 },
+  ]);
+  assert.deepEqual(flat.scenes, [{ emotions, span: 1 }], "no sequence: one scene");
 });

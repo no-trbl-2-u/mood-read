@@ -9,6 +9,7 @@ const f = (sourceTitle: string, sourceNumber: number): FoundChapter => ({
   sourceNumber,
   coverage: "scored",
   emotions: [{ emotion: "calm", intensity: 0.5 }],
+  scenes: [{ emotions: [{ emotion: "calm", intensity: 0.5 }], span: 1 }],
   sources: [{ url: "https://a.example", title: "A" }],
 });
 

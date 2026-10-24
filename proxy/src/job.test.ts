@@ -284,3 +284,68 @@ test("a failed or capped rescore still shows the cached result on status, as sta
   assert.equal(polled.state, "capped");
   assert.deepEqual(polled.result, cached);
 });
+
+test("a chapter the sources describe as a sequence is scored as ordered scenes with one checked piece each; the rest have one scene (A1, A20)", async () => {
+  const scenes = {
+    "Chapter 2": [
+      { emotions: [{ emotion: "calm", intensity: 0.6 }], span: 0.4, summary: "a quiet supper at the castle" },
+      { emotions: [{ emotion: "tension", intensity: 0.7 }], span: 0.35 },
+      { emotions: [{ emotion: "dread", intensity: 0.9 }], span: 0.25 },
+    ],
+  };
+  const { job } = setup({ model: { thin: ["Opening Credits"], scenes } });
+  await job.start(await bookKey(book), book);
+  await drain(job);
+  const result = (await job.status()).view!.result!;
+  const [credits, one, two] = result.chapters;
+
+  assert.equal(credits.mood.scenes, undefined, "an unscored chapter has no scenes");
+
+  assert.deepEqual(one.mood.scenes, [{ emotions: one.mood.emotions, span: 1 }], "no sequence: one scene, the chapter");
+  assert.deepEqual(one.pieces!.scenePieces, [one.pieces!.piece]);
+
+  const s = two.mood.scenes!;
+  assert.deepEqual(two.mood.emotions.map((e) => e.emotion), ["tension", "dread"], "the chapter's own emotions unchanged");
+  assert.deepEqual(s.map((x) => x.emotions[0].emotion), ["calm", "tension", "dread"]);
+  assert.deepEqual(s.map((x) => x.span), [0.4, 0.35, 0.25]);
+  assert.ok(Math.abs(s.reduce((t, x) => t + x.span, 0) - 1) < 1e-9);
+  for (const x of s) assert.deepEqual(Object.keys(x).sort(), ["emotions", "span"], "no scene carries text");
+  assert.doesNotMatch(JSON.stringify(result), /supper/);
+
+  const per = two.pieces!.scenePieces!;
+  assert.equal(per.length, s.length);
+  assert.ok(per[0].moodTags.includes("calm"), "the calm scene gets a calm piece");
+  for (const p of per) {
+    assert.equal(p.vocals, "none");
+    assert.doesNotMatch(p.title, /Sung|Song/, "a scene piece passes the same no-vocals checks (A20)");
+  }
+  // The chapter's piece and alternates still fit the chapter's emotions, never a scene's alone (A14).
+  for (const p of [two.pieces!.piece, ...two.pieces!.alternates]) assert.ok(p.moodTags.some((t) => t === "tension" || t === "dread"));
+});
+
+test("a scene whose candidates fail the second vocals check plays the chapter's piece", async () => {
+  const scenes = { "Chapter 1": [{ emotions: [{ emotion: "calm", intensity: 0.6 }], span: 0.5 }, { emotions: [{ emotion: "dread", intensity: 0.9 }], span: 0.5 }] };
+  const { job } = setup({ model: { scenes, vocalByCheck: ["Scene Theme 2.1 calm", "Scene Theme 2.2 calm"] } });
+  await job.start(await bookKey(book), book);
+  await drain(job);
+  const ch = (await job.status()).view!.result!.chapters[1];
+  assert.equal(ch.mood.scenes!.length, 2);
+  assert.equal(ch.pieces!.scenePieces![0].id, ch.pieces!.piece.id);
+});
+
+test("a run saved before 07.1 (drafts with no scenes) finishes with one scene per scored chapter", async () => {
+  const { job, store } = setup();
+  await job.start(await bookKey(book), book);
+  for (let i = 0; i < 50; i++) {
+    const run = (await store.get<Run>("job"))!;
+    if (run.phase === "pieces") break;
+    await job.step();
+  }
+  const run = (await store.get<Run>("job"))!;
+  assert.equal(run.phase, "pieces");
+  await store.put("job", { ...run, drafts: run.drafts.map((d) => (d ? { emotions: d.emotions, sources: d.sources } : d)) });
+  await drain(job);
+  const ch = (await job.status()).view!.result!.chapters[1];
+  assert.deepEqual(ch.mood.scenes, [{ emotions: ch.mood.emotions, span: 1 }]);
+  assert.deepEqual(ch.pieces!.scenePieces, [ch.pieces!.piece]);
+});

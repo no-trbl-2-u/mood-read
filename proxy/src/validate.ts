@@ -1,6 +1,6 @@
 // Request validation (01.2, A22): the proxy accepts a book's title, author and chapter titles and nothing more. Any
 // other field, of any name, is refused rather than ignored, so nothing about the listener can ride along.
-import type { BookRequest } from "./contract.ts";
+import { EMOTIONS, MAX_SCENES, MIN_SCENE_SPAN, SCENE_SPAN_STEP, type BookRequest, type Emotion, type EmotionScore, type Scene } from "./contract.ts";
 
 export const LIMITS = {
   /** The largest request body read, in bytes. */
@@ -55,3 +55,78 @@ export async function bookKey(book: BookRequest): Promise<string> {
 }
 
 export const isJobId = (id: string) => /^[0-9a-f]{64}$/.test(id);
+
+// ---- what the model returns: emotions and scenes (01.2; 07.1, A1) ----
+
+const round2 = (n: number) => Math.round(n * 100) / 100;
+
+/** Normalizes emotions: the fixed set only, intensity clamped to 0..1, one entry per emotion, strongest first, four at most. */
+export function cleanEmotions(raw: unknown): EmotionScore[] {
+  if (!Array.isArray(raw)) return [];
+  const best = new Map<Emotion, number>();
+  for (const e of raw) {
+    const emotion = (e as { emotion?: unknown })?.emotion;
+    const intensity = (e as { intensity?: unknown })?.intensity;
+    if (typeof emotion !== "string" || !(EMOTIONS as readonly string[]).includes(emotion)) continue;
+    if (typeof intensity !== "number" || !Number.isFinite(intensity) || intensity <= 0) continue;
+    const v = round2(Math.min(1, intensity));
+    best.set(emotion as Emotion, Math.max(best.get(emotion as Emotion) ?? 0, v));
+  }
+  return [...best].map(([emotion, intensity]) => ({ emotion, intensity })).sort((a, b) => b.intensity - a.intensity).slice(0, 4);
+}
+
+const EPS = 1e-9;
+
+/**
+ * A scored chapter's scenes from the model's answer (spec 07, Decisions): in order, 1 to MAX_SCENES, each with
+ * emotions from the fixed set and a span. Spans are normalised to sum to 1; a span under MIN_SCENE_SPAN is merged into
+ * its smaller neighbour (which keeps its own emotions) until every span is at least MIN_SCENE_SPAN and at most
+ * MAX_SCENES are left; then spans are rounded to SCENE_SPAN_STEP so they still sum to exactly 1. A scene with no
+ * usable emotions gives its span to the scene before it (else the one after); one with no usable span is dropped.
+ * A scene is rebuilt from its emotions and span alone, so any text on it is stripped (A21). When fewer than two
+ * scenes are left, or the answer has none, the chapter is one scene: span 1 with the chapter's own emotions. An
+ * unscored chapter (no emotions) has no scenes.
+ */
+export function cleanScenes(raw: unknown, chapter: EmotionScore[]): Scene[] {
+  if (!chapter.length) return [];
+  const one: Scene[] = [{ emotions: chapter, span: 1 }];
+  if (!Array.isArray(raw)) return one;
+  let list: Scene[] = [];
+  let carry = 0;
+  for (const r of raw) {
+    const span = (r as { span?: unknown })?.span;
+    if (typeof span !== "number" || !Number.isFinite(span) || span <= 0) continue;
+    const emotions = cleanEmotions((r as { emotions?: unknown })?.emotions);
+    if (!emotions.length) {
+      if (list.length) list[list.length - 1].span += span;
+      else carry += span;
+      continue;
+    }
+    list.push({ emotions, span: span + carry });
+    carry = 0;
+  }
+  if (list.length < 2) return one;
+  const total = list.reduce((t, x) => t + x.span, 0);
+  list = list.map((x) => ({ emotions: x.emotions, span: x.span / total }));
+  while (list.length > 1 && (list.length > MAX_SCENES || list.some((x) => x.span < MIN_SCENE_SPAN - EPS))) {
+    let k = 0;
+    list.forEach((x, i) => {
+      if (x.span < list[k].span - EPS) k = i;
+    });
+    const j = k === 0 ? 1 : k === list.length - 1 ? k - 1 : list[k + 1].span < list[k - 1].span - EPS ? k + 1 : k - 1;
+    list[j] = { emotions: list[j].emotions, span: list[j].span + list[k].span };
+    list.splice(k, 1);
+  }
+  if (list.length < 2) return one;
+  const units = Math.round(1 / SCENE_SPAN_STEP);
+  const exact = list.map((x) => x.span * units);
+  const whole = exact.map((x) => Math.floor(x + EPS));
+  let left = units - whole.reduce((t, x) => t + x, 0);
+  const byRemainder = exact.map((x, i) => ({ i, r: x - whole[i] })).sort((a, b) => b.r - a.r || a.i - b.i);
+  for (const { i } of byRemainder) {
+    if (left <= 0) break;
+    whole[i] += 1;
+    left -= 1;
+  }
+  return list.map((x, i) => ({ emotions: x.emotions, span: round2(whole[i] * SCENE_SPAN_STEP) }));
+}

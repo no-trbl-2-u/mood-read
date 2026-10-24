@@ -27,6 +27,12 @@ export type FakeModelOptions = {
   thin?: string[];
   /** Emotions given to every scored chapter. */
   emotions?: { emotion: Emotion; intensity: number }[];
+  /**
+   * Scenes per chapter title (as listed to the model), for chapters the sources describe as a sequence; every other
+   * scored chapter comes back with no scenes (one scene, the chapter). Raw, as a model might answer: the proxy
+   * cleans them (src/validate.ts cleanScenes).
+   */
+  scenes?: Record<string, unknown[]>;
   /** Piece titles the second vocals check says have vocals. */
   vocalByCheck?: string[];
   /** How many clean candidates each chapter gets per round (besides the two planted vocal ones). */
@@ -58,30 +64,37 @@ export function fakeModel(opts: FakeModelOptions = {}): ModelClient & { calls: C
         const chapters = chapterLines(req.user).map(({ n, title }) =>
           (opts.thin ?? []).includes(title)
             ? { sourceTitle: title, sourceNumber: n, coverage: "too-little", emotions: [], sourceIds: [] }
-            : { sourceTitle: title, sourceNumber: n, coverage: "scored", emotions, sourceIds: ids.slice(0, 2) },
+            : { sourceTitle: title, sourceNumber: n, coverage: "scored", emotions, scenes: opts.scenes?.[title] ?? [], sourceIds: ids.slice(0, 2) },
         );
         return { value: { chapters }, usage };
       }
       if (req.name === "chapter_pieces") {
         round += 1;
-        const nums = [...req.user.matchAll(/^Chapter (\d+):/gm)].map((m) => Number(m[1]));
+        const lines = [...req.user.matchAll(/^Chapter (\d+):(.*)$/gm)].map((m) => ({ n: Number(m[1]), rest: m[2] }));
         const tags = emotions.map((e) => e.emotion);
         return {
           value: {
-            chapters: nums.map((n) => ({
-              chapter: n,
-              candidates: [
-                { title: `Sung Thing ${n}`, artist: "A Singer", kind: "instrumental", vocals: "some", moodTags: tags },
-                { title: `Song for Ch ${n}`, artist: "Band", kind: "score", vocals: "none", moodTags: tags },
-                ...Array.from({ length: opts.clean ?? 4 }, (_, k) => ({
-                  title: `Theme ${n}.${round}.${k + 1}`,
-                  artist: `Composer ${k + 1}`,
-                  kind: (["score", "instrumental", "ambient"] as const)[k % 3],
-                  vocals: "none",
-                  moodTags: k === 0 ? tags : [tags[tags.length - 1]],
-                })),
-              ],
-            })),
+            chapters: lines.map(({ n, rest }) => {
+              // A chapter asked with scenes gets one clean candidate per scene emotion the chapter does not carry, and
+              // the two planted vocal ones carry those emotions too, so a test sees them refused for a scene as well.
+              const scene = /Scenes in order: (.*?)\. Suggest/.exec(rest)?.[1] ?? "";
+              const extra = [...new Set([...scene.matchAll(/([a-z]+) \d/g)].map((m) => m[1] as Emotion))].filter((e) => !tags.includes(e));
+              return {
+                chapter: n,
+                candidates: [
+                  { title: `Sung Thing ${n}`, artist: "A Singer", kind: "instrumental", vocals: "some", moodTags: [...tags, ...extra] },
+                  { title: `Song for Ch ${n}`, artist: "Band", kind: "score", vocals: "none", moodTags: [...tags, ...extra] },
+                  ...extra.map((e) => ({ title: `Scene Theme ${n}.${round} ${e}`, artist: "Scene Composer", kind: "ambient", vocals: "none", moodTags: [e] })),
+                  ...Array.from({ length: opts.clean ?? 4 }, (_, k) => ({
+                    title: `Theme ${n}.${round}.${k + 1}`,
+                    artist: `Composer ${k + 1}`,
+                    kind: (["score", "instrumental", "ambient"] as const)[k % 3],
+                    vocals: "none",
+                    moodTags: k === 0 ? tags : [tags[tags.length - 1]],
+                  })),
+                ],
+              };
+            }),
           },
           usage,
         };

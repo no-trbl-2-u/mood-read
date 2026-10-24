@@ -4,7 +4,8 @@
 // audio is never involved. Only search-engine snippets are read (no page is fetched or scraped), and only links are
 // kept. A chapter the sources do not describe is `too-little`: unscored, never guessed.
 import type { CompletionRequest, JsonSchema, SearchHit } from "./clients.ts";
-import { EMOTIONS, type BookRequest, type Emotion, type EmotionScore, type SourceLink } from "./contract.ts";
+import { EMOTIONS, MAX_SCENES, type BookRequest, type EmotionScore, type Scene, type SourceLink } from "./contract.ts";
+import { cleanEmotions, cleanScenes } from "./validate.ts";
 
 export type Query = { q: string; /** The audiobook chapter it asks about, or null for the whole book. */ chapter: number | null };
 
@@ -100,6 +101,8 @@ export type FoundChapter = {
   sourceNumber: number;
   coverage: "scored" | "too-little";
   emotions: EmotionScore[];
+  /** In order, spans summing to 1 (src/validate.ts cleanScenes); one scene when the sources describe no sequence. */
+  scenes: Scene[];
   sources: SourceLink[];
 };
 
@@ -113,7 +116,7 @@ const moodSchema: JsonSchema = {
       items: {
         type: "object",
         additionalProperties: false,
-        required: ["sourceTitle", "sourceNumber", "coverage", "emotions", "sourceIds"],
+        required: ["sourceTitle", "sourceNumber", "coverage", "emotions", "scenes", "sourceIds"],
         properties: {
           sourceTitle: { type: "string" },
           sourceNumber: { type: "integer" },
@@ -125,6 +128,26 @@ const moodSchema: JsonSchema = {
               additionalProperties: false,
               required: ["emotion", "intensity"],
               properties: { emotion: { type: "string", enum: [...EMOTIONS] }, intensity: { type: "number" } },
+            },
+          },
+          scenes: {
+            type: "array",
+            items: {
+              type: "object",
+              additionalProperties: false,
+              required: ["emotions", "span"],
+              properties: {
+                emotions: {
+                  type: "array",
+                  items: {
+                    type: "object",
+                    additionalProperties: false,
+                    required: ["emotion", "intensity"],
+                    properties: { emotion: { type: "string", enum: [...EMOTIONS] }, intensity: { type: "number" } },
+                  },
+                },
+                span: { type: "number" },
+              },
             },
           },
           sourceIds: { type: "array", items: { type: "string" } },
@@ -146,28 +169,17 @@ export function moodRequest(book: BookRequest, chapters: number[], sources: Sour
       "Work only from the numbered search results you are given; cite the ids of the results each chapter's emotions come from.",
       "If the results do not describe a chapter well enough, set its coverage to too-little with no emotions. Never guess.",
       "Name chapters as the sources do (sourceTitle, and sourceNumber in the sources' numbering, or 0 if they give none).",
-      "Never describe what happens in a chapter: return emotions only.",
+      "Give a chapter's emotions for the whole chapter, strongest first.",
+      `Only when the results describe a chapter as a sequence (a clear beginning, middle and end), also give its scenes in order, two to ${MAX_SCENES},`,
+      "each with its own emotions from the same set and a span: the fraction of the chapter it covers, as the results suggest, the spans summing to 1.",
+      "Otherwise give no scenes (an empty list).",
+      "Never describe what happens in a chapter or a scene: return emotions and spans only.",
     ].join(" "),
     user: `Book: ${book.title}${book.author ? ` by ${book.author}` : ""}\n\nThe audiobook's chapters to cover:\n${list}\n\nSearch results:\n\n${found || "(none)"}`,
   };
 }
 
-const round2 = (n: number) => Math.round(n * 100) / 100;
-
-/** Normalizes emotions: the fixed set only, intensity clamped to 0..1, one entry per emotion, strongest first, four at most. */
-export function cleanEmotions(raw: unknown): EmotionScore[] {
-  if (!Array.isArray(raw)) return [];
-  const best = new Map<Emotion, number>();
-  for (const e of raw) {
-    const emotion = (e as { emotion?: unknown })?.emotion;
-    const intensity = (e as { intensity?: unknown })?.intensity;
-    if (typeof emotion !== "string" || !(EMOTIONS as readonly string[]).includes(emotion)) continue;
-    if (typeof intensity !== "number" || !Number.isFinite(intensity) || intensity <= 0) continue;
-    const v = round2(Math.min(1, intensity));
-    best.set(emotion as Emotion, Math.max(best.get(emotion as Emotion) ?? 0, v));
-  }
-  return [...best].map(([emotion, intensity]) => ({ emotion, intensity })).sort((a, b) => b.intensity - a.intensity).slice(0, 4);
-}
+export { cleanEmotions };
 
 /**
  * Reads the model's answer. A chapter is `scored` only with at least one emotion and at least one cited source that
@@ -190,6 +202,7 @@ export function parseMoods(value: unknown, sources: Source[]): FoundChapter[] {
       sourceNumber: typeof r.sourceNumber === "number" && Number.isInteger(r.sourceNumber) && r.sourceNumber > 0 ? r.sourceNumber : 0,
       coverage: scored ? "scored" : "too-little",
       emotions: scored ? emotions : [],
+      scenes: scored ? cleanScenes(r.scenes, emotions) : [],
       sources: scored ? links : [],
     });
   }

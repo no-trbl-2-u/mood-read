@@ -17,15 +17,18 @@ import {
   type EmotionScore,
   type JobState,
   type JobView,
+  type Scene,
   type SourceLink,
 } from "./contract.ts";
 import { matchChapters } from "./match.ts";
 import { BRAVE_USD_PER_QUERY, monthOf, openAiCost, underCap, type Meter } from "./meter.ts";
 import {
-  CANDIDATES_PER_CHAPTER,
   MIN_ALTERNATES,
+  askEmotions,
+  candidateCount,
   candidateRequest,
   choosePieces,
+  chooseScenePieces,
   confirmedInstrumental,
   firstGuard,
   nameKey,
@@ -47,7 +50,11 @@ export const MAX_ATTEMPTS = 3;
 export const RETRY_DELAY_MS = 30_000;
 
 type Phase = "search" | "moods" | "pieces" | "done";
-type Draft = { emotions: EmotionScore[]; sources: SourceLink[] };
+/** `scenes` is absent on a draft saved before 07.1: read through `scenesOf`, one scene. */
+type Draft = { emotions: EmotionScore[]; scenes?: Scene[]; sources: SourceLink[] };
+
+/** A scored draft's scenes, in order: its own, else one scene equal to the chapter (A1). */
+const scenesOf = (d: Draft): Scene[] => (d.scenes && d.scenes.length ? d.scenes : [{ emotions: d.emotions, span: 1 }]);
 
 export type Run = {
   key: string;
@@ -160,6 +167,7 @@ export function createBookJob(deps: JobDeps) {
     chapterIndex: i,
     chapterTitle: run.book.chapters[i],
     emotions: d ? d.emotions : [],
+    ...(d ? { scenes: scenesOf(d) } : {}),
     sources: d ? d.sources : [],
     coverage: d ? "scored" : "too-little",
     model: deps.model.model,
@@ -194,7 +202,7 @@ export function createBookJob(deps: JobDeps) {
       : new Map();
     for (const i of indices) {
       const f = matched.get(i);
-      if (f && f.coverage === "scored") run.drafts[i] = { emotions: f.emotions, sources: f.sources };
+      if (f && f.coverage === "scored") run.drafts[i] = { emotions: f.emotions, scenes: f.scenes, sources: f.sources };
       else run.results[i] = unscored(run, i);
     }
     run.cursor += indices.length;
@@ -215,13 +223,16 @@ export function createBookJob(deps: JobDeps) {
       const asks: ChapterAsk[] = short.map((i) => ({
         index: i,
         emotions: run.drafts[i]!.emotions,
+        scenes: scenesOf(run.drafts[i]!),
         exclude: round === 0 ? [] : [...passed.get(i)!.map((c) => `${c.title} by ${c.artist}`)],
       }));
       const offered = parseCandidates(await complete(run, candidateRequest(run.book, asks)));
       const fresh: { i: number; c: Candidate; id: string }[] = [];
-      for (const i of short) {
+      for (const ask of asks) {
+        const i = ask.index;
         const have = new Set(passed.get(i)!.map(nameKey));
-        const ok = firstGuard((offered.get(i) ?? []).slice(0, CANDIDATES_PER_CHAPTER), run.drafts[i]!.emotions, rejected.get(i)!);
+        // A scene's candidates take the same guard as the chapter's: the flag, the name screen, the tags (A14, A20).
+        const ok = firstGuard((offered.get(i) ?? []).slice(0, candidateCount(ask)), askEmotions(ask), rejected.get(i)!);
         for (const c of ok) if (!have.has(nameKey(c))) fresh.push({ i, c, id: `p${fresh.length + 1}` });
       }
       if (!fresh.length) continue;
@@ -232,7 +243,9 @@ export function createBookJob(deps: JobDeps) {
       }
     }
     for (const i of indices) {
-      const pieces = choosePieces(passed.get(i)!, run.drafts[i]!.emotions);
+      const chosen = choosePieces(passed.get(i)!, run.drafts[i]!.emotions);
+      // One piece per scene from the same checked candidates; a scene nothing fits plays the chapter's piece.
+      const pieces = chosen && { ...chosen, scenePieces: chooseScenePieces(passed.get(i)!, scenesOf(run.drafts[i]!), chosen) };
       // A chapter with too few pieces that passed every guard names none, never a vocal piece (A20), but keeps the
       // emotions the research found and their sources (A13): its mood is scored, only its pieces are missing.
       run.results[i] = { index: i, title: run.book.chapters[i], mood: mood(run, i, run.drafts[i]), pieces };

@@ -1,7 +1,7 @@
 import assert from "node:assert/strict";
 import { test } from "node:test";
 
-import { bookKey, isJobId, LIMITS, parseBookRequest } from "./validate.ts";
+import { bookKey, cleanScenes, isJobId, LIMITS, parseBookRequest } from "./validate.ts";
 
 const book = { title: "The Hobbit", author: "J. R. R. Tolkien", chapters: ["An Unexpected Party", "Roast Mutton"] };
 
@@ -48,4 +48,71 @@ test("job ids are 64 hex characters, nothing else", () => {
   assert.equal(isJobId("a".repeat(64)), true);
   assert.equal(isJobId("A".repeat(64)), false);
   assert.equal(isJobId("../etc"), false);
+});
+
+// ---- scenes (07.1, A1) ----
+
+const chapter = [
+  { emotion: "dread" as const, intensity: 0.8 },
+  { emotion: "calm" as const, intensity: 0.3 },
+];
+const sc = (span: unknown, emotion = "dread", extra: Record<string, unknown> = {}) => ({ emotions: [{ emotion, intensity: 0.6 }], span, ...extra });
+const spans = (s: { span: number }[]) => s.map((x) => x.span);
+const sum = (s: { span: number }[]) => s.reduce((t, x) => t + x.span, 0);
+
+test("no sequence in the sources: one scene, the whole chapter with the chapter's own emotions", () => {
+  for (const raw of [undefined, null, [], "x", [sc(1)], [sc(0.7, "joy")], [sc(-1), sc(Number.NaN)]]) {
+    assert.deepEqual(cleanScenes(raw, chapter), [{ emotions: chapter, span: 1 }], JSON.stringify(raw));
+  }
+});
+
+test("an unscored chapter (no emotions) has no scenes", () => {
+  assert.deepEqual(cleanScenes([sc(0.5), sc(0.5)], []), []);
+});
+
+test("an ordered sequence keeps its order and its spans, rounded to 0.05 and summing to exactly 1", () => {
+  const s = cleanScenes([sc(0.4, "calm"), sc(0.35, "tension"), sc(0.25, "dread")], chapter);
+  assert.deepEqual(s.map((x) => x.emotions[0].emotion), ["calm", "tension", "dread"]);
+  assert.deepEqual(spans(s), [0.4, 0.35, 0.25]);
+  const odd = cleanScenes([sc(0.33, "calm"), sc(0.33, "tension"), sc(0.34, "dread")], chapter);
+  for (const x of odd) assert.ok(Math.abs(x.span * 20 - Math.round(x.span * 20)) < 1e-9, `${x.span} is a multiple of 0.05`);
+  assert.ok(Math.abs(sum(odd) - 1) < 1e-9);
+});
+
+test("spans that do not sum to 1 are normalised", () => {
+  const s = cleanScenes([sc(2, "calm"), sc(2, "dread")], chapter);
+  assert.deepEqual(spans(s), [0.5, 0.5]);
+});
+
+test("a span under 0.1 is merged into its smaller neighbour; the neighbour keeps its own emotions", () => {
+  const s = cleanScenes([sc(0.5, "calm"), sc(0.05, "joy"), sc(0.45, "dread")], chapter);
+  assert.deepEqual(s.map((x) => x.emotions[0].emotion), ["calm", "dread"]);
+  assert.deepEqual(spans(s), [0.5, 0.5]);
+  const first = cleanScenes([sc(0.04, "joy"), sc(0.56, "calm"), sc(0.4, "dread")], chapter);
+  assert.deepEqual(first.map((x) => x.emotions[0].emotion), ["calm", "dread"]);
+  assert.deepEqual(spans(first), [0.6, 0.4]);
+  // Everything merges into one: the chapter itself.
+  assert.deepEqual(cleanScenes([sc(0.95, "joy"), sc(0.05, "calm")], chapter), [{ emotions: chapter, span: 1 }]);
+});
+
+test("four scenes at most: the smallest merge until four are left, each at least 0.1", () => {
+  const raw = [sc(0.2, "calm"), sc(0.15, "joy"), sc(0.2, "tension"), sc(0.15, "sorrow"), sc(0.3, "dread")];
+  const s = cleanScenes(raw, chapter);
+  assert.equal(s.length, 4);
+  assert.ok(s.every((x) => x.span >= 0.1));
+  assert.ok(Math.abs(sum(s) - 1) < 1e-9);
+  const many = cleanScenes(Array.from({ length: 12 }, (_, i) => sc(1, i % 2 ? "calm" : "dread")), chapter);
+  assert.ok(many.length <= 4 && many.every((x) => x.span >= 0.1) && Math.abs(sum(many) - 1) < 1e-9);
+});
+
+test("a scene carries no text: any other field is stripped; emotions come from the fixed set only", () => {
+  const s = cleanScenes([sc(0.5, "calm", { title: "The duel", summary: "Harker escapes" }), { ...sc(0.5), emotions: [{ emotion: "rage", intensity: 1 }, { emotion: "dread", intensity: 0.9 }], text: "x" }], chapter);
+  for (const x of s) assert.deepEqual(Object.keys(x).sort(), ["emotions", "span"]);
+  assert.deepEqual(s[1].emotions, [{ emotion: "dread", intensity: 0.9 }]);
+});
+
+test("a scene with no emotions in the set gives its span to its neighbour", () => {
+  const s = cleanScenes([sc(0.3, "calm"), { emotions: [{ emotion: "rage", intensity: 1 }], span: 0.3 }, sc(0.4, "dread")], chapter);
+  assert.deepEqual(s.map((x) => x.emotions[0].emotion), ["calm", "dread"]);
+  assert.deepEqual(spans(s), [0.6, 0.4]);
 });

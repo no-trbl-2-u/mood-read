@@ -3,8 +3,11 @@ import { test } from "node:test";
 
 import type { EmotionScore } from "./contract.ts";
 import {
+  askEmotions,
+  candidateCount,
   candidateRequest,
   choosePieces,
+  chooseScenePieces,
   confirmedInstrumental,
   failsNoVocalsScreen,
   firstGuard,
@@ -173,4 +176,54 @@ test("the name screen catches humming and the vocal works best known by name (A2
   for (const title of vocal) assert.equal(failsNoVocalsScreen({ title, artist: "X" }), true, title);
   const clean = ["Humoresque", "Human Nature Suite", "Glorious Morning", "Fortunate Son Instrumental"];
   for (const title of clean) assert.equal(failsNoVocalsScreen({ title, artist: "X" }), false, title);
+});
+
+// ---- one piece per scene (07.1, A20) ----
+
+const scenes = [
+  { emotions: [{ emotion: "calm" as const, intensity: 0.6 }], span: 0.4 },
+  { emotions: [{ emotion: "dread" as const, intensity: 0.9 }], span: 0.6 },
+];
+
+test("a chapter with scenes asks for pieces that fit each scene too, by emotions alone, and for more of them", () => {
+  const r = candidateRequest({ title: "Dracula", author: "Bram Stoker", chapters: ["a", "b"] }, [{ index: 0, emotions, exclude: [], scenes }]);
+  assert.match(r.user, /^Chapter 1: dread 0\.9, tension 0\.4\. Scenes in order: 1\) calm 0\.6; 2\) dread 0\.9\. Suggest \d+ pieces, some for each scene\.$/m);
+  assert.ok(candidateCount({ index: 0, emotions, exclude: [], scenes }) > candidateCount({ index: 0, emotions, exclude: [] }));
+  const flat = candidateRequest({ title: "Dracula", author: "Bram Stoker", chapters: ["a"] }, [{ index: 0, emotions, exclude: [], scenes: [{ emotions, span: 1 }] }]);
+  assert.match(flat.user, /^Chapter 1: dread 0\.9, tension 0\.4\.$/m, "one scene is the chapter: asked as before");
+  assert.deepEqual(new Set(askEmotions({ index: 0, emotions, exclude: [], scenes }).map((e) => e.emotion)), new Set(["dread", "tension", "calm"]));
+});
+
+test("the chapter's piece and alternates still fit the chapter's own emotions, even when scene pieces fit others (A14)", () => {
+  const passed = [c("Calm Only", { moodTags: ["calm"] }), c("A"), c("B", { moodTags: ["tension"] }), c("C")];
+  const p = choosePieces(passed, emotions)!;
+  assert.ok([p.piece, ...p.alternates].every((x) => x.moodTags.some((t) => t === "dread" || t === "tension")));
+  assert.equal(choosePieces([c("Calm Only", { moodTags: ["calm"] }), c("A"), c("B", { moodTags: ["calm"] })], emotions), null);
+});
+
+test("one piece per scene, the best fit among pieces that passed every check; a scene nothing fits plays the chapter's piece", () => {
+  const passed = [c("A"), c("B", { moodTags: ["tension"] }), c("C"), c("Still Water", { moodTags: ["calm"] })];
+  const chosen = choosePieces(passed, emotions)!;
+  const per = chooseScenePieces(passed, scenes, chosen);
+  assert.equal(per.length, scenes.length);
+  assert.equal(per[0].title, "Still Water");
+  assert.equal(per[1].id, chosen.piece.id, "ties go to the chapter's piece");
+  const joyless = chooseScenePieces(passed, [{ emotions: [{ emotion: "joy", intensity: 1 }], span: 0.5 }, scenes[1]], chosen);
+  assert.equal(joyless[0].id, chosen.piece.id);
+  assert.ok(per.every((x) => x.vocals === "none"));
+});
+
+test("a one-scene chapter plays its own piece", () => {
+  const passed = [c("A"), c("B"), c("C"), c("Still Water", { moodTags: ["calm"] })];
+  const chosen = choosePieces(passed, emotions)!;
+  assert.deepEqual(chooseScenePieces(passed, [{ emotions: [{ emotion: "calm", intensity: 1 }], span: 1 }], chosen), [chosen.piece]);
+});
+
+test("a scene piece goes through the same guard: a vocal or screened candidate never becomes one (A20)", () => {
+  const rejected = new Set<string>();
+  const all = [c("Calm Song", { moodTags: ["calm"] }), c("Calm Hum Theme", { moodTags: ["calm"], vocals: "unsure" }), c("A"), c("B"), c("C")];
+  const passed = firstGuard(all, askEmotions({ index: 0, emotions, exclude: [], scenes }), rejected);
+  const chosen = choosePieces(passed, emotions)!;
+  const per = chooseScenePieces(passed, scenes, chosen);
+  assert.equal(per[0].id, chosen.piece.id, "no calm piece survived the guard, so the calm scene plays the chapter's piece");
 });
