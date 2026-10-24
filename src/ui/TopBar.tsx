@@ -10,6 +10,8 @@ import { colors, radii, sizes, spacing, strokes, typography } from "./theme";
  * where the title line is full, as on the river), the title, and optional trailing actions.
  */
 export function TopBar(props: {
+  /** Empty on a page whose own heading already names what it shows (design/layouts/DECISION.md, "A LibriVox
+   *  book"): the bar then draws only the back control and any trailing actions. */
   title: string;
   /** The library's title is the big `title` type; every other screen's is `heading`. */
   large?: boolean;
@@ -32,9 +34,13 @@ export function TopBar(props: {
             {!props.back.iconOnly && <Text style={styles.backText}>{props.back.label}</Text>}
           </Pressable>
         )}
-        <Text style={[styles.title, props.large && styles.titleLarge]} role="heading">
-          {props.title}
-        </Text>
+        {props.title ? (
+          <Text style={[styles.title, props.large && styles.titleLarge]} role="heading">
+            {props.title}
+          </Text>
+        ) : (
+          <View style={styles.title} />
+        )}
         {props.trailing && <View style={styles.trailing}>{props.trailing}</View>}
       </View>
     </View>
