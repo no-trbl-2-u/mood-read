@@ -15,6 +15,7 @@ const ROUTES = [
   { path: "/privacy", title: "Privacy policy", also: "What the scoring proxy gets" },
   { path: "/licenses", title: "Open-source licenses", also: "Lucide icons" },
   { path: "/credits", title: "Credits", also: "No music yet" },
+  { path: "/soundtrack", title: "Your soundtrack", also: "The music that has played for the chapters you reached, by book. Nothing plays from here." },
 ];
 
 for (const route of ROUTES) {

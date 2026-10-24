@@ -9,6 +9,8 @@ import { moodCardView } from "@/lib/mood-card";
 import { isReached } from "@/lib/reached";
 import { notes, useNoteDismissed } from "@/lib/notes";
 import { scoring, scoringStore, useBookScores, useScoringJob } from "@/lib/scoring";
+import { soundtrack } from "@/lib/soundtrack";
+import { piecesPlayed } from "@/lib/soundtrack-store";
 import { nextVerdict } from "@/lib/verdict-store";
 import { useBookVerdicts, verdicts } from "@/lib/verdicts";
 import { BookmarksSheet } from "@/player/BookmarksSheet";
@@ -67,6 +69,14 @@ export default function BookScreen() {
   useEffect(() => {
     if (id && playingChapter) reached.reach(id, playingChapter);
   }, [id, playingChapter]);
+
+  // The reached chapter's piece plays for it: "Your soundtrack" logs it, and its scene pieces, the first time
+  // (src/lib/soundtrack-store.ts, 07.8, A9). A pick made while it plays is logged too, since it plays from then on.
+  useEffect(() => {
+    if (!id || !playingChapter || !scores) return;
+    const score = scores.chapters.find((s) => s.mood.chapterIndex === playingChapter.index && s.mood.chapterTitle === playingChapter.title);
+    if (score) soundtrack.log(id, piecesPlayed(score));
+  }, [id, playingChapter, scores]);
 
   if (!book) {
     return (

@@ -14,7 +14,7 @@ test.describe("settings", () => {
     await expect(more).toHaveAttribute("aria-expanded", "false");
     await more.click();
     await expect(page.getByRole("menu")).toBeVisible();
-    await expect(page.getByRole("menuitem")).toHaveText(["Browse free books", "Downloads", "Settings", "Credits"]);
+    await expect(page.getByRole("menuitem")).toHaveText(["Browse free books", "Downloads", "Your soundtrack", "Settings", "Credits"]);
     await page.getByRole("menuitem", { name: "Settings" }).click();
     await expect(page).toHaveURL(/\/settings$/);
 

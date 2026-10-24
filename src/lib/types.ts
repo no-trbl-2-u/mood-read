@@ -166,6 +166,12 @@ export type ChapterPlaylist = {
 export type PieceVerdict = { chapterIndex: number; pieceId: string; verdict: "fits" | "misfit"; at: number };
 
 /**
+ * One line of "Your soundtrack" (07.8, spec 07 A9): a piece that has played for a reached chapter of a book, logged on
+ * the device the first time it does (`soundtrack`, src/lib/soundtrack-store.ts). Never a time or a position.
+ */
+export type SoundtrackEntry = { bookId: string; pieceId: string };
+
+/**
  * What the device keeps per chapter. `playlist` is null when the mood is `too-little` (unscored), and when the
  * emotions were found but no piece passed the no-vocals checks (A20).
  */

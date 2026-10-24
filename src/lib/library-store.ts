@@ -5,6 +5,7 @@ import type { BedChoice } from "./bed.ts";
 import { normalizeMix, type Mix } from "./mix.ts";
 import { reachedKey } from "./reached.ts";
 import { jobKey, scoresKey } from "./scoring-store.ts";
+import { dropSoundtrackBook } from "./soundtrack-store.ts";
 import { clamp, MAX_SPEED, MIN_SPEED, newId } from "./timeline.ts";
 import type { Book, Bookmark, Chapter } from "./types.ts";
 import { verdictsKey } from "./verdict-store.ts";
@@ -107,6 +108,7 @@ export function createLibraryStore(kv: Kv, now: () => number = Date.now, makeId:
       kv.removeItem(scoresKey(id));
       kv.removeItem(reachedKey(id));
       kv.removeItem(verdictsKey(id));
+      dropSoundtrackBook(kv, id);
       const { [id]: _removed, ...bookmarks } = state.bookmarks;
       state = { ...state, bookmarks };
       saveBooks(state.books.filter((b) => b.id !== id));

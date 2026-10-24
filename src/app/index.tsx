@@ -19,11 +19,12 @@ import { TopBar, TopBarButton } from "@/ui/TopBar";
 
 // The library, "Your shelf" (design/layouts/DECISION.md, v2): every book on the device, most recently played first.
 // Empty, it says so in the display line, with three decorative stickers and "Import a book". Importing is its own
-// full screen, pushed from here (01.6). The top bar's overflow menu is the one home for Browse, Downloads, Settings
-// and Credits (spec 06); an entry joins it when its route ships, one line each. Each scored book wears its
-// fingerprint under the author line, its three strongest emotions over the chapters reached so far (07.7, spec 07
-// A8; src/lib/fingerprint.ts), and the top bar's Mood filter lights one of them to keep only the books that hold it,
-// strongest match first. The filter row shows once some book has a fingerprint. All its copy lives here.
+// full screen, pushed from here (01.6). The top bar's overflow menu is the one home for Browse, Downloads, Your
+// soundtrack (07.8), Settings and Credits (spec 06); an entry joins it when its route ships, one line each. Each
+// scored book wears its fingerprint under the author line, its three strongest emotions over the chapters reached so
+// far (07.7, spec 07 A8; src/lib/fingerprint.ts), and the top bar's Mood filter lights one of them to keep only the
+// books that hold it, strongest match first. The filter row shows once some book has a fingerprint. All its copy
+// lives here.
 const COPY = {
   title: "Your shelf",
   emptyLead: "Nothing on the ",
@@ -49,6 +50,7 @@ const STICKERS: { emotion: Emotion; label: string }[] = [
 const MENU: MenuItem[] = [
   { key: "browse", label: "Browse free books", icon: "search", onPress: () => router.push("/browse") },
   { key: "downloads", label: "Downloads", icon: "download", onPress: () => router.push("/downloads") },
+  { key: "soundtrack", label: "Your soundtrack", icon: "music", onPress: () => router.push("/soundtrack") },
   { key: "settings", label: "Settings", icon: "settings", onPress: () => router.push("/settings") },
   { key: "credits", label: "Credits", icon: "heart", ruleBefore: true, onPress: () => router.push("/credits") },
 ];

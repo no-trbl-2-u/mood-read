@@ -50,6 +50,7 @@ export default function RootLayout() {
           <Stack.Screen name="downloads" options={{ title: "Downloads" }} />
           <Stack.Screen name="privacy" options={{ title: "Privacy policy" }} />
           <Stack.Screen name="licenses" options={{ title: "Open-source licenses" }} />
+          <Stack.Screen name="soundtrack" options={{ title: "Your soundtrack" }} />
           <Stack.Screen name="credits" options={{ title: "Credits" }} />
         </Stack>
       </View>

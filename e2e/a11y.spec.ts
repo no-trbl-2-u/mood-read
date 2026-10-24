@@ -1,6 +1,6 @@
 // The accessibility bar (06.5, spec 06 A5) on the web build, on every route and the key states: the empty shelf,
 // its overflow menu, Import, Settings (with the default soundscape open), the privacy policy, Downloads (05.6,
-// empty on the web build), the licenses, Credits (05.5), a book that is not on the device, and a real book's river
+// empty on the web build), the licenses, Credits (05.5), Your soundtrack empty and filled (07.8), a book that is not on the device, and a real book's river
 // with the playing row expanded (the mixer inline), its Speed & Sleep sheet and its Bookmarks sheet, and a scored book
 // (01.4): the playing row's mood card (emotion stickers, the named piece, alternates and the pick chips), a
 // reached row's stickers and a locked row; the shelf with a scored book's fingerprint and a mood lit (07.7); 07.4's verdict targets with "Fits" lit, and with "Doesn't fit" lit and the
@@ -155,6 +155,25 @@ const STATES: State[] = [
       await expect(page.getByTestId("credit-soundscape-low-cafe")).toBeVisible();
       await page.getByTestId("credit-notice-lucide").click();
       await expect(page.getByText(/Lucide Icons and Contributors/).first()).toBeVisible();
+    },
+  },
+  {
+    name: "/soundtrack (07.8), empty",
+    open: async (page) => {
+      await page.goto("/soundtrack");
+      await expect(page.getByTestId("soundtrack-empty")).toBeVisible();
+    },
+  },
+  {
+    name: "/soundtrack (07.8), with a scored book's pieces and the Clear row",
+    open: async (page) => {
+      const id = await scoredBook(page);
+      const play = page.getByTestId("mini-play-pause");
+      if ((await play.getAttribute("aria-label")) === "Pause") await play.click();
+      await expect(play).toHaveAttribute("aria-label", "Play");
+      await page.goto("/soundtrack");
+      await expect(page.getByTestId(`soundtrack-book-${id}`)).toBeVisible();
+      await expect(page.getByTestId("soundtrack-clear")).toBeVisible();
     },
   },
   {
