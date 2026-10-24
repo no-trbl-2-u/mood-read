@@ -85,6 +85,8 @@ const book: Book = {
   duration: 300,
   addedAt: 1,
   lastPlayedAt: 2,
+  source: { kind: "import" },
+  onDevice: true,
 };
 
 function app(p: ReturnType<typeof proxy>, kv = mapKv()) {

@@ -28,6 +28,8 @@ function book(id: string, title: string, lastPlayedAt: number | null = null): Bo
     duration: 100,
     addedAt: 1,
     lastPlayedAt,
+    source: { kind: "import" },
+    onDevice: true,
   };
 }
 

@@ -131,6 +131,8 @@ export async function importFiles(picked: PickedAudio[] | null, onStep?: (s: Imp
         duration: totalDuration(files),
         addedAt: Date.now(),
         lastPlayedAt: null,
+        source: { kind: "import" },
+        onDevice: true,
       };
       library.addBook(book);
       return { kind: "book", book };

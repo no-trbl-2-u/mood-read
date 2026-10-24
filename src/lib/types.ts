@@ -20,6 +20,10 @@ export type Chapter = {
   end: number;
 };
 
+/** Where a book came from (spec 05 Contracts): a listener's own file, or a LibriVox download (05.8), kept by its
+ *  archive.org identifier so a re-download or a "Score this book" (05.9) can look it back up. */
+export type BookSource = { kind: "import" } | { kind: "librivox"; librivoxId: string };
+
 export type Book = {
   id: string;
   title: string;
@@ -34,6 +38,10 @@ export type Book = {
   addedAt: number;
   /** When the listener last opened it to play (ms since epoch); the library sorts on it. */
   lastPlayedAt: number | null;
+  /** Spec 05 Contracts. */
+  source: BookSource;
+  /** Spec 05 Contracts: false once "Remove download" (05.7) has deleted its file; true for every book today. */
+  onDevice: boolean;
 };
 
 export type Bookmark = {
