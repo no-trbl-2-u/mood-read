@@ -33,6 +33,7 @@ const STICKERS: { emotion: Emotion; label: string }[] = [
   { emotion: "dread", label: "Dread" },
 ];
 const MENU: MenuItem[] = [
+  { key: "downloads", label: "Downloads", icon: "download", onPress: () => router.push("/downloads") },
   { key: "settings", label: "Settings", icon: "settings", onPress: () => router.push("/settings") },
 ];
 

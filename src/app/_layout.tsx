@@ -4,6 +4,8 @@ import { StatusBar } from "expo-status-bar";
 import { useEffect } from "react";
 import { StyleSheet, View } from "react-native";
 
+import "@/lib/downloads";
+
 import { library } from "@/lib/library";
 import { scoring } from "@/lib/scoring";
 
@@ -43,6 +45,7 @@ export default function RootLayout() {
           <Stack.Screen name="import" options={{ title: "Import" }} />
           <Stack.Screen name="book/[id]" options={{ title: "Mood Read" }} />
           <Stack.Screen name="settings" options={{ title: "Settings" }} />
+          <Stack.Screen name="downloads" options={{ title: "Downloads" }} />
           <Stack.Screen name="privacy" options={{ title: "Privacy policy" }} />
           <Stack.Screen name="licenses" options={{ title: "Open-source licenses" }} />
         </Stack>

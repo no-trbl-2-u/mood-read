@@ -3,7 +3,9 @@ import { useState } from "react";
 import { ScrollView, StyleSheet, View } from "react-native";
 
 import { settings, SOUNDSCAPE_OFF, useSettings } from "@/lib/settings";
+import { useStorageMeter } from "@/lib/downloads";
 import { DEFAULT_SOUNDSCAPE_ID } from "@/lib/soundscapes";
+import { formatBytes } from "@/lib/storage";
 import { SOUNDSCAPES } from "@/player/soundscapes";
 import { Chip } from "@/ui/Chip";
 import { LinkRow, RowDrawer, SettingsSection, SwitchRow, UnavailableRow } from "@/ui/SettingsList";
@@ -12,8 +14,8 @@ import { TopBar } from "@/ui/TopBar";
 
 // Settings (spec 06, 06.3, A3), from the library's overflow menu: a plain list, each setting saved on the device
 // as it changes (src/lib/settings.ts), with no Save button (design/layouts/DECISION.md, Settings). Rows for what
-// has not shipped (Downloads and its storage meter, 05.6; Credits, 05.5; Spotify, 05.13) are shown as "Not
-// available yet" and go live with their chunks. All its copy lives here.
+// has not shipped (Credits, 05.5; Spotify, 05.13) are shown as "Not available yet" and go live with their
+// chunks. Storage (05.6) links to /downloads, where the storage meter and the queue live. All its copy lives here.
 
 const COMPANION_CAPTION =
   "Plays only Mood Read's soundscape, no narration, beside another app such as Audible. " +
@@ -33,6 +35,8 @@ const goBack = () => (router.canGoBack() ? router.back() : router.replace("/"));
 
 export default function SettingsScreen() {
   const current = useSettings();
+  const meter = useStorageMeter();
+  const storageValue = meter.booksBytes === null ? undefined : formatBytes(meter.booksBytes + meter.musicBytes);
   const [choosing, setChoosing] = useState(false);
   // Nothing set, or a loop no longer bundled, plays 01.7's default (Night Wind), so that chip reads as on.
   const chosen =
@@ -51,7 +55,7 @@ export default function SettingsScreen() {
             value={current.wifiOnly}
             onChange={(wifiOnly) => settings.set({ wifiOnly })}
           />
-          <UnavailableRow testID="setting-storage" title="Storage" />
+          <LinkRow testID="setting-storage" title="Storage" value={storageValue} onPress={() => router.push("/downloads")} />
         </SettingsSection>
 
         <SettingsSection label="Listening">

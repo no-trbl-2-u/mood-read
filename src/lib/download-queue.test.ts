@@ -1,7 +1,7 @@
 import assert from "node:assert/strict";
 import { test } from "node:test";
 
-import { backoffMs, createDownloadQueue, RETRY_BACKOFF_MS, type Transfer } from "./download-queue.ts";
+import { backoffMs, createDownloadQueue, recoverRunning, RETRY_BACKOFF_MS, type Transfer } from "./download-queue.ts";
 import { createDownloadStore } from "./download-store.ts";
 import type { Kv } from "./library-store.ts";
 
@@ -191,6 +191,28 @@ test("A6: Wi-Fi-only on by default does not hold anything back once the setting 
   const d = queue.enqueue(BOOK);
   await flush();
   assert.equal(store.get(d.id)?.state, "done");
+  assert.equal(calls, 1);
+});
+
+test("A6: a download left running across a restart queues again, so it can resume rather than sitting stuck", async () => {
+  const store = createDownloadStore(memoryKv());
+  store.add({ id: "d1", target: BOOK, state: "running", bytes: 40, totalBytes: 100, error: null, attempts: 0, queuedAt: 0, updatedAt: 0 });
+  store.add({ id: "d2", target: BOOK, state: "done", bytes: 100, totalBytes: 100, error: null, attempts: 0, queuedAt: 0, updatedAt: 0 });
+
+  recoverRunning(store, () => 5000);
+  assert.equal(store.get("d1")?.state, "queued");
+  assert.equal(store.get("d1")?.updatedAt, 5000);
+  assert.equal(store.get("d1")?.bytes, 40); // its progress so far is kept, even though nothing resumes it from there
+  assert.equal(store.get("d2")?.state, "done"); // untouched: it was not stuck
+
+  let calls = 0;
+  const transfer: Transfer = async () => {
+    calls++;
+  };
+  const queue = createDownloadQueue({ store, transfer, wifiOnly: () => false });
+  queue.wake();
+  await flush();
+  assert.equal(store.get("d1")?.state, "done");
   assert.equal(calls, 1);
 });
 

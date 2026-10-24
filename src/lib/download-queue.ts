@@ -58,6 +58,10 @@ export function createDownloadQueue(deps: {
   const controllers = new Map<string, AbortController>();
   const retries = new Map<string, unknown>();
 
+  function wakeAll(): void {
+    for (const d of store.list()) if (d.state === "queued") maybeStart(d.id);
+  }
+
   function clearRetry(id: string): void {
     const h = retries.get(id);
     if (h !== undefined) timers.clear(h);
@@ -153,10 +157,15 @@ export function createDownloadQueue(deps: {
       store.remove(id);
     },
     /** Gives every still-queued download another chance to start (Wi-Fi came back, or the setting changed). */
-    wake(): void {
-      for (const d of store.list()) if (d.state === "queued") maybeStart(d.id);
-    },
+    wake: wakeAll,
   };
+}
+
+// A download left `running` when the app closed has no live transfer behind it any more (its AbortController
+// died with the process): queue it again so it can resume, rather than sitting stuck as "running" forever.
+// Exported so src/lib/downloads.ts can run it once, against the real store, before the app's own queue is built.
+export function recoverRunning(store: DownloadStore, now: () => number = Date.now): void {
+  for (const d of store.list()) if (d.state === "running") store.patch(d.id, { state: "queued", updatedAt: now() });
 }
 
 export type DownloadQueue = ReturnType<typeof createDownloadQueue>;
