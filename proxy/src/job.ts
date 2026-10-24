@@ -99,7 +99,11 @@ function view(key: string, run: Run | undefined, result: BookResult | undefined)
   }
   const chapters = run.book.chapters.length;
   const chaptersDone = run.results.filter(Boolean).length;
-  return { jobId: key, state: run.state, progress: { step: Math.min(run.step, run.steps), steps: run.steps, chaptersDone, chapters } };
+  const out: JobView = { jobId: key, state: run.state, progress: { step: Math.min(run.step, run.steps), steps: run.steps, chaptersDone, chapters } };
+  // A rescore running, waiting at the cap or failed leaves the old result standing: it is shown alongside, so a
+  // status poll sees the same cached book that a start does.
+  if (result) out.result = result;
+  return out;
 }
 
 export function createBookJob(deps: JobDeps) {

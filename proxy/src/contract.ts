@@ -89,6 +89,9 @@ export type JobView = {
   jobId: string;
   state: JobState;
   progress: JobProgress;
-  /** Present when `state` is `done`: the book's scored chapters. */
+  /**
+   * The book's scored chapters: always present when `state` is `done`, and also while a rescore runs, waits at the cap
+   * or has failed, since the old result stands until a new one lands.
+   */
   result?: BookResult;
 };

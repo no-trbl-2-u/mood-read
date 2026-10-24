@@ -42,6 +42,11 @@ export function createScoringRunner(deps: { api: ScoringApi; store: ScoringStore
   /** Records what the proxy said; a finished job's chapters are stored and the job forgotten. */
   function apply(book: Book, view: JobView, rescore: boolean) {
     const prev = store.job(book.id);
+    // A rescore still running, capped or failed carries the proxy's cached result: a device without scores keeps it.
+    if (view.state !== "done" && view.result && !store.scores(book.id)) {
+      const scores = toBookScores(book, view, null);
+      if (scores) store.saveScores(book.id, scores);
+    }
     if (view.state === "done") {
       const scores = toBookScores(book, view, store.scores(book.id));
       if (scores) store.saveScores(book.id, scores);

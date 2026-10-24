@@ -149,6 +149,7 @@ export type JobView = {
   jobId: string;
   state: JobState;
   progress: JobProgress;
+  /** Always when `done`; also while a rescore runs, waits or has failed, since the old result stands meanwhile. */
   result?: { key: string; chapters: RemoteChapter[]; model: string; version: string; scoredAt: number; costUsd: number };
 };
 

@@ -255,3 +255,32 @@ test("an unknown job has no status", async () => {
   const { job } = setup();
   assert.equal((await job.status()).view, null);
 });
+
+test("a failed or capped rescore still shows the cached result on status, as start does (A22)", async () => {
+  const store = memoryStore();
+  const meter = createMeter(memoryStore());
+  const key = await bookKey(book);
+  const first = setup({ store, meter });
+  await first.job.start(key, book);
+  await drain(first.job);
+  const cached = (await first.job.status()).view!.result!;
+
+  // A rescore whose searches keep failing until the run is marked failed.
+  const broken = createBookJob({ store, meter, capUsd: 20, search: { search: async () => Promise.reject(new Error("down")) }, model: fakeModel(), now: () => NOW });
+  await broken.start(key, book, true);
+  await drain(broken);
+  const failed = (await broken.status()).view!;
+  assert.equal(failed.state, "failed", "the rescore's failure is reported");
+  assert.deepEqual(failed.result, cached, "the old result stays until a new one lands");
+  assert.deepEqual((await broken.start(key, book)).view.result, cached);
+
+  // A rescore asked for at the cap waits, and the cached result stays visible meanwhile.
+  await meter.add(monthOf(NOW), 100);
+  const capped = setup({ store, meter });
+  const re = await capped.job.start(key, book, true);
+  assert.equal(re.view.state, "capped");
+  assert.deepEqual(re.view.result, cached);
+  const polled = (await capped.job.status()).view!;
+  assert.equal(polled.state, "capped");
+  assert.deepEqual(polled.result, cached);
+});

@@ -214,3 +214,27 @@ test("a chapter renamed after scoring no longer shows the old score", async () =
   assert.equal(a.store.scores(book.id), null);
   assert.equal(a.kv.map.size, 0);
 });
+
+test("a rescore that waits at the cap still hands over the proxy's cached result to a device without it (A22)", async () => {
+  const p = proxy(20);
+  const a = app(p);
+  await a.runner.start(book);
+  await p.finishAll();
+  await a.timers.fire();
+  await p.meter.add(monthOf(Date.now()), 100);
+
+  const other = app(p);
+  await other.runner.start(book, true);
+  assert.equal(other.store.job(book.id)?.state, "capped", "the rescore waits");
+  assert.equal(other.store.scores(book.id)?.chapters.length, 3, "the cached chapters are kept meanwhile");
+  other.runner.stop(book.id);
+
+  const later = app(p, other.kv);
+  later.store.forget(book.id);
+  later.store.saveJob(book.id, { ...other.store.job(book.id)!, state: "capped" });
+  later.runner.resume(book);
+  await new Promise((r) => setTimeout(r, 0));
+  await new Promise((r) => setTimeout(r, 0));
+  assert.equal(later.store.job(book.id)?.state, "capped");
+  assert.equal(later.store.scores(book.id)?.chapters.length, 3, "a status poll hands it over too");
+});

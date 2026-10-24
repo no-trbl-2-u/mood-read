@@ -62,3 +62,15 @@ test("answers are checked: a bad id, an unknown state, a done job without chapte
   assert.equal(ok.result?.chapters.length, 1);
   assert.deepEqual(readJobView({ ...running, progress: { step: -1, steps: "x" } }).progress, { step: 0, steps: 0, chaptersDone: 0, chapters: 0 });
 });
+
+test("a running, capped or failed answer may carry the cached result; it is checked like a finished one", () => {
+  const piece = { id: "p", title: "T", artist: "A", kind: "score", vocals: "none", moodTags: ["calm"] };
+  const mood = { chapterIndex: 0, chapterTitle: "Chapter 1", emotions: [{ emotion: "calm", intensity: 0.5 }], sources: [], coverage: "scored", model: "m", version: "v", scoredAt: 1 };
+  const withResult = (state: string, p: unknown) => ({ ...running, state, result: { key: ID, chapters: [{ index: 0, title: "Chapter 1", mood, pieces: p }], model: "m", version: "v", scoredAt: 1, costUsd: 0.1 } });
+  for (const state of ["running", "capped", "failed"]) {
+    const v = readJobView(withResult(state, { piece, alternates: [piece, piece] }));
+    assert.equal(v.state, state);
+    assert.equal(v.result?.chapters.length, 1, state);
+    assert.throws(() => readJobView(withResult(state, { piece: { ...piece, vocals: "some" }, alternates: [] })), /vocals/);
+  }
+});

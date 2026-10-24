@@ -19,8 +19,10 @@ export function readJobView(body: unknown): JobView {
   const p = v.progress ?? ({} as JobView["progress"]);
   const num = (n: unknown) => (typeof n === "number" && Number.isFinite(n) && n >= 0 ? n : 0);
   const out: JobView = { jobId: v.jobId, state: v.state, progress: { step: num(p.step), steps: num(p.steps), chaptersDone: num(p.chaptersDone), chapters: num(p.chapters) } };
-  if (v.state === "done") {
-    if (!v.result || !Array.isArray(v.result.chapters)) throw new Error("a finished job came back without its chapters");
+  if (v.state === "done" && !v.result) throw new Error("a finished job came back without its chapters");
+  // A rescore running, capped or failed carries the cached result alongside; it is checked the same way.
+  if (v.result !== undefined) {
+    if (!v.result || !Array.isArray(v.result.chapters)) throw new Error("a job came back without its chapters");
     for (const c of v.result.chapters) {
       if (typeof c?.index !== "number" || !c.mood || !Array.isArray(c.mood.emotions)) throw new Error("a chapter came back malformed");
       if (c.mood.emotions.some((e) => !(EMOTIONS as readonly string[]).includes(e.emotion))) throw new Error("an emotion outside the fixed set");
