@@ -121,3 +121,27 @@ test("a piece carries its title, artist, kind, mood tags and vocals none, with a
     moodTags: ["dread"],
   });
 });
+
+test("the no-vocals name screen catches plural and common vocal titles, and leaves instrumental forms alone (A20)", () => {
+  const vocal = [
+    "Ballads of the Sea",
+    "Lullabies",
+    "Hallelujah",
+    "Songbird",
+    "Choirboy",
+    "Vocalises",
+    "Masses",
+    "Requiems",
+    "Psalm 23",
+    "Ave Maria",
+    "Carmina Burana",
+    "Arias",
+    "Stabat Mater",
+    "Agnus Dei",
+    "Cantatas",
+    "Duets",
+  ];
+  for (const title of vocal) assert.equal(failsNoVocalsScreen({ title, artist: "X" }), true, title);
+  const clean = ["Ballade No. 1 in G minor", "Massive", "Nocturne", "Passacaglia"];
+  for (const title of clean) assert.equal(failsNoVocalsScreen({ title, artist: "Frederic Chopin" }), false, title);
+});

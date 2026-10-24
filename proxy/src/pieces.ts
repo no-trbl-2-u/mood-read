@@ -102,9 +102,11 @@ export function parseCandidates(value: unknown): Map<number, Candidate[]> {
 /**
  * The no-vocals screen on a name: words that mark a song, a voice or a choir drop the candidate. It errs towards
  * dropping (an instrumental called "Song of the Sea" goes too): a lost candidate costs a retry, a vocal piece breaks A20.
+ * Words match whole with their plurals ("Ballads", "Lullabies", "Requiems"), alongside vocal works known by name
+ * ("Ave Maria", "Carmina Burana"); a near spelling that is an instrumental form ("Ballade") is left to the model checks.
  */
 const VOCAL_WORDS =
-  /\b(?:feat\.?|ft\.|featuring|vocals?|vocalise|voices?|singers?|sings?|sung|singing|songs?|lyrics?|choirs?|choral|chorus|chorale|chant|chants|cantata|oratorio|aria|arias|opera|operetta|lieder|lied|hymns?|gospel|anthem|madrigal|motet|requiem|mass|a ?cappella|acapella|rap|spoken|narrat\w*|poem|poetry|recitation|monologue|speech|lullaby|ballad|duet)\b/i;
+  /\b(?:feat\.?|ft\.|featuring|vocals?|vocalises?|voices?|singers?|sings?|sung|singing|song\w*|lyrics?|choir\w*|choral|chorus|choruses|chorales?|chants?|cantatas?|oratorios?|arias?|operas?|operettas?|lieder|lied|hymns?|hymnal|gospel|anthems?|madrigals?|motets?|requiems?|mass|masses|a ?cappella|acapella|rap|spoken|narrat\w*|poems?|poetry|recitations?|monologues?|speech|lullab(?:y|ies)|ballads?|duets?|psalms?|hallelujah|alleluia|ave maria|carmina burana|stabat mater|agnus dei|te deum|kyrie|magnificat|miserere|vespers|canticles?|carols?|shant(?:y|ies)|spirituals?)\b/i;
 
 export function failsNoVocalsScreen(c: Pick<Candidate, "title" | "artist">): boolean {
   return VOCAL_WORDS.test(c.title) || VOCAL_WORDS.test(c.artist);
