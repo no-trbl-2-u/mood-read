@@ -38,3 +38,4 @@ identity · deleted in <sha>`; recover its text with
 - 2026-10-24 · 01.4 · Reached chapters show emotions; the playing row is the mood card · 07017846..a10064f6
 - 2026-10-24 · 06.5 · Axe, 44 px and 200% text checks gate every route · 9380a0e1..b5c26981
 - 2026-10-24 · 06 · spec complete: Design system, the undrawn screens, Settings, accessibility and a privacy policy · absorbed into plan/bearings.md Visual & tonal defaults, the route contract and standing decisions, and design/system/DECISION.md and design/layouts/DECISION.md · deleted in "plan: settle 06.5"
+- 2026-10-24 · 01.14 · Companion mode plays the bed beside another app, no narration · 103fa672..ca7361bf

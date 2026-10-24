@@ -102,10 +102,6 @@ just name the pieces/scores/songs/instrumentals (It's important that there's no 
 - **A24** Each chapter's mood card links out to its reference piece ("In the spirit of") on Spotify, YouTube /
   YouTube Music and Apple Music, and Mood Read plays none of it; a listener can save a book's reference pieces as
   a playlist in their own YouTube or Apple Music account.
-- **A27** A listener can turn on companion mode: Mood Read plays only its own soundscape or piece, no
-  narration, mixed with the audio another app plays (Audible, Libby, Chirp or a music app). It follows chapters by
-  the listener's tap or a timer, and never captures, controls, reads or ducks the other app. It is checked with
-  Audible on a real iOS and Android phone, and the narration's lock-screen controls are unchanged when it is off.
 - **A30** An unscored book's river offers "Score this book"; scoring shows its progress, says
   plainly when the monthly cap has paused it, and "Rescore" is an explicit action; the first scoring says once
   that only the title, author and chapter titles are sent.
@@ -117,6 +113,9 @@ just name the pieces/scores/songs/instrumentals (It's important that there's no 
 - **A34** A caller cannot spend the monthly budget with made-up books or repeated rescores: the proxy
   limits how often one client starts runs, and rescoring a cached book waits a minimum age.
 - **A35** Tapping a reached chapter's emotion chips opens its mood card in place without moving playback.
+- **A36** Companion mode is checked with Audible on a real iOS and Android phone: both play
+  together whichever starts first, through a pause, a call and Bluetooth, the bed keeps playing with the screen
+  off, and the narration's lock-screen controls are unchanged when companion mode is off.
 
 ## Owner decisions (all answered)
 
@@ -207,7 +206,7 @@ Every question below is answered; none is open. Elsewhere in the plan, "Open que
    no emotions on its card (A21).
 
 ## Chunks
-Measure: 12 open · 23 closed · next A36
+Measure: 12 open · 24 closed · next A37
 
 Build order follows the owner's two-part v1, and the lines below are in that order. **Part 1, the player:** 01.1,
 01.6, 01.3, 01.5, 01.7: the player, then real books in it, then the second layer, its mixer and the soundscapes it
@@ -230,13 +229,6 @@ pieces). Ids keep the order they were written in. The app itself (Expo at the re
     Developer Policy III.5, until the owner revisits it after v1); YouTube playlists through the Data API within
     its daily quota; Apple Music playlists only once the Apple Developer Program is joined (after v1); SoundCloud
     gets a plain soundcloud.com link, no API.
-- [ ] **01.14** Companion mode: Mood Read's bed beside another app · M · closes A27 · needs —
-  - Wire Settings' saved Companion mode switch (06.3, `src/lib/settings.ts` `companionMode`) to the audio
-    session, and drop its "It arrives in a later update" caption in `src/app/settings.tsx`.
-  - As `docs/workarounds.md` (Companion mode) sets it: iOS `.playback` with `mixWithOthers`; Android requests no
-    `AUDIOFOCUS_GAIN`; Expo needs `doNotMix` for lock-screen controls, so this is a mode the listener turns on,
-    never the default. Automatic chapter following is out (iOS has no API; Android's notification access is unclear).
-  - Music apps join only through plain links (01.11): no SDK, MusicKit or remote control.
 - [ ] **01.15** Device pass for the player: background, lock screen and native speed on a real phone · S ·
   closes A2, A4 · needs 04.1
   - The owner's check on 04.1's preview APK (screen off, lock-screen and media-key play, pause and 30 s skips)
@@ -279,3 +271,10 @@ pieces). Ids keep the order they were written in. The app itself (Expo at the re
   closes A35 · needs —
   - `design/layouts/DECISION.md` suggests it; 01.4 expands only the playing row. An unreached row still never
     expands.
+- [ ] **01.23** Companion mode beside Audible on a real phone · S · closes A36 ·
+  needs —
+  - The owner's check on 04.1's preview APK (and an iPhone when iOS builds exist); 01.14 built and tested the rest
+    of A27 on web.
+  - Main risk: expo-audio stops Android background playback after about 3 minutes without lock-screen controls,
+    which companion mode turns off. If the bed stops, decide between a foreground service with no media session
+    and accepting the limit; note the limit in `docs/workarounds.md`.
