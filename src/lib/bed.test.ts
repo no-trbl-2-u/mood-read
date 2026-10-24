@@ -20,6 +20,8 @@ import {
   type EnvelopeInput,
   bedOffset,
   bedSoundFor,
+  bedsAfterMerge,
+  bedsAfterSplit,
   crossfadeGains,
   CROSSFADE_MS,
   DEFAULT_BED,
@@ -596,4 +598,31 @@ test("A2: the logged scene line names the chapter, the scene, its piece and the 
   const cmd = planScene(planScene(NO_SCENE, inScene(1010), sceneCtx()).spot, inScene(1041), sceneCtx()).command!;
   assert.equal(sceneLogLine(cmd), "bed scene: chapter=3 scene=1 piece=p2 direction=on crossfade=true");
   assert.equal(sceneLogLine({ ...cmd, pieceId: null, crossfade: false }), "bed scene: chapter=3 scene=1 piece=none direction=on crossfade=false");
+});
+
+const RAIN = { layer: "soundscape", soundscapeId: "rain" } as const;
+const TIDE = { layer: "soundscape", soundscapeId: "tide" } as const;
+const OFF = { layer: "off", soundscapeId: null } as const;
+
+test("A32: merging keeps the first chapter's own bed and moves later chapters' down one", () => {
+  const beds = { "0": RAIN, "1": OFF, "2": TIDE, "4": OFF };
+  // Merging 1 with 2: the merged chapter 1 keeps 1's (off); 3 becomes 2, 4 becomes 3.
+  assert.deepEqual(bedsAfterMerge(beds, 1), { "0": RAIN, "1": OFF, "3": OFF });
+  // The first has none of its own: the merged chapter follows the book, and the second's own goes with it.
+  assert.deepEqual(bedsAfterMerge({ "3": TIDE, "5": RAIN }, 2), { "4": RAIN });
+  assert.deepEqual(bedsAfterMerge({}, 0), {});
+});
+
+test("A32: splitting gives both halves the chapter's own bed and moves later chapters' up one", () => {
+  const beds = { "0": RAIN, "1": OFF, "2": TIDE };
+  assert.deepEqual(bedsAfterSplit(beds, 1), { "0": RAIN, "1": OFF, "2": OFF, "3": TIDE });
+  // A chapter with none of its own: both halves follow the book; the later ones still move.
+  assert.deepEqual(bedsAfterSplit({ "0": RAIN, "3": TIDE }, 1), { "0": RAIN, "4": TIDE });
+});
+
+test("A32: the remaps never change the input", () => {
+  const beds = { "1": OFF, "2": TIDE };
+  bedsAfterMerge(beds, 0);
+  bedsAfterSplit(beds, 1);
+  assert.deepEqual(beds, { "1": OFF, "2": TIDE });
 });

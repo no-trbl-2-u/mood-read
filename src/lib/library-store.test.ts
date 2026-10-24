@@ -1,7 +1,7 @@
 import assert from "node:assert/strict";
 import { test } from "node:test";
 
-import { defaultBedFor, pickLayer, setChapterOnly } from "./bed.ts";
+import { bedsAfterMerge, bedsAfterSplit, defaultBedFor, pickLayer, setChapterOnly } from "./bed.ts";
 import { DEFAULT_MIX } from "./mix.ts";
 import { createLibraryStore, sortBooks, type Kv } from "./library-store.ts";
 import type { Book } from "./types.ts";
@@ -198,6 +198,31 @@ test("A6 edited chapters are saved for the book and kept across a reopen; a list
   store.setChapters("b1", [split[0]]);
   store.setChapters("b1", []);
   assert.deepEqual(store.getBook("b1")?.chapters, split);
+});
+
+test("A32: a chapter edit moves the chapters' own beds in the same save; a refused edit or an unmixed book keeps its mix", () => {
+  const kv = memoryKv();
+  const store = createLibraryStore(kv);
+  store.addBook(book("b1", "Dune"));
+  const two = [
+    { bookId: "b1", index: 0, title: "Arrival", fileIndex: 0, start: 0, end: 40 },
+    { bookId: "b1", index: 1, title: "Desert", fileIndex: 0, start: 40, end: 100 },
+  ];
+  store.setChapters("b1", two);
+  store.saveMix("b1", { ...DEFAULT_MIX, balance: 0.2, chapterBeds: { "1": { layer: "off", soundscapeId: null } } });
+  // Split chapter 0 at 20: Desert is now chapter 2 and keeps its own.
+  const three = [{ ...two[0], end: 20 }, { ...two[0], index: 1, title: "Arrival, part 2", start: 20 }, { ...two[1], index: 2 }];
+  store.setChapters("b1", three, (beds) => bedsAfterSplit(beds, 0));
+  const back = createLibraryStore(kv).getMix("b1");
+  assert.deepEqual(back.chapterBeds, { "2": { layer: "off", soundscapeId: null } });
+  assert.equal(back.balance, 0.2, "the rest of the mix is untouched");
+  // A refused list (a gap) moves nothing.
+  store.setChapters("b1", [three[0], three[2]], (beds) => bedsAfterMerge(beds, 0));
+  assert.deepEqual(store.getMix("b1").chapterBeds, { "2": { layer: "off", soundscapeId: null } });
+  // A book never mixed is not given a mix by an edit (it keeps following the default soundscape setting).
+  store.addBook(book("b2", "Emma"));
+  store.setChapters("b2", [{ ...book("b2", "Emma").chapters[0], end: 100 }], (beds) => bedsAfterMerge(beds, 0));
+  assert.equal(kv.data.has("mix:b2"), false);
 });
 
 test("06.3: a book never mixed opens on the default soundscape setting; a book's saved layer keeps its own", () => {

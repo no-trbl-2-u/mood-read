@@ -159,6 +159,32 @@ export function setChapterOnly(setting: BedSetting, chapterIndex: number | null,
   return { ...setting, chapterBeds };
 }
 
+/** Chapters' own beds re-keyed by `move` (an old index to its new ones; none drops it), for a merge or split. */
+function rekey(beds: Record<string, BedChoice>, move: (index: number) => number[]): Record<string, BedChoice> {
+  const out: Record<string, BedChoice> = {};
+  for (const [key, choice] of Object.entries(beds)) {
+    for (const to of move(Number(key))) out[String(to)] = choice;
+  }
+  return out;
+}
+
+/**
+ * The chapters' own beds after chapter `index` merges with the next (A32, src/lib/chapters.ts mergeWithNext): the
+ * merged chapter keeps the first's own bed (or follows the book, as the first did), the second's is dropped, and
+ * every later chapter's moves down one with it.
+ */
+export function bedsAfterMerge(beds: Record<string, BedChoice>, index: number): Record<string, BedChoice> {
+  return rekey(beds, (i) => (i <= index ? [i] : i === index + 1 ? [] : [i - 1]));
+}
+
+/**
+ * The chapters' own beds after chapter `index` splits in two (A32, src/lib/chapters.ts splitChapter): both halves
+ * keep its own bed, and every later chapter's moves up one with it.
+ */
+export function bedsAfterSplit(beds: Record<string, BedChoice>, index: number): Record<string, BedChoice> {
+  return rekey(beds, (i) => (i < index ? [i] : i === index ? [i, i + 1] : [i + 1]));
+}
+
 /** Where the loop sits for a narration position: the time into the chapter, wrapped by the loop's length. */
 export function bedOffset(position: number, chapterStart: number, loopSeconds: number): number {
   if (!(loopSeconds > 0) || !Number.isFinite(position)) return 0;
