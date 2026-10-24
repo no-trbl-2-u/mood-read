@@ -12,6 +12,7 @@ const ROUTES = [
   { path: "/book/sample-1", title: "Book not found", also: "Back to your shelf" },
   { path: "/settings", title: "Settings", also: "Downloads on Wi-Fi only" },
   { path: "/privacy", title: "Privacy policy", also: "What the scoring proxy gets" },
+  { path: "/licenses", title: "Open-source licenses", also: "Lucide icons" },
 ];
 
 for (const route of ROUTES) {
@@ -24,6 +25,18 @@ for (const route of ROUTES) {
     expect(problems).toEqual([]);
   });
 }
+
+// The web build serves the open-source notices as a plain file beside the app (06.1's rights check, 06.4).
+test("/licenses.txt is served with the web build and carries the notices", async ({ request }) => {
+  const res = await request.get("/licenses.txt");
+  expect(res.status()).toBe(200);
+  expect(res.headers()["content-type"]).toMatch(/^text\/plain/);
+  const body = await res.text();
+  expect(body).toContain("Lucide");
+  expect(body).toContain("Cole Bemis");
+  expect(body).toContain("Horcrux");
+  expect(body).toContain("SIL OPEN FONT LICENSE Version 1.1");
+});
 
 // The privacy policy (A6) says what the scoring proxy receives, and the Import screen links to it (as Settings
 // does, e2e/settings.spec.ts).

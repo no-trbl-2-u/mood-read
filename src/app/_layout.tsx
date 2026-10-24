@@ -32,6 +32,7 @@ export default function RootLayout() {
           <Stack.Screen name="book/[id]" options={{ title: "Mood Read" }} />
           <Stack.Screen name="settings" options={{ title: "Settings" }} />
           <Stack.Screen name="privacy" options={{ title: "Privacy policy" }} />
+          <Stack.Screen name="licenses" options={{ title: "Open-source licenses" }} />
         </Stack>
       </View>
     </PlayerProvider>

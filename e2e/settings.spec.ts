@@ -57,4 +57,22 @@ test.describe("settings", () => {
     await page.waitForLoadState("networkidle");
     expect(problems).toEqual([]);
   });
+
+  // 06.1's rights check: the Lucide (ISC, Feather MIT), react-native-svg (MIT) and Bricolage Grotesque (OFL)
+  // notices, word for word, on a screen reached from Settings (src/lib/licenses.test.ts holds the words).
+  test("06.4: Settings opens the open-source licenses, each notice in full", async ({ page }) => {
+    const problems = await guard(page);
+    await page.goto("/settings");
+    await page.getByRole("link", { name: "Open-source licenses" }).click();
+    await expect(page).toHaveURL(/\/licenses$/);
+    await expect(page.getByRole("heading", { name: "Open-source licenses" })).toBeVisible();
+    await expect(page.getByTestId("license-lucide")).toContainText("Copyright (c) 2026 Lucide Icons and Contributors");
+    await expect(page.getByTestId("license-lucide")).toContainText("Copyright (c) 2013-present Cole Bemis");
+    await expect(page.getByTestId("license-react-native-svg")).toContainText("[Horcrux]");
+    await expect(page.getByTestId("license-bricolage-grotesque")).toContainText("SIL OPEN FONT LICENSE Version 1.1");
+    await page.getByRole("button", { name: "Back to Settings" }).click();
+    await expect(page).toHaveURL(/\/settings$/);
+    await page.waitForLoadState("networkidle");
+    expect(problems).toEqual([]);
+  });
 });

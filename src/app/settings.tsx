@@ -95,6 +95,7 @@ export default function SettingsScreen() {
         <SettingsSection label="About">
           <UnavailableRow testID="setting-credits" title="Credits" />
           <LinkRow testID="setting-privacy" title="Privacy policy" onPress={() => router.push("/privacy")} />
+          <LinkRow testID="setting-licenses" title="Open-source licenses" onPress={() => router.push("/licenses")} />
         </SettingsSection>
       </ScrollView>
     </View>

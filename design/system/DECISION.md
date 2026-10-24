@@ -148,7 +148,11 @@ and replaced the hand-drawn glyphs with `src/ui/Icon.tsx`, the one place an icon
 - No visible credit beside icons is required. Recolouring and resizing are allowed.
 - **Obligation:** all three notices, word for word (copied from each installed package's LICENSE at install
   time), on an in-app open-source licences / Credits screen and in a licences file served with the web build.
-  06.4 does that when it installs the packages.
+  06.4 did: `scripts/licenses.mjs` copies each notice from the installed package's license file into
+  `src/ui/licenses.ts`, shown by the in-app `/licenses` screen (Settings, About, "Open-source licenses"), and
+  into `public/licenses.txt`, served by the web build at `/licenses.txt`. The Bricolage Grotesque OFL notice
+  joins them. `src/lib/licenses.test.ts` fails if either drifts from the packages; rerun the script after an
+  upgrade. Credits (05.5) links to the same texts when it ships.
 - **No brand icons:** Lucide v1 removed them; do not add brand logos from elsewhere (a Spotify mark, for
   instance, follows that brand's own guidelines, not this set).
 - Sources: https://lucide.dev/license, https://lucide.dev/guide/version-1,
