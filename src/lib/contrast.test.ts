@@ -41,3 +41,11 @@ test("the body-text pairs are all checked at the 4.5 bar", () => {
     }
   }
 });
+
+test("the v2 boards' two dark-on-colour pairs are checked: Finished on pop, Delete book on danger", () => {
+  for (const bg of [colors.pop, colors.danger]) {
+    assert.ok(contrastPairs.some((p) => p.fg === colors.onAccent && p.bg === bg && p.kind === "text"));
+  }
+  assert.equal(Math.round(contrastRatio(colors.onAccent, colors.pop) * 100) / 100, 6.41);
+  assert.equal(Math.round(contrastRatio(colors.onAccent, colors.danger) * 100) / 100, 7.72);
+});

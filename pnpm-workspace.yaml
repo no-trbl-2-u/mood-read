@@ -5,3 +5,5 @@ allowBuilds:
   # eas-cli's transitive install scripts: not needed to run the CLI.
   dtrace-provider: false
   protobufjs: false
+minimumReleaseAgeExclude:
+  - expo-font@58.0.10

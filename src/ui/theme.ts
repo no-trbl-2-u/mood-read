@@ -34,9 +34,16 @@ export const colors = {
   focus: "#4de8ff",
   /** The dim laid over the river while a bottom sheet is open. */
   scrim: "rgba(5, 4, 9, 0.72)",
-  /** An error line. */
+  /** An error line, and the fill of a confirming destructive button ("Delete book"). */
   danger: "#ff7a7a",
+  /** No paint: a border or fill that is present for layout but not drawn. */
+  transparent: "transparent",
 } as const;
+
+/** A cover with no art: a muted tile tinted from the book's id (a hue, 0 to 359), so books tell apart. */
+export function coverTint(hue: number): string {
+  return `hsl(${hue}, 30%, 28%)`;
+}
 
 /** One saturated hue per emotion. A chip always carries its label too: never colour alone. */
 export const emotionHues: Record<Emotion, string> = {
@@ -85,10 +92,37 @@ export const sizes = {
   switchKnob: 22,
   /** One dot of the overflow ("More") glyph. */
   dot: 4,
+  /** A top bar's title line. */
+  topBar: 52,
+  /** A primary or secondary button's height. */
+  button: 48,
+  /** The mini player's play / pause button. */
+  play: 48,
+  /** A library row's cover (portrait). */
+  coverWidth: 52,
+  coverHeight: 70,
+  /** The mini player's square cover. */
+  miniCover: 44,
+  /** The play mark on the cover of the book in progress. */
+  coverMark: 20,
+  /** The import note's file tile. */
+  fileTileWidth: 72,
+  fileTileHeight: 88,
+  /** A bottom sheet's handle. */
+  handleWidth: 40,
+  handleHeight: 4,
+  /** A progress bar or slider track. */
+  track: 6,
+  /** The slider's thumb. */
+  thumb: 24,
+  /** The speed readout between Slower and Faster. */
+  readout: 48,
+  /** The narrowest an inline text field gets before it wraps. */
+  inputMin: 160,
 } as const;
 
-/** Opacities: a row that is not available yet, and the list behind an open menu. */
-export const opacities = { disabled: 0.55, behindMenu: 0.55 } as const;
+/** Opacities: a row that is not available yet, the list behind an open menu, a control while work runs. */
+export const opacities = { disabled: 0.55, behindMenu: 0.55, busy: 0.6 } as const;
 
 /** Outline and rule widths. */
 export const strokes = {
@@ -108,6 +142,11 @@ export const shadows = {
   card: { offsetX: 6, offsetY: 6, color: colors.pop },
 } as const;
 
+/** A hard shadow as a React Native `boxShadow` string (zero blur). */
+export function hardShadow(s: { offsetX: number; offsetY: number; color: string }): string {
+  return `${s.offsetX}px ${s.offsetY}px 0 ${s.color}`;
+}
+
 /** A sticker's tilt in degrees, cycled by index so a row of chips never lines up. */
 export const tilts = [-3, 2, -1.5, 3, -2, 1] as const;
 
@@ -115,26 +154,31 @@ export const tilts = [-3, 2, -1.5, 3, -2, 1] as const;
 export const focusRing = { width: strokes.outline, offset: 2, color: colors.focus } as const;
 
 /**
- * Font families. The display face is Bricolage Grotesque (SIL OFL 1.1, Google Fonts), bundled by
- * 06.4; until then `display` is undefined and React Native falls back to the system font.
+ * Font families. The display face is Bricolage Grotesque ExtraBold (SIL OFL 1.1, Google Fonts), bundled from
+ * `@expo-google-fonts/bricolage-grotesque` and loaded under this name by src/app/_layout.tsx. Body text is the
+ * system font (`body` undefined).
  */
 export const fonts = {
-  display: undefined as string | undefined,
+  display: "BricolageGrotesque_800ExtraBold" as string,
   body: undefined as string | undefined,
-  plannedDisplay: "Bricolage Grotesque",
 } as const;
 
-/** The type scale, in px. Display and title use the display face once bundled. */
+/**
+ * The type scale, in px. Display, title and heading use the display face. Its file is the 800 weight itself, so
+ * those styles ask for no extra weight (a weight on top makes browsers draw a fake bold over it).
+ */
 export const typography = {
-  display: { fontSize: 44, lineHeight: 46, fontWeight: "800" as const, letterSpacing: -1, color: colors.text },
-  title: { fontSize: 30, lineHeight: 34, fontWeight: "800" as const, letterSpacing: -0.5, color: colors.text },
-  heading: { fontSize: 20, lineHeight: 24, fontWeight: "800" as const, color: colors.text },
+  display: { fontFamily: fonts.display, fontSize: 44, lineHeight: 46, letterSpacing: -1, color: colors.text },
+  title: { fontFamily: fonts.display, fontSize: 30, lineHeight: 34, letterSpacing: -0.5, color: colors.text },
+  heading: { fontFamily: fonts.display, fontSize: 20, lineHeight: 24, color: colors.text },
   body: { fontSize: 16, lineHeight: 22, fontWeight: "400" as const, color: colors.text },
   label: { fontSize: 14, lineHeight: 18, fontWeight: "700" as const, color: colors.text },
   caption: { fontSize: 13, lineHeight: 18, fontWeight: "400" as const, color: colors.textMuted },
+  /** The mini player's times; the 12 px state chips (design/layouts/DECISION.md, v2). */
+  meta: { fontSize: 12, lineHeight: 16, fontWeight: "400" as const, color: colors.textMuted },
 } as const;
 
-/** Icons: Lucide (lucide-react-native v1.x), installed by 06.4. */
+/** Icons: Lucide (lucide-react-native v1.x), drawn through src/ui/Icon.tsx. */
 export const icons = { size: 24, small: 18, strokeWidth: 2.5 } as const;
 
 /** Cubic-bezier control points. */
@@ -183,6 +227,8 @@ export const contrastPairs: readonly { name: string; fg: string; bg: string; kin
   { name: "danger on background", fg: colors.danger, bg: colors.background, kind: "text" },
   { name: "danger on surface", fg: colors.danger, bg: colors.surface, kind: "text" },
   { name: "danger on raised", fg: colors.danger, bg: colors.raised, kind: "text" },
+  { name: "onAccent on pop (the Finished chip, the downloads badge)", fg: colors.onAccent, bg: colors.pop, kind: "text" },
+  { name: "onAccent on danger (the confirming Delete book)", fg: colors.onAccent, bg: colors.danger, kind: "text" },
   ...EMOTIONS.map((e) => ({ name: `onAccent on ${e}`, fg: colors.onAccent, bg: emotionHues[e], kind: "text" as const })),
   { name: "focus ring on background", fg: colors.focus, bg: colors.background, kind: "ui" },
   { name: "focus ring on surface", fg: colors.focus, bg: colors.surface, kind: "ui" },

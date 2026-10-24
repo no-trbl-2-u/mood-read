@@ -52,7 +52,11 @@ set and removes any literal colour or size left outside the file.
 | `border` | `#3a3150` | Decorative hairline between rows (1.61:1). Never a control's only boundary. |
 | `focus` | `#4de8ff` | The focus ring. |
 | `scrim` | `rgba(5, 4, 9, 0.72)` | The dim over the river while a sheet is open. |
-| `danger` | `#ff7a7a` | An error line. |
+| `danger` | `#ff7a7a` | An error line; the fill of the confirming "Delete book" (label in `onAccent`). |
+| `transparent` | `transparent` | No paint: a border kept for layout but not drawn (06.4). |
+
+A cover with no art is a muted tile tinted from the book's id, `coverTint(hue)` (`hsl(hue, 30%, 28%)`), with
+its initials in `text`; it is the one computed colour, and it lives in `theme.ts` with the rest (06.4).
 
 ### Emotion hues
 
@@ -77,10 +81,12 @@ offset 2 px, never a fill, so the two never read the same.
 
 ### Type scale
 
-Display face: **Bricolage Grotesque** (SIL Open Font License 1.1, from Google Fonts), weights 400, 700 and 800.
-It is not bundled yet: `fonts.display` is `undefined` in `theme.ts`, so React Native draws the system font until
-06.4 bundles the font files with `expo-font` and sets it, keeping the OFL text beside them. Body text stays the
-system font.
+Display face: **Bricolage Grotesque** (SIL Open Font License 1.1, from Google Fonts). 06.4 bundles it from
+`@expo-google-fonts/bricolage-grotesque` through `expo-font`, and only the 800 weight (ExtraBold), the one weight
+the scale draws in the display face: `fonts.display` is `BricolageGrotesque_800ExtraBold`, loaded by
+`src/app/_layout.tsx` before the first screen draws. Because the file is the weight, the display tokens set no
+`fontWeight` (a weight on top makes a browser draw a fake bold). Its OFL text is on the in-app licenses screen
+(`/licenses`) and in `/licenses.txt`. Body text stays the system font.
 
 | Token | Size / line height | Weight | Face | Use |
 |---|---|---|---|---|
@@ -90,6 +96,7 @@ system font.
 | `body` | 16 / 22 | 400 | system | Paragraphs, row titles. |
 | `label` | 14 / 18 | 700 | system | Chips, buttons, settings rows. |
 | `caption` | 13 / 18 | 400 | system, `textMuted` | Metadata, times. |
+| `meta` | 12 / 16 | 400 | system, `textMuted` | The mini player's times; the 12 px state chips (06.4, from the v2 boards). |
 
 Every size follows the OS text size (06.5 holds the 200% bar); nothing sets `allowFontScaling={false}`.
 
@@ -102,6 +109,13 @@ Every size follows the OS text size (06.5 holds the 200% bar); nothing sets `all
   button's outline), `rule` 6 (the playing row's left rule, in `accent`).
 - **Hard shadows** (zero blur, offset down-right): chip 3/3 in `edge`; button 4/4 in `pop`; the playing row
   6/6 in `pop`.
+- **Sizes** (`sizes`, fixed control sizes; 06.4 moved every screen's last literal size here): `touch` 44 (the
+  smallest target, every icon button), `menuRow` 48, `settingRow` 56, `menuWidth` 250, the switch 52 x 32 with
+  a 22 knob, `topBar` 52, `button` 48, `play` 48 (the mini player's play), a library row's cover 52 x 70
+  (`coverWidth`, `coverHeight`), `miniCover` 44, `coverMark` 20, the import note's file tile 72 x 88, the sheet
+  handle 40 x 4, `track` 6 (progress bars, the slider track), `thumb` 24 (the slider's), `readout` 48 (the
+  speed between Slower and Faster), `inputMin` 160.
+- **Opacities:** `disabled` 0.55, `behindMenu` 0.55, `busy` 0.6 (a button while an import runs).
 - **Tilt:** chips rotate by `tilts` (-3, 2, -1.5, 3, -2, 1 degrees), cycled by index so a row never lines up.
   Buttons, rows and text never tilt. Tilt is static and stays under reduce motion (it is shape, not motion).
 
@@ -216,6 +230,8 @@ playing row's rule). Ratios to two decimals:
 | danger on background | `#ff7a7a` | `#0e0b14` | 7.72:1 | 4.5:1 |
 | danger on surface | `#ff7a7a` | `#1a1524` | 7.07:1 | 4.5:1 |
 | danger on raised | `#ff7a7a` | `#262035` | 6.20:1 | 4.5:1 |
+| onAccent on pop (the Finished chip, the downloads badge) | `#0e0b14` | `#ff4fa3` | 6.41:1 | 4.5:1 |
+| onAccent on danger (the confirming Delete book) | `#0e0b14` | `#ff7a7a` | 7.72:1 | 4.5:1 |
 | onAccent on tension | `#0e0b14` | `#ff6a3d` | 6.86:1 | 4.5:1 |
 | onAccent on sorrow | `#0e0b14` | `#6f93ff` | 6.77:1 | 4.5:1 |
 | onAccent on wonder | `#0e0b14` | `#4de8ff` | 13.28:1 | 4.5:1 |
