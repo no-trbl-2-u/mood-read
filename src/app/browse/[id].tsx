@@ -51,9 +51,10 @@ export default function BrowseBookScreen() {
   const download = useDownloads().find((d) => d.target.kind === "book" && d.target.bookId === downloadingId) ?? null;
 
   // This screen is pushed fresh for each identifier, so one fetch per mount is enough; item/loadError start at
-  // their "nothing yet" values already, with no reset to synchronize here.
+  // their "nothing yet" values already, with no reset to synchronize here. A book already on the shelf needs no
+  // archive.org call at all: its own stored title, author and chapters are the whole answer.
   useEffect(() => {
-    if (!id) return;
+    if (!id || shelfBook) return;
     let live = true;
     getItem((url, init) => fetch(url, init), id).then(
       (found) => live && setItem(found),
@@ -62,7 +63,7 @@ export default function BrowseBookScreen() {
     return () => {
       live = false;
     };
-  }, [id]);
+  }, [id, shelfBook]);
 
   const goBack = () => (router.canGoBack() ? router.back() : router.replace("/browse"));
 
@@ -93,11 +94,16 @@ export default function BrowseBookScreen() {
     );
   }
 
-  const chapters = item ? chapterFiles(item.files) : [];
+  // Once it is on the shelf, its own stored chapters are the answer; archive.org's files are never re-read.
+  const chapterRows: { title: string; seconds: number | null }[] = shelfBook
+    ? shelfBook.chapters.map((c) => ({ title: c.title, seconds: c.end - c.start }))
+    : item
+      ? chapterFiles(item.files).map((f, i) => ({ title: chapterTitle(f.title, i), seconds: parseLength(f.length) }))
+      : [];
   const title = shelfBook?.title ?? item?.title ?? "";
   const author = shelfBook?.author ?? item?.creator ?? "";
   const readers = item ? readersLine(item.description) : null;
-  const lengthLine = item ? bookLengthLine(parseLength(item.runtime), chapters.length, null) : "";
+  const lengthLine = item ? bookLengthLine(parseLength(item.runtime), chapterRows.length, null) : "";
 
   function onDownload() {
     if (!item) return;
@@ -159,25 +165,22 @@ export default function BrowseBookScreen() {
           </View>
         )}
 
-        {chapters.length > 0 && (
+        {chapterRows.length > 0 && (
           <View style={styles.section}>
             <Text style={styles.sectionTitle} role="heading" aria-level={2}>
               {COPY.chaptersTitle}
             </Text>
             <View style={styles.chapterCard}>
-              {chapters.map((f, i) => {
-                const seconds = parseLength(f.length);
-                return (
-                  <View key={f.name} testID={`browse-chapter-${i}`} style={i > 0 && styles.chapterDivider}>
-                    <View style={styles.chapterRow}>
-                      <Text style={styles.chapterTitle}>
-                        {i + 1}. {chapterTitle(f.title, i)}
-                      </Text>
-                      {seconds != null && <Text style={styles.caption}>{formatClock(seconds)}</Text>}
-                    </View>
+              {chapterRows.map((c, i) => (
+                <View key={`${i}-${c.title}`} testID={`browse-chapter-${i}`} style={i > 0 && styles.chapterDivider}>
+                  <View style={styles.chapterRow}>
+                    <Text style={styles.chapterTitle}>
+                      {i + 1}. {c.title}
+                    </Text>
+                    {c.seconds != null && <Text style={styles.caption}>{formatClock(c.seconds)}</Text>}
                   </View>
-                );
-              })}
+                </View>
+              ))}
             </View>
           </View>
         )}
