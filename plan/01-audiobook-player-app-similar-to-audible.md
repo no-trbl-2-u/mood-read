@@ -96,13 +96,9 @@ just name the pieces/scores/songs/instrumentals (It's important that there's no 
 - **A2** Speed runs 0.5× to 3× without pitch change (0.5× to 2× on Android and iOS, where the audio engine caps it);
   a sleep timer stops playback after N minutes or at chapter end.
 - **A4** Playback continues in the background and answers lock-screen / media-key controls.
-- **A16** Each chapter's mood card shows its emotions, its named piece and the alternates, and saves the listener's
-  pick (or `auto`).
 - **A17** (After v1, 01.10.) The chapter's piece, meaning the saved pick or else auto, loops under that chapter on
   every listen.
 - **A18** Every piece and soundscape Mood Read plays carries a license that allows playing it in the app.
-- **A21** Mood Read never shows a chapter's events, only its emotions; a chapter's mood card shows its emotions only
-  once the listener has reached that chapter (Open questions 7).
 - **A24** Each chapter's mood card links out to its reference piece ("In the spirit of") on Spotify, YouTube /
   YouTube Music and Apple Music, and Mood Read plays none of it; a listener can save a book's reference pieces as
   a playlist in their own YouTube or Apple Music account.
@@ -120,6 +116,7 @@ just name the pieces/scores/songs/instrumentals (It's important that there's no 
   from the deployed proxy, with spend metered at OpenAI's and Brave's current prices.
 - **A34** A caller cannot spend the monthly budget with made-up books or repeated rescores: the proxy
   limits how often one client starts runs, and rescoring a cached book waits a minimum age.
+- **A35** Tapping a reached chapter's emotion chips opens its mood card in place without moving playback.
 
 ## Owner decisions (all answered)
 
@@ -210,19 +207,13 @@ Every question below is answered; none is open. Elsewhere in the plan, "Open que
    no emotions on its card (A21).
 
 ## Chunks
-Measure: 13 open · 21 closed · next A35
+Measure: 12 open · 23 closed · next A36
 
 Build order follows the owner's two-part v1, and the lines below are in that order. **Part 1, the player:** 01.1,
 01.6, 01.3, 01.5, 01.7: the player, then real books in it, then the second layer, its mixer and the soundscapes it
 plays. **Part 2, moods and named pieces:** 01.2, then 01.4. **After v1:** 01.9 (a study), then 01.10 (play the
 pieces). Ids keep the order they were written in. The app itself (Expo at the repo root, the gates) is spec 02.
 
-- [ ] **01.4** The chapter mood card: emotions, the named piece and alternates, a saved pick over auto · S ·
-  closes A16, A21 · needs —
-  - No preview in v1. No events, only emotions, shown once the listener reaches the chapter (Open questions 7,
-    answered).
-  - The card is the expanded chapter row, inline in the river; an unreached row never expands (`plan/bearings.md`
-    Layout).
 - [ ] **01.10** After v1: play the chapter's piece, looped under the narration · M · closes A17, A18 ·
   needs 05.3
   - The pick, else auto, loops for the whole chapter through the layer and mixer, from a licensed source: the
@@ -284,3 +275,7 @@ pieces). Ids keep the order they were written in. The app itself (Expo at the re
 - [ ] **01.21** Rate-limit scoring runs and rescores on the proxy · S · closes A34 · needs —
   - Seen in 01.2: anyone can call `/v1/score` or `/v1/rescore` with made-up books up to the cap; rescore re-buys
     a cached book. Also meter usage on failed OpenAI calls, which today go uncounted.
+- [ ] **01.22** A reached chapter's mood card opens from its chips without moving playback · S ·
+  closes A35 · needs —
+  - `design/layouts/DECISION.md` suggests it; 01.4 expands only the playing row. An unreached row still never
+    expands.
