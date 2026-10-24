@@ -2,6 +2,7 @@ import assert from "node:assert/strict";
 import { test } from "node:test";
 
 import {
+  chapterBytes,
   chapterFiles,
   chapterTitle,
   coverFile,
@@ -35,15 +36,15 @@ const METADATA_BODY = {
     licenseurl: "https://creativecommons.org/publicdomain/zero/1.0/",
   },
   files: [
-    { name: "aiw_01_carroll_64kb.mp3", title: "01 - Down the Rabbit-Hole", track: "1", length: "572.4", format: "64Kbps MP3" },
-    { name: "aiw_02_carroll_64kb.mp3", title: "02 - The Pool of Tears", track: "2", length: "12:34", format: "64Kbps MP3" },
-    { name: "aiw_01_carroll_vbr.mp3", title: "01 - Down the Rabbit-Hole", track: 1, length: "572.4", format: "VBR MP3" },
-    { name: "aiw_02_carroll_vbr.mp3", title: "02 - The Pool of Tears", track: 2, length: "12:34", format: "VBR MP3" },
-    { name: "aiw_01_carroll.ogg", title: null, track: null, length: "572.4", format: "Ogg Vorbis" },
-    { name: "aliceinwonderland_1012.jpg", title: null, track: null, length: null, format: "JPEG Thumb" },
-    { name: "__ia_thumb.jpg", title: null, track: null, length: null, format: "Item Tile" },
-    { name: "aliceinwonderland_1012_itemimage.jpg", title: null, track: null, length: null, format: "Item Image" },
-    { name: "aiw_librivox_64kb_mp3.zip", title: null, track: null, length: null, format: "ZIP" },
+    { name: "aiw_01_carroll_64kb.mp3", title: "01 - Down the Rabbit-Hole", track: "1", length: "572.4", format: "64Kbps MP3", size: "4580000" },
+    { name: "aiw_02_carroll_64kb.mp3", title: "02 - The Pool of Tears", track: "2", length: "12:34", format: "64Kbps MP3", size: "6030000" },
+    { name: "aiw_01_carroll_vbr.mp3", title: "01 - Down the Rabbit-Hole", track: 1, length: "572.4", format: "VBR MP3", size: "9160000" },
+    { name: "aiw_02_carroll_vbr.mp3", title: "02 - The Pool of Tears", track: 2, length: "12:34", format: "VBR MP3", size: "12060000" },
+    { name: "aiw_01_carroll.ogg", title: null, track: null, length: "572.4", format: "Ogg Vorbis", size: "4100000" },
+    { name: "aliceinwonderland_1012.jpg", title: null, track: null, length: null, format: "JPEG Thumb", size: "4000" },
+    { name: "__ia_thumb.jpg", title: null, track: null, length: null, format: "Item Tile", size: "1200" },
+    { name: "aliceinwonderland_1012_itemimage.jpg", title: null, track: null, length: null, format: "Item Image", size: "26000" },
+    { name: "aiw_librivox_64kb_mp3.zip", title: null, track: null, length: null, format: "ZIP", size: "10590000" },
   ],
 };
 
@@ -104,11 +105,19 @@ test("chapterFiles picks one MP3 derivative in track order, never the Ogg entrie
   assert.deepEqual(chapters.map((f) => f.title), ["01 - Down the Rabbit-Hole", "02 - The Pool of Tears"]);
 });
 
+test("chapterBytes sums the chapter files' sizes; an unknown size means null rather than an undercount", () => {
+  const item = readItem(METADATA_BODY);
+  const chapters = chapterFiles(item.files);
+  assert.equal(chapterBytes(chapters), 4580000 + 6030000);
+  assert.equal(chapterBytes([...chapters, { name: "x.mp3", title: "x", track: 3, length: null, format: chapters[0]!.format, size: null }]), null);
+  assert.equal(chapterBytes([]), null);
+});
+
 test("coverFile prefers Item Image, else the first other known cover format; a book with none gets null", () => {
   const item = readItem(METADATA_BODY);
   assert.equal(coverFile(item.files)?.name, "aliceinwonderland_1012_itemimage.jpg");
   assert.equal(coverFile(item.files.filter((f) => f.format !== "Item Image"))?.name, "aliceinwonderland_1012.jpg");
-  assert.equal(coverFile([{ name: "a.mp3", title: "t", track: 1, length: null, format: "VBR MP3" }]), null);
+  assert.equal(coverFile([{ name: "a.mp3", title: "t", track: 1, length: null, format: "VBR MP3", size: null }]), null);
 });
 
 test("downloadUrl points at the sanctioned download endpoint, each path segment encoded", () => {

@@ -22,8 +22,10 @@ const COPY = {
   emptyLead: "Nothing on the ",
   emptyWord: "shelf",
   emptyTail: " yet.",
-  emptyBody: "Add an audiobook you own and we'll read the room, chapter by chapter.",
+  emptyBody: "Add an audiobook you own, or grab a free one, and we'll read the room, chapter by chapter.",
   importBook: "Import a book",
+  browseBooks: "Browse free books",
+  emptyCaption: "Free books are public-domain recordings from LibriVox.",
 };
 
 /** The empty shelf's stickers: decorative, hidden from screen readers, no percentages. */
@@ -33,6 +35,7 @@ const STICKERS: { emotion: Emotion; label: string }[] = [
   { emotion: "dread", label: "Dread" },
 ];
 const MENU: MenuItem[] = [
+  { key: "browse", label: "Browse free books", icon: "search", onPress: () => router.push("/browse") },
   { key: "downloads", label: "Downloads", icon: "download", onPress: () => router.push("/downloads") },
   { key: "settings", label: "Settings", icon: "settings", onPress: () => router.push("/settings") },
 ];
@@ -46,6 +49,7 @@ export default function LibraryScreen() {
   useFocusEffect(useCallback(() => setVisits((n) => n + 1), []));
 
   const importBook = () => router.push("/import");
+  const browseBooks = () => router.push("/browse");
 
   // The book in progress: the one open in the player, else the one played last.
   const resumingId = player.book?.id ?? books.find((b) => b.lastPlayedAt != null)?.id ?? null;
@@ -76,7 +80,11 @@ export default function LibraryScreen() {
                 <Sticker key={s.emotion} emotion={s.emotion} label={s.label} index={i} decorative />
               ))}
             </View>
-            <Button testID="import-book" label={COPY.importBook} icon="plus" onPress={importBook} />
+            <View style={styles.emptyActions}>
+              <Button testID="import-book" label={COPY.importBook} icon="plus" onPress={importBook} />
+              <Button testID="browse-books" kind="secondary" label={COPY.browseBooks} icon="search" onPress={browseBooks} />
+            </View>
+            <Text style={styles.emptyFootnote}>{COPY.emptyCaption}</Text>
           </View>
         ) : (
           <FlatList
@@ -119,6 +127,8 @@ const styles = StyleSheet.create({
   pop: { color: colors.pop },
   emptyBody: { ...typography.body, color: colors.textMuted },
   stickers: { flexDirection: "row", flexWrap: "wrap", gap: spacing.sm, marginBottom: spacing.sm },
+  emptyActions: { gap: spacing.sm },
+  emptyFootnote: { ...typography.caption, textAlign: "center" },
   row: {
     flexDirection: "row",
     alignItems: "center",

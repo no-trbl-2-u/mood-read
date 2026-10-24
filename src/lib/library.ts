@@ -43,6 +43,12 @@ export function useBook(id: string | undefined): Book | undefined {
   return useBooks().find((b) => b.id === id);
 }
 
+/** The shelf's copy of a LibriVox book, by its archive.org identifier (05.8): once downloaded, its Book.id is a
+ *  generated id, not the identifier, so a browse page looks it up this way rather than by id. */
+export function useLibriVoxBook(identifier: string | undefined): Book | undefined {
+  return useBooks().find((b) => !!identifier && b.source.kind === "librivox" && b.source.librivoxId === identifier);
+}
+
 export function useBookmarks(bookId: string): Bookmark[] {
   const read = () => library.bookmarks(bookId);
   return useSyncExternalStore(library.subscribe, read, read);

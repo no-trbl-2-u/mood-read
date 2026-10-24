@@ -20,6 +20,8 @@ export type LibriVoxFile = {
   /** "mm:ss", "h:mm:ss", or seconds as a string; null when archive.org has none for this file. */
   length: string | null;
   format: string;
+  /** Bytes, as archive.org's own string; null when it has none. */
+  size: number | null;
 };
 
 export type LibriVoxItem = {
@@ -84,12 +86,15 @@ function readFile(f: unknown): LibriVoxFile {
   const rawTrack = file.track;
   const track = typeof rawTrack === "number" ? rawTrack : typeof rawTrack === "string" ? parseInt(rawTrack, 10) : NaN;
   const rawLength = file.length;
+  const rawSize = file.size;
+  const size = typeof rawSize === "string" ? Number(rawSize) : typeof rawSize === "number" ? rawSize : NaN;
   return {
     name: file.name,
     format: file.format,
     title: asString(file.title),
     track: Number.isFinite(track) ? track : null,
     length: typeof rawLength === "string" ? rawLength : typeof rawLength === "number" ? String(rawLength) : null,
+    size: Number.isFinite(size) ? size : null,
   };
 }
 
@@ -162,6 +167,18 @@ export function parseLength(length: string | null): number | null {
   const m = /^(\d+):(\d{2})(?::(\d{2}))?$/.exec(length);
   if (!m) return null;
   return m[3] !== undefined ? Number(m[1]) * 3600 + Number(m[2]) * 60 + Number(m[3]) : Number(m[1]) * 60 + Number(m[2]);
+}
+
+/** The chapter files' total size in bytes, for the book page's length line ("3 h 41 min · 12 chapters · 168
+ *  MB"); null when any chapter file's size is unknown rather than an undercount passed off as the real total. */
+export function chapterBytes(files: LibriVoxFile[]): number | null {
+  if (files.length === 0) return null;
+  let total = 0;
+  for (const f of files) {
+    if (f.size == null) return null;
+    total += f.size;
+  }
+  return total;
 }
 
 /** A chapter file's title, with its leading track number stripped ("01 - The White Rabbit" -> "The White Rabbit"). */

@@ -44,6 +44,8 @@ export default function RootLayout() {
           <Stack.Screen name="index" options={{ title: "Your shelf" }} />
           <Stack.Screen name="import" options={{ title: "Import" }} />
           <Stack.Screen name="book/[id]" options={{ title: "Mood Read" }} />
+          <Stack.Screen name="browse" options={{ title: "Browse" }} />
+          <Stack.Screen name="browse/[id]" options={{ title: "Browse" }} />
           <Stack.Screen name="settings" options={{ title: "Settings" }} />
           <Stack.Screen name="downloads" options={{ title: "Downloads" }} />
           <Stack.Screen name="privacy" options={{ title: "Privacy policy" }} />
