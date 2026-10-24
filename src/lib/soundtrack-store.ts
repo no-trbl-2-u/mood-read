@@ -2,24 +2,38 @@
 // piece id and its book the first time a reached chapter with that piece plays, under one key, `soundtrack`, in the
 // order they first played; never a time or a position. What plays for a chapter is the listener's pick, else the
 // chapter's named piece (as the mood card decides it, src/lib/mood-card.ts), and its scene pieces (07.1) when no pick
-// covers the chapter. "Clear" empties the log; removing a book drops its entries (src/lib/library-store.ts). Titles
+// covers the chapter; a scene's piece only once its scene is reached (07.2, spec 07 A2: the clock at or past its
+// start, now or before, src/lib/reached.ts), so the list never names a later scene's piece ahead of the listener.
+// "Clear" empties the log; removing a book drops its entries (src/lib/library-store.ts). Titles
 // and artists are read from the book's stored scores when the list shows, so the log keeps ids only. Pure over the
 // library's key-value backend, so `node --test` exercises the code the app runs. Screens reach it through
 // ./soundtrack.ts.
+import { sceneStarts } from "./bed.ts";
 import type { Kv } from "./library-store.ts";
 import { moodCardView } from "./mood-card.ts";
+import { isSceneReached } from "./reached.ts";
 import { scenePiecesOf, scenesOf } from "./scenes.ts";
-import type { Book, BookScores, ChapterScore, Piece, SoundtrackEntry } from "./types.ts";
+import type { Book, BookScores, Chapter, ChapterScore, Piece, SoundtrackEntry } from "./types.ts";
 
 export const SOUNDTRACK_KEY = "soundtrack";
 
-/** The piece ids that play for a reached chapter: the one the mood card names as playing, then its scene pieces. */
-export function piecesPlayed(score: ChapterScore): string[] {
+/** How far the clock has been in the chapter: its span, the clock's place, the furthest place reached in it. */
+export type SceneReach = { chapter: Pick<Chapter, "start" | "end">; position: number | null; furthestIn: number | null };
+
+/**
+ * The piece ids that play for a reached chapter: the one the mood card names as playing, then the pieces of its
+ * scenes reached so far (`reach`; absent, only the first scene). A pick covers every scene, so it logs alone.
+ */
+export function piecesPlayed(score: ChapterScore, reach?: SceneReach): string[] {
   const view = moodCardView(true, score);
   if (view.kind !== "scored" || !view.playing) return [];
   const known = new Set(score.pieces.map((p) => p.id));
-  const scenes = view.pick === "auto" ? scenePiecesOf(score.playlist, scenesOf(score.mood).length) : [];
-  return [...new Set([view.playing.id, ...scenes])].filter((id) => known.has(id));
+  const sceneList = scenesOf(score.mood);
+  const pieces = view.pick === "auto" ? scenePiecesOf(score.playlist, sceneList.length) : [];
+  const length = reach ? Math.max(0, reach.chapter.end - reach.chapter.start) : 0;
+  const starts = sceneStarts(length, sceneList);
+  const reached = pieces.filter((_, i) => i === 0 || (!!reach && isSceneReached(reach.chapter.start + starts[i], reach.furthestIn, reach.position)));
+  return [...new Set([view.playing.id, ...reached])].filter((id) => known.has(id));
 }
 
 function isEntry(v: unknown): v is SoundtrackEntry {

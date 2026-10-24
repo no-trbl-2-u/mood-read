@@ -43,11 +43,34 @@ test("A9: the piece that plays for a chapter is the named one, or the listener's
   assert.deepEqual(piecesPlayed(score({ pick: "nope" })), ["p1"]);
 });
 
+// A chapter from 0 to 90 s, the clock at its end: every scene reached.
+const ALL = { chapter: { start: 0, end: 90 }, position: 90, furthestIn: 90 };
+
 test("A9: a reached chapter's scene pieces count as played too, once each, unless a pick covers the chapter", () => {
-  assert.deepEqual(piecesPlayed(score({ scenePieces: ["p1", "p4", "p1"] }, 3)), ["p1", "p4"]);
-  assert.deepEqual(piecesPlayed(score({ pick: "p2", scenePieces: ["p1", "p4", "p1"] }, 3)), ["p2"]);
+  assert.deepEqual(piecesPlayed(score({ scenePieces: ["p1", "p4", "p1"] }, 3), ALL), ["p1", "p4"]);
+  assert.deepEqual(piecesPlayed(score({ pick: "p2", scenePieces: ["p1", "p4", "p1"] }, 3), ALL), ["p2"]);
   // An id the score does not hold (so it has no title or artist) is not logged.
-  assert.deepEqual(piecesPlayed(score({ scenePieces: ["p1", "ghost"] }, 2)), ["p1"]);
+  assert.deepEqual(piecesPlayed(score({ scenePieces: ["p1", "ghost"] }, 2), ALL), ["p1"]);
+});
+
+test("A2, A9: a scene's piece is logged only once the scene is reached (07.2): never a later scene's ahead of the clock", () => {
+  // Three scenes over 0-90 s: 0-30, 30-60, 60-90; one piece each.
+  const s = score({ scenePieces: ["p1", "p2", "p4"] }, 3);
+  const at = (position: number, furthestIn: number | null = null) => ({ chapter: { start: 0, end: 90 }, position, furthestIn });
+  assert.deepEqual(piecesPlayed(s, at(10)), ["p1"], "in the first scene: nothing of the later ones");
+  assert.deepEqual(piecesPlayed(s, at(30)), ["p1", "p2"], "the second scene's start reached");
+  assert.deepEqual(piecesPlayed(s, at(59.9)), ["p1", "p2"]);
+  assert.deepEqual(piecesPlayed(s, at(60)), ["p1", "p2", "p4"]);
+  // Reached before, the clock now back in the first scene: what played stays played.
+  assert.deepEqual(piecesPlayed(s, at(5, 75)), ["p1", "p2", "p4"]);
+  // With nothing known of the place in the chapter, only its first scene counts.
+  assert.deepEqual(piecesPlayed(s), ["p1"]);
+});
+
+test("A2, A9: a chapter-wide pick, or a chapter of one scene, logs as before whatever the place", () => {
+  assert.deepEqual(piecesPlayed(score({ pick: "p3", scenePieces: ["p1", "p2", "p4"] }, 3)), ["p3"]);
+  assert.deepEqual(piecesPlayed(score({}, 1)), ["p1"]);
+  assert.deepEqual(piecesPlayed(score()), ["p1"]);
 });
 
 test("A9: an unscored chapter, or one with no piece, plays nothing for the soundtrack", () => {

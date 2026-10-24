@@ -76,13 +76,14 @@ export default function BookScreen() {
     if (id && playingChapter && playingPosition !== null) reached.reachAt(id, playingChapter, playingPosition);
   }, [id, playingChapter, playingPosition]);
 
-  // The reached chapter's piece plays for it: "Your soundtrack" logs it, and its scene pieces, the first time
-  // (src/lib/soundtrack-store.ts, 07.8, A9). A pick made while it plays is logged too, since it plays from then on.
+  // The reached chapter's piece plays for it: "Your soundtrack" logs it, and the pieces of its scenes reached so far
+  // (src/lib/soundtrack-store.ts, 07.8, A9; 07.2, A2). A pick made while it plays is logged too, since it plays from
+  // then on.
   useEffect(() => {
     if (!id || !playingChapter || !scores) return;
     const score = scores.chapters.find((s) => s.mood.chapterIndex === playingChapter.index && s.mood.chapterTitle === playingChapter.title);
-    if (score) soundtrack.log(id, piecesPlayed(score));
-  }, [id, playingChapter, scores]);
+    if (score) soundtrack.log(id, piecesPlayed(score, { chapter: playingChapter, position: playingPosition, furthestIn }));
+  }, [id, playingChapter, scores, playingPosition, furthestIn]);
 
   if (!book) {
     return (

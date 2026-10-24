@@ -165,9 +165,15 @@ test.describe("the chapter mood card", () => {
     expect(await storedVerdicts()).toEqual([{ chapterIndex: 1, pieceId: "composer-1--theme-1", verdict: "misfit" }]);
   });
 
-  test("A2: the band follows the playing scene, shows nothing of a scene not reached, and a pick plays for every scene", async ({ page }) => {
+  test("A2: the band follows the playing scene, shows nothing of a scene not reached, Your soundtrack logs a scene's piece once reached, and a pick plays for every scene", async ({ page }) => {
     const log = sceneLog(page);
-    await scoredBook(page, { scenes: true });
+    const id = await scoredBook(page, { scenes: true });
+    // "Your soundtrack"'s log for this book (src/lib/soundtrack-store.ts): piece ids only.
+    const logged = () =>
+      page.evaluate(
+        (id) => (JSON.parse(localStorage.getItem("soundtrack") ?? "[]") as { bookId: string; pieceId: string }[]).filter((e) => e.bookId === id).map((e) => e.pieceId),
+        id,
+      );
     const card = page.getByTestId("chapter-row-0").getByTestId("mood-card");
     const band = card.getByTestId("mood-scene");
     const play = page.getByTestId("mini-play-pause");
@@ -196,11 +202,20 @@ test.describe("the chapter mood card", () => {
     await expect(sceneChips("triumph")).toHaveCount(0);
     await expect(page.getByText("Triumph 85%")).toHaveCount(0);
     expect(log).toContainEqual("bed scene: chapter=0 scene=1 piece=composer-2--theme-2 direction=on crossfade=true");
+    // Your soundtrack holds the pieces of the scenes reached, and nothing of the third scene's before 7.5 s.
+    await expect.poll(logged).toEqual(["composer-1--theme-1", "composer-2--theme-2"]);
+
+    // Play on into the third scene: its chips show, and only now does its piece join Your soundtrack.
+    await play.click();
+    await expect(sceneChips("triumph")).toHaveText("Triumph 85%", { timeout: 15_000 });
+    await pause();
+    await expect.poll(logged).toEqual(["composer-1--theme-1", "composer-2--theme-2", "composer-3--theme-3"]);
 
     // A seek back crosses the other way: the first scene again.
     await page.getByTestId("mini-back-30").click();
     await expect(sceneChips("wonder")).toHaveText("Wonder 75%");
     await expect(sceneChips("tension")).toHaveCount(0);
+    await expect(sceneChips("triumph")).toHaveCount(0);
     await expect.poll(() => log.some((l) => /^bed scene: chapter=0 scene=0 piece=composer-1--theme-1 direction=back/.test(l))).toBe(true);
 
     // A chapter-wide pick is the piece for every scene, and the band still follows the scenes.
@@ -216,5 +231,9 @@ test.describe("the chapter mood card", () => {
     for (const l of picked) expect(l).toContain("piece=composer-3--theme-3");
     // The same piece plays on across each boundary: nothing crossfades at a scene change under a pick.
     for (const l of picked.filter((l) => / direction=on /.test(l) && !/scene=0 /.test(l))) expect(l).toContain("crossfade=false");
+
+    // Your soundtrack lists the three pieces, each once, under the book.
+    await page.goto("/soundtrack");
+    for (const n of [1, 2, 3]) await expect(page.getByTestId(`soundtrack-piece-${id}-composer-${n}--theme-${n}`)).toBeVisible();
   });
 });
