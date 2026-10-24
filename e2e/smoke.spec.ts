@@ -11,6 +11,7 @@ const ROUTES = [
   { path: "/import", title: "Import", also: "Choose files" },
   { path: "/book/sample-1", title: "Book not found", also: "Back to your shelf" },
   { path: "/settings", title: "Settings", also: "Downloads on Wi-Fi only" },
+  { path: "/downloads", title: "Downloads", also: "All caught up." },
   { path: "/privacy", title: "Privacy policy", also: "What the scoring proxy gets" },
   { path: "/licenses", title: "Open-source licenses", also: "Lucide icons" },
 ];

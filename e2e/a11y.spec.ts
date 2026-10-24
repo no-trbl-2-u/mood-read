@@ -1,8 +1,9 @@
 // The accessibility bar (06.5, spec 06 A5) on the web build, on every route and the key states: the empty shelf,
-// its overflow menu, Import, Settings (with the default soundscape open), the privacy policy, the licenses, a book
-// that is not on the device, and a real book's river with the playing row expanded (the mixer inline), its Speed &
-// Sleep sheet and its Bookmarks sheet, and a scored book (01.4): the playing row's mood card (emotion stickers, the
-// named piece, alternates and the pick chips), a reached row's stickers and a locked row. On each one:
+// its overflow menu, Import, Settings (with the default soundscape open), the privacy policy, Downloads (05.6,
+// empty on the web build), the licenses, a book that is not on the device, and a real book's river with the
+// playing row expanded (the mixer inline), its Speed & Sleep sheet and its Bookmarks sheet, and a scored book
+// (01.4): the playing row's mood card (emotion stickers, the named piece, alternates and the pick chips), a
+// reached row's stickers and a locked row. On each one:
 //   - axe (WCAG 2.0, 2.1 and 2.2, A and AA) finds no serious or critical issue;
 //   - every control (button, link, switch, checkbox, slider, tab, menu item, and any other focusable element, which
 //     is what a Pressable is on the web) is at least 44 x 44 CSS px (A5, `sizes.touch`; WCAG 2.5.5);
@@ -102,6 +103,13 @@ const STATES: State[] = [
     open: async (page) => {
       await page.goto("/privacy");
       await expect(page.getByText("What the scoring proxy gets", { exact: true })).toBeVisible();
+    },
+  },
+  {
+    name: "/downloads (05.6, empty on the web build)",
+    open: async (page) => {
+      await page.goto("/downloads");
+      await expect(page.getByTestId("downloads-empty")).toBeVisible();
     },
   },
   {
