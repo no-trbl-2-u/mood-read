@@ -165,3 +165,31 @@ export type ScoringJob = {
   startedAt: number;
   updatedAt: number;
 };
+
+// ---- the download queue (spec 05, 05.6, A6): one queue for a whole book and a catalog piece alike ----
+
+/**
+ * What a download moves: a whole book (05.4, 05.8) or one catalog piece (05.1). Both are ids only; neither the
+ * music catalog nor LibriVox browsing exists yet (05.1-05.4, 05.8), so nothing resolves these to a source today
+ * (src/lib/download-queue.ts's `Transfer` is injected for exactly that reason).
+ */
+export type DownloadTarget = { kind: "book"; bookId: string } | { kind: "piece"; pieceId: string };
+
+export type DownloadState = "queued" | "running" | "paused" | "failed" | "done";
+
+/** One item in the download queue (A6): its progress, and the backoff/retry state once it fails. */
+export type Download = {
+  id: string;
+  target: DownloadTarget;
+  state: DownloadState;
+  /** Bytes moved so far. */
+  bytes: number;
+  /** The transfer's total size, once known; null before then (no `Content-Length`, or not started). */
+  totalBytes: number | null;
+  /** Set only in state `failed`; cleared the moment it queues again. */
+  error: string | null;
+  /** How many attempts have failed in a row; drives the backoff schedule (src/lib/download-queue.ts backoffMs). */
+  attempts: number;
+  queuedAt: number;
+  updatedAt: number;
+};
