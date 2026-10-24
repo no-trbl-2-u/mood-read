@@ -67,8 +67,8 @@ bare `pnpm add`, so versions match the SDK.
 |---|---|---|---|---|
 | 01 | GitHub | the repo, the cloud loop (`march.yml`, `next.yml`, `heartbeat.yml`), Actions secrets | `GH_TOKEN` | live |
 | 02 | Cloudflare Pages | the web build's deploys (02.3), project `mood-read` | `CLOUDFLARE_API_TOKEN`, `CLOUDFLARE_ACCOUNT_ID` | live |
-| 06 | Cloudflare Workers | the scoring proxy's home, Worker `mood-read-proxy` (`proxy/wrangler.jsonc`, 02.4); today `GET /health` only | `CLOUDFLARE_S3_ACCESS_KEY_ID`, `CLOUDFLARE_S3_SECRET_ACCESS_KEY`, `S3_API_ENDPOINT` (pushed by `pnpm secrets:sync`) | live |
-| 03 | AI provider + web search | the scoring proxy's research agent (01.2) | `OPENAI_API_KEY`, `BRAVE_SEARCH_API_KEY` are in the vault; the provider is not chosen | held (spec 01, Open questions 6) |
+| 06 | Cloudflare Workers | the scoring proxy, Worker `mood-read-proxy` (`proxy/wrangler.jsonc`; 02.4, 01.2): two Durable Objects (`BookJob` per book: job, progress, cache; `SpendMeter`), Workers Logs off, `MONTHLY_CAP_USD` and `OPENAI_MODEL` as vars | `CLOUDFLARE_S3_ACCESS_KEY_ID`, `CLOUDFLARE_S3_SECRET_ACCESS_KEY`, `S3_API_ENDPOINT`, `OPENAI_API_KEY`, `BRAVE_SEARCH_API_KEY` (pushed by `pnpm secrets:sync`) | live (the 01.2 proxy waits on the owner's deploy) |
+| 03 | AI provider + web search | the scoring proxy's research agent (01.2) | `OPENAI_API_KEY`, `BRAVE_SEARCH_API_KEY`: Worker secrets of `mood-read-proxy` only, never in the app (A22) | OpenAI (model `gpt-5-mini` by default) and Brave Search, chosen 2026-10-23 (Open questions 6); built in 01.2, live once the owner deploys |
 | 04 | Expo / EAS | Android preview APKs on demand (04.1: `pnpm build:android:preview`, `android-preview.yml`) | `EXPO_TOKEN` | live: project `@no.trbl.2.u/mood-read`, keystore held by EAS |
 | 05 | Sentry | error tracking, later | `SENTRY_AUTH_TOKEN` | not used in v1's specs |
 
@@ -83,8 +83,8 @@ dashboard click it cannot make writes `setup/NN_<service>.md` (`nexus/customizat
 
 | Surface | AI's role | Human gate | Model |
 |---|---|---|---|
-| A chapter's emotions (01.2) | generated from research on the book, with sources cited | a chapter with too little written about it is unscored, never guessed (A19) | not chosen (held) |
-| A chapter's named piece and alternates (01.2) | suggested; every piece no-vocals (A20) | the listener's pick over `auto` (01.4) | not chosen (held) |
+| A chapter's emotions (01.2) | generated from research on the book, with sources cited | a chapter with too little written about it is unscored, never guessed (A19) | OpenAI `gpt-5-mini` over Brave Search results, through the proxy |
+| A chapter's named piece and alternates (01.2) | suggested; every piece no-vocals (A20) | the listener's pick over `auto` (01.4) | OpenAI `gpt-5-mini`, with a second no-vocals check and a name screen (`proxy/src/pieces.ts`) |
 | The listener's audio | none: never uploaded or transcribed (spec 01, Contracts) | — | — |
 | Licenses and terms | none: checked by `rights-checker` against primary sources, decided by the owner | owner | — |
 
@@ -105,8 +105,13 @@ Scripts (package.json):
   pnpm deploy:check                the deploy gate (post-push)
   pnpm plan:check | settle | claims | progress | order | pulse | secrets ...   the nexus scripts
 
-Scoring proxy (01.2): its one endpoint is pinned by 01.2 when it ships; it receives only a book's title,
-author and chapter titles.
+Scoring proxy (01.2; proxy/src/http.ts): it receives only a book's title, author and chapter titles.
+  GET  /health             200 "ok"
+  POST /v1/score           {title, author, chapters}: start the book's job, or its cached result   -> JobView
+  POST /v1/rescore         the same body: a new run even for a cached book (explicit, A13)         -> JobView
+  GET  /v1/jobs/:jobId     progress, and the scored chapters once done                            -> JobView | 404
+  The job id is the book's cache key (SHA-256 of its normalized title, author and chapter titles). Any other
+  body field is a 400. The app's base URL is `expo.extra.scoringProxyUrl` in app.json.
 ```
 
 ## Repository shape

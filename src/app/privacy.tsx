@@ -27,22 +27,23 @@ const SECTIONS: Section[] = [
     lines: [
       "When you import a book, Mood Read copies its audio files onto your device: into the app's own storage on a phone, and into your browser's storage on the web.",
       "The book's details (title, author, narrator, cover and chapters), your listening position, your bookmarks, your playback speed and your settings are stored on your device too.",
-      "None of this is sent anywhere. Your audio never leaves your device and is never transcribed. Uninstalling the app, or clearing your browser's data for the site, removes it.",
-      "Features still to come, such as chapter moods and picks, will be kept on your device in the same way.",
+      "None of this is sent anywhere, except a book's title, author and chapter titles when you ask Mood Read to score that book (below). Your audio never leaves your device and is never transcribed. Uninstalling the app, or clearing your browser's data for the site, removes it.",
+      "A scored book's chapter moods and named pieces are kept on your device in the same way, and features still to come, such as picks, will be too.",
     ],
   },
   {
     heading: "What the scoring proxy gets",
     lines: [
-      "Scoring each chapter's mood is not switched on yet. Today Mood Read sends nothing about your books to any server.",
-      "When scoring arrives, Mood Read's scoring proxy will receive a book's title, author and chapter titles, nothing more. For a free public-domain book from LibriVox it will also receive the book's public LibriVox and Project Gutenberg catalog ids.",
-      "The proxy uses those details to look the book up and name each chapter's mood. It never receives your audio, your files, your listening position, your bookmarks or anything that identifies you.",
+      "Mood Read scores a book only when you ask it to. Its scoring proxy then receives that book's title, author and chapter titles, nothing more.",
+      "The proxy uses those details to search the web for what is written about the book, such as chapter summaries and reviews, and to name each chapter's mood and a piece of music to match. To do that it passes the title, author and chapter titles on to Brave Search and OpenAI.",
+      "It never receives your audio, your files, your listening position, your bookmarks or anything that identifies you. Cloudflare, which runs the proxy, handles the connection your device makes to it, as any web host does; the proxy keeps no log of those requests.",
+      "A scored book's moods and pieces are kept by the proxy and shared with anyone who scores the same book, so each book is researched once. They hold the book's details and what was found about it, nothing about who asked.",
     ],
   },
   {
     heading: "What we keep: nothing about you",
     lines: [
-      "Mood Read keeps no listener data. There is no account to keep it in, and the scoring proxy keeps no record of who asked about which book.",
+      "Mood Read keeps no listener data. There is no account to keep it in, and the scoring proxy keeps no record of who asked about which book and no log of the requests it gets.",
     ],
   },
   {

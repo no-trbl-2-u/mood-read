@@ -45,7 +45,7 @@
     "test:run": "node --test \"src/lib/**/*.test.ts\"",
     "plan:check": "node scripts/plan-check.mjs --since HEAD",
     "secrets:scan": "node scripts/secrets.mjs scan --staged",
-    "test:scripts": "node --test \"scripts/__tests__/*.test.mjs\"",
+    "test:scripts": "node --test \"scripts/__tests__/*.test.mjs\" \"proxy/src/*.test.ts\"",
     "build": "expo export -p web",
     "build:android:preview": "eas build --platform android --profile preview --non-interactive --wait",
     "e2e": "playwright test",

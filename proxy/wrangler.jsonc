@@ -1,11 +1,31 @@
-// The scoring proxy's Worker (chunk 02.4; plan/bearings.md). Today it answers GET /health and nothing else; 01.2
-// builds the real proxy here. Its secrets arrive through `pnpm secrets:sync` (scripts/secrets-sync.mjs).
-// Deploy (the owner, once): node scripts/secrets.mjs run --only CLOUDFLARE_API_TOKEN,CLOUDFLARE_ACCOUNT_ID --
+// The scoring proxy's Worker (02.4 set it up; 01.2 made it the proxy; plan/bearings.md). Routes in src/http.ts.
+// Deploy (the owner): node scripts/secrets.mjs run --only CLOUDFLARE_API_TOKEN,CLOUDFLARE_ACCOUNT_ID --
 //   pnpm exec wrangler deploy --config proxy/wrangler.jsonc
+// Secrets (never here; pushed by `pnpm secrets:sync`, which sends every name nexus.secrets.json binds for cloudflare):
+//   OPENAI_API_KEY, BRAVE_SEARCH_API_KEY. Without both, POST /v1/score answers 503.
 {
   "$schema": "../node_modules/wrangler/config-schema.json",
   "name": "mood-read-proxy",
   "main": "src/index.ts",
   "compatibility_date": "2026-10-19",
-  "observability": { "enabled": true }
+  // Workers Logs off: the proxy keeps no listener data, not even request logs (src/app/privacy.tsx). The code logs
+  // nothing either.
+  "observability": { "enabled": false },
+  "vars": {
+    // The monthly spend cap in US dollars (Open questions 6): past it, no new research run starts until next month;
+    // cached books still return. Change it here and redeploy, or in the dashboard; no app rebuild.
+    "MONTHLY_CAP_USD": "20",
+    // The OpenAI model the research agent uses; its price per token is in src/meter.ts (unknown models price high).
+    "OPENAI_MODEL": "gpt-5-mini"
+  },
+  // Storage for the jobs, the per-book cache and the spend meter (why Durable Objects: src/index.ts). Declared here
+  // only: Cloudflare creates both classes on the owner's first `wrangler deploy` (the migration below); there is
+  // nothing to create by hand, and no KV namespace or database id to fill in.
+  "durable_objects": {
+    "bindings": [
+      { "name": "BOOK_JOBS", "class_name": "BookJob" },
+      { "name": "SPEND_METER", "class_name": "SpendMeter" }
+    ]
+  },
+  "migrations": [{ "tag": "v1", "new_sqlite_classes": ["BookJob", "SpendMeter"] }]
 }
