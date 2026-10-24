@@ -7,11 +7,24 @@ import { test } from "node:test";
 import { fileURLToPath } from "node:url";
 
 import * as proxy from "../../proxy/src/contract.ts";
-import { parseBookRequest } from "../../proxy/src/validate.ts";
-import { RESEARCH_COVERAGE, scoringRequest, type ScoringRequest } from "./scoring-api.ts";
+import { parseBookRequest, parseVerdictBatch } from "../../proxy/src/validate.ts";
+import { createScoringApi, RESEARCH_COVERAGE, scoringRequest, type ScoringRequest } from "./scoring-api.ts";
 import { EMOTIONS as PROXY_EMOTIONS, PIECE_KINDS } from "../../proxy/src/contract.ts";
 import { EMOTIONS as THEME_EMOTIONS } from "../ui/theme.ts";
-import { EMOTIONS, MAX_SCENES, MIN_SCENE_SPAN, SCENE_SPAN_STEP, type ChapterMood, type Piece, type RemoteChapter, type ResearchCoverage, type Scene } from "./types.ts";
+import {
+  EMOTIONS,
+  MAX_SCENES,
+  MAX_VERDICT_ROWS,
+  MIN_SCENE_SPAN,
+  SCENE_SPAN_STEP,
+  type ChapterMood,
+  type Piece,
+  type RemoteChapter,
+  type ResearchCoverage,
+  type Scene,
+  type VerdictBatch,
+  type VerdictRow,
+} from "./types.ts";
 
 const ROOT = path.join(path.dirname(fileURLToPath(import.meta.url)), "..", "..");
 
@@ -94,6 +107,27 @@ test("the proxy never sends a listener's seed: its coverages are scored and too-
   assert.deepEqual(research.map(coverageToApp).map(coverageToProxy), [...RESEARCH_COVERAGE]);
   const seed: ChapterMood["coverage"] = "listener";
   assert.equal(RESEARCH_COVERAGE.includes(seed), false);
+});
+
+// Typechecked both ways: a verdict row and its batch read the same on both sides (07.5, A6).
+const rowToProxy = (r: VerdictRow): proxy.VerdictRow => r;
+const rowToApp = (r: proxy.VerdictRow): VerdictRow => r;
+const batchToProxy = (b: VerdictBatch): proxy.VerdictBatch => b;
+const batchToApp = (b: proxy.VerdictBatch): VerdictBatch => b;
+
+test("a verdict batch the app sends is one the proxy accepts as is; both cap a batch at 200 rows (07.5, A6)", async () => {
+  assert.equal(MAX_VERDICT_ROWS, proxy.MAX_VERDICT_ROWS);
+  assert.equal(MAX_VERDICT_ROWS, 200);
+  let body: unknown;
+  const api = createScoringApi("https://proxy.example", async (_url, init) => {
+    body = JSON.parse(String(init?.body));
+    return new Response(null, { status: 204 });
+  });
+  const row: VerdictRow = rowToApp(rowToProxy({ pieceId: "a--b", emotions: ["tension", "dread"], verdict: "misfit" }));
+  await api.sendVerdicts([row]);
+  assert.deepEqual(parseVerdictBatch(body), { ok: true, batch: batchToApp(batchToProxy({ rows: [row] })) });
+  // A row has exactly three fields on both sides: no book, chapter, device or time.
+  assert.deepEqual(Object.keys((body as VerdictBatch).rows[0]).sort(), ["emotions", "pieceId", "verdict"]);
 });
 
 function files(dir: string): string[] {

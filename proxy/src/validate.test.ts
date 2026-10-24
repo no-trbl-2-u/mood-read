@@ -1,7 +1,7 @@
 import assert from "node:assert/strict";
 import { test } from "node:test";
 
-import { bookKey, cleanScenes, isJobId, LIMITS, parseBookRequest } from "./validate.ts";
+import { bookKey, cleanScenes, emotionSetKey, isJobId, LIMITS, parseBookRequest, parseVerdictBatch, VERDICT_LIMITS } from "./validate.ts";
 
 const book = { title: "The Hobbit", author: "J. R. R. Tolkien", chapters: ["An Unexpected Party", "Roast Mutton"] };
 
@@ -149,4 +149,57 @@ test("a scene with no emotions in the set gives its span to its neighbour", () =
   const s = cleanScenes([sc(0.3, "calm"), { emotions: [{ emotion: "rage", intensity: 1 }], span: 0.3 }, sc(0.4, "dread")], chapter);
   assert.deepEqual(s.map((x) => x.emotions[0].emotion), ["calm", "dread"]);
   assert.deepEqual(spans(s), [0.6, 0.4]);
+});
+
+// ---- POST /v1/verdicts (07.5, A6) ----
+
+const row = { pieceId: "composer-1--theme-1", emotions: ["dread", "tension"], verdict: "fits" };
+
+test("a verdict batch of exactly rows of pieceId, emotions and verdict is accepted, emotions in the fixed set's order", () => {
+  assert.deepEqual(parseVerdictBatch({ rows: [row, { ...row, verdict: "misfit" }] }), {
+    ok: true,
+    batch: {
+      rows: [
+        { ...row, emotions: ["tension", "dread"] },
+        { ...row, emotions: ["tension", "dread"], verdict: "misfit" },
+      ],
+    },
+  });
+  assert.equal(emotionSetKey(["dread", "tension"]), "tension,dread");
+});
+
+test("any other field, on the body or on a row, is refused (A6, A22): no book, chapter, device or time rides along", () => {
+  for (const extra of [{ bookId: "b" }, { deviceId: "d" }, { day: "2026-10-24" }]) {
+    const r = parseVerdictBatch({ rows: [row], ...extra });
+    assert.equal(r.ok, false);
+    assert.match((r as { error: string }).error, /only rows is accepted/);
+  }
+  for (const extra of [{ chapterIndex: 0 }, { at: 1 }, { bookId: "b" }, { position: 3 }]) {
+    const r = parseVerdictBatch({ rows: [{ ...row, ...extra }] });
+    assert.equal(r.ok, false);
+    assert.match((r as { error: string }).error, /only pieceId, emotions and verdict/);
+  }
+});
+
+test("malformed rows, an empty batch and more than 200 rows are refused", () => {
+  assert.equal(VERDICT_LIMITS.rows, 200);
+  const bad: unknown[] = [
+    null,
+    [],
+    { rows: [] },
+    { rows: "x" },
+    { rows: [null] },
+    { rows: [{ ...row, pieceId: "" }] },
+    { rows: [{ ...row, pieceId: 7 }] },
+    { rows: [{ ...row, pieceId: "x".repeat(201) }] },
+    { rows: [{ ...row, pieceId: "a\nb" }] },
+    { rows: [{ ...row, emotions: [] }] },
+    { rows: [{ ...row, emotions: ["anger"] }] },
+    { rows: [{ ...row, emotions: ["dread", "dread"] }] },
+    { rows: [{ ...row, emotions: [{ emotion: "dread", intensity: 1 }] }] },
+    { rows: [{ ...row, verdict: "meh" }] },
+    { rows: Array.from({ length: 201 }, () => row) },
+  ];
+  for (const b of bad) assert.equal(parseVerdictBatch(b).ok, false, JSON.stringify(b)?.slice(0, 80));
+  assert.equal(parseVerdictBatch({ rows: Array.from({ length: 200 }, () => row) }).ok, true);
 });

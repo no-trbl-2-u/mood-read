@@ -1,7 +1,19 @@
 // Request validation (01.2, A22): the proxy accepts a book's title, author and chapter titles, and for a book from
 // Browse its public LibriVox and Project Gutenberg catalog numbers (05.9), and nothing more. Any other field, of any
 // name, is refused rather than ignored, so nothing about the listener can ride along.
-import { EMOTIONS, MAX_SCENES, MIN_SCENE_SPAN, SCENE_SPAN_STEP, type BookRequest, type Emotion, type EmotionScore, type Scene } from "./contract.ts";
+import {
+  EMOTIONS,
+  MAX_SCENES,
+  MAX_VERDICT_ROWS,
+  MIN_SCENE_SPAN,
+  SCENE_SPAN_STEP,
+  type BookRequest,
+  type Emotion,
+  type EmotionScore,
+  type Scene,
+  type VerdictBatch,
+  type VerdictRow,
+} from "./contract.ts";
 
 export const LIMITS = {
   /** The largest request body read, in bytes. */
@@ -146,4 +158,54 @@ export function cleanScenes(raw: unknown, chapter: EmotionScore[]): Scene[] {
     left -= 1;
   }
   return list.map((x, i) => ({ emotions: x.emotions, span: round2(whole[i] * SCENE_SPAN_STEP) }));
+}
+
+// ---- the listener's say, as aggregates (07.5, spec 07 A6) ----
+
+export const VERDICT_LIMITS = {
+  /** Rows per batch (contract.ts MAX_VERDICT_ROWS). */
+  rows: MAX_VERDICT_ROWS,
+  /** A piece id's length: the proxy's own ids (pieces.ts toPiece) are an artist and a title slug. */
+  pieceId: 200,
+} as const;
+
+const hasControl = (s: string) => [...s].some((ch) => ch.charCodeAt(0) < 32 || ch.charCodeAt(0) === 127);
+
+const ROW_FIELDS = ["pieceId", "emotions", "verdict"] as const;
+
+/** A chapter's emotion set as one key: the names in the fixed set's order, so any order a row lists them in is one set. */
+export const emotionSetKey = (emotions: readonly Emotion[]): string =>
+  EMOTIONS.filter((e) => emotions.includes(e)).join(",");
+
+export type ParsedVerdicts = { ok: true; batch: VerdictBatch } | { ok: false; error: string };
+
+/**
+ * Validates POST /v1/verdicts (07.5, A6): exactly `rows`, 1 to VERDICT_LIMITS.rows of them, each exactly a piece id,
+ * its chapter's emotion set (1 to 8 names from the fixed set, each once) and `fits` or `misfit`. Any other field, on
+ * the body or on a row, is refused rather than ignored (A22), so no book, chapter, device or time can ride along.
+ * Emotions come back in the fixed set's order.
+ */
+export function parseVerdictBatch(body: unknown): ParsedVerdicts {
+  if (typeof body !== "object" || body === null || Array.isArray(body)) return { ok: false, error: "body must be a JSON object" };
+  const extra = Object.keys(body).filter((k) => k !== "rows");
+  if (extra.length) return { ok: false, error: `only rows is accepted; refused: ${extra.join(", ")}` };
+  const rows = (body as { rows?: unknown }).rows;
+  if (!Array.isArray(rows) || rows.length === 0) return { ok: false, error: "rows must be a non-empty array" };
+  if (rows.length > VERDICT_LIMITS.rows) return { ok: false, error: `at most ${VERDICT_LIMITS.rows} rows` };
+  const out: VerdictRow[] = [];
+  for (const r of rows) {
+    if (typeof r !== "object" || r === null || Array.isArray(r)) return { ok: false, error: "every row must be an object" };
+    const more = Object.keys(r).filter((k) => !(ROW_FIELDS as readonly string[]).includes(k));
+    if (more.length) return { ok: false, error: `a row holds only pieceId, emotions and verdict; refused: ${more.join(", ")}` };
+    const { pieceId, emotions, verdict } = r as Record<string, unknown>;
+    if (typeof pieceId !== "string" || !pieceId.trim() || pieceId.length > VERDICT_LIMITS.pieceId || hasControl(pieceId)) {
+      return { ok: false, error: "pieceId must be a non-empty piece id" };
+    }
+    if (!Array.isArray(emotions) || emotions.length === 0 || emotions.length > EMOTIONS.length) return { ok: false, error: "emotions must list the chapter's emotions" };
+    if (emotions.some((e) => typeof e !== "string" || !(EMOTIONS as readonly string[]).includes(e))) return { ok: false, error: "an emotion outside the fixed set" };
+    if (new Set(emotions).size !== emotions.length) return { ok: false, error: "an emotion listed twice" };
+    if (verdict !== "fits" && verdict !== "misfit") return { ok: false, error: "verdict must be fits or misfit" };
+    out.push({ pieceId, emotions: EMOTIONS.filter((e) => (emotions as string[]).includes(e)), verdict });
+  }
+  return { ok: true, batch: { rows: out } };
 }

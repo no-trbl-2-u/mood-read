@@ -4,8 +4,11 @@
 // candidate is dropped when the model flags any vocals or is unsure, when its name trips the no-vocals screen, or
 // when a second, separate check does not confirm it instrumental. Unclear counts as vocals (agents.md rule 6).
 // A chapter with scenes (07.1) also gets one piece per scene, chosen from the same candidates after the same checks.
+// 07.5: when the proxy answers a job view, a chapter's alternates are ordered by the listeners' verdicts (orderJobView).
 import type { CompletionRequest, JsonSchema } from "./clients.ts";
-import { EMOTIONS, PIECE_KINDS, type BookRequest, type ChapterPieces, type Emotion, type EmotionScore, type Piece, type PieceKind, type Scene } from "./contract.ts";
+import { EMOTIONS, PIECE_KINDS, type BookRequest, type ChapterPieces, type Emotion, type EmotionScore, type JobView, type Piece, type PieceKind, type Scene } from "./contract.ts";
+import type { PieceCounts, VerdictCount } from "./store.ts";
+import { emotionSetKey } from "./validate.ts";
 
 /** Candidates asked for per chapter; at least three must survive the guard (one piece and two alternates). */
 export const CANDIDATES_PER_CHAPTER = 6;
@@ -254,4 +257,49 @@ export function chooseScenePieces(passed: Candidate[], scenes: Scene[], chosen: 
     }
     return best;
   });
+}
+
+// ---- ordering by the listeners' verdicts (07.5, spec 07 A6) ----
+
+/** A piece is demoted once it has at least this many verdicts for the emotion set... */
+export const DEMOTE_MIN_VERDICTS = 10;
+/** ...and its misfits are at least this many times its fits ("two to one"). */
+export const DEMOTE_RATIO = 2;
+
+/** Demoted: misfits outnumber fits two to one across at least ten verdicts. */
+export function demoted(c: VerdictCount | undefined): boolean {
+  return !!c && c.fits + c.misfits >= DEMOTE_MIN_VERDICTS && c.misfits >= DEMOTE_RATIO * c.fits;
+}
+
+/** How well kept a piece is for an emotion set: its fits minus its misfits (0 with no verdicts). */
+export const keptScore = (c: VerdictCount | undefined): number => (c ? c.fits - c.misfits : 0);
+
+/**
+ * A chapter's alternates in the listeners' order (07.5): the best-kept first (fits minus misfits for the chapter's
+ * exact emotion set; a piece with no verdicts scores 0), every demoted piece after every other, ties in the scorer's
+ * order. Only the order changes: no alternate is added or removed (spec 07, Decisions: verdicts never remove a piece
+ * the scorer named), and the chapter's own piece and its scene pieces stay as the scorer chose them.
+ */
+export function orderAlternates(alternates: readonly Piece[], emotions: readonly Emotion[], counts: Record<string, PieceCounts>): Piece[] {
+  const set = emotionSetKey(emotions);
+  return alternates
+    .map((p, i) => ({ p, i, c: counts[p.id]?.[set] }))
+    .sort((a, b) => Number(demoted(a.c)) - Number(demoted(b.c)) || keptScore(b.c) - keptScore(a.c) || a.i - b.i)
+    .map((x) => x.p);
+}
+
+/** The piece ids whose counts a job view's ordering reads: every scored chapter's alternates. */
+export function alternateIds(view: JobView): string[] {
+  return [...new Set((view.result?.chapters ?? []).flatMap((c) => (c.pieces ? c.pieces.alternates.map((p) => p.id) : [])))];
+}
+
+/** A job view with each chapter's alternates ordered by the counts (orderAlternates); everything else as it was. */
+export function orderJobView(view: JobView, counts: Record<string, PieceCounts>): JobView {
+  if (!view.result) return view;
+  const chapters = view.result.chapters.map((c) =>
+    c.pieces && c.pieces.alternates.length > 1
+      ? { ...c, pieces: { ...c.pieces, alternates: orderAlternates(c.pieces.alternates, c.mood.emotions.map((e) => e.emotion), counts) } }
+      : c,
+  );
+  return { ...view, result: { ...view.result, chapters } };
 }

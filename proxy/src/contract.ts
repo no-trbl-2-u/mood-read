@@ -126,3 +126,20 @@ export type JobView = {
    */
   result?: BookResult;
 };
+
+// ---- the listener's say, as aggregates (07.5, spec 07 A6) ----
+
+/** A listener's verdict on a chapter's piece (07.4). */
+export type Verdict = "fits" | "misfit";
+
+/**
+ * One verdict as it reaches the proxy (POST /v1/verdicts): the piece, the chapter's emotion set (names only, no
+ * intensities) and the verdict. Nothing else: no book, chapter, device, position or time ever rides with a row.
+ */
+export type VerdictRow = { pieceId: string; emotions: Emotion[]; verdict: Verdict };
+
+/** The body of POST /v1/verdicts: exactly `rows`, 1 to MAX_VERDICT_ROWS of them. */
+export type VerdictBatch = { rows: VerdictRow[] };
+
+/** Rows per POST /v1/verdicts, at most. */
+export const MAX_VERDICT_ROWS = 200;

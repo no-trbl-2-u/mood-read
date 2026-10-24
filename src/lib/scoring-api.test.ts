@@ -150,3 +150,19 @@ test("a proxy answer never carries a listener's seed: coverage \"listener\" (07.
   assert.throws(() => doneWith({ ...sceneMood(twoScenes), coverage: "listener" } as never, null), /coverage/);
   assert.throws(() => doneWith({ ...sceneMood(twoScenes), coverage: undefined } as never, null), /coverage/);
 });
+
+test("sendVerdicts posts exactly { rows } of pieceId, emotions and verdict to /v1/verdicts, with only a content type (07.5)", async () => {
+  const calls: { url: string; init?: RequestInit }[] = [];
+  const api = createScoringApi("https://proxy.example/", async (url, init) => {
+    calls.push({ url, init });
+    return new Response(null, { status: 204 });
+  });
+  const extra = { pieceId: "a--b", emotions: ["dread" as const], verdict: "fits" as const, chapterIndex: 3, at: 9 };
+  await api.sendVerdicts([extra]);
+  assert.equal(calls[0].url, "https://proxy.example/v1/verdicts");
+  assert.equal(calls[0].init?.method, "POST");
+  assert.deepEqual(calls[0].init?.headers, { "content-type": "application/json" });
+  assert.deepEqual(JSON.parse(String(calls[0].init?.body)), { rows: [{ pieceId: "a--b", emotions: ["dread"], verdict: "fits" }] });
+  const failing = createScoringApi("https://proxy.example", async () => new Response("x", { status: 429 }));
+  await assert.rejects(failing.sendVerdicts([extra]), /429/);
+});

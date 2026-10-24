@@ -17,6 +17,11 @@ import { TopBar } from "@/ui/TopBar";
 // has not shipped (Spotify, 05.13) is shown as "Not available yet" and goes live with its chunk; Credits (05.5)
 // pushes /credits. Storage (05.6) links to /downloads, where the storage meter and the queue live. All its copy lives here.
 
+/** "Share what fits" (07.5, spec 07 A6): what the switch sends, in the privacy policy's terms. */
+const SHARE_CAPTION =
+  "Once a day, your Fits and Doesn't fit go to the scoring proxy as just the piece, the chapter's emotions and the verdict, " +
+  "to order every listener's alternates. No book, chapter, device or time. Off, they stay on this device.";
+
 const COMPANION_CAPTION =
   "Plays only Mood Read's soundscape, no narration, beside another app such as Audible. " +
   "While it is on, the lock screen stays with that app.";
@@ -65,6 +70,13 @@ export default function SettingsScreen() {
             caption={COMPANION_CAPTION}
             value={current.companionMode}
             onChange={(companionMode) => settings.set({ companionMode })}
+          />
+          <SwitchRow
+            testID="setting-share-verdicts"
+            title="Share what fits"
+            caption={SHARE_CAPTION}
+            value={current.shareVerdicts}
+            onChange={(shareVerdicts) => settings.set({ shareVerdicts })}
           />
           <View>
             <LinkRow

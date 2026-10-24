@@ -14,7 +14,7 @@ type Timers = { set(fn: () => void, ms: number): unknown; clear(handle: unknown)
 
 const realTimers: Timers = { set: (fn, ms) => setTimeout(fn, ms), clear: (h) => clearTimeout(h as ReturnType<typeof setTimeout>) };
 
-export function createScoringRunner(deps: { api: ScoringApi; store: ScoringStore; now?: () => number; timers?: Timers; pollMs?: number }) {
+export function createScoringRunner(deps: { api: Pick<ScoringApi, "start" | "status">; store: ScoringStore; now?: () => number; timers?: Timers; pollMs?: number }) {
   const now = deps.now ?? Date.now;
   const timers = deps.timers ?? realTimers;
   const pollMs = deps.pollMs ?? POLL_MS;

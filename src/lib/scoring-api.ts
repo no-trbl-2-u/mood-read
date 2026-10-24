@@ -1,8 +1,10 @@
 // The app's side of the scoring proxy (01.2): the only request Mood Read makes about a book. It sends the book's
 // title, author and chapter titles, and for a LibriVox book whose text is on Project Gutenberg its public LibriVox
 // and Gutenberg catalog numbers (05.9), and nothing more (agents.md rule 6): never audio. One configured base URL, no
-// key (A22). Pure: `fetch` is handed in, so tests run it against a fake proxy.
-import { EMOTIONS, MAX_SCENES, type Book, type JobView, type RemoteChapter, type ResearchCoverage, type Scene } from "./types.ts";
+// key (A22). Pure: `fetch` is handed in, so tests run it against a fake proxy. The one other request (07.5, spec 07 A6) is
+// the listener's verdicts as aggregate rows (src/lib/verdict-sync.ts builds them): a piece id, an emotion set and a
+// verdict each, never a book, chapter, device or time, with no header but the content type.
+import { EMOTIONS, MAX_SCENES, type Book, type JobView, type RemoteChapter, type ResearchCoverage, type Scene, type VerdictBatch, type VerdictRow } from "./types.ts";
 
 export type ScoringRequest = { title: string; author: string; chapters: string[]; librivoxId?: string; gutenbergId?: string };
 
@@ -103,6 +105,12 @@ export function createScoringApi(baseUrl: string, fetchImpl: Fetch) {
       });
       if (!v) throw new Error("the scoring proxy has no scoring route");
       return v;
+    },
+    /** Sends verdict rows (07.5): exactly `{ rows }`, each row exactly its three fields. Throws unless the proxy took them. */
+    async sendVerdicts(rows: readonly VerdictRow[]): Promise<void> {
+      const batch: VerdictBatch = { rows: rows.map(({ pieceId, emotions, verdict }) => ({ pieceId, emotions: [...emotions], verdict })) };
+      const res = await fetchImpl(`${base}/v1/verdicts`, { method: "POST", headers: { "content-type": "application/json" }, body: JSON.stringify(batch) });
+      if (!res.ok) throw new Error(`the scoring proxy answered ${res.status}`);
     },
     /** The job's progress; null when the proxy no longer knows it. */
     status(jobId: string): Promise<JobView | null> {

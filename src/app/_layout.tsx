@@ -5,6 +5,8 @@ import { useEffect } from "react";
 import { StyleSheet, View } from "react-native";
 
 import "@/lib/downloads";
+// The verdict sender (07.5): on start it posts the day's batch, if any is due (src/lib/verdict-sync.ts).
+import "@/lib/verdicts";
 
 import { library } from "@/lib/library";
 import { scoring } from "@/lib/scoring";

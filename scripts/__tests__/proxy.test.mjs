@@ -39,9 +39,9 @@ describe('the proxy worker', () => {
     const c = config();
     assert.equal(c.vars.MONTHLY_CAP_USD, '20');
     const bindings = Object.fromEntries(c.durable_objects.bindings.map((b) => [b.name, b.class_name]));
-    assert.deepEqual(bindings, { BOOK_JOBS: 'BookJob', SPEND_METER: 'SpendMeter', PRESCORED: 'PrescoreIndex', RATE_LIMITER: 'RateLimiter' });
-    assert.deepEqual(c.migrations.flatMap((m) => m.new_sqlite_classes ?? []).sort(), ['BookJob', 'PrescoreIndex', 'RateLimiter', 'SpendMeter']);
-    assert.deepEqual(c.migrations.map((m) => m.tag), ['v1', 'v2', 'v3']);
+    assert.deepEqual(bindings, { BOOK_JOBS: 'BookJob', SPEND_METER: 'SpendMeter', PRESCORED: 'PrescoreIndex', RATE_LIMITER: 'RateLimiter', VERDICTS: 'VerdictCounts' });
+    assert.deepEqual(c.migrations.flatMap((m) => m.new_sqlite_classes ?? []).sort(), ['BookJob', 'PrescoreIndex', 'RateLimiter', 'SpendMeter', 'VerdictCounts']);
+    assert.deepEqual(c.migrations.map((m) => m.tag), ['v1', 'v2', 'v3', 'v4']);
   });
 
   it('holds the run limits as config values the owner can change: 3 per client an hour, 30 in all, rescore after 7 days (A34)', () => {

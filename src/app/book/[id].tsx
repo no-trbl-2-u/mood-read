@@ -10,6 +10,7 @@ import { draftFrom } from "@/lib/mood-match";
 import { isReached } from "@/lib/reached";
 import { notes, useNoteDismissed } from "@/lib/notes";
 import { scoring, scoringStore, useBookScores, useScoringJob } from "@/lib/scoring";
+import { settings } from "@/lib/settings";
 import { seedable } from "@/lib/scoring-store";
 import { setMood, useChapterScores } from "@/lib/seeding";
 import { soundtrack } from "@/lib/soundtrack";
@@ -29,6 +30,7 @@ import { SetMoodSheet } from "@/player/SetMoodSheet";
 import { SpeedSleepSheet } from "@/player/SpeedSleepSheet";
 import { Button } from "@/ui/Button";
 import { OverflowMenu } from "@/ui/OverflowMenu";
+import { Toast } from "@/ui/Toast";
 import { colors, spacing, typography } from "@/ui/theme";
 import { TopBar, TopBarButton } from "@/ui/TopBar";
 
@@ -42,6 +44,10 @@ const COPY = {
   bookmarks: "Bookmarks",
   speedSleep: "Speed and sleep timer",
   playError: (error: string) => `This book could not play: ${error} Try opening it again from your shelf.`,
+  // The first "Fits" tap (07.5, spec 07 A6): what leaves the device, said once, as the privacy policy says it.
+  verdictsShared:
+    "Thanks. Once a day Mood Read shares which pieces fit, as just the piece, the chapter's emotions and your verdict: no book, chapter, device or time. Turn off \"Share what fits\" in Settings to keep them on this device.",
+  dismissShared: "Dismiss this note",
 };
 
 // One book's chapter river: the top bar (back to your shelf, the book title, Speed & Sleep and Bookmarks), the
@@ -53,6 +59,8 @@ export default function BookScreen() {
   // "Set the mood" (07.6, A7) opens for one chapter, by index.
   const [sheet, setSheet] = useState<"speed" | "bookmarks" | { mood: number } | null>(null);
   const [confirmRescore, setConfirmRescore] = useState(false);
+  // The one-time "what is shared" notice after the first "Fits" (07.5): shown on that tap, then never again.
+  const [sharedToast, setSharedToast] = useState(false);
   const noteDismissed = useNoteDismissed("scoring-sent");
   const { open } = p;
   const job = useScoringJob(id ?? "");
@@ -188,9 +196,15 @@ export default function BookScreen() {
             if (c) scoringStore.savePick(book.id, c, pick);
           }}
           verdicts={bookVerdicts}
-          onVerdict={(i, pieceId, tapped) =>
-            verdicts.setVerdict(book.id, i, pieceId, nextVerdict(verdicts.verdictFor(book.id, i, pieceId), tapped))
-          }
+          onVerdict={(i, pieceId, tapped) => {
+            const next = nextVerdict(verdicts.verdictFor(book.id, i, pieceId), tapped);
+            // Said once, on the first "Fits" while sharing is on; with sharing off nothing leaves, so there is nothing to say.
+            if (next === "fits" && settings.get().shareVerdicts && !notes.dismissed("verdicts-shared")) {
+              notes.dismiss("verdicts-shared");
+              setSharedToast(true);
+            }
+            verdicts.setVerdict(book.id, i, pieceId, next);
+          }}
           mixer={
             active ? (
               <Mixer
@@ -236,6 +250,7 @@ export default function BookScreen() {
           />
         )}
       </View>
+      {sharedToast && <Toast testID="verdicts-shared" text={COPY.verdictsShared} dismissLabel={COPY.dismissShared} onDismiss={() => setSharedToast(false)} />}
       <MiniPlayer
         book={book}
         chapter={chapter}

@@ -1,5 +1,6 @@
 // The Worker end to end in node: the real handler, the two Durable Object classes over in-memory storage with their
 // alarms fired by hand, and the real OpenAI and Brave clients talking to a stubbed fetch. Nothing reaches the network.
+// 07.5 adds the VerdictCounts object over the same in-memory storage.
 import assert from "node:assert/strict";
 import fs from "node:fs";
 import path from "node:path";
@@ -9,7 +10,7 @@ import { fileURLToPath } from "node:url";
 import { BRAVE_ENDPOINT, OPENAI_ENDPOINT } from "./clients.ts";
 import type { JobView } from "./contract.ts";
 import { defaultHits, fakeModel } from "./fakes.ts";
-import worker, { BookJob, RateLimiter, SpendMeter, type DoNamespace, type DoState, type DoStorage, type Env } from "./index.ts";
+import worker, { BookJob, RateLimiter, SpendMeter, VerdictCounts, type DoNamespace, type DoState, type DoStorage, type Env } from "./index.ts";
 import { memoryStore } from "./store.ts";
 
 const HERE = path.dirname(fileURLToPath(import.meta.url));
@@ -206,4 +207,44 @@ test("the limits are config values: a global ceiling of new runs an hour across 
   const over = await worker.fetch(post("/v1/score", made(3), "10.0.0.3"), env);
   assert.equal(over.status, 429);
   assert.equal(((await over.json()) as { reason: string }).reason, "global-limit");
+});
+
+test("verdicts through the Worker: counted in the VerdictCounts object, no key needed, and the next job view is ordered by them (07.5)", async () => {
+  const env = makeEnv({ OPENAI_API_KEY: undefined, BRAVE_SEARCH_API_KEY: undefined });
+  const verdictsNs = namespace((state) => new VerdictCounts(state, env));
+  env.VERDICTS = verdictsNs;
+  const row = { pieceId: "composer-2--theme-1-1-2", emotions: ["tension", "dread"], verdict: "fits" };
+  const res = await worker.fetch(post("/v1/verdicts", { rows: [row, row] }), env);
+  assert.equal(res.status, 204);
+  const obj = verdictsNs.objects.get("verdicts")!;
+  assert.deepEqual(obj.storage.keys(), [`verdicts:${row.pieceId}`], "counts only, one record per piece");
+  assert.deepEqual(await obj.storage.get(`verdicts:${row.pieceId}`), { "tension,dread": { fits: 2, misfits: 0 } });
+  assert.equal((await worker.fetch(post("/v1/verdicts", { rows: [{ ...row, bookId: "x" }] }), env)).status, 400);
+  assert.equal(outbound.length, 0, "a verdict reaches no other service");
+
+  // The limiter lives in the object's memory: past it, a client waits.
+  const from = () => new Request(`${BASE}/v1/verdicts`, { method: "POST", headers: { "content-type": "application/json", "cf-connecting-ip": "7.7.7.7" }, body: JSON.stringify({ rows: [row] }) });
+  const statuses: number[] = [];
+  for (let i = 0; i < 12; i++) statuses.push((await worker.fetch(from(), env)).status);
+  assert.ok(statuses.includes(204) && statuses.at(-1) === 429, statuses.join(","));
+});
+
+test("a scored book's job view through the Worker orders alternates by the counts", async () => {
+  const env = makeEnv();
+  env.VERDICTS = namespace((state) => new VerdictCounts(state, env));
+  const started = (await (await worker.fetch(post("/v1/score", book), env)).json()) as JobView;
+  await runAlarms(env, started.jobId);
+  const done = (await (await worker.fetch(new Request(`${BASE}/v1/jobs/${started.jobId}`), env)).json()) as JobView;
+  const c0 = done.result!.chapters[0];
+  const emotions = c0.mood.emotions.map((e) => e.emotion);
+  const last = c0.pieces!.alternates.at(-1)!;
+  const rows = Array.from({ length: 3 }, () => ({ pieceId: last.id, emotions, verdict: "fits" }));
+  assert.equal((await worker.fetch(post("/v1/verdicts", { rows }), env)).status, 204);
+  const after = (await (await worker.fetch(new Request(`${BASE}/v1/jobs/${started.jobId}`), env)).json()) as JobView;
+  assert.equal(after.result!.chapters[0].pieces!.alternates[0].id, last.id);
+});
+
+test("without the VERDICTS binding, POST /v1/verdicts is a 503", async () => {
+  const env = makeEnv();
+  assert.equal((await worker.fetch(post("/v1/verdicts", { rows: [] }), env)).status, 503);
 });

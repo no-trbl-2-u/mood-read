@@ -1,14 +1,19 @@
 import assert from "node:assert/strict";
 import { test } from "node:test";
 
-import type { EmotionScore } from "./contract.ts";
+import type { EmotionScore, JobView, Piece } from "./contract.ts";
 import {
   askEmotions,
   candidateCount,
   candidateRequest,
   choosePieces,
   chooseScenePieces,
+  alternateIds,
   confirmedInstrumental,
+  DEMOTE_MIN_VERDICTS,
+  demoted,
+  orderAlternates,
+  orderJobView,
   failsNoVocalsScreen,
   firstGuard,
   parseCandidates,
@@ -226,4 +231,78 @@ test("a scene piece goes through the same guard: a vocal or screened candidate n
   const chosen = choosePieces(passed, emotions)!;
   const per = chooseScenePieces(passed, scenes, chosen);
   assert.equal(per[0].id, chosen.piece.id, "no calm piece survived the guard, so the calm scene plays the chapter's piece");
+});
+
+// ---- ordering by the listeners' verdicts (07.5, A6) ----
+
+const p = (id: string): Piece => ({ id, title: id, artist: "A", kind: "score", vocals: "none", moodTags: ["dread"] });
+const alts = [p("a"), p("b"), p("c"), p("d")];
+const SET = "tension,dread";
+
+test("demoted: misfits two to one over at least ten verdicts, and not before", () => {
+  assert.equal(DEMOTE_MIN_VERDICTS, 10);
+  assert.equal(demoted(undefined), false);
+  assert.equal(demoted({ fits: 3, misfits: 6 }), false, "nine verdicts is too few");
+  assert.equal(demoted({ fits: 4, misfits: 8 }), true, "exactly two to one over twelve");
+  assert.equal(demoted({ fits: 0, misfits: 10 }), true);
+  assert.equal(demoted({ fits: 4, misfits: 7 }), false, "under two to one");
+});
+
+test("alternates are ordered best-kept first for the chapter's exact emotion set; a demoted one goes last; none is removed", () => {
+  const counts = {
+    a: { [SET]: { fits: 4, misfits: 8 } },
+    b: { [SET]: { fits: 1, misfits: 2 } },
+    c: { [SET]: { fits: 5, misfits: 1 }, calm: { fits: 0, misfits: 50 } },
+  };
+  const out = orderAlternates(alts, ["dread", "tension"], counts);
+  assert.deepEqual(out.map((x) => x.id), ["c", "d", "b", "a"], "c +4, d none, b -1, a demoted");
+  // Another emotion set reads none of these counts: the scorer's order.
+  assert.deepEqual(orderAlternates(alts, ["sorrow"], counts).map((x) => x.id), ["a", "b", "c", "d"]);
+  // Ties keep the scorer's order.
+  assert.deepEqual(orderAlternates(alts, ["tension", "dread"], {}).map((x) => x.id), ["a", "b", "c", "d"]);
+  // A demoted piece with a better net score than another still goes after it.
+  const d2 = { a: { [SET]: { fits: 0, misfits: 10 } }, b: { [SET]: { fits: 0, misfits: 20 } }, c: { [SET]: { fits: 0, misfits: 9 } } };
+  assert.deepEqual(orderAlternates(alts, ["tension", "dread"], d2).map((x) => x.id), ["d", "c", "a", "b"]);
+});
+
+test("a job view's alternates are reordered; its piece, scene pieces, moods and everything else stay", () => {
+  const mood = {
+    chapterIndex: 0,
+    chapterTitle: "One",
+    emotions: [
+      { emotion: "tension" as const, intensity: 0.8 },
+      { emotion: "dread" as const, intensity: 0.5 },
+    ],
+    sources: [],
+    coverage: "scored" as const,
+    model: "m",
+    version: "v",
+    scoredAt: 1,
+  };
+  const view: JobView = {
+    jobId: "f".repeat(64),
+    state: "done",
+    progress: { step: 1, steps: 1, chaptersDone: 2, chapters: 2 },
+    result: {
+      key: "f".repeat(64),
+      model: "m",
+      version: "v",
+      scoredAt: 1,
+      costUsd: 0,
+      chapters: [
+        { index: 0, title: "One", mood, pieces: { piece: p("main"), alternates: alts, scenePieces: [p("main"), p("a")] } },
+        { index: 1, title: "Two", mood: { ...mood, chapterIndex: 1, chapterTitle: "Two", emotions: [], coverage: "too-little" }, pieces: null },
+      ],
+    },
+  };
+  assert.deepEqual(alternateIds(view), ["a", "b", "c", "d"]);
+  const out = orderJobView(view, { d: { [SET]: { fits: 3, misfits: 0 } }, main: { [SET]: { fits: 0, misfits: 40 } } });
+  const c0 = out.result!.chapters[0];
+  assert.deepEqual(c0.pieces!.alternates.map((x) => x.id), ["d", "a", "b", "c"]);
+  assert.equal(c0.pieces!.piece.id, "main", "the chapter's own piece is never swapped, even when demoted");
+  assert.deepEqual(c0.pieces!.scenePieces!.map((x) => x.id), ["main", "a"]);
+  assert.equal(out.result!.chapters[1].pieces, null);
+  assert.deepEqual(view.result!.chapters[0].pieces!.alternates.map((x) => x.id), ["a", "b", "c", "d"], "the job's own view is not changed");
+  const running: JobView = { ...view, state: "running", result: undefined };
+  assert.equal(orderJobView(running, {}), running);
 });

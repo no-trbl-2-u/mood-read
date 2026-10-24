@@ -7,6 +7,7 @@
 //   Either POST answers 429 with Retry-After when it would start a new run the limits refuse (01.21, A34): a client's
 //   new runs this hour, every client's new runs this hour, or a rescore of a result still too young.
 //   GET  /v1/jobs/:jobId    the job's progress, and the scored chapters once done          -> JobView | 404
+//   POST /v1/verdicts       {rows: {pieceId, emotions, verdict}[]}: listeners' verdicts, counted (07.5) -> 204
 //
 // The body may hold exactly title, author and chapter titles, and a book from Browse's public LibriVox and Project
 // Gutenberg numbers (05.9); anything else is a 400 (A22). The job id is the book's cache key, a hash of the title,
@@ -14,15 +15,29 @@
 // Worker keeps Workers Logs off (proxy/wrangler.jsonc): the proxy keeps no listener data (the privacy policy). The
 // connection's address (cf-connecting-ip) is handed to the job only for the limiter, which keeps no more than a
 // salted hash of it for the hour (limiter.ts).
-import type { BookRequest, JobView } from "./contract.ts";
+//
+// Verdicts (07.5, spec 07 A6): a batch holds exactly rows of a piece id, an emotion set and a verdict, anything else is
+// a 400; it is rate-limited per client (limit.ts, until 01.21) and folded into counts, never kept as rows. Every job
+// view the proxy answers orders each chapter's alternates by those counts (pieces.ts orderJobView).
+import type { BookRequest, JobView, VerdictRow } from "./contract.ts";
+import { clientOf, type Limiter } from "./limit.ts";
 import { retryAfterSeconds, UNKNOWN_CLIENT, type Refusal, type RefusalReason } from "./limiter.ts";
-import { bookKey, isJobId, LIMITS, parseBookRequest } from "./validate.ts";
+import { alternateIds, orderJobView } from "./pieces.ts";
+import type { PieceCounts } from "./store.ts";
+import { bookKey, isJobId, LIMITS, parseBookRequest, parseVerdictBatch } from "./validate.ts";
 
 /** What the handler needs from the job store: in production, Durable Object stubs (index.ts); in tests, in memory. */
 export type Jobs = {
   /** The job's view, or why no new run was started. `client` is the caller's address, for the limiter only. */
   start(key: string, book: BookRequest, rescore: boolean, client: string): Promise<JobView | { refused: Refusal }>;
   status(key: string): Promise<JobView | null>;
+};
+
+/** What the handler needs for verdicts (07.5): in production the VerdictCounts object (index.ts); in tests, in memory. */
+export type Verdicts = {
+  add(rows: readonly VerdictRow[]): Promise<void>;
+  counts(pieceIds: readonly string[]): Promise<Record<string, PieceCounts>>;
+  limiter: Limiter;
 };
 
 const CORS = {
@@ -45,23 +60,53 @@ const json = (status: number, body: unknown) =>
 const text = (status: number, body: string) =>
   new Response(body, { status, headers: { "content-type": "text/plain; charset=utf-8", ...CORS } });
 
-async function readBook(request: Request): Promise<{ ok: true; book: BookRequest } | { ok: false; res: Response }> {
+async function readJson(request: Request): Promise<{ ok: true; body: unknown } | { ok: false; res: Response }> {
   if (!/^application\/json\b/i.test(request.headers.get("content-type") ?? "")) return { ok: false, res: json(415, { error: "send application/json" }) };
   const declared = Number(request.headers.get("content-length") ?? "0");
   if (declared > LIMITS.bodyBytes) return { ok: false, res: json(413, { error: "body too large" }) };
   const raw = await request.text();
   if (new TextEncoder().encode(raw).length > LIMITS.bodyBytes) return { ok: false, res: json(413, { error: "body too large" }) };
-  let body: unknown;
   try {
-    body = JSON.parse(raw);
+    return { ok: true, body: JSON.parse(raw) };
   } catch {
     return { ok: false, res: json(400, { error: "body is not JSON" }) };
   }
-  const parsed = parseBookRequest(body);
+}
+
+async function readBook(request: Request): Promise<{ ok: true; book: BookRequest } | { ok: false; res: Response }> {
+  const read = await readJson(request);
+  if (!read.ok) return read;
+  const parsed = parseBookRequest(read.body);
   return parsed.ok ? { ok: true, book: parsed.book } : { ok: false, res: json(400, { error: parsed.error }) };
 }
 
-export async function route(request: Request, jobs: () => Jobs): Promise<Response> {
+/** POST /v1/verdicts: limited per client, validated, folded into counts; 204 with no body. */
+async function postVerdicts(request: Request, verdicts: Verdicts): Promise<Response> {
+  if (!(await verdicts.limiter.take(clientOf(request)))) return json(429, { error: "too many verdict posts; try again later" });
+  const read = await readJson(request);
+  if (!read.ok) return read.res;
+  const parsed = parseVerdictBatch(read.body);
+  if (!parsed.ok) return json(400, { error: parsed.error });
+  await verdicts.add(parsed.batch.rows);
+  return new Response(null, { status: 204, headers: CORS });
+}
+
+/**
+ * A job view with each chapter's alternates in the listeners' order (07.5). Without verdicts, or when the counts
+ * cannot be read, the view goes out as the job holds it: an ordering never stands between a listener and a score.
+ */
+async function ordered(view: JobView, verdicts: (() => Verdicts) | undefined): Promise<JobView> {
+  if (!verdicts || !view.result) return view;
+  const ids = alternateIds(view);
+  if (!ids.length) return view;
+  try {
+    return orderJobView(view, await verdicts().counts(ids));
+  } catch {
+    return view;
+  }
+}
+
+export async function route(request: Request, jobs: () => Jobs, verdicts?: () => Verdicts): Promise<Response> {
   const { pathname } = new URL(request.url);
   if (request.method === "OPTIONS") return new Response(null, { status: 204, headers: CORS });
   if (request.method === "GET" && pathname === "/health") return text(200, "ok");
@@ -78,14 +123,19 @@ export async function route(request: Request, jobs: () => Jobs): Promise<Respons
       res.headers.set("retry-after", String(seconds));
       return res;
     }
-    return json(200, out);
+    return json(200, await ordered(out, verdicts));
+  }
+
+  if (request.method === "POST" && pathname === "/v1/verdicts") {
+    if (!verdicts) return json(503, { error: "verdicts are not configured" });
+    return postVerdicts(request, verdicts());
   }
 
   const m = /^\/v1\/jobs\/([^/]+)$/.exec(pathname);
   if (request.method === "GET" && m) {
     if (!isJobId(m[1])) return json(404, { error: "no such job" });
     const v = await jobs().status(m[1]);
-    return v ? json(200, v) : json(404, { error: "no such job" });
+    return v ? json(200, await ordered(v, verdicts)) : json(404, { error: "no such job" });
   }
   return text(404, "not found");
 }

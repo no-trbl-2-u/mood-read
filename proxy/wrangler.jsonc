@@ -35,12 +35,15 @@
       // The pre-scored books' overall emotions by LibriVox number, for Browse (05.10, src/prescore.ts).
       { "name": "PRESCORED", "class_name": "PrescoreIndex" },
       // New runs per client and per hour, as salted hourly hashes (01.21, src/limiter.ts).
-      { "name": "RATE_LIMITER", "class_name": "RateLimiter" }
+      { "name": "RATE_LIMITER", "class_name": "RateLimiter" },
+      // The listeners' verdicts as counts per piece and emotion set, and the verdict post's limiter (07.5, src/store.ts).
+      { "name": "VERDICTS", "class_name": "VerdictCounts" }
     ]
   },
   "migrations": [
     { "tag": "v1", "new_sqlite_classes": ["BookJob", "SpendMeter"] },
     { "tag": "v2", "new_sqlite_classes": ["PrescoreIndex"] },
-    { "tag": "v3", "new_sqlite_classes": ["RateLimiter"] }
+    { "tag": "v3", "new_sqlite_classes": ["RateLimiter"] },
+    { "tag": "v4", "new_sqlite_classes": ["VerdictCounts"] }
   ]
 }

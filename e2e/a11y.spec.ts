@@ -1,9 +1,9 @@
 // The accessibility bar (06.5, spec 06 A5) on the web build, on every route and the key states: the empty shelf,
-// its overflow menu, Import, Settings (with the default soundscape open), the privacy policy, Downloads (05.6,
+// its overflow menu, Import, Settings (with the default soundscape open, and with Share what fits off, 07.5), the privacy policy, Downloads (05.6,
 // empty on the web build), the licenses, Credits (05.5), Your soundtrack empty and filled (07.8), a book that is not on the device, and a real book's river
 // with the playing row expanded (the mixer inline), its Speed & Sleep sheet and its Bookmarks sheet, and a scored book
 // (01.4): the playing row's mood card (emotion stickers, the named piece, alternates and the pick chips), a
-// reached row's stickers and a locked row; the shelf with a scored book's fingerprint and a mood lit (07.7); 07.4's verdict targets with "Fits" lit, and with "Doesn't fit" lit and the
+// reached row's stickers and a locked row; the shelf with a scored book's fingerprint and a mood lit (07.7); 07.4's verdict targets with "Fits" lit (and 07.5's one-time "what is shared" notice), and with "Doesn't fit" lit and the
 // other pieces offered in place; 07.6's "Set the mood" sheet open with emotions lit, and a seeded chapter's card
 // ("Your mood", its matched piece); and Browse and a LibriVox book's page (05.8, archive.org stubbed by
 // e2e/librivox-fixtures.ts, same as e2e/browse.spec.ts). On each one:
@@ -100,6 +100,14 @@ const STATES: State[] = [
       await page.goto("/settings");
       await page.getByTestId("setting-soundscape").click();
       await expect(page.getByTestId("soundscape-off")).toBeVisible();
+    },
+  },
+  {
+    name: "/settings with Share what fits off (07.5)",
+    open: async (page) => {
+      await page.goto("/settings");
+      await page.getByTestId("setting-share-verdicts").click();
+      await expect(page.getByTestId("setting-share-verdicts")).toHaveAttribute("aria-checked", "false");
     },
   },
   {
@@ -263,12 +271,13 @@ const STATES: State[] = [
     },
   },
   {
-    name: "/book/<id> scored: the mood card with \"Fits\" lit (07.4)",
+    name: "/book/<id> scored: the mood card with \"Fits\" lit (07.4), the first Fits's notice showing (07.5)",
     open: async (page) => {
       await scoredBook(page);
       const row0 = page.getByTestId("chapter-row-0");
       await row0.getByTestId("verdict-fits").click();
       await expect(row0.getByTestId("verdict-fits")).toHaveAttribute("aria-pressed", "true");
+      await expect(page.getByTestId("verdicts-shared")).toBeVisible();
       const play = page.getByTestId("mini-play-pause");
       if ((await play.getAttribute("aria-label")) === "Pause") await play.click();
       await expect(play).toHaveAttribute("aria-label", "Play");

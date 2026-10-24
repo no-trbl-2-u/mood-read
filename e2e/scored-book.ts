@@ -3,7 +3,25 @@
 // them (src/lib/scoring-store.ts, `scores:<book id>`), so no proxy is involved. With `scenes` (07.2, spec 07 A2) the
 // first chapter is 10 s long and holds three scenes (spans 0.4, 0.35, 0.25: 0-4 s, 4-7.5 s, 7.5-10 s), each with its
 // own emotions and its own piece (scenePieces: Theme 1, 2, 3), so a scene boundary is crossed in a few seconds of play.
-import { expect, type Page } from "@playwright/test";
+// A "Fits" tap posts the day's verdicts (07.5, src/lib/verdict-sync.ts): both books stub POST /v1/verdicts at the app's
+// configured proxy URL (stubVerdicts), so that post stays on the page too.
+import { expect, type Page, type Request, type Route } from "@playwright/test";
+
+/** The app's configured scoring proxy (app.json `expo.extra.scoringProxyUrl`). */
+export const PROXY = "https://mood-read-proxy.invalid";
+const CORS = { "access-control-allow-origin": "*", "access-control-allow-methods": "GET, POST, OPTIONS", "access-control-allow-headers": "content-type" };
+
+/** A stub of POST /v1/verdicts (07.5) that answers 204 like the proxy and keeps each post's request, in order. */
+export async function stubVerdicts(page: Page): Promise<Request[]> {
+  const posts: Request[] = [];
+  await page.route(`${PROXY}/v1/verdicts`, async (route: Route) => {
+    const req = route.request();
+    if (req.method() === "OPTIONS") return route.fulfill({ status: 204, headers: CORS });
+    posts.push(req);
+    return route.fulfill({ status: 204, headers: CORS });
+  });
+  return posts;
+}
 
 export function wav(seconds: number, rate = 8000): Buffer {
   const samples = Math.round(seconds * rate);
@@ -69,6 +87,7 @@ export const SCENES = [
  * `scenes`, the first chapter runs 10 s and carries SCENES and one piece per scene.
  */
 export async function scoredBook(page: Page, opts: { scenes?: boolean } = {}): Promise<string> {
+  await stubVerdicts(page);
   await page.goto("/");
   await page.getByTestId("import-book").click();
   const chooser = page.waitForEvent("filechooser");
@@ -129,6 +148,7 @@ export const KNOWN_PIECES = [
  * it the book was never scored: the band offers "Score this book".
  */
 export async function unscoredBook(page: Page, opts: { tooLittle?: boolean } = {}): Promise<string> {
+  await stubVerdicts(page);
   await page.goto("/");
   await page.getByTestId("import-book").click();
   const chooser = page.waitForEvent("filechooser");

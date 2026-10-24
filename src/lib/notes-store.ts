@@ -3,7 +3,8 @@
 // --test` exercises the code the app runs. Screens reach it through ./notes.ts.
 import type { Kv } from "./library-store.ts";
 
-export type NoteId = "scoring-sent";
+/** "scoring-sent": the scoring band's first-run line (01.17); "verdicts-shared": the first "Fits" tap's notice (07.5). */
+export type NoteId = "scoring-sent" | "verdicts-shared";
 
 const key = (id: NoteId) => `note-dismissed:${id}`;
 

@@ -15,8 +15,11 @@ export const SCORING_PROXY_URL: string = (Constants.expoConfig?.extra?.scoringPr
 
 export const scoringStore = createScoringStore({ getItem, setItem, removeItem });
 
+/** The proxy's client: the scoring runner's, and the verdict sender's (07.5, ./verdicts.ts). */
+export const scoringApi = createScoringApi(SCORING_PROXY_URL, (input, init) => fetch(input, init));
+
 export const scoring = createScoringRunner({
-  api: createScoringApi(SCORING_PROXY_URL, (input, init) => fetch(input, init)),
+  api: scoringApi,
   store: scoringStore,
 });
 

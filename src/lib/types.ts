@@ -91,6 +91,11 @@ export type Settings = {
   /** In companion mode, the bed moves on by the book's chapter lengths; off, it waits for a tap. Off by default. */
   companionTimer: boolean;
   defaultSoundscapeId: string | null;
+  /**
+   * "Share what fits" (07.5, spec 07 A6): the listener's verdicts go to the proxy as daily aggregate rows
+   * (src/lib/verdict-sync.ts). On by default; a saved record without it reads on. Verdicts stay on the device either way.
+   */
+  shareVerdicts: boolean;
 };
 
 // Chapter moods and named pieces (spec 01, Contracts; 01.2): what the scoring proxy returns and the device keeps.
@@ -172,6 +177,18 @@ export type ChapterPlaylist = {
  * in epoch ms; it never leaves the device (07.5 sends only aggregate rows with no book, chapter or time).
  */
 export type PieceVerdict = { chapterIndex: number; pieceId: string; verdict: "fits" | "misfit"; at: number };
+
+/**
+ * One verdict as the device sends it to the proxy (07.5, spec 07 A6; POST /v1/verdicts, proxy/src/contract.ts): the
+ * piece, the chapter's emotion set (names only) and the verdict. No book, chapter, device, position or time.
+ */
+export type VerdictRow = { pieceId: string; emotions: Emotion[]; verdict: PieceVerdict["verdict"] };
+
+/** The body of POST /v1/verdicts: exactly `rows`, 1 to MAX_VERDICT_ROWS of them. */
+export type VerdictBatch = { rows: VerdictRow[] };
+
+/** Rows per POST /v1/verdicts, at most (the proxy refuses more). */
+export const MAX_VERDICT_ROWS = 200;
 
 /**
  * One line of "Your soundtrack" (07.8, spec 07 A9): a piece that has played for a reached chapter of a book, logged on

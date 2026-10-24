@@ -2,7 +2,7 @@ import assert from "node:assert/strict";
 import { test } from "node:test";
 
 import type { BookRequest, JobView } from "./contract.ts";
-import { fakeModel, fakeSearch } from "./fakes.ts";
+import { fakeModel, fakeSearch, memoryVerdicts } from "./fakes.ts";
 import { route, type Jobs } from "./http.ts";
 import { createBookJob, type BookJob } from "./job.ts";
 import { createRateLimiter, HOUR_MS, type Limiter } from "./limiter.ts";
@@ -139,4 +139,87 @@ test("rescoring a fresh result is a 429 until it is old enough (A34)", async () 
   assert.equal(re.status, 429);
   assert.equal(((await re.json()) as { reason: string }).reason, "rescore-too-soon");
   assert.ok(Number(re.headers.get("retry-after")) > 6 * 86_400, "about seven days");
+});
+
+// ---- POST /v1/verdicts and the job view's order (07.5, A6) ----
+
+const row = { pieceId: "composer-1--theme-1", emotions: ["tension", "dread"], verdict: "fits" };
+
+test("POST /v1/verdicts counts the rows and answers 204 with CORS; the store holds counts only", async () => {
+  const { api } = memoryJobs();
+  const v = memoryVerdicts();
+  const res = await route(post("/v1/verdicts", { rows: [row, { ...row, verdict: "misfit" }, { ...row, emotions: ["dread", "tension"] }] }), () => api, () => v);
+  assert.equal(res.status, 204);
+  assert.equal(await res.text(), "");
+  assert.equal(res.headers.get("access-control-allow-origin"), "*");
+  assert.deepEqual(await v.counts([row.pieceId]), { [row.pieceId]: { "tension,dread": { fits: 2, misfits: 1 } } });
+  assert.deepEqual(v.store.keys(), [`verdicts:${row.pieceId}`]);
+});
+
+test("a verdict body with any field beyond rows of pieceId, emotions and verdict is a 400, and nothing is counted", async () => {
+  const { api } = memoryJobs();
+  const v = memoryVerdicts();
+  for (const body of [{ rows: [row], bookId: "b" }, { rows: [{ ...row, chapterIndex: 2 }] }, { rows: [{ ...row, at: 1 }] }, { rows: [{ ...row, deviceId: "d" }] }, { rows: [] }]) {
+    assert.equal((await route(post("/v1/verdicts", body), () => api, () => v)).status, 400, JSON.stringify(body));
+  }
+  assert.equal((await route(post("/v1/verdicts", { rows: [row] }, { "content-type": "text/plain" }), () => api, () => v)).status, 415);
+  assert.equal((await route(post("/v1/verdicts", "{nope"), () => api, () => v)).status, 400);
+  assert.deepEqual(v.store.keys(), []);
+});
+
+test("verdict posts are rate-limited per client (429), apart from /v1/score", async () => {
+  const { api } = memoryJobs();
+  const v = memoryVerdicts({ max: 2, windowMs: 60_000 });
+  const from = (ip: string) => post("/v1/verdicts", { rows: [row] }, { "content-type": "application/json", "cf-connecting-ip": ip });
+  assert.equal((await route(from("1.1.1.1"), () => api, () => v)).status, 204);
+  assert.equal((await route(from("1.1.1.1"), () => api, () => v)).status, 204);
+  assert.equal((await route(from("1.1.1.1"), () => api, () => v)).status, 429);
+  assert.equal((await route(from("2.2.2.2"), () => api, () => v)).status, 204, "another client is not held back");
+  assert.equal((await route(post("/v1/score", book, { "content-type": "application/json", "cf-connecting-ip": "1.1.1.1" }), () => api, () => v)).status, 200, "scoring is not limited by it");
+  assert.deepEqual(await v.counts([row.pieceId]), { [row.pieceId]: { "tension,dread": { fits: 3, misfits: 0 } } });
+});
+
+test("without verdict storage, POST /v1/verdicts is a 503 and job views keep the scorer's order", async () => {
+  const { api } = memoryJobs();
+  assert.equal((await route(post("/v1/verdicts", { rows: [row] }), () => api)).status, 503);
+});
+
+test("a job view orders each chapter's alternates by the verdicts, demoting a two-to-one misfit; the piece stays", async () => {
+  const { api, jobFor } = memoryJobs();
+  const v = memoryVerdicts({ max: 100, windowMs: 60_000 });
+  const started = (await (await route(post("/v1/score", book), () => api, () => v)).json()) as JobView;
+  const job = jobFor(started.jobId);
+  while ((await job.step()).more);
+  const plain = (await (await route(new Request(`${BASE}/v1/jobs/${started.jobId}`), () => api, () => v)).json()) as JobView;
+  const c0 = plain.result!.chapters[0];
+  const emotions = c0.mood.emotions.map((e) => e.emotion);
+  const [first, second] = c0.pieces!.alternates;
+  assert.ok(first && second, "two alternates at least");
+  // The scorer's first alternate gathers misfits two to one over twelve; its second, a few fits.
+  const rows = [
+    ...Array.from({ length: 8 }, () => ({ pieceId: first.id, emotions, verdict: "misfit" })),
+    ...Array.from({ length: 4 }, () => ({ pieceId: first.id, emotions, verdict: "fits" })),
+    ...Array.from({ length: 2 }, () => ({ pieceId: second.id, emotions, verdict: "fits" })),
+  ];
+  assert.equal((await route(post("/v1/verdicts", { rows }), () => api, () => v)).status, 204);
+  const after = (await (await route(new Request(`${BASE}/v1/jobs/${started.jobId}`), () => api, () => v)).json()) as JobView;
+  const a0 = after.result!.chapters[0].pieces!;
+  assert.equal(a0.alternates[0].id, second.id, "the best-kept piece first");
+  assert.equal(a0.alternates[a0.alternates.length - 1].id, first.id, "the demoted piece last");
+  assert.deepEqual(a0.alternates.map((p) => p.id).sort(), c0.pieces!.alternates.map((p) => p.id).sort(), "no piece removed");
+  assert.equal(a0.piece.id, c0.pieces!.piece.id);
+  // The cached answer to /v1/score is ordered the same way.
+  const cached = (await (await route(post("/v1/score", book), () => api, () => v)).json()) as JobView;
+  assert.deepEqual(cached.result!.chapters[0].pieces!.alternates.map((p) => p.id), a0.alternates.map((p) => p.id));
+});
+
+test("when the counts cannot be read, the job view goes out in the scorer's order", async () => {
+  const { api, jobFor } = memoryJobs();
+  const started = (await (await route(post("/v1/score", book), () => api)).json()) as JobView;
+  const job = jobFor(started.jobId);
+  while ((await job.step()).more);
+  const broken = { ...memoryVerdicts(), counts: async () => Promise.reject(new Error("storage down")) };
+  const res = await route(new Request(`${BASE}/v1/jobs/${started.jobId}`), () => api, () => broken);
+  assert.equal(res.status, 200);
+  assert.equal(((await res.json()) as JobView).state, "done");
 });

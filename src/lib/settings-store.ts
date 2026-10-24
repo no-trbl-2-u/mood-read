@@ -7,7 +7,7 @@ import type { Settings } from "./types.ts";
 /** The default soundscape value that means no bed at all. */
 export const SOUNDSCAPE_OFF = "off";
 
-export const DEFAULT_SETTINGS: Settings = { wifiOnly: true, companionMode: false, companionTimer: false, defaultSoundscapeId: null };
+export const DEFAULT_SETTINGS: Settings = { wifiOnly: true, companionMode: false, companionTimer: false, defaultSoundscapeId: null, shareVerdicts: true };
 
 const KEY = "settings";
 
@@ -28,6 +28,8 @@ export function parseSettings(raw: string | null): Settings {
     companionTimer: typeof v.companionTimer === "boolean" ? v.companionTimer : DEFAULT_SETTINGS.companionTimer,
     defaultSoundscapeId:
       typeof soundscape === "string" && soundscape !== "" ? soundscape : DEFAULT_SETTINGS.defaultSoundscapeId,
+    // 07.5: a record saved before "Share what fits" existed reads on, the default.
+    shareVerdicts: typeof v.shareVerdicts === "boolean" ? v.shareVerdicts : DEFAULT_SETTINGS.shareVerdicts,
   };
 }
 
@@ -50,7 +52,8 @@ export function createSettingsStore(kv: Kv) {
         next.wifiOnly === state.wifiOnly &&
         next.companionMode === state.companionMode &&
         next.companionTimer === state.companionTimer &&
-        next.defaultSoundscapeId === state.defaultSoundscapeId
+        next.defaultSoundscapeId === state.defaultSoundscapeId &&
+        next.shareVerdicts === state.shareVerdicts
       ) {
         return;
       }

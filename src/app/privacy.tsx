@@ -41,6 +41,7 @@ const SECTIONS: Section[] = [
       "It never receives your audio, your files, your listening position, your bookmarks or anything that identifies you. Cloudflare, which runs the proxy, handles the connection your device makes to it, as any web host does; the proxy keeps no log of those requests.",
       "So that no one can run up its costs, the proxy counts how many new books each connection asks it to score in an hour. It counts by a scrambled form of the connection's address, made with a key that is thrown away when the hour ends, never alongside the book, and it deletes the count when the hour is over.",
       "A scored book's moods and pieces are kept by the proxy and shared with anyone who scores the same book, so each book is researched once. They hold the book's details and what was found about it, nothing about who asked.",
+      "When \"Share what fits\" is on in Settings (it is by default), at most once a day Mood Read sends the proxy your Fits and Doesn't fit verdicts as rows of just a piece, the emotions of the chapter it played under and the verdict, with no book, chapter, device or time; the proxy keeps only a count per piece and set of emotions, uses the counts to order the alternates it names for every listener, and never keeps a row.",
     ],
   },
   {

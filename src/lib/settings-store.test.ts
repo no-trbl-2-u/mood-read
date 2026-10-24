@@ -15,7 +15,7 @@ function memoryKv(): Kv & { data: Map<string, string> } {
 }
 
 test("A3: with nothing saved, Wi-Fi only is on, companion mode and its chapter timer off, and no default soundscape is set", () => {
-  assert.deepEqual(DEFAULT_SETTINGS, { wifiOnly: true, companionMode: false, companionTimer: false, defaultSoundscapeId: null });
+  assert.deepEqual(DEFAULT_SETTINGS, { wifiOnly: true, companionMode: false, companionTimer: false, defaultSoundscapeId: null, shareVerdicts: true });
   assert.deepEqual(createSettingsStore(memoryKv()).get(), DEFAULT_SETTINGS);
 });
 
@@ -27,7 +27,7 @@ test("A3: each setting is saved on the device and survives reopening the app", (
   store.set({ companionTimer: true });
   store.set({ defaultSoundscapeId: "tide" });
   const reopened = createSettingsStore(kv);
-  assert.deepEqual(reopened.get(), { wifiOnly: false, companionMode: true, companionTimer: true, defaultSoundscapeId: "tide" });
+  assert.deepEqual(reopened.get(), { wifiOnly: false, companionMode: true, companionTimer: true, defaultSoundscapeId: "tide", shareVerdicts: true });
 
   reopened.set({ defaultSoundscapeId: SOUNDSCAPE_OFF });
   assert.equal(createSettingsStore(kv).get().defaultSoundscapeId, SOUNDSCAPE_OFF);
@@ -64,4 +64,13 @@ test("a malformed saved value falls back to the defaults, field by field", () =>
   assert.deepEqual(store.get(), DEFAULT_SETTINGS);
   store.set({ companionMode: true });
   assert.deepEqual(createSettingsStore(kv).get(), { ...DEFAULT_SETTINGS, companionMode: true });
+});
+
+test("Share what fits (07.5): on by default, a record saved without it reads on, and turning it off persists", () => {
+  assert.equal(DEFAULT_SETTINGS.shareVerdicts, true);
+  assert.equal(parseSettings('{"wifiOnly":false,"companionMode":false,"companionTimer":false,"defaultSoundscapeId":null}').shareVerdicts, true);
+  assert.equal(parseSettings('{"shareVerdicts":"no"}').shareVerdicts, true);
+  const kv = memoryKv();
+  createSettingsStore(kv).set({ shareVerdicts: false });
+  assert.equal(createSettingsStore(kv).get().shareVerdicts, false);
 });

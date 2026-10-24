@@ -11,16 +11,19 @@
 // alarms to drive a long job, and no atomic add for the meter. A third, PrescoreIndex (05.10), holds the pre-scored
 // books' overall emotions by LibriVox number, so Browse reads a page of them in one call (prescore.ts). A fourth,
 // RateLimiter, counts new runs per client and per hour (limiter.ts, 01.21, A34), also a single writer; it holds only
-// the current hour's salted hashes, and its alarm deletes them when the hour ends.
+// the current hour's salted hashes, and its alarm deletes them when the hour ends. A fifth,
+// VerdictCounts (07.5), holds the listeners' verdicts as counts per piece and emotion set, and the verdict post's
+// rate limiter in its memory: one writer, so no add is lost.
 import { braveClient, openAiClient } from "./clients.ts";
-import type { BookRequest, JobView } from "./contract.ts";
-import { route, type Jobs } from "./http.ts";
+import type { BookRequest, JobView, VerdictRow } from "./contract.ts";
+import { route, type Jobs, type Verdicts } from "./http.ts";
 import { createBookJob } from "./job.ts";
 import { createRateLimiter, limitsFrom, rescoreMinAgeFrom, type Limiter, type Refusal } from "./limiter.ts";
+import { memoryLimiter, type Limiter as VerdictLimiter } from "./limit.ts";
 import { capFrom, createMeter, type Meter } from "./meter.ts";
 import { createOverallIndex, overallEmotions, prescoreBudget, type IndexPut, type OverallView, type PrescoredList } from "./prescore.ts";
 import { routePrescore, type PrescoreDeps } from "./prescore-http.ts";
-import type { Store } from "./store.ts";
+import { createVerdictCounts, type PieceCounts, type Store } from "./store.ts";
 import { gutenbergSource } from "./text-research.ts";
 
 export const DEFAULT_MODEL = "gpt-5-mini";
@@ -50,10 +53,35 @@ export type Env = {
   RUNS_PER_HOUR?: string;
   /** Days a cached result must age before a rescore may replace it (default 7). */
   RESCORE_MIN_AGE_DAYS?: string;
+  /** The listeners' verdict counts (07.5). Unset, POST /v1/verdicts answers 503 and job views keep the scorer's order. */
+  VERDICTS?: DoNamespace;
 };
 
 const METER_NAME = "spend-meter";
 const INDEX_NAME = "prescored";
+const VERDICTS_NAME = "verdicts";
+
+/** The verdict counts and their limiter, reached in their own object (07.5). */
+function remoteVerdicts(ns: DoNamespace): Verdicts {
+  const stub = () => ns.get(ns.idFromName(VERDICTS_NAME));
+  return {
+    async add(rows) {
+      await stub().fetch("https://verdicts/add", { method: "POST", body: JSON.stringify(rows) });
+    },
+    async counts(pieceIds) {
+      const res = await stub().fetch("https://verdicts/counts", { method: "POST", body: JSON.stringify(pieceIds) });
+      return (await res.json()) as Record<string, PieceCounts>;
+    },
+    limiter: {
+      async take(client) {
+        const res = await stub().fetch("https://verdicts/take", { method: "POST", body: JSON.stringify({ client }) });
+        return ((await res.json()) as { ok: boolean }).ok;
+      },
+    },
+  };
+}
+
+const verdictsOf = (env: Env | undefined) => (env?.VERDICTS ? () => remoteVerdicts(env.VERDICTS as DoNamespace) : undefined);
 
 /** The meter, reached in its own object. */
 function remoteMeter(env: Env): Meter {
@@ -261,15 +289,44 @@ export class RateLimiter {
   }
 }
 
+/**
+ * The listeners' verdicts as counts (07.5, spec 07 A6), in one object so every add is serialized. Its storage holds
+ * counts per (piece, emotion set) and nothing else; the verdict post's rate limiter lives in its memory only.
+ */
+export class VerdictCounts {
+  state: DoState;
+  limiter: VerdictLimiter = memoryLimiter();
+
+  constructor(state: DoState, _env: Env) {
+    this.state = state;
+  }
+
+  async fetch(request: Request): Promise<Response> {
+    const { pathname } = new URL(request.url);
+    const counts = createVerdictCounts(this.state.storage);
+    if (pathname === "/take") {
+      const { client } = (await request.json()) as { client: string };
+      return Response.json({ ok: await this.limiter.take(client) });
+    }
+    if (pathname === "/add") {
+      await counts.add((await request.json()) as VerdictRow[]);
+      return new Response(null, { status: 204 });
+    }
+    return Response.json(await counts.counts((await request.json()) as string[]));
+  }
+}
+
 export async function handle(request: Request, env?: Env): Promise<Response> {
   const { pathname } = new URL(request.url);
+  // Verdicts need no AI or search key, only their own object (route answers 503 without it).
+  if (pathname === "/v1/verdicts") return route(request, () => bookJobs(env as Env), verdictsOf(env));
   if (pathname.startsWith("/v1/") && (!env || (request.method === "POST" && !configured(env)))) {
     return new Response(JSON.stringify({ error: "scoring is not configured" }), {
       status: 503,
       headers: { "content-type": "application/json; charset=utf-8", "access-control-allow-origin": "*" },
     });
   }
-  return (await routePrescore(request, () => prescoreDeps(env as Env))) ?? route(request, () => bookJobs(env as Env));
+  return (await routePrescore(request, () => prescoreDeps(env as Env))) ?? route(request, () => bookJobs(env as Env), verdictsOf(env));
 }
 
 const worker = {
