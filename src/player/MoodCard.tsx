@@ -11,8 +11,9 @@
 // A7): an unscored chapter's card offers "Set the mood" (src/player/SetMoodSheet.tsx); a seeded chapter's card says
 // "Your mood", names the matched piece or says the chapter plays its soundscape, and takes no verdict, so the
 // listener's own emotions never leave the device.
-// 01.22 (A35): a reached, non-playing row opens the same card in place from its chips, without moving playback; it
-// is not playing, so it shows the chapter's emotions and piece and never a scene band.
+// 01.22 (A35): a reached, non-playing row (or a listener's own seed, reached or not) opens the same card in place
+// from its chips, without moving playback; it is not playing, so it shows the chapter's emotions and piece and never
+// a scene band.
 import type { ReactNode } from "react";
 import { StyleSheet, Text, View } from "react-native";
 

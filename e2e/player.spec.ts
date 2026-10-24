@@ -767,6 +767,8 @@ test.describe("the player", () => {
     await page.getByTestId("chapter-1").click();
     await expectChapter(page, 1);
     await expect(page.getByTestId("chapter-peek")).toHaveCount(0);
+    // The jump plays once chapter 2 has loaded: let it start before pausing, so pause() does not race it.
+    await expect.poll(async () => (await narration(page)).paused).toBe(false);
     await pause(page);
   });
 

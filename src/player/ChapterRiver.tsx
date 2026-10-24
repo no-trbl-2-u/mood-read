@@ -9,7 +9,9 @@
 // still jumps there, which reaches it). 01.22 (A35): tapping a reached, non-playing row's chips opens the same mood
 // card in place, without moving playback; one such row at a time, a second tap closes it, and a jump closes it.
 // Since 07.2 the playing row carries a scene band; an opened row is not playing, so it shows the chapter-level card
-// (its emotions and its piece) and no scene band.
+// (its emotions and its piece) and no scene band. Since 07.6 a listener's own seed shows on a row reached or not;
+// it is their own mood, not a spoiler, so such a row opens too, its toggle named "Your mood for this chapter". A
+// researched mood on a row not yet reached stays locked: no chips, never opens (A21).
 import { useEffect, useRef, useState, type ReactNode } from "react";
 import { Pressable, ScrollView, StyleSheet, Text, TextInput, View, type ScrollViewInstance } from "react-native";
 
@@ -180,7 +182,8 @@ export function ChapterRiver(props: {
 const COPY = {
   notReached: ", not reached yet",
   /** A reached row's chips toggle: what it shows first (06.5: what is seen is heard), then what it opens. */
-  moodCard: (chips: string, chapter: string) => `${chips}. Mood card for ${chapter}`,
+  moodCard: (chips: string, chapter: string, yours: boolean) =>
+    `${yours ? "Your mood for this chapter: " : ""}${chips}. Mood card for ${chapter}`,
   /** The row's visible "Unscored" chip, in its name too (06.5: what is seen is heard). */
   unscored: ", Unscored",
   /** A seeded row's chips (07.6): the listener's own mood, shown at once. */
@@ -188,7 +191,7 @@ const COPY = {
 };
 
 /**
- * A reached, non-playing row's emotion chips as one control that opens or closes its mood card in place (A35). It
+ * A reached (or seeded, 07.6), non-playing row's emotion chips as one control that opens or closes its mood card in place (A35). It
  * never jumps: the row's title does that. Announced as expanded or collapsed, never by colour alone.
  */
 function ChipsToggle(props: {
@@ -207,7 +210,7 @@ function ChipsToggle(props: {
     <Pressable
       testID={`row-chips-${props.index}`}
       role="button"
-      aria-label={COPY.moodCard(chips, props.label)}
+      aria-label={COPY.moodCard(chips, props.label, props.view.listener === true)}
       aria-expanded={props.open}
       onPress={props.onPress}
       style={({ pressed }) => [styles.chipsToggle, pressStyle(pressed, reduceMotion)]}

@@ -231,6 +231,10 @@ test("A35: a reached, scored, non-playing row opens its mood card from its chips
   assert.equal(canPeek({ kind: "unscored" }, false), false);
   assert.equal(canPeek({ kind: "scored", emotions: [], piece: null, alternates: [], pick: "auto", playing: null }, false), false);
 
+  // A listener's own seed (07.6) is theirs, not a spoiler: it opens even on a row not yet reached.
+  const seed = score({ coverage: "listener", sources: [], emotions: [{ emotion: "calm", intensity: 0.4 }] });
+  assert.equal(canPeek(moodCardView(false, seed), false), true);
+
   assert.equal(togglePeek(null, 2), 2);
   assert.equal(togglePeek(2, 2), null);
   assert.equal(togglePeek(1, 2), 2);

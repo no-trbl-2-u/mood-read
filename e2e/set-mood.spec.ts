@@ -106,6 +106,15 @@ test.describe("Set the mood (A7)", () => {
     await page.reload();
     await check();
     await pause(page);
+    // 01.22 (A35): a seed is the listener's own mood, not a spoiler, so a row not yet reached opens its card in place.
+    const row2 = page.getByTestId("chapter-row-2");
+    const chips2 = row2.getByTestId("row-chips-2");
+    await expect(chips2).toHaveAttribute("aria-label", /^Your mood for this chapter: Dread 80%, Romance 40%\. Mood card for Ch\.3/);
+    await chips2.click();
+    await expect(row2.getByTestId("chapter-peek").getByTestId("mood-yours")).toHaveText("Your mood");
+    await expect(row2).not.toHaveAttribute("aria-current", "true");
+    await row2.getByTestId("row-chips-2").click();
+    await expect(row2.getByTestId("chapter-peek")).toHaveCount(0);
     expect(sent).toEqual([]);
   });
 });

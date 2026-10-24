@@ -126,7 +126,8 @@ export function sceneBand(
 
 /**
  * Whether a row's emotion chips open its mood card in place (01.22, spec 01 A35): a reached, scored row with emotions
- * that is not the playing row (which is always open). A row not yet reached shows no chips and never opens (A21).
+ * that is not the playing row (which is always open). A row not yet reached shows no chips and never opens (A21),
+ * unless its mood is the listener's own seed (07.6): theirs, not a spoiler, so it shows and opens reached or not.
  */
 export function canPeek(view: MoodCardView, playing: boolean): boolean {
   return !playing && view.kind === "scored" && view.emotions.length > 0;
