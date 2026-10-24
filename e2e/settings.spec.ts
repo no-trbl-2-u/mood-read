@@ -30,8 +30,8 @@ test.describe("settings", () => {
     await wifi.click();
     await expect(wifi).toHaveAttribute("aria-checked", "false");
     await companion.click();
-    await page.getByRole("button", { name: /^Default soundscape, Chapter by chapter/ }).click();
-    await page.getByRole("button", { name: "Off", exact: true }).click();
+    await page.getByRole("button", { name: "Default soundscape, Night Wind" }).click();
+    await page.getByRole("button", { name: "Default soundscape: Off" }).click();
 
     await page.reload();
     await expect(page.getByRole("switch", { name: "Downloads on Wi-Fi only" })).toHaveAttribute("aria-checked", "false");

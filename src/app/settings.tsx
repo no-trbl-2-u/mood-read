@@ -3,6 +3,7 @@ import { useState } from "react";
 import { ScrollView, StyleSheet, View } from "react-native";
 
 import { settings, SOUNDSCAPE_OFF, useSettings } from "@/lib/settings";
+import { DEFAULT_SOUNDSCAPE_ID } from "@/lib/soundscapes";
 import { SOUNDSCAPES } from "@/player/soundscapes";
 import { Chip } from "@/ui/Chip";
 import { LinkRow, RowDrawer, SettingsSection, SwitchRow, UnavailableRow } from "@/ui/SettingsList";
@@ -17,9 +18,12 @@ import { TopBar } from "@/ui/TopBar";
 const COMPANION_CAPTION =
   "Plays Mood Read's soundscape beside another app. It arrives in a later update; your choice is saved now.";
 
-/** The default soundscape's choices: each chapter's own sound (the default), none, or one bundled loop. */
-const SOUNDSCAPE_CHOICES: { id: string | null; label: string }[] = [
-  { id: null, label: "Chapter by chapter" },
+/**
+ * The default soundscape's choices, the mixer's Layer chips (src/player/LayerPicker.tsx): Off and each bundled loop.
+ * A book with no layer of its own plays it; a book's own pick in the mixer always wins (src/lib/bed.ts defaultBedFor).
+ */
+const SOUNDSCAPE_LABEL = "Default soundscape";
+const SOUNDSCAPE_CHOICES: { id: string; label: string }[] = [
   { id: SOUNDSCAPE_OFF, label: "Off" },
   ...SOUNDSCAPES.map((s) => ({ id: s.id, label: s.name })),
 ];
@@ -29,8 +33,11 @@ const goBack = () => (router.canGoBack() ? router.back() : router.replace("/"));
 export default function SettingsScreen() {
   const current = useSettings();
   const [choosing, setChoosing] = useState(false);
-  // A saved id no bundled loop has any more reads as the default, as the bed treats it.
-  const chosen = SOUNDSCAPE_CHOICES.find((c) => c.id === current.defaultSoundscapeId) ?? SOUNDSCAPE_CHOICES[0];
+  // Nothing set, or a loop no longer bundled, plays 01.7's default (Night Wind), so that chip reads as on.
+  const chosen =
+    SOUNDSCAPE_CHOICES.find((c) => c.id === current.defaultSoundscapeId) ??
+    SOUNDSCAPE_CHOICES.find((c) => c.id === DEFAULT_SOUNDSCAPE_ID) ??
+    SOUNDSCAPE_CHOICES[0];
 
   return (
     <View style={styles.screen}>
@@ -57,7 +64,7 @@ export default function SettingsScreen() {
           <View>
             <LinkRow
               testID="setting-soundscape"
-              title="Default soundscape"
+              title={SOUNDSCAPE_LABEL}
               value={chosen.label}
               expanded={choosing}
               onPress={() => setChoosing((open) => !open)}
@@ -67,9 +74,10 @@ export default function SettingsScreen() {
                 <ScrollView horizontal contentContainerStyle={styles.chips} showsHorizontalScrollIndicator={false}>
                   {SOUNDSCAPE_CHOICES.map((c) => (
                     <Chip
-                      key={c.id ?? "chapter"}
-                      testID={`soundscape-${c.id ?? "chapter"}`}
+                      key={c.id}
+                      testID={`soundscape-${c.id}`}
                       label={c.label}
+                      a11yLabel={`${SOUNDSCAPE_LABEL}: ${c.label}`}
                       on={c === chosen}
                       onPress={() => settings.set({ defaultSoundscapeId: c.id })}
                     />
