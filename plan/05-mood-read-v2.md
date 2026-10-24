@@ -129,8 +129,6 @@ Decisions made upfront (do not ask):
   a LibriVox book downloads again in one tap, an imported one asks for its file again.
 - **A8** Removing or deleting a book deletes each of its pieces unless another book still on the device has that
   piece in its playlist.
-- **A9** Browse finds LibriVox books by title, author or genre and downloads one into the library with its chapters,
-  cover, title and author.
 - **A10** A public-domain book from Browse is scored from its own text; the proxy keeps no copy of the text, and the
   app sends no audio.
 - **A11** Browse shows a pre-scored book's overall emotions, never a chapter's, and pre-scoring stays within half of
@@ -169,7 +167,7 @@ All answered; none is open.
   and 05.15 wait in the Held lane.
 
 ## Chunks
-Measure: 19 open · 1 closed · next A21
+Measure: 18 open · 2 closed · next A21
 
 - [ ] **05.1** The music catalog: manifest, R2 hosting, and `catalog:add` through the rights-checker · M ·
   closes A1 · needs — · secrets CLOUDFLARE_S3_ACCESS_KEY_ID, CLOUDFLARE_S3_SECRET_ACCESS_KEY, S3_API_ENDPOINT
@@ -184,10 +182,7 @@ Measure: 19 open · 1 closed · next A21
 - [ ] **05.5** Credits, off to the side in the library's overflow menu · S · closes A12 · needs 05.1
   - One line in `MENU` (`src/ui/OverflowMenu.tsx`, 06.3) adds Credits; Settings' disabled Credits row becomes
     its link.
-- [ ] **05.8** Browse and search LibriVox, and download a book into the library · L · closes A9 · needs —
-  - The empty library offers "Browse free books" beside "Import a book", as 06.2 draws it.
-  - Browse joins the library's overflow menu: one line in `MENU` (`src/ui/OverflowMenu.tsx`, 06.3).
-- [ ] **05.9** Score public-domain books from their own text · M · closes A10 · needs 05.8
+- [ ] **05.9** Score public-domain books from their own text · M · closes A10 · needs —
   - Update the privacy policy (`src/app/privacy.tsx`) for the LibriVox / Gutenberg ids the proxy now receives.
 - [ ] **05.10** Pre-scored books and their moods in Browse · M · closes A11 · needs 05.9
 - [ ] **05.11** Split a one-file book into chapter files on the device · M · closes A13 · needs 04.1

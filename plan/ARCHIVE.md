@@ -41,3 +41,4 @@ identity · deleted in <sha>`; recover its text with
 - 2026-10-24 · 01.14 · Companion mode plays the bed beside another app, no narration · 103fa672..ca7361bf
 - 2026-10-24 · 05.6 · Downloads: queue, pause, resume, retry and a storage meter · b992bcb2..6cc5d7cd
 - 2026-10-24 · 01.17 · Scoring in the river: start, progress, cap paused, first-run note, Rescore in the overflow · 50ada76..fa0bbd8
+- 2026-10-24 · 05.8 · Browse searches LibriVox and downloads a book onto the shelf · 265e46f8..4ae007cf
