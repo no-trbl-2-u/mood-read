@@ -131,7 +131,10 @@ test.describe("scoring a book", () => {
 
     proxy.finish();
     await expect(page.getByTestId("scoring-done")).toHaveText("Scored: 1 of 2 chapters", { timeout: 15_000 });
-    // The chapter with too little written about it is unscored, never guessed; the scored one shows no events.
+    // The chapter with too little written about it is unscored, never guessed; the scored one shows no events. A
+    // chapter not reached yet shows no chips at all (01.4, A21), so the listener goes to chapter 2 first.
+    await expect(page.getByTestId("unscored-1")).toHaveCount(0);
+    await page.getByTestId("chapter-1").click();
     await expect(page.getByTestId("unscored-1")).toBeVisible();
     await expect(page.getByTestId("unscored-0")).toHaveCount(0);
     await expect(page.getByText("Unscored", { exact: true })).toHaveCount(1);

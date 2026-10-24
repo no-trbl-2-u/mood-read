@@ -2,15 +2,20 @@
 // its title; the playing row is expanded in place and marked with a heavy left rule and a play mark. The river
 // carries no times: every time readout sits in the mini player (A28). The expanded row carries the inline mixer
 // (01.5: balance, master volume, duck under voice; 01.7: the Layer chips) and the chapter edits (01.6, spec 01 A6):
-// rename, merge with the next chapter, and split at the current position. Emotion chips, the mood card and lock
-// marks join from 01.4; 01.2 adds the dashed "Unscored" chip on a chapter scoring found too little written about.
+// rename, merge with the next chapter, and split at the current position. 01.2 adds the dashed "Unscored" chip on a
+// chapter scoring found too little written about. 01.4 adds the moods (spec 01 A16, A21): a reached, scored row
+// shows its two strongest emotion chips; the playing row expands to the mood card (./MoodCard.tsx) above the mixer;
+// a row not yet reached is muted with a lock mark and shows no chips of any kind, and never expands (its title
+// still jumps there, which reaches it).
 import { useEffect, useRef, useState, type ReactNode } from "react";
 import { Pressable, ScrollView, StyleSheet, Text, TextInput, View, type ScrollViewInstance } from "react-native";
 
 import { canMergeWithNext, canSplitAt } from "@/lib/chapters";
+import type { MoodCardView } from "@/lib/mood-card";
 import type { Book } from "@/lib/types";
 import { Icon } from "@/ui/Icon";
 import { Button } from "@/ui/Button";
+import { EmotionChips, MoodCard } from "./MoodCard";
 import { colors, hardShadow, radii, shadows, sizes, spacing, strokes, typography } from "@/ui/theme";
 
 export function ChapterRiver(props: {
@@ -20,8 +25,13 @@ export function ChapterRiver(props: {
   position: number;
   /** The inline mixer with its Layer chips, shown in the playing row; absent until the book is open in the player. */
   mixer?: ReactNode;
-  /** Chapters scoring found too little written about: they carry an "Unscored" chip (A19). */
-  unscored?: ReadonlySet<number>;
+  /**
+   * What each chapter's row may show, by chapter index (src/lib/mood-card.ts moodCardView): locked until reached
+   * (A21), the "Unscored" chip (A19), or its emotions and pieces (A16). A missing entry shows nothing.
+   */
+  moods?: readonly MoodCardView[];
+  /** The listener picks an alternate, or Auto, for a chapter (A16). */
+  onPick?: (index: number, pick: "auto" | string) => void;
   onJump: (index: number) => void;
   /** Chapter edits; absent until the book is open in the player. */
   edits?: ChapterEditsApi;
@@ -44,6 +54,8 @@ export function ChapterRiver(props: {
     <ScrollView ref={scroll} testID="chapter-river" contentContainerStyle={styles.content}>
       {props.book.chapters.map((c) => {
         const playing = c.index === current;
+        const mood: MoodCardView = props.moods?.[c.index] ?? { kind: "none" };
+        const locked = mood.kind === "locked";
         return (
           <View
             key={c.index}
@@ -61,28 +73,39 @@ export function ChapterRiver(props: {
             <Pressable
               testID={`chapter-${c.index}`}
               role="button"
-              aria-label={`Play chapter ${c.index + 1}, ${c.title}`}
+              aria-label={`Play chapter ${c.index + 1}, ${c.title}${locked ? COPY.notReached : ""}`}
               onPress={() => props.onJump(c.index)}
               style={styles.titleLine}
             >
               <View style={styles.titleWrap}>
-                <Text style={styles.title} numberOfLines={2}>
+                <Text style={[styles.title, locked && styles.titleLocked]} numberOfLines={2}>
                   Ch.{c.index + 1} — {c.title}
                 </Text>
+                {locked && (
+                  <View testID={`locked-${c.index}`}>
+                    <Icon name="lock" size="small" color={colors.textMuted} />
+                  </View>
+                )}
                 {playing && (
                   <View testID="playing-mark">
                     <Icon name="play" size="small" color={colors.accent} filled />
                   </View>
                 )}
-                {props.unscored?.has(c.index) && (
+                {mood.kind === "unscored" && (
                   <View style={styles.unscored} testID={`unscored-${c.index}`}>
                     <Text style={styles.unscoredText}>Unscored</Text>
                   </View>
                 )}
               </View>
             </Pressable>
-            {playing && (
+            {!playing && mood.kind === "scored" && mood.emotions.length > 0 && (
+              <View style={styles.rowChips}>
+                <EmotionChips emotions={mood.emotions} limit={2} testID={`row-emotions-${c.index}`} />
+              </View>
+            )}
+            {playing && !locked && (
               <View style={styles.expanded} testID="chapter-expanded">
+                <MoodCard view={mood} onPick={(pick) => props.onPick?.(c.index, pick)} />
                 {props.mixer}
                 {props.edits && (
                   <ChapterEdits
@@ -103,6 +126,10 @@ export function ChapterRiver(props: {
     </ScrollView>
   );
 }
+
+const COPY = {
+  notReached: ", not reached yet",
+};
 
 export type ChapterEditsApi = {
   rename: (index: number, title: string) => void;
@@ -191,6 +218,8 @@ const styles = StyleSheet.create({
   titleLine: { flexDirection: "row", alignItems: "center", gap: spacing.md, minHeight: sizes.touch },
   titleWrap: { flex: 1, flexDirection: "row", alignItems: "center", gap: spacing.sm },
   title: { ...typography.body, flexShrink: 1, fontWeight: typography.label.fontWeight },
+  titleLocked: { color: colors.textMuted },
+  rowChips: { paddingBottom: spacing.sm },
   unscored: {
     marginLeft: "auto",
     paddingHorizontal: spacing.sm,

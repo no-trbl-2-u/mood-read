@@ -4,8 +4,10 @@ import { StyleSheet, Text, View } from "react-native";
 
 import { chapterBed, pickFor } from "@/lib/bed";
 import { speedLabel } from "@/lib/labels";
-import { chapterEdits, useBook } from "@/lib/library";
-import { scoring, useBookScores, useScoringJob } from "@/lib/scoring";
+import { chapterEdits, reached, useBook, useFurthestReached } from "@/lib/library";
+import { moodCardView } from "@/lib/mood-card";
+import { isReached } from "@/lib/reached";
+import { scoring, scoringStore, useBookScores, useScoringJob } from "@/lib/scoring";
 import { BookmarksSheet } from "@/player/BookmarksSheet";
 import { ChapterRiver } from "@/player/ChapterRiver";
 import { LayerPicker } from "@/player/LayerPicker";
@@ -41,6 +43,7 @@ export default function BookScreen() {
   const { open } = p;
   const job = useScoringJob(id ?? "");
   const scores = useBookScores(id ?? "");
+  const furthest = useFurthestReached(id ?? "");
 
   // A scoring job remembered from before (the app closed mid-run) is picked up again when its book opens (A15).
   useEffect(() => {
@@ -50,6 +53,12 @@ export default function BookScreen() {
   useEffect(() => {
     if (id && book) open(id);
   }, [id, book, open]);
+
+  // Playback has entered this chapter: it is reached from now on, and stays reached (src/lib/reached.ts, A21).
+  const playingChapter = p.book?.id === id ? p.chapter : undefined;
+  useEffect(() => {
+    if (id && playingChapter) reached.reach(id, playingChapter);
+  }, [id, playingChapter]);
 
   if (!book) {
     return (
@@ -67,11 +76,14 @@ export default function BookScreen() {
   const position = active ? p.position : 0;
   const chapter = active ? p.chapter : book.chapters[0];
   const chapterIndex = chapter?.index ?? null;
-  // Chapters scoring tried and found too little written about: an "Unscored" chip, never a guessed mood (A19).
-  const unscored = new Set(
-    (scores?.chapters ?? [])
-      .filter((c) => c.mood.coverage === "too-little" && book.chapters[c.mood.chapterIndex]?.title === c.mood.chapterTitle)
-      .map((c) => c.mood.chapterIndex),
+  // What each row may show: nothing before the chapter is reached (A21); then the "Unscored" chip, never a guessed
+  // mood (A19), or its emotions, named piece, alternates and the listener's pick (A16). A stored score counts only
+  // while the chapter keeps the title it was scored under.
+  const moods = book.chapters.map((c) =>
+    moodCardView(
+      isReached(c, furthest, chapter),
+      scores?.chapters.find((s) => s.mood.chapterIndex === c.index && s.mood.chapterTitle === c.title) ?? null,
+    ),
   );
   const speedButton = p.sleep ? `${speedLabel(p.speed)} · Sleep` : speedLabel(p.speed);
 
@@ -114,7 +126,11 @@ export default function BookScreen() {
           book={book}
           currentIndex={chapter?.index}
           position={position}
-          unscored={unscored}
+          moods={moods}
+          onPick={(i, pick) => {
+            const c = book.chapters[i];
+            if (c) scoringStore.savePick(book.id, c, pick);
+          }}
           mixer={
             active ? (
               <Mixer
