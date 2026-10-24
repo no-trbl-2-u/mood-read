@@ -103,6 +103,19 @@ Decisions made upfront (do not ask):
 - **In the car (05.18).** Android Auto, then CarPlay once the Apple Developer Program is joined: the library and
   the playing book's chapters as a browsable list, with transport; the bed and its mix play as on the phone.
 
+- **The owner's own books, pre-scored (05.21, 05.22).** The owner tests on their own phone
+  and wants every book on it scored ahead of time. Settings gains an owner-only "Copy books for pre-scoring": it
+  copies, as JSON, exactly what the app would send the proxy for each book in the library (`scoringRequest`:
+  title, author, chapter titles, and the LibriVox and Gutenberg numbers when known) and nothing else: no file
+  paths, positions, bookmarks or listening data. The app never sends the list anywhere itself. The owner pastes it
+  into `dev-audiobooks.json` at the repo root (gitignored: the repo is public and the list names the owner's
+  books), and `pnpm prescore --from dev-audiobooks.json` scores each one the proxy hasn't scored yet, with the same
+  token, throttle and half of the monthly cap as today. A book without a LibriVox number (the owner's own files)
+  is scored into the shared cache like any listener's book but not into Browse's index. Once a book is cached the
+  app's "Score this book" returns it at once, at no cost and outside the per-client limit (01.21).
+- Owner-only tools show only when `expo.extra.ownerTools` is true: the preview build profile and local web dev
+  set it, a store or production build never does.
+
 ## Contracts
 
 - **Routes (new):** `/browse` (search and results), `/browse/[id]` (one LibriVox book; `[id]` is its LibriVox id),
@@ -141,10 +154,16 @@ Decisions made upfront (do not ask):
   transport.
 - **A21** The catalog bucket exists and serves `catalog.json` and its pieces read-only to
   mood-read.pages.dev, and the app reads it from `expo.extra.catalogBaseUrl`.
+- **A23** In a build with owner tools on, Settings' "Copy books for pre-scoring" copies a JSON list with,
+  per library book, only title, author, chapter titles and the LibriVox and Gutenberg numbers when known; with
+  owner tools off (every store and production build) the action isn't there.
+- **A24** `pnpm prescore --from <file>` reads that list, refuses an entry the proxy would refuse
+  before sending anything, skips books it has already scored, and scores the rest through the owner-only route,
+  including books with no LibriVox number (cached, not indexed for Browse), under the same throttle, token and
+  cap as the LibriVox walk.
 
 ## Open questions
 
-All answered; none is open.
 
 - **Why chapter files?** Mood Read's player already plays chapter by chapter from markers in a single file
   (01.6). *Answered by the owner (2026-10-23):* the split is for LibriVox books that come as one file holding the
@@ -157,9 +176,12 @@ All answered; none is open.
 - **Play Store developer account.** Google's one-time fee and an account in the owner's name. *Answered by the
   owner (2026-10-23):* not now: Mood Read stays the owner's own preview APK (spec 04), so 05.14
   and 05.15 wait in the Held lane.
+- **dev-audiobooks.json in git?** The repo is public, so the list would name the owner's books for anyone.
+  Default: gitignored, with an example file committed. Say so to commit it instead (e.g. to run pre-scoring as a
+  GitHub workflow later).
 
 ## Chunks
-Measure: 14 open · 8 closed · next A23
+Measure: 16 open · 8 closed · next A25
 
 - [ ] **05.2** Seed the catalog across every emotion and intensity · L · closes A2 · needs 05.19
   - Sources the 01.13 study ranks, and D7's hand-picked CC-BY / CC-BY-SA tracks; every one through `catalog:add`.
@@ -189,3 +211,19 @@ Measure: 14 open · 8 closed · next A23
     in `src/lib/catalog-api.test.ts`).
   - Name `pnpm catalog:add` and the bucket in `plan/bearings.md`, and give `S3_API_ENDPOINT` and
     `CLOUDFLARE_S3_SECRET_ACCESS_KEY` real descriptions in `nexus.secrets.json`.
+- [ ] **05.21** Owner tools: copy the library's books for pre-scoring · S · closes A23 · needs —
+  - Gate on `expo.extra.ownerTools` (set in `eas.json`'s preview profile through the app config, and in local
+    web dev); a Settings row under an "Owner tools" heading, copying `scoringRequest(book)` for every library
+    book to the clipboard (expo-clipboard on native, `navigator.clipboard` on web).
+  - Tests: the copied JSON parses through the proxy's `parseBookRequest` for every entry (the contract test's
+    pattern); e2e with owner tools on shows the row and off hides it.
+  - On the phone it is reachable once a preview APK exists (04.1); until then, local web dev.
+- [ ] **05.22** `pnpm prescore --from dev-audiobooks.json`: the owner's own books · S ·
+  closes A24 · needs —
+  - `scripts/prescore.mjs` gains `--from <file>` (default `dev-audiobooks.json`); `.gitignore` gains the file,
+    and `dev-audiobooks.example.json` shows the shape.
+  - `proxy/src/prescore-http.ts` accepts a book without `librivoxId`: it runs as a pre-score (no limiter, the
+    pre-score half of the cap) and lands in the cache, and only a book with one goes into `PrescoreIndex`.
+  - The ledger's done set keys a book by its LibriVox number, else by title and author, so a rerun skips it;
+    the proxy's cache also answers an already-scored book with no new run.
+  - Needs the proxy live (01.20) to run for real; `--dry-run` works before.

@@ -107,8 +107,6 @@ just name the pieces/scores/songs/instrumentals (It's important that there's no 
 - **A36** Companion mode is checked with Audible on a real iOS and Android phone: both play
   together whichever starts first, through a pause, a call and Bluetooth, the bed keeps playing with the screen
   off, and the narration's lock-screen controls are unchanged when companion mode is off.
-- **A38** When the proxy answers 429, the river says when scoring can start again (from Retry-After) instead
-  of "unreachable", and starting again before then waits rather than calling the proxy.
 
 ## Owner decisions (all answered)
 
@@ -199,7 +197,7 @@ Every question below is answered; none is open. Elsewhere in the plan, "Open que
    no emotions on its card (A21).
 
 ## Chunks
-Measure: 8 open · 30 closed · next A39
+Measure: 7 open · 31 closed · next A39
 
 Build order follows the owner's two-part v1, and the lines below are in that order. **Part 1, the player:** 01.1,
 01.6, 01.3, 01.5, 01.7: the player, then real books in it, then the second layer, its mixer and the soundscapes it
@@ -259,8 +257,3 @@ pieces). Ids keep the order they were written in. The app itself (Expo at the re
   - Main risk: expo-audio stops Android background playback after about 3 minutes without lock-screen controls,
     which companion mode turns off. If the bed stops, decide between a foreground service with no media session
     and accepting the limit; note the limit in `docs/workarounds.md`.
-- [ ] **01.25** The app reads the proxy's 429 and Retry-After as "try later" · S · closes A38 ·
-  needs —
-  - Seen in 01.21: `src/lib/scoring-api.ts` throws on any non-OK answer and `scoring-runner` marks the job
-    unreachable; a 429 body is `{error, reason, retryAfterSeconds}` (`reason` is `client-limit`, `global-limit` or
-    `rescore-too-soon`).
