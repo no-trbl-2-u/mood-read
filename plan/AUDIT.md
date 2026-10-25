@@ -83,6 +83,15 @@
 
 ## Pending — findings
 
+### [4.4] The web build keeps any number of books offline; spec 05 caps it at one
+- category: correctness
+- impact: 4 (spec 05 Design, "The web build streams; phones keep": a browser keeps at most one book and its
+  pieces and says so in Downloads; 05.4 caps playlists at one book, but book downloads and imports are not capped,
+  so a browser's storage quota can evict them unannounced)
+- ease: 5 (apply 05.4's one-at-a-time rule to book files on web, through 05.7's `removeDownload`)
+- seen: 2026-10-25 (05.7 builder, heads-down arcturus)
+- next: /iterate
+
 ### [4.5] Wi-Fi only gates on the setting alone: the queue never reads the network
 - category: correctness
 - impact: 4 (with Wi-Fi only on, a phone on mobile data still downloads books and playlist pieces, since

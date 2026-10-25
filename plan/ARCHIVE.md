@@ -70,3 +70,4 @@ identity · deleted in <sha>`; recover its text with
 - 2026-10-25 · 05.3 · The scorer names catalog pieces only; old books re-match · a3daf1a4..8d572585
 - 2026-10-25 · 01.10 · The Music chip loops the chapter's licensed catalog piece · bc98d191..bc98d191
 - 2026-10-25 · 05.4 · One Build playlist press downloads every piece a book plays · 07726c1b..07726c1b
+- 2026-10-25 · 05.7 · Remove download keeps the book; shared pieces survive deletion · 39405a54..39405a54

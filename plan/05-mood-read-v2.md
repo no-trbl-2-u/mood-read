@@ -129,10 +129,6 @@ Decisions made upfront (do not ask):
 
 ## Acceptance
 
-- **A7** "Remove download" deletes a book's file and keeps the book, its position, bookmarks, moods, picks and mix;
-  a LibriVox book downloads again in one tap, an imported one asks for its file again.
-- **A8** Removing or deleting a book deletes each of its pieces unless another book still on the device has that
-  piece in its playlist.
 - **A13** A book in one long file can be split on the device into one file per chapter, keeping its chapters,
   position and bookmarks.
 - **A15** With a `yes` verdict, a connected Spotify account gets one playlist per chapter of instrumental tracks
@@ -165,12 +161,8 @@ Decisions made upfront (do not ask):
   GitHub workflow later).
 
 ## Chunks
-Measure: 9 open · 15 closed · next A25
+Measure: 7 open · 17 closed · next A25
 
-- [ ] **05.7** Library management: remove a download, keep the book; shared pieces survive deletion · M ·
-  closes A7, A8 · needs —
-  - 05.4 left the shared-piece rule ready: `unreferenced` in `src/lib/playlist.ts` and `releaseBook(bookId)` in
-    `src/lib/playlists.ts`; `library.removeBook` does not call it yet.
 - [ ] **05.11** Split a one-file book into chapter files on the device · M · closes A13 · needs 04.1
 - [ ] **05.13** Spotify chapter playlists, sized to each chapter · M · closes A15 · needs 01.11
   - Rewrite the privacy policy's Spotify section (`src/app/privacy.tsx`) to say what a connected account shares.
@@ -180,7 +172,9 @@ Measure: 9 open · 15 closed · next A25
 - [ ] **05.15** TestFlight and the App Store · M · closes A17 · needs 05.14 · secrets EXPO_TOKEN
   - Needs the owner in the Apple Developer Program (D6, `plan/AUDIT.md`).
 - [ ] **05.16** Finished books, sort, filter and search in the library · S · closes A18 ·
-  needs 05.7
-- [ ] **05.17** Export and import the library, never the audio · S · closes A19 · needs 05.7
+  needs —
+- [ ] **05.17** Export and import the library, never the audio · S · closes A19 · needs —
+  - Match imported books with 05.7's `matchReattach` (`src/lib/reattach.ts`: title and author, length within
+    10 s or 1%).
 - [ ] **05.18** Android Auto, then CarPlay · M · closes A20 · needs 05.14
   - Android Auto lists only apps from Google Play, so this waits on 05.14 (held); CarPlay waits on 05.15.
