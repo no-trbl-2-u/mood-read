@@ -181,6 +181,12 @@ export function createScoringStore(kv: Kv) {
       write(scoresKey(bookId), next);
       return true;
     },
+    /** Reads the book's keys from the store again, after they were written from outside (05.17's import). */
+    refresh(bookId: string) {
+      for (const key of [jobKey(bookId), scoresKey(bookId), seedsKey(bookId)]) cache.delete(key);
+      merged.clear();
+      listeners.forEach((l) => l());
+    },
     forget(bookId: string) {
       write(jobKey(bookId), null);
       write(scoresKey(bookId), null);

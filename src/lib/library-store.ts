@@ -23,10 +23,28 @@ export type LibraryState = {
 };
 
 const BOOKS = "books";
-const posKey = (id: string) => `pos:${id}`;
-const marksKey = (id: string) => `bookmarks:${id}`;
-const speedKey = (id: string) => `speed:${id}`;
-const mixKey = (id: string) => `mix:${id}`;
+export const posKey = (id: string) => `pos:${id}`;
+export const marksKey = (id: string) => `bookmarks:${id}`;
+export const speedKey = (id: string) => `speed:${id}`;
+export const mixKey = (id: string) => `mix:${id}`;
+
+/**
+ * Every key kept for one book, by what it holds (the soundtrack log aside: one key for every book). "Delete book"
+ * removes them all; the library backup (src/lib/backup.ts, 05.17) carries all but the scoring job.
+ */
+export const PER_BOOK_KEYS = {
+  position: posKey,
+  bookmarks: marksKey,
+  speed: speedKey,
+  mix: mixKey,
+  job: jobKey,
+  scores: scoresKey,
+  seeds: seedsKey,
+  reached: reachedKey,
+  verdicts: verdictsKey,
+} as const;
+
+export type PerBookField = keyof typeof PER_BOOK_KEYS;
 
 /** Most recently played first, then never-played books by title. */
 export function sortBooks(books: Book[]): Book[] {
@@ -102,15 +120,7 @@ export function createLibraryStore(kv: Kv, now: () => number = Date.now, makeId:
       saveBooks([book, ...state.books.filter((b) => b.id !== book.id)]);
     },
     removeBook(id: string): void {
-      kv.removeItem(posKey(id));
-      kv.removeItem(marksKey(id));
-      kv.removeItem(speedKey(id));
-      kv.removeItem(mixKey(id));
-      kv.removeItem(jobKey(id));
-      kv.removeItem(scoresKey(id));
-      kv.removeItem(seedsKey(id));
-      kv.removeItem(reachedKey(id));
-      kv.removeItem(verdictsKey(id));
+      for (const key of Object.values(PER_BOOK_KEYS)) kv.removeItem(key(id));
       dropSoundtrackBook(kv, id);
       const { [id]: _removed, ...bookmarks } = state.bookmarks;
       state = { ...state, bookmarks };
@@ -145,6 +155,11 @@ export function createLibraryStore(kv: Kv, now: () => number = Date.now, makeId:
     setFinished(id: string, finished: boolean): void {
       if (!state.books.some((b) => b.id === id && !!b.finished !== finished)) return;
       saveBooks(state.books.map((b) => (b.id === id ? { ...b, finished } : b)));
+    },
+    /** Reads the book's bookmarks from the store again, after its key was written from outside (05.17's import). */
+    refresh(id: string): void {
+      const { [id]: _stale, ...bookmarks } = state.bookmarks;
+      set({ bookmarks });
     },
     /** Marks a book as just played, which moves it to the top of the library. */
     markPlayed(id: string): void {

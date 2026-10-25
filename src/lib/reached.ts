@@ -125,6 +125,11 @@ export function createReachedStore(kv: Kv) {
       if (here && position < here.position + REACH_STEP_S && start === was.start) return;
       write(bookId, { start, chapter: { start: chapter.start, position: here ? Math.max(here.position, position) : position } });
     },
+    /** Reads the book's key from the store again, after it was written from outside (05.17's import). */
+    refresh(bookId: string) {
+      cache.delete(bookId);
+      listeners.forEach((l) => l());
+    },
     forget(bookId: string) {
       kv.removeItem(reachedKey(bookId));
       cache.set(bookId, { start: null, chapter: null });

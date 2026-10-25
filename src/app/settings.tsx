@@ -2,7 +2,9 @@ import { router } from "expo-router";
 import { useState } from "react";
 import { ScrollView, StyleSheet, View } from "react-native";
 
+import type { ImportResult } from "@/lib/backup";
 import { copyText } from "@/lib/clipboard";
+import { exportLibraryFile, importLibraryFile } from "@/lib/library-backup";
 import { useBooks } from "@/lib/library";
 import { prescoreList } from "@/lib/owner-tools";
 import { OWNER_TOOLS } from "@/lib/owner-tools-config";
@@ -21,7 +23,8 @@ import { TopBar } from "@/ui/TopBar";
 // has not shipped (Spotify, 05.13) is shown as "Not available yet" and goes live with its chunk; Credits (05.5)
 // pushes /credits. Storage (05.6) links to /downloads, where the storage meter and the queue live. All its copy lives here.
 // "Owner tools" (05.21, spec 05 A23) shows only in a build whose app config turns them on (app.config.ts: local dev and
-// the preview APK); a store or production build never has the section.
+// the preview APK); a store or production build never has the section. "Your library" (05.17, A19) exports the library
+// to one file and imports it back.
 
 /** "Share what fits" (07.5, spec 07 A6): what the switch sends, in the privacy policy's terms. */
 const SHARE_CAPTION =
@@ -61,6 +64,58 @@ function OwnerTools() {
   return (
     <SettingsSection label="Owner tools">
       <ActionRow testID="setting-prescore-copy" title={PRESCORE_TITLE} caption={caption} onPress={copy} />
+    </SettingsSection>
+  );
+}
+
+/**
+ * "Export library" and "Import library" (05.17, A19): one file of what the listener made of each book, never its audio,
+ * which they keep or send themselves; read back onto the books on this shelf that match it (title, author, length).
+ */
+const EXPORT_TITLE = "Export library";
+const EXPORT_CAPTION = "One file of your places, bookmarks, moods, picks and mixes. Never the audio.";
+const IMPORT_TITLE = "Import library";
+const IMPORT_CAPTION = "Puts a library file's places, bookmarks, moods, picks and mixes back on the matching books here.";
+const books = (n: number) => (n === 1 ? "1 book" : `${n} books`);
+const exportedCaption = (n: number) => `Exported ${books(n)}. No audio in it.`;
+const EXPORT_FAILED = "Couldn't export. Try again.";
+const IMPORT_FAILED = "Couldn't read that file. Try again.";
+
+function importedCaption(result: ImportResult): string {
+  if (!result.ok) {
+    return result.reason === "newer"
+      ? "That file is from a newer Mood Read. Update the app, then import it again."
+      : "That isn't a Mood Read library file. Nothing changed.";
+  }
+  const restored = `Restored ${books(result.restored.length)}.`;
+  const n = result.unmatched.length;
+  if (n === 0) return restored;
+  const titles = result.unmatched.join(", ");
+  return n === 1
+    ? `${restored} 1 book isn't on this shelf: ${titles}. Import its audio, then the library again.`
+    : `${restored} ${n} books aren't on this shelf: ${titles}. Import their audio, then the library again.`;
+}
+
+/** The listener's library as one file: out to the share sheet (a download on the web), and back in. */
+function Backup() {
+  const [exported, setExported] = useState(EXPORT_CAPTION);
+  const [imported, setImported] = useState(IMPORT_CAPTION);
+  const exportNow = () => {
+    exportLibraryFile().then(
+      (n) => setExported(exportedCaption(n)),
+      () => setExported(EXPORT_FAILED),
+    );
+  };
+  const importNow = () => {
+    importLibraryFile().then(
+      (result) => result && setImported(importedCaption(result)),
+      () => setImported(IMPORT_FAILED),
+    );
+  };
+  return (
+    <SettingsSection label="Your library">
+      <ActionRow testID="setting-export-library" title={EXPORT_TITLE} caption={exported} onPress={exportNow} />
+      <ActionRow testID="setting-import-library" title={IMPORT_TITLE} caption={imported} onPress={importNow} />
     </SettingsSection>
   );
 }
@@ -133,6 +188,8 @@ export default function SettingsScreen() {
             )}
           </View>
         </SettingsSection>
+
+        <Backup />
 
         <SettingsSection label="Connected accounts">
           <UnavailableRow testID="setting-spotify" title="Spotify" />

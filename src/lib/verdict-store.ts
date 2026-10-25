@@ -14,7 +14,7 @@ export function nextVerdict(current: Verdict | null, tapped: Verdict): Verdict |
   return current === tapped ? null : tapped;
 }
 
-function isVerdict(v: unknown): v is PieceVerdict {
+export function isVerdict(v: unknown): v is PieceVerdict {
   if (!v || typeof v !== "object") return false;
   const r = v as Record<string, unknown>;
   return (
@@ -79,6 +79,11 @@ export function createVerdictStore(kv: Kv, now: () => number = Date.now) {
       if (verdictFor(bookId, chapterIndex, pieceId) === verdict) return;
       const rest = verdicts(bookId).filter((v) => !(v.chapterIndex === chapterIndex && v.pieceId === pieceId));
       save(bookId, verdict === null ? rest : [...rest, { chapterIndex, pieceId, verdict, at: now() }]);
+    },
+    /** Reads the book's key from the store again, after it was written from outside (05.17's import). */
+    refresh(bookId: string): void {
+      cache.delete(bookId);
+      listeners.forEach((l) => l());
     },
     forget(bookId: string): void {
       if (verdicts(bookId).length === 0 && kv.getItem(verdictsKey(bookId)) == null) return;

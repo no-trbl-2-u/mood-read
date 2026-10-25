@@ -28,6 +28,7 @@ const SECTIONS: Section[] = [
       "When you import a book, Mood Read copies its audio files onto your device: into the app's own storage on a phone, and into your browser's storage on the web.",
       "The book's details (title, author, narrator, cover and chapters), your listening position, your bookmarks, your playback speed and your settings are stored on your device too.",
       "None of this is sent anywhere, except a book's title, author and chapter titles (and, for a public-domain book from Browse, its public catalog numbers) when you ask Mood Read to score that book (below). Your audio never leaves your device and is never transcribed. Uninstalling the app, or clearing your browser's data for the site, removes it.",
+      "\"Export library\" in Settings writes the books' details and what you made of them (positions, bookmarks, moods, picks and mixes), never the audio or a cover, to one file that you keep or send yourself; Mood Read sends it nowhere. \"Import library\" reads such a file back on this device.",
       "When you use Browse, Mood Read searches LibriVox's recordings on archive.org, which hosts them, and downloads the book you choose from there. As the book arrives it asks LibriVox's catalog, by the book's LibriVox catalog number alone, where its text comes from. These requests carry your search words and the book's catalog details, nothing about you.",
       "A scored book's chapter moods and named pieces are kept on your device in the same way, and features still to come, such as picks, will be too.",
     ],

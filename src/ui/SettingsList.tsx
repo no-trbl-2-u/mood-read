@@ -84,10 +84,11 @@ export function LinkRow(props: {
   );
 }
 
-/** A row that does something in place when pressed; its caption can report how that went. */
+/** A row that does something in place when pressed; its caption can report how that went. Its name is its text, title
+ *  then caption, so the name holds what it shows (axe: label-content-name-mismatch). */
 export function ActionRow(props: { title: string; caption?: string; onPress: () => void; testID?: string }) {
   return (
-    <Pressable testID={props.testID} role="button" aria-label={props.title} onPress={props.onPress} style={styles.row}>
+    <Pressable testID={props.testID} role="button" onPress={props.onPress} style={styles.row}>
       <View style={styles.text}>
         <Text style={styles.title}>{props.title}</Text>
         {props.caption && (
