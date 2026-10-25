@@ -65,3 +65,4 @@ identity · deleted in <sha>`; recover its text with
 - 2026-10-24 · 01.25 · A busy proxy reads as "try later", not unreachable · cd17ca24..ee44e67f
 - 2026-10-25 · 05.19 · The app reads the live music catalog from R2 · 788cb09d..788cb09d
 - 2026-10-25 · 05.22 · pnpm prescore --from scores the owner's own books · 7f9e0fb2..8e668757
+- 2026-10-25 · 05.21 · Owner builds copy the library's books for pre-scoring · 814254b9..a01032b7

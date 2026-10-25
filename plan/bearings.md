@@ -124,6 +124,8 @@ Scripts (package.json):
                                    https://pub-4a8a6c86fad24ced839c7dc3d3f4dc66.r2.dev, expo.extra.catalogBaseUrl;
                                    docs/catalog.md). Run it through the vault: node scripts/secrets.mjs run --only
                                    CLOUDFLARE_S3_ACCESS_KEY_ID,CLOUDFLARE_S3_SECRET_ACCESS_KEY,S3_API_ENDPOINT -- ...
+  pnpm e2e:owner                   the owner-tools e2e (05.21) over a second web export with MOOD_READ_OWNER_TOOLS=1
+                                   (dist-owner/); not in pnpm verify, whose build has owner tools off
   pnpm plan:check | settle | claims | progress | order | pulse | secrets ...   the nexus scripts
 
 Scoring proxy (01.2; proxy/src/http.ts): it receives only a book's title, author and chapter titles, and for a

@@ -152,9 +152,6 @@ Decisions made upfront (do not ask):
   bookmarks, moods, picks and mixes onto matching books.
 - **A20** Mood Read appears in Android Auto (and in CarPlay once iOS ships) with its library, chapters and
   transport.
-- **A23** In a build with owner tools on, Settings' "Copy books for pre-scoring" copies a JSON list with,
-  per library book, only title, author, chapter titles and the LibriVox and Gutenberg numbers when known; with
-  owner tools off (every store and production build) the action isn't there.
 
 ## Open questions
 
@@ -175,7 +172,7 @@ Decisions made upfront (do not ask):
   GitHub workflow later).
 
 ## Chunks
-Measure: 14 open · 10 closed · next A25
+Measure: 13 open · 11 closed · next A25
 
 - [ ] **05.2** Seed the catalog across every emotion and intensity · L · closes A2 · needs —
   - Sources the 01.13 study ranks, and D7's hand-picked CC-BY / CC-BY-SA tracks; every one through `catalog:add`.
@@ -197,10 +194,3 @@ Measure: 14 open · 10 closed · next A25
 - [ ] **05.17** Export and import the library, never the audio · S · closes A19 · needs 05.7
 - [ ] **05.18** Android Auto, then CarPlay · M · closes A20 · needs 05.14
   - Android Auto lists only apps from Google Play, so this waits on 05.14 (held); CarPlay waits on 05.15.
-- [ ] **05.21** Owner tools: copy the library's books for pre-scoring · S · closes A23 · needs —
-  - Gate on `expo.extra.ownerTools` (set in `eas.json`'s preview profile through the app config, and in local
-    web dev); a Settings row under an "Owner tools" heading, copying `scoringRequest(book)` for every library
-    book to the clipboard (expo-clipboard on native, `navigator.clipboard` on web).
-  - Tests: the copied JSON parses through the proxy's `parseBookRequest` for every entry (the contract test's
-    pattern); e2e with owner tools on shows the row and off hides it.
-  - On the phone it is reachable once a preview APK exists (04.1); until then, local web dev.
