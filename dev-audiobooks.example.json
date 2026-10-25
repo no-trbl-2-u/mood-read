@@ -1,0 +1,14 @@
+[
+  {
+    "title": "Dracula",
+    "author": "Bram Stoker",
+    "chapters": ["Chapter 1", "Chapter 2", "Chapter 3"],
+    "librivoxId": "1234",
+    "gutenbergId": "345"
+  },
+  {
+    "title": "An Audiobook of Your Own",
+    "author": "Its Author",
+    "chapters": ["Opening Credits", "Chapter One", "Chapter Two"]
+  }
+]

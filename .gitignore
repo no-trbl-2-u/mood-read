@@ -24,3 +24,5 @@ playwright-report/
 blob-report/
 # Wrangler local state (proxy/)
 .wrangler/
+# The owner's own books for pnpm prescore --from (05.22): the repo is public and the list names them
+dev-audiobooks.json
