@@ -8,9 +8,16 @@ import type { CatalogPiece } from "./catalog";
 
 export const CATALOG_BASE_URL: string = (Constants.expoConfig?.extra?.catalogBaseUrl as string | undefined) ?? CATALOG_PLACEHOLDER;
 
+// One read per session, shared by the screens and the player's music layer (01.10); a failed read is tried afresh.
+let shared: Promise<CatalogRead> | null = null;
+
 /** The catalog as this device may use it: only entries that pass A1. */
 export function loadCatalog(): Promise<CatalogRead> {
-  return fetchCatalog(CATALOG_BASE_URL, (input, init) => fetch(input, init));
+  shared ??= fetchCatalog(CATALOG_BASE_URL, (input, init) => fetch(input, init)).catch((e: unknown) => {
+    shared = null;
+    throw e;
+  });
+  return shared;
 }
 
 /** The catalog for a screen: `unset` while the address is the placeholder (nothing is fetched), else its read. */

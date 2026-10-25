@@ -1,10 +1,11 @@
 // The mixer's Layer (01.7; design/layouts/DECISION.md "Mixer (inline, in the expanded row)"): chips for Off and each
 // bundled soundscape in one horizontally scrolling row, inline in the playing row, never a sheet. A pick sets the
 // book's soundscape, which every chapter plays; "This chapter only" gives the playing chapter its own, so picks then
-// apply to it alone (A12). Saved with the book's mix.
+// apply to it alone (A12). Saved with the book's mix. Music (01.10, A17) plays the chapter's catalog piece, the pick
+// else auto, looped for the chapter; where no piece may play it keeps the soundscape that was on, else silence.
 import { ScrollView, StyleSheet, Text, View } from "react-native";
 
-import type { LayerPick } from "@/lib/bed";
+import { MUSIC_PICK, type LayerPick } from "@/lib/bed";
 import { Chip } from "@/ui/Chip";
 import { spacing, typography } from "@/ui/theme";
 
@@ -13,21 +14,28 @@ import { SOUNDSCAPES } from "./soundscapes";
 const COPY = {
   layer: "Layer",
   off: "Off",
+  music: "Music",
   chapterOnly: "This chapter only",
   chapterOnlyA11y: "Layer for this chapter only",
 };
 
 export function LayerPicker(props: {
-  /** The chip that is on, or null for none (the music layer, 01.10). */
+  /** The chip that is on, or null for none. */
   pick: LayerPick | null;
   /** True when the playing chapter has its own layer. */
   chapterOnly: boolean;
   onPick: (pick: LayerPick) => void;
   onChapterOnly: (on: boolean) => void;
 }) {
-  const name = props.pick === "off" ? COPY.off : (SOUNDSCAPES.find((s) => s.id === props.pick)?.name ?? COPY.off);
+  const name =
+    props.pick === "off"
+      ? COPY.off
+      : props.pick === MUSIC_PICK
+        ? COPY.music
+        : (SOUNDSCAPES.find((s) => s.id === props.pick)?.name ?? COPY.off);
   const chips: { id: LayerPick; label: string }[] = [
     { id: "off", label: COPY.off },
+    { id: MUSIC_PICK, label: COPY.music },
     ...SOUNDSCAPES.map((s) => ({ id: s.id, label: s.name })),
   ];
   return (

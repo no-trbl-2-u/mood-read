@@ -27,7 +27,13 @@ import {
   DEFAULT_BED,
   defaultBedFor,
   IDLE_BED,
+  MUSIC_PICK,
   normalizeBed,
+  pieceAnchor,
+  pieceOfSound,
+  pieceSound,
+  usesMusic,
+  type MusicSource,
   pickFor,
   pickLayer,
   planBed,
@@ -66,7 +72,7 @@ const at = (position: number, extra: Partial<ClockState> = {}): ClockState => ({
 });
 const step = (prev: BedState, clock: ClockState, event: ClockEvent) => planBed(prev, clock, event, ctxAt(clock));
 
-test("A12: a chapter's own layer wins over the book's; the book's covers the rest; off and music play nothing", () => {
+test("A12: a chapter's own layer wins over the book's; the book's covers the rest; off plays nothing, music with no piece its fallback", () => {
   const cat = ["rain", "night-wind", "tide"];
   const book: BedSetting = { layer: "soundscape", soundscapeId: "rain", chapterBeds: { "2": { layer: "soundscape", soundscapeId: "tide" }, "3": { layer: "off", soundscapeId: null } } };
   assert.equal(bedSoundFor(0, book, cat), "rain");
@@ -140,7 +146,119 @@ test("A12: a pick sets the book's layer, or the chapter's own while This chapter
   assert.equal(bedSoundFor(1, s, SOUNDSCAPE_IDS), "low-cafe", "off again, it follows the book");
   assert.equal(setChapterOnly(s, 1, false), s);
   assert.equal(setChapterOnly(s, null, true), s);
-  assert.equal(pickFor(0, { layer: "music", soundscapeId: null, chapterBeds: {} }, SOUNDSCAPE_IDS), null);
+  assert.equal(pickFor(0, { layer: "music", soundscapeId: null, chapterBeds: {} }, SOUNDSCAPE_IDS), "music");
+});
+
+// ---- The music layer (01.10, spec 01 A17, A18) --------------------------------------------------------------
+
+const MUSIC = (pieces: Record<number, string | null>): MusicSource => ({ pieceFor: (i) => pieces[i] ?? null });
+
+test("A17: the music layer plays the chapter's piece, a sound apart from every soundscape", () => {
+  const music: BedSetting = { layer: "music", soundscapeId: "rain", chapterBeds: {} };
+  assert.equal(bedSoundFor(0, music, SOUNDSCAPE_IDS, MUSIC({ 0: "clean-soul", 1: "easy-lemon" })), "piece:clean-soul");
+  assert.equal(bedSoundFor(1, music, SOUNDSCAPE_IDS, MUSIC({ 0: "clean-soul", 1: "easy-lemon" })), "piece:easy-lemon");
+  assert.equal(pieceSound("clean-soul"), "piece:clean-soul");
+  assert.equal(pieceOfSound("piece:clean-soul"), "clean-soul");
+  assert.equal(pieceOfSound("rain"), null);
+  assert.equal(pieceOfSound("piece:"), null);
+  assert.equal(pieceOfSound(null), null);
+  for (const id of SOUNDSCAPE_IDS) assert.equal(pieceOfSound(id), null, id);
+  assert.equal(SOUNDSCAPE_IDS.includes(MUSIC_PICK), false, "no soundscape takes the Music chip's id");
+  // Off stays off, whatever the music source says.
+  assert.equal(bedSoundFor(0, { layer: "off", soundscapeId: null, chapterBeds: {} }, SOUNDSCAPE_IDS, MUSIC({ 0: "x" })), null);
+  // A soundscape layer never reaches for a piece.
+  assert.equal(bedSoundFor(0, DEFAULT_BED, SOUNDSCAPE_IDS, MUSIC({ 0: "x" })), "night-wind");
+});
+
+test("A18: where no piece may play, music falls back to its soundscape, else the book's, else silence", () => {
+  const none = MUSIC({});
+  assert.equal(bedSoundFor(0, { layer: "music", soundscapeId: "tide", chapterBeds: {} }, SOUNDSCAPE_IDS, none), "tide");
+  assert.equal(bedSoundFor(0, { layer: "music", soundscapeId: null, chapterBeds: {} }, SOUNDSCAPE_IDS, none), null);
+  assert.equal(bedSoundFor(0, { layer: "music", soundscapeId: null, chapterBeds: {} }, SOUNDSCAPE_IDS), null, "no catalog at all");
+  // A chapter of its own on music with no fallback falls back to the book's soundscape.
+  const own: BedSetting = { layer: "soundscape", soundscapeId: "rain", chapterBeds: { "2": { layer: "music", soundscapeId: null } } };
+  assert.equal(bedSoundFor(2, own, SOUNDSCAPE_IDS, none), "rain");
+  assert.equal(bedSoundFor(2, own, SOUNDSCAPE_IDS, MUSIC({ 2: "p" })), "piece:p");
+  // A fallback no longer bundled takes the default loop, as a soundscape would.
+  assert.equal(bedSoundFor(0, { layer: "music", soundscapeId: "gone", chapterBeds: {} }, SOUNDSCAPE_IDS, none), "night-wind");
+});
+
+test("A17: the Music chip keeps what was on as its fallback; from off, silence; saved and normalized", () => {
+  let s = pickLayer(DEFAULT_BED, 0, "music");
+  assert.deepEqual(s, { layer: "music", soundscapeId: "night-wind", chapterBeds: {} });
+  assert.equal(pickFor(0, s, SOUNDSCAPE_IDS), "music");
+  assert.deepEqual(pickLayer(pickLayer(DEFAULT_BED, 0, "off"), 0, "music"), { layer: "music", soundscapeId: null, chapterBeds: {} });
+  assert.deepEqual(pickLayer(s, 0, "music"), s, "music again keeps its fallback");
+  assert.deepEqual(pickLayer(s, 0, "tide"), { layer: "soundscape", soundscapeId: "tide", chapterBeds: {} });
+  // This chapter only: the chapter's own music falls back to its own soundscape.
+  s = setChapterOnly(pickLayer(DEFAULT_BED, 1, "rain"), 1, true);
+  s = pickLayer(s, 1, "music");
+  assert.deepEqual(s.chapterBeds, { "1": { layer: "music", soundscapeId: "rain" } });
+  assert.equal(s.layer, "soundscape");
+  // Stored music keeps its fallback; a broken one is none.
+  assert.deepEqual(normalizeBed({ layer: "music", soundscapeId: "tide" }), { layer: "music", soundscapeId: "tide", chapterBeds: {} });
+  assert.deepEqual(normalizeBed({ layer: "music", soundscapeId: 4 }), { layer: "music", soundscapeId: null, chapterBeds: {} });
+  assert.deepEqual(normalizeBed({ chapterBeds: { "3": { layer: "music", soundscapeId: "rain" } } }).chapterBeds, { "3": { layer: "music", soundscapeId: "rain" } });
+  // The player reads the catalog only once music is on somewhere in the book.
+  assert.equal(usesMusic(DEFAULT_BED), false);
+  assert.equal(usesMusic(pickLayer(DEFAULT_BED, 0, "music")), true);
+  assert.equal(usesMusic(s), true, "a chapter of its own on music");
+});
+
+test("A17: the chapter's piece follows the clock: a chapter change crossfades, a seek seeks, speed never reaches it", () => {
+  const music: BedSetting = { layer: "music", soundscapeId: null, chapterBeds: {} };
+  const ctx = (clock: ClockState): BedContext => ({
+    chapterStart: STARTS[clock.chapterIndex ?? 0] ?? 0,
+    soundFor: (i) => bedSoundFor(i, music, SOUNDSCAPE_IDS, MUSIC({ 0: "a", 1: "b" })),
+    loopSeconds: (id) => (id === "piece:a" ? 30 : 50),
+  });
+  const go = (prev: BedState, clock: ClockState, event: ClockEvent) => planBed(prev, clock, event, ctx(clock));
+  const started = go(IDLE_BED, at(40), "play");
+  assert.deepEqual(started.commands, [{ type: "change", to: "piece:a", offset: 10, play: true, fade: false }], "looped: 40 s in is 10 s into a 30 s piece");
+  assert.deepEqual(go(started.state, at(41, { rate: 2.5 }), "rate").commands, []);
+  assert.deepEqual(go(started.state, at(75), "seek").commands, [{ type: "seek", offset: 15 }]);
+  const crossed = go(started.state, at(130), "tick");
+  assert.deepEqual(crossed.commands, [{ type: "change", to: "piece:b", offset: 30, play: true, fade: true }]);
+  assert.deepEqual(go(crossed.state, at(131, { playing: false }), "pause").commands, [{ type: "pause" }]);
+  // On every listen the same place gives the same place in the loop.
+  assert.deepEqual(go(IDLE_BED, at(130), "load").commands, [{ type: "change", to: "piece:b", offset: 30, play: true, fade: false }]);
+});
+
+test("A17: a scene's own piece starts from its top at its scene; a piece covering the chapter anchors at its start", () => {
+  const ctx = sceneCtx();
+  assert.equal(pieceAnchor(ctx, 0), 1000);
+  assert.equal(pieceAnchor(ctx, 1), 1040);
+  assert.equal(pieceAnchor(ctx, 2), 1075);
+  assert.equal(pieceAnchor(sceneCtx(["pick", "pick", "pick"]), 2), 1000, "a pick covers every scene");
+  assert.equal(pieceAnchor(sceneCtx(["a", "b", "b"]), 2), 1040, "a run of scenes sharing a piece starts at its first");
+  assert.equal(pieceAnchor(ctx, 7), 1000, "out of range reads as the chapter");
+  // planBed reads the anchor: 5 s into the second scene is 5 s into its piece.
+  const scenes = sceneCtx();
+  const bed = planBed(IDLE_BED, inScene(1045), "play", {
+    chapterStart: 1000,
+    soundFor: () => "piece:p2",
+    loopSeconds: () => 60,
+    anchorFor: () => pieceAnchor(scenes, 1),
+  });
+  assert.deepEqual(bed.commands, [{ type: "change", to: "piece:p2", offset: 5, play: true, fade: false }]);
+});
+
+test("A17: crossing into a scene with its own piece crossfades to it while playing; a seek back crosses back", () => {
+  const scenes = sceneCtx();
+  const pieceAt = (position: number) => scenes.pieces[sceneAt(position - 1000, 100, scenes.scenes) ?? 0] ?? "none";
+  const go = (prev: BedState, clock: ClockState, event: ClockEvent) =>
+    planBed(prev, clock, event, {
+      chapterStart: 1000,
+      soundFor: () => pieceSound(pieceAt(clock.position)),
+      loopSeconds: () => 60,
+      anchorFor: () => pieceAnchor(scenes, sceneAt(clock.position - 1000, 100, scenes.scenes) ?? 0),
+    });
+  const first = go(IDLE_BED, inScene(1010), "play");
+  assert.equal(first.state.soundId, "piece:p1");
+  const on = go(first.state, inScene(1041), "tick");
+  assert.deepEqual(on.commands, [{ type: "change", to: "piece:p2", offset: 1, play: true, fade: true }]);
+  const back = go(on.state, inScene(1005), "seek");
+  assert.deepEqual(back.commands, [{ type: "change", to: "piece:p1", offset: 5, play: true, fade: true }]);
 });
 
 test("A12: a stored bed is normalized: broken parts take the default, broken chapters are dropped", () => {
@@ -557,7 +675,7 @@ test("A2: no book, no chapter or an unscored chapter has no scene and says nothi
   assert.deepEqual(planScene(spot, inScene(1010), null), { spot: NO_SCENE, command: null }, "scores gone: the spot clears quietly");
 });
 
-test("A2: a scene command never changes what the bed plays until 01.10: planBed's sound is the soundscape's", () => {
+test("A2: on a soundscape a scene boundary changes nothing heard: planBed's sound is the soundscape's", () => {
   // The bed's plan reads only the chapter's sound; a scene boundary inside the chapter is a tick to it.
   const ctx = { chapterStart: 1000, soundFor: () => "wind", loopSeconds: () => 60 };
   const playing = planBed(IDLE_BED, inScene(1010), "play", ctx).state;

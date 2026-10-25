@@ -143,6 +143,11 @@ export async function resolveFile(ref: string): Promise<string> {
   return url;
 }
 
+/** The web build streams catalog pieces (01.10): none is kept in the browser yet, so there is no local file. */
+export function localPieceUri(_key: string): string | null {
+  return null;
+}
+
 export async function deleteBookFiles(bookId: string): Promise<void> {
   const range = IDBKeyRange.bound(`idb:${bookId}/`, `idb:${bookId}/￿`);
   await tx('readwrite', (s) => s.delete(range));

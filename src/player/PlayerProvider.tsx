@@ -14,8 +14,12 @@
 // silent for each chapter's first 20 s; and at the book's end, or a companion-mode pause, it fades out over 4 s
 // instead of stopping with the clock. The engine samples that envelope from here (bedEnvelope) while the bed plays.
 // The bed follows scenes (07.2, A2): on every clock event the playing chapter's scene is planned from its stored
-// score (src/lib/bed.ts planScene, sceneContextFor) and a move is handed to the engine, which logs it until 01.10
-// plays pieces; a pick saved for the chapter re-plans at once, so its piece covers every scene.
+// score (src/lib/bed.ts planScene, sceneContextFor) and a move is handed to the engine, which logs it; a pick saved
+// for the chapter re-plans at once, so its piece covers every scene.
+// The chapter's piece (01.10, A17, A18): with the layer on music the bed plays the playing scene's catalog piece (the
+// pick, else auto), looped for the chapter through the same decks, mix, duck and envelope, streamed from the catalog
+// or played from the device (src/lib/music.ts, piece-source.ts). A piece not in the catalog, not licensed to play or
+// not reachable, and an unscored chapter, fall back to the soundscape, else silence.
 import { setAudioModeAsync, useAudioPlayer, useAudioPlayerStatus, type AudioPlayer } from "expo-audio";
 import { createContext, useCallback, useContext, useEffect, useMemo, useRef, useState, type ReactNode } from "react";
 import { AppState, Platform } from "react-native";
@@ -27,12 +31,15 @@ import {
   entersNow,
   IDLE_BED,
   NO_SCENE,
+  pieceAnchor,
+  pieceOfSound,
   pickLayer,
   planBed,
   planScene,
   sceneContextFor,
   setChapterOnly,
   sleepFade,
+  usesMusic,
   type BedSetting,
   type BedState,
   type LayerPick,
@@ -56,6 +63,7 @@ import {
 import { createHandoff } from "@/lib/handoff";
 import { createDucker, DEFAULT_MIX, mixLevels, normalizeMix, type Mix } from "@/lib/mix";
 import { library, useBooks } from "@/lib/library";
+import { music } from "@/lib/music";
 import { scoringStore } from "@/lib/scoring";
 import { settings, useSettings } from "@/lib/settings";
 import { resolveFile } from "@/lib/media";
@@ -520,7 +528,19 @@ export function PlayerProvider({ children }: { children: ReactNode }) {
   // The bed follows the narration's clock: its sound for the chapter, play, pause, seek and crossfades (A8). It
   // only listens; nothing it does reaches the narration, and the narration's speed never reaches it (A9).
   useEffect(() => {
-    const engine = createBedEngine((id) => soundscape(id)?.loop);
+    // A sound is a bundled soundscape or a catalog piece (01.10), streamed or from the device (src/lib/music.ts).
+    const engine = createBedEngine(
+      (id) => {
+        const piece = pieceOfSound(id);
+        if (!piece) return soundscape(id)?.loop;
+        const src = music.source(piece);
+        return src ? { uri: src.uri } : undefined;
+      },
+      (id) => {
+        const piece = pieceOfSound(id);
+        if (piece) music.failed(piece);
+      },
+    );
     engine.setLevel(bedLevel.current, ducker.gain());
     // The enter-exit gain, read live: the enter ramp, the quiet opening and its closing fade, the sleep fade.
     engine.setEnvelope(() => {
@@ -551,29 +571,46 @@ export function PlayerProvider({ children }: { children: ReactNode }) {
       if (entersNow(wasPlaying, s, event)) enteredAt.current = Date.now();
       wasPlaying = s.playing;
       const atBookEnd = !!b && s.position >= b.duration - END_SLACK;
-      const plan = planBed(state, s, event, {
-        chapterStart: chapters.find((c) => c.index === s.chapterIndex)?.start ?? 0,
-        soundFor: (i) => bedSoundFor(i, bedRef.current, SOUNDSCAPE_IDS),
-        loopSeconds: (id) => soundscape(id)?.loopSeconds ?? 0,
-        exitMs: bedExitMs(companionRef.current !== null, atBookEnd),
-      });
-      state = plan.state;
-      plan.commands.forEach(engine.apply);
       // The playing chapter's scene (07.2): its stored score, while the chapter keeps the title it was scored under.
       const c = chapters.find((ch) => ch.index === s.chapterIndex);
       const score =
         b && c ? (scoringStore.chapters(b.id).find((x) => x.mood.chapterIndex === c.index && x.mood.chapterTitle === c.title) ?? null) : null;
-      const next = planScene(scene, s, b && c ? sceneContextFor(score, { start: c.start, end: Math.min(c.end, b.duration) }) : null);
+      const sceneCtx = b && c ? sceneContextFor(score, { start: c.start, end: Math.min(c.end, b.duration) }) : null;
+      const next = planScene(scene, s, sceneCtx);
       scene = next.spot;
+      // On music (01.10) the bed plays the playing scene's piece (the pick, else auto, D18), once it may and can play
+      // (src/lib/piece-source.ts); else the fallback soundscape, else silence.
+      const bed = bedRef.current;
+      if (usesMusic(bed)) music.want();
+      const chapterStart = c?.start ?? 0;
+      const plan = planBed(state, s, event, {
+        chapterStart,
+        soundFor: (i) =>
+          bedSoundFor(i, bed, SOUNDSCAPE_IDS, {
+            pieceFor: (ci) => (ci === s.chapterIndex ? (music.source(next.spot.pieceId)?.pieceId ?? null) : null),
+          }),
+        loopSeconds: (id) => {
+          const piece = pieceOfSound(id);
+          return piece ? (music.source(piece)?.loopSeconds ?? 0) : (soundscape(id)?.loopSeconds ?? 0);
+        },
+        anchorFor: (id) =>
+          pieceOfSound(id) && sceneCtx && next.spot.scene !== null ? pieceAnchor(sceneCtx, next.spot.scene) : chapterStart,
+        exitMs: bedExitMs(companionRef.current !== null, atBookEnd),
+      });
+      state = plan.state;
+      plan.commands.forEach(engine.apply);
       if (next.command) engine.apply(next.command);
     };
     const off = clock.subscribe(follow);
     replanBed.current = () => follow(clock.current(), "tick");
     // A pick (or a new score) for the playing chapter changes its scenes' pieces: re-plan now.
     const offScores = scoringStore.subscribe(() => follow(clock.current(), "tick"));
+    // The catalog arriving, or a piece that did not load, re-plans the music layer (01.10).
+    const offMusic = music.subscribe(() => follow(clock.current(), "tick"));
     return () => {
       off();
       offScores();
+      offMusic();
       replanBed.current = () => {};
       engineRef.current = null;
       engine.dispose();

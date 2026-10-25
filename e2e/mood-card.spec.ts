@@ -6,7 +6,8 @@
 // verdict per chapter across a reload, and "Doesn't fit" offers the chapter's other pieces in place. 07.2 (spec 07
 // A2): a chapter with three scenes shows the playing scene's emotions in a band that changes as the clock crosses a
 // boundary, nothing of a scene not yet reached, the earlier scene again on a seek back; the bed logs each scene's
-// piece (until 01.10 plays pieces), and a chapter-wide pick is the piece for every scene.
+// piece (on the music layer, 01.10, e2e/music.spec.ts, that piece is what plays), and a chapter-wide pick is the
+// piece for every scene.
 import { expect, test, type Page } from "@playwright/test";
 
 import { guard } from "./guard";

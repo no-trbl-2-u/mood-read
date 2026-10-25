@@ -34,13 +34,19 @@ export const OPENING_HOLD_S = 20;
 /** At the book's end (and a companion-mode pause) the bed fades out over this long instead of stopping (ms). */
 export const BED_EXIT_MS = 4000;
 
-/** What the bed carries: a soundscape (v1), the chapter's piece (01.10, plays nothing yet) or nothing. */
+/**
+ * What the bed carries: a soundscape (v1), the chapter's catalog piece (01.10: the pick, else auto, looped for the
+ * chapter, falling back to the choice's soundscape, else silence) or nothing.
+ */
 export type BedLayer = "soundscape" | "music" | "off";
 
 /** One choice of what the bed plays (spec 01, Contracts: Mix's layer and soundscape id). */
 export type BedChoice = {
   layer: BedLayer;
-  /** The soundscape when the layer is one; null otherwise. */
+  /**
+   * The soundscape when the layer is one; with music (01.10), the soundscape it falls back to where no piece may play
+   * (the one on when Music was picked), or null for silence; null with off.
+   */
   soundscapeId: string | null;
 };
 
@@ -64,8 +70,31 @@ export function defaultBedFor(defaultSoundscapeId: string | null): BedSetting {
   return DEFAULT_BED;
 }
 
-/** A pick from the mixer's layer chips: "off", or a soundscape id. */
-export type LayerPick = "off" | string;
+/** The Music chip's pick (01.10): the chapter's piece. No soundscape has this id. */
+export const MUSIC_PICK = "music";
+
+/** A pick from the mixer's layer chips: "off", "music" (01.10), or a soundscape id. */
+export type LayerPick = "off" | typeof MUSIC_PICK | string;
+
+// ---- The chapter's piece as a bed sound (01.10) -------------------------------------------------------------
+
+const PIECE_SOUND = "piece:";
+
+/** The bed's sound id for a catalog piece, apart from every soundscape id. */
+export function pieceSound(pieceId: string): string {
+  return `${PIECE_SOUND}${pieceId}`;
+}
+
+/** The catalog piece a bed sound plays, or null for a soundscape. */
+export function pieceOfSound(soundId: string | null): string | null {
+  return soundId && soundId.startsWith(PIECE_SOUND) ? soundId.slice(PIECE_SOUND.length) || null : null;
+}
+
+/**
+ * The music layer's reach into the catalog: the piece that may play for a chapter now (its playing scene's, the
+ * pick covering every scene), already cleared by src/lib/piece-source.ts, or null when none may or can.
+ */
+export type MusicSource = { pieceFor: (chapterIndex: number) => string | null };
 
 const LAYERS: readonly BedLayer[] = ["soundscape", "music", "off"];
 
@@ -75,7 +104,8 @@ export function normalizeBedChoice(raw: unknown): BedChoice | null {
   const r = raw as Partial<Record<keyof BedChoice, unknown>>;
   if (!LAYERS.includes(r.layer as BedLayer)) return null;
   const layer = r.layer as BedLayer;
-  if (layer !== "soundscape") return { layer, soundscapeId: null };
+  if (layer === "off") return { layer, soundscapeId: null };
+  if (layer === "music") return { layer, soundscapeId: typeof r.soundscapeId === "string" && r.soundscapeId ? r.soundscapeId : null };
   return { layer, soundscapeId: typeof r.soundscapeId === "string" && r.soundscapeId ? r.soundscapeId : DEFAULT_SOUNDSCAPE_ID };
 }
 
@@ -110,37 +140,66 @@ export function choiceFor(chapterIndex: number | null, setting: BedSetting | Bed
 
 /**
  * The sound for a chapter, or null for silence: the chapter's own choice, else the book's (A12). A soundscape no
- * longer bundled falls back to the default one, then to the catalog's first; off and music (until 01.10) play nothing.
+ * longer bundled falls back to the default one, then to the catalog's first; off plays nothing. Music (01.10) plays
+ * the chapter's piece (`music.pieceFor`, as pieceSound) and, where no piece may or can play (an unscored chapter, a
+ * piece not in the catalog or not licensed to play, audio not reachable), its fallback soundscape: the choice's own,
+ * else the book's when the book plays one, else silence. Never anything unlicensed (A18).
  */
 export function bedSoundFor(
   chapterIndex: number | null,
   setting: BedSetting | BedChoice,
   catalog: readonly string[],
+  music?: MusicSource,
 ): string | null {
-  if (catalog.length === 0 || chapterIndex === null) return null;
+  if (chapterIndex === null) return null;
   const choice = choiceFor(chapterIndex, setting);
-  if (choice.layer !== "soundscape") return null;
-  if (choice.soundscapeId && catalog.includes(choice.soundscapeId)) return choice.soundscapeId;
+  if (choice.layer === "off") return null;
+  if (choice.layer === "music") {
+    const piece = music?.pieceFor(chapterIndex) ?? null;
+    if (piece) return pieceSound(piece);
+    const book = "chapterBeds" in setting && setting.layer === "soundscape" ? setting.soundscapeId : null;
+    const fallback = choice.soundscapeId ?? book;
+    return fallback ? soundscapeIn(fallback, catalog) : null;
+  }
+  return soundscapeIn(choice.soundscapeId, catalog);
+}
+
+/** A soundscape id as bundled: itself, else the default loop, else the catalog's first; null with none bundled. */
+function soundscapeIn(id: string | null, catalog: readonly string[]): string | null {
+  if (catalog.length === 0) return null;
+  if (id && catalog.includes(id)) return id;
   return catalog.includes(DEFAULT_SOUNDSCAPE_ID) ? DEFAULT_SOUNDSCAPE_ID : catalog[0];
 }
 
-/** The chip that is on for a chapter: "off", a soundscape id, or null (the music layer has no chip until 01.10). */
+/** True when the book or any chapter of its own plays music (01.10): the player then reads the catalog. */
+export function usesMusic(setting: BedSetting): boolean {
+  return setting.layer === "music" || Object.values(setting.chapterBeds ?? {}).some((c) => c.layer === "music");
+}
+
+/** The chip that is on for a chapter: "off", "music" (01.10), a soundscape id, or null with nothing bundled. */
 export function pickFor(chapterIndex: number | null, setting: BedSetting, catalog: readonly string[]): LayerPick | null {
   const choice = choiceFor(chapterIndex, setting);
   if (choice.layer === "off") return "off";
-  if (choice.layer === "music") return null;
+  if (choice.layer === "music") return MUSIC_PICK;
   return bedSoundFor(chapterIndex ?? 0, setting, catalog);
 }
 
-const choiceOf = (pick: LayerPick): BedChoice =>
-  pick === "off" ? { layer: "off", soundscapeId: null } : { layer: "soundscape", soundscapeId: pick };
+/**
+ * A chip's choice. Music keeps the soundscape that was on (or the one music already falls back to) as its fallback,
+ * so a chapter no piece may play for keeps sounding as it did; from off, music falls back to silence.
+ */
+function choiceOf(pick: LayerPick, current: BedChoice): BedChoice {
+  if (pick === "off") return { layer: "off", soundscapeId: null };
+  if (pick === MUSIC_PICK) return { layer: "music", soundscapeId: current.layer === "off" ? null : current.soundscapeId };
+  return { layer: "soundscape", soundscapeId: pick };
+}
 
 /**
  * A pick from the layer chips: it sets the chapter's own choice when that chapter has one ("This chapter only" on),
  * otherwise the book's, which every chapter without its own follows.
  */
 export function pickLayer(setting: BedSetting, chapterIndex: number | null, pick: LayerPick): BedSetting {
-  const choice = choiceOf(pick);
+  const choice = choiceOf(pick, chapterBed(setting, chapterIndex) ?? setting);
   if (chapterBed(setting, chapterIndex)) {
     return { ...setting, chapterBeds: { ...setting.chapterBeds, [String(chapterIndex)]: choice } };
   }
@@ -327,7 +386,10 @@ export type BedCommand =
   | { type: "play" }
   /** `fadeMs` (07.3): fade the bed out over this long, playing on, before it stops; absent, stop at once. */
   | { type: "pause"; fadeMs?: number }
-  /** The clock is in another scene of the chapter (07.2, planScene); until 01.10 the engine logs it, nothing more. */
+  /**
+   * The clock is in another scene of the chapter (07.2, planScene). The engine logs it; what is heard follows from
+   * planBed, whose sound on the music layer is the playing scene's piece (01.10), so a scene boundary is a change.
+   */
   | SceneCommand;
 
 export type BedContext = {
@@ -337,6 +399,11 @@ export type BedContext = {
   soundFor: (chapterIndex: number | null) => string | null;
   /** A sound's loop length in seconds. */
   loopSeconds: (soundId: string) => number;
+  /**
+   * Where a sound's loop is anchored in the book (seconds): the chapter's start when absent. A scene's piece (01.10)
+   * anchors at its scene's start, so it starts from its top there and every listen lands on the same place in it.
+   */
+  anchorFor?: (soundId: string) => number;
   /** How long the bed fades out when the clock stops here (src/lib/companion.ts bedExitMs); 0 or absent, at once. */
   exitMs?: number;
 };
@@ -353,7 +420,8 @@ export function planBed(
 ): { state: BedState; commands: BedCommand[] } {
   const soundId = clock.bookId ? ctx.soundFor(clock.chapterIndex) : null;
   const playing = clock.playing && soundId !== null;
-  const offset = soundId ? bedOffset(clock.position, ctx.chapterStart, ctx.loopSeconds(soundId)) : 0;
+  const anchor = soundId ? (ctx.anchorFor?.(soundId) ?? ctx.chapterStart) : ctx.chapterStart;
+  const offset = soundId ? bedOffset(clock.position, anchor, ctx.loopSeconds(soundId)) : 0;
   const state: BedState = { soundId, playing };
 
   if (soundId !== prev.soundId) {
@@ -377,8 +445,9 @@ export function planBed(
 // engine maps the clock's place in the chapter to a scene (sceneAt) and, when that place crosses a scene boundary
 // inside the chapter, crosses to the next scene's piece over the same CROSSFADE_MS as a chapter change; a seek back
 // crosses the other way (planScene). A scene's piece is the chapter-wide pick when there is one (scenePiecesOf,
-// D18), so a pick plays for every scene and its boundaries cross nothing. Until 01.10 plays pieces the scene command
-// changes nothing heard: the engine logs it, and the bed's soundscape plays on (planBed never reads a scene).
+// D18), so a pick plays for every scene and its boundaries cross nothing. The scene command itself is logged; what is
+// heard comes from planBed: on the music layer (01.10) its sound is the playing scene's piece (MusicSource), so the
+// boundary is a change, crossfaded while playing, and a soundscape plays on through it unchanged.
 
 type SceneSpan = Pick<Scene, "span">;
 
@@ -446,6 +515,20 @@ export function sceneContextFor(score: ChapterScore | null, chapter: { start: nu
   };
 }
 
+/**
+ * Where a scene's piece is anchored in the book (01.10): the start of the run of scenes, back from this one, that
+ * share its piece. A piece that covers the whole chapter (a pick, D18, or one piece for every scene) anchors at the
+ * chapter's start, so a seek lands where playing on would have; a scene with a piece of its own starts it from its
+ * top at its own start.
+ */
+export function pieceAnchor(ctx: SceneContext, scene: number): number {
+  if (scene <= 0 || scene >= ctx.scenes.length) return ctx.chapterStart;
+  const starts = sceneStarts(ctx.chapterLength, ctx.scenes);
+  let first = scene;
+  while (first > 0 && ctx.pieces[first - 1] === ctx.pieces[scene]) first--;
+  return ctx.chapterStart + starts[first];
+}
+
 /** The scene the bed is in: its book and chapter, the scene's index and its piece; all null outside a scored chapter. */
 export type SceneSpot = { bookId: string | null; chapterIndex: number | null; scene: number | null; pieceId: string | null };
 
@@ -501,8 +584,8 @@ export function planScene(
 }
 
 /**
- * The line the engine logs for a scene command until 01.10 plays pieces (the bed's soundscape is unchanged): which
- * chapter and scene (counted from 0), its piece, the way it crossed and whether it would crossfade.
+ * The line the engine logs for a scene command: which chapter and scene (counted from 0), its piece, the way it
+ * crossed and whether it crossfades (on the music layer, 01.10; a soundscape plays on through it unchanged).
  */
 export function sceneLogLine(c: SceneCommand): string {
   return `bed scene: chapter=${c.chapterIndex} scene=${c.scene} piece=${c.pieceId ?? "none"} direction=${c.direction} crossfade=${c.crossfade}`;

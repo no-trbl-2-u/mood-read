@@ -109,6 +109,24 @@ export async function downloadFileInto(
   return { ref: target.uri };
 }
 
+/**
+ * Where a catalog piece's file lives on this device (01.10; 05.4 downloads into it): one shared file per piece,
+ * named by its content-addressed key, however many books play it.
+ */
+export function pieceFile(key: string): File {
+  return new File(Paths.document, 'pieces', key.split('/').pop() ?? key);
+}
+
+/** The piece's file on this device, if it is there, else null (the bed then streams it). */
+export function localPieceUri(key: string): string | null {
+  try {
+    const file = pieceFile(key);
+    return file.exists ? file.uri : null;
+  } catch {
+    return null;
+  }
+}
+
 /** A playable (or displayable) URI for a stored ref. */
 export async function resolveFile(ref: string): Promise<string> {
   return ref;

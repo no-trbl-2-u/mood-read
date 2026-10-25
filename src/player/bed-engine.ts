@@ -9,8 +9,14 @@
 // pause) plays the bed on under the exit ramp (exitGain) and stops it once silent.
 //
 // Scenes (07.2, spec 07 A2): the provider plans the clock's scene (src/lib/bed.ts planScene) and hands the engine a
-// scene command when it moves. Until 01.10 plays pieces the engine only logs it (sceneLogLine) and keeps the scene
-// it is in (`scene()`): the decks, and so the soundscape heard, do not change at a scene boundary.
+// scene command when it moves; the engine logs it (sceneLogLine) and keeps the scene it is in (`scene()`). What the
+// decks play comes only from change commands: on the music layer (01.10) a scene with its own piece is a change, so
+// it crossfades like a chapter does; a soundscape plays on through it.
+//
+// The chapter's piece (01.10): a catalog piece loads like a soundscape, from the URI the provider resolves (a file on
+// the device, else the catalog's stream), loops whole, and follows the same level, duck and envelope. A sound that
+// does not load within LOAD_TIMEOUT_MS is reported through `onFail`, so the provider falls back from it (A18: only
+// ever to the book's soundscape or silence, never to anything unlicensed).
 import { createAudioPlayer, type AudioPlayer, type AudioSource } from "expo-audio";
 
 import { BED_RATE, crossfadeGains, CROSSFADE_MS, exitGain, sceneLogLine, type BedCommand, type SceneCommand } from "@/lib/bed";
@@ -27,12 +33,15 @@ export type BedEngine = {
   setLevel: (level: number, duck?: number) => void;
   /** Where the enter-exit gain is read from while the bed plays (src/lib/bed.ts bedEnvelope). */
   setEnvelope: (read: () => number) => void;
-  /** The last scene command carried out (07.2), or null: what 01.10 crossfades to. */
+  /** The last scene command carried out (07.2), or null. */
   scene: () => SceneCommand | null;
   dispose: () => void;
 };
 
-export function createBedEngine(source: (soundId: string) => AudioSource | undefined): BedEngine {
+export function createBedEngine(
+  source: (soundId: string) => AudioSource | undefined,
+  onFail: (soundId: string) => void = () => {},
+): BedEngine {
   const decks: [AudioPlayer, AudioPlayer] = [
     createAudioPlayer(null, { updateInterval: 1000 }),
     createAudioPlayer(null, { updateInterval: 1000 }),
@@ -136,7 +145,11 @@ export function createBedEngine(source: (soundId: string) => AudioSource | undef
       if (token !== loading) return;
       if (!inc.isLoaded) {
         if (Date.now() - started < LOAD_TIMEOUT_MS) setTimeout(ready, FADE_STEP_MS);
-        else out.pause();
+        else {
+          loading = 0;
+          out.pause();
+          if (to) onFail(to);
+        }
         return;
       }
       loading = 0;
@@ -191,7 +204,7 @@ export function createBedEngine(source: (soundId: string) => AudioSource | undef
           decks.forEach((d) => d.pause());
           return;
         case "scene":
-          // Until 01.10 plays pieces: logged, and the soundscape plays on unchanged.
+          // Logged; what is heard changes only through a change command (planBed), never here.
           lastScene = command;
           console.info(sceneLogLine(command));
           return;

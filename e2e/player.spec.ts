@@ -656,8 +656,8 @@ test.describe("the player", () => {
     await importBook(page);
     await quietOpeningOff(page);
     const row0 = page.getByTestId("chapter-row-0");
-    // Inline in the playing row with the mixer: Off and the six, Night Wind on for a new book.
-    const names = ["Off", "Rain", "Hearth Fire", "Night Wind", "Tide", "Static Hush", "Low Café"];
+    // Inline in the playing row with the mixer: Off, Music (01.10) and the six, Night Wind on for a new book.
+    const names = ["Off", "Music", "Rain", "Hearth Fire", "Night Wind", "Tide", "Static Hush", "Low Café"];
     await expect(row0.getByTestId("layer-chips").getByRole("button")).toHaveText(names);
     await expect(row0.getByTestId("layer-chip-night-wind")).toHaveAttribute("aria-pressed", "true");
     await expect(row0.getByTestId("layer-chapter-only")).toHaveAttribute("aria-pressed", "false");

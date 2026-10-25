@@ -17,6 +17,19 @@ export const CATALOG_SNAPSHOT: { pieces: { id: string; title: string; artist: st
   fs.readFileSync(path.join(path.dirname(fileURLToPath(import.meta.url)), "..", "catalog", "catalog.json"), "utf8"),
 );
 
+/**
+ * Answers every piece's audio at the catalog's address with `body` on this page (01.10), keeping each request's key,
+ * so the music layer streams on the page without reaching R2.
+ */
+export async function servePieces(page: Page, body: Buffer): Promise<string[]> {
+  const keys: string[] = [];
+  await page.route(`${CATALOG_BASE}/pieces/**`, (route) => {
+    keys.push(new URL(route.request().url()).pathname.slice(1));
+    return route.fulfill({ status: 200, body, headers: { "content-type": "audio/wav" } });
+  });
+  return keys;
+}
+
 /** Answers the catalog's address with the committed snapshot on this page (a page route outranks the guard's). */
 export async function serveCatalog(page: Page): Promise<void> {
   await page.route(`${CATALOG_BASE}/catalog.json`, (route) => route.fulfill({ status: 200, json: CATALOG_SNAPSHOT }));
