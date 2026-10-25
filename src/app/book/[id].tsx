@@ -1,8 +1,10 @@
 import { router, useLocalSearchParams } from "expo-router";
-import { useEffect, useState } from "react";
+import { useEffect, useMemo, useState } from "react";
 import { StyleSheet, Text, View } from "react-native";
 
 import { chapterBed, pickFor } from "@/lib/bed";
+import { useCatalog } from "@/lib/catalog-config";
+import { licenseName } from "@/lib/credits";
 import { speedLabel } from "@/lib/labels";
 import { chapterEdits, reached, useBook, useFurthestIn, useFurthestReached } from "@/lib/library";
 import { moodCardView, sceneBand } from "@/lib/mood-card";
@@ -69,6 +71,14 @@ export default function BookScreen() {
   const chapterScores = useChapterScores(id ?? "");
   const furthest = useFurthestReached(id ?? "");
   const bookVerdicts = useBookVerdicts(id ?? "");
+  // The music catalog (05.3, A3): the card names each catalog piece's license, and a book scored before v2 is
+  // re-matched against it here, from its stored emotions, with no request to the proxy.
+  const catalog = useCatalog();
+  const catalogPieces = useMemo(() => (catalog.status === "ready" ? catalog.pieces : []), [catalog]);
+  const licenses = useMemo(() => new Map(catalogPieces.map((c) => [c.id, licenseName(c.license)])), [catalogPieces]);
+  useEffect(() => {
+    if (id && scores) scoringStore.rematch(id, catalogPieces);
+  }, [id, scores, catalogPieces]);
 
   // A scoring job remembered from before (the app closed mid-run) is picked up again when its book opens (A15).
   useEffect(() => {
@@ -122,7 +132,7 @@ export default function BookScreen() {
   // The playing row also shows the playing scene's emotions, nothing for a scene not yet reached (07.2, A2).
   const moods = book.chapters.map((c) => {
     const score = chapterScores.find((s) => s.mood.chapterIndex === c.index && s.mood.chapterTitle === c.title) ?? null;
-    const view = moodCardView(isReached(c, furthest, chapter), score);
+    const view = moodCardView(isReached(c, furthest, chapter), score, (pieceId) => licenses.get(pieceId) ?? null);
     if (view.kind !== "scored" || c.index !== chapter?.index) return view;
     return { ...view, scene: sceneBand(score, c, position, active ? furthestIn : null) };
   });
@@ -243,7 +253,7 @@ export default function BookScreen() {
             chapterLabel={seedable([moodSheet], scores).length > 0 ? `Ch.${moodSheet.index + 1} — ${moodSheet.title}` : null}
             initial={draftFrom(scoringStore.seeds(book.id).find((s) => s.mood.chapterIndex === moodSheet.index && s.mood.chapterTitle === moodSheet.title)?.mood.emotions ?? [])}
             onApply={(target, lit) => {
-              setMood(book, target === "book" ? "book" : { chapter: moodSheet.index }, lit);
+              setMood(book, target === "book" ? "book" : { chapter: moodSheet.index }, lit, catalogPieces);
               setSheet(null);
             }}
             onClose={() => setSheet(null)}

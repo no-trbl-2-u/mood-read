@@ -36,9 +36,17 @@ export function strongest(emotions: readonly EmotionScore[], limit?: number): Em
   return limit === undefined ? sorted : sorted.slice(0, limit);
 }
 
-/** A piece's muted line: "Composer 1 · Score". */
-export function pieceLine(p: Pick<Piece, "artist" | "kind">): string {
-  return `${p.artist} · ${KIND_NAMES[p.kind]}`;
+/**
+ * A piece's muted line: "Composer 1 · Score", and with its catalog license (05.3, A3) "Kevin MacLeod · Ambient ·
+ * CC BY 4.0", so the card shows the piece's title, artist and license.
+ */
+export function pieceLine(p: Pick<Piece, "artist" | "kind">, license?: string | null): string {
+  return license ? `${p.artist} · ${KIND_NAMES[p.kind]} · ${license}` : `${p.artist} · ${KIND_NAMES[p.kind]}`;
+}
+
+/** The reference (05.3, D13): "In the spirit of Title by Artist". Shown only; it never plays. */
+export function referenceLine(p: Pick<Piece, "title" | "artist">): string {
+  return `In the spirit of ${p.title} by ${p.artist}`;
 }
 
 /** The muted line of alternates: "Theme 2 (Composer 2) · Theme 3 (Composer 3)". */
@@ -66,6 +74,10 @@ export type MoodCardView =
       playing: Piece | null;
       /** The playing scene's emotions, strongest first (07.2, sceneBand); absent or null, no band. */
       scene?: EmotionScore[] | null;
+      /** The named piece's license as people write it ("CC BY 4.0"), from the catalog; null when not known (05.3). */
+      license?: string | null;
+      /** The famous piece the research named beside the catalog pick (05.3, D13): shown as "In the spirit of", never played. */
+      reference?: Piece | null;
       /**
        * The listener's own seed (07.6, A7), not a researched mood: the card says "Your mood", calls the piece the
        * matched one (or says the soundscape plays), and offers no verdict, so a seed's emotions never leave the device.
@@ -75,9 +87,10 @@ export type MoodCardView =
 
 /**
  * What a chapter's row may show, given whether it is reached and its stored score (or null). A listener's seed is
- * their own words, so it shows at once, reached or not (spec 07, Contracts: Spoilers).
+ * their own words, so it shows at once, reached or not (spec 07, Contracts: Spoilers). `licenseOf` names a catalog
+ * piece's license (05.3); without it, or for a piece the catalog does not hold, no license is shown.
  */
-export function moodCardView(reached: boolean, score: ChapterScore | null): MoodCardView {
+export function moodCardView(reached: boolean, score: ChapterScore | null, licenseOf: (pieceId: string) => string | null = () => null): MoodCardView {
   if (!reached && score?.mood.coverage !== "listener") return { kind: "locked" };
   if (!score) return { kind: "none" };
   if (score.mood.coverage === "too-little") return { kind: "unscored" };
@@ -87,7 +100,16 @@ export function moodCardView(reached: boolean, score: ChapterScore | null): Mood
   const alternates = pl ? pl.alternates.map((id) => byId.get(id)).filter((p): p is Piece => !!p) : [];
   const pick = pl && pl.pick !== "auto" && alternates.some((p) => p.id === pl.pick) ? pl.pick : "auto";
   const playing = pick === "auto" ? piece : (alternates.find((p) => p.id === pick) ?? piece);
-  const view: MoodCardView = { kind: "scored", emotions: strongest(score.mood.emotions), piece, alternates, pick, playing };
+  const view: MoodCardView = {
+    kind: "scored",
+    emotions: strongest(score.mood.emotions),
+    piece,
+    alternates,
+    pick,
+    playing,
+    license: piece ? licenseOf(piece.id) : null,
+    reference: score.reference ?? null,
+  };
   return score.mood.coverage === "listener" ? { ...view, listener: true } : view;
 }
 

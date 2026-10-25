@@ -11,6 +11,7 @@ import {
   misfitOffers,
   moodCardView,
   pieceLine,
+  referenceLine,
   sceneBand,
   strongest,
   togglePeek,
@@ -238,4 +239,27 @@ test("A35: a reached, scored, non-playing row opens its mood card from its chips
   assert.equal(togglePeek(null, 2), 2);
   assert.equal(togglePeek(2, 2), null);
   assert.equal(togglePeek(1, 2), 2);
+});
+
+// ---- 05.3 (spec 05 A3, D13): the catalog piece's license and the reference ----
+
+test("the card shows the named catalog piece's title, artist and license, and the reference as \"In the spirit of\"", () => {
+  const ref: Piece = { id: "famous--theme", title: "Famous Theme", artist: "Famous Composer", kind: "score", vocals: "none", moodTags: ["tension"] };
+  const v = moodCardView(true, { ...score(), reference: ref }, (id) => (id === "p1" ? "CC BY 4.0" : null));
+  assert.equal(v.kind, "scored");
+  if (v.kind !== "scored") return;
+  assert.equal(v.license, "CC BY 4.0");
+  assert.deepEqual(v.reference, ref);
+  assert.equal(pieceLine(v.piece!, v.license), "Composer 1 · Score · CC BY 4.0");
+  assert.equal(referenceLine(v.reference!), "In the spirit of Famous Theme by Famous Composer");
+  assert.ok(![v.piece, ...v.alternates, v.playing].some((p) => p?.id === ref.id), "the reference never plays and is never offered as a pick");
+  assert.ok(!misfitOffers(v).some((p) => p.id === ref.id));
+});
+
+test("with no catalog to read, or no reference stored, the card shows neither", () => {
+  const v = moodCardView(true, score());
+  if (v.kind !== "scored") throw new Error("scored");
+  assert.equal(v.license, null);
+  assert.equal(v.reference, null);
+  assert.equal(pieceLine(v.piece!, v.license), "Composer 1 · Score");
 });

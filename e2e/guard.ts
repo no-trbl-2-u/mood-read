@@ -12,6 +12,16 @@ const APP_JSON = path.join(path.dirname(fileURLToPath(import.meta.url)), "..", "
 const CATALOG_BASE: string = JSON.parse(fs.readFileSync(APP_JSON, "utf8")).expo.extra.catalogBaseUrl;
 const EMPTY_CATALOG = { schema: 1, version: 0, updatedAt: "2026-10-25T00:00:00.000Z", pieces: [] };
 
+/** The committed snapshot of the live catalog (catalog/catalog.json, 05.2), for a spec that needs real pieces. */
+export const CATALOG_SNAPSHOT: { pieces: { id: string; title: string; artist: string; license: { id: string; version: string | null } }[] } = JSON.parse(
+  fs.readFileSync(path.join(path.dirname(fileURLToPath(import.meta.url)), "..", "catalog", "catalog.json"), "utf8"),
+);
+
+/** Answers the catalog's address with the committed snapshot on this page (a page route outranks the guard's). */
+export async function serveCatalog(page: Page): Promise<void> {
+  await page.route(`${CATALOG_BASE}/catalog.json`, (route) => route.fulfill({ status: 200, json: CATALOG_SNAPSHOT }));
+}
+
 const isLocal = (url: string) => {
   const { protocol, hostname } = new URL(url);
   if (protocol === "data:" || protocol === "blob:") return true;

@@ -18,7 +18,7 @@ import { expect, test, type Page } from "@playwright/test";
 import { toneAndSilence, wavFile } from "../src/lib/meta/test-fixtures";
 import { sizes } from "../src/ui/theme";
 
-import { guard } from "./guard";
+import { guard, serveCatalog } from "./guard";
 import { IDENTIFIER, stubArchiveOrg } from "./librivox-fixtures";
 import { scoredBook, unscoredBook } from "./scored-book";
 
@@ -241,6 +241,19 @@ const STATES: State[] = [
       await expect(row0.getByTestId("mood-alternates")).toBeVisible();
       await expect(page.getByTestId("row-emotions-1")).toBeVisible();
       await expect(page.getByTestId("locked-2")).toBeVisible();
+      const play = page.getByTestId("mini-play-pause");
+      if ((await play.getAttribute("aria-label")) === "Pause") await play.click();
+      await expect(play).toHaveAttribute("aria-label", "Play");
+    },
+  },
+  {
+    name: "/book/<id> scored before v2, re-matched to catalog pieces: the license and \"In the spirit of\" (05.3)",
+    open: async (page) => {
+      await serveCatalog(page);
+      await scoredBook(page);
+      const row0 = page.getByTestId("chapter-row-0");
+      await expect(row0.getByTestId("mood-reference")).toBeVisible();
+      await expect(row0.getByTestId("mood-piece")).toContainText("CC BY");
       const play = page.getByTestId("mini-play-pause");
       if ((await play.getAttribute("aria-label")) === "Pause") await play.click();
       await expect(play).toHaveAttribute("aria-label", "Play");

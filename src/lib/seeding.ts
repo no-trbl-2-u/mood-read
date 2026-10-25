@@ -3,6 +3,7 @@
 // river reads a book's chapters with its seeds. Nothing here makes a request: a seed never leaves the device.
 import { useSyncExternalStore } from "react";
 
+import { asPiece } from "./catalog-match";
 import { library } from "./library";
 import { knownPieces, matchPiece, seedScore } from "./mood-match";
 import { scoringStore } from "./scoring";
@@ -16,12 +17,18 @@ export function useChapterScores(bookId: string): ChapterScore[] {
 }
 
 /**
- * Seeds `lit` on one chapter, or on every chapter of the book the research has not scored, matched to a piece named
- * in any scored book on the device. The catalog manifest is not kept on the device (src/lib/catalog-config.ts reads
- * it per screen), so it does not join the pool yet. Returns the matched piece, or null: the soundscape plays.
+ * Seeds `lit` on one chapter, or on every chapter of the book the research has not scored, matched to a catalog
+ * piece once the screen has read the catalog (05.3: the piece the card names is the piece that plays, D8), else to a
+ * piece named in any scored book on the device. Returns the matched piece, or null: the soundscape plays.
  */
-export function setMood(book: Pick<Book, "id" | "chapters">, target: { chapter: number } | "book", lit: readonly EmotionScore[], now = Date.now()): Piece | null {
-  const pool = knownPieces(library.books().map((b) => scoringStore.scores(b.id)));
+export function setMood(
+  book: Pick<Book, "id" | "chapters">,
+  target: { chapter: number } | "book",
+  lit: readonly EmotionScore[],
+  catalog: readonly Piece[] = [],
+  now = Date.now(),
+): Piece | null {
+  const pool = catalog.length > 0 ? knownPieces([], catalog.map(asPiece)) : knownPieces(library.books().map((b) => scoringStore.scores(b.id)));
   const match = matchPiece(lit, pool);
   const open = seedable(book.chapters, scoringStore.scores(book.id));
   const chapters = target === "book" ? open : open.filter((c) => c.index === target.chapter);

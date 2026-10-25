@@ -14,10 +14,13 @@
 // 01.22 (A35): a reached, non-playing row (or a listener's own seed, reached or not) opens the same card in place
 // from its chips, without moving playback; it is not playing, so it shows the chapter's emotions and piece and never
 // a scene band.
+// 05.3 (spec 05 A3, D13): the named piece is a catalog piece, its line carrying its license ("CC BY 4.0"); beside it
+// the research's famous piece shows as one muted line, "In the spirit of <title> by <artist>": shown, never played,
+// never a pick.
 import type { ReactNode } from "react";
 import { StyleSheet, Text, View } from "react-native";
 
-import { alternatesLine, EMOTION_NAMES, misfitOffers, pieceLine, strongest, type MoodCardView } from "@/lib/mood-card";
+import { alternatesLine, EMOTION_NAMES, misfitOffers, pieceLine, referenceLine, strongest, type MoodCardView } from "@/lib/mood-card";
 import type { EmotionScore, Piece } from "@/lib/types";
 import type { Verdict } from "@/lib/verdict-store";
 import { Button } from "@/ui/Button";
@@ -129,7 +132,7 @@ export function MoodCard(props: {
           <View style={styles.block} testID="mood-piece">
             <Text style={styles.heading}>{yours ? COPY.matched : COPY.piece}</Text>
             <Text style={styles.pieceTitle}>{v.piece.title}</Text>
-            <Text style={styles.muted}>{pieceLine(v.piece)}</Text>
+            <Text style={styles.muted}>{pieceLine(v.piece, v.license)}</Text>
           </View>
           {v.playing && props.onVerdict && !yours && (
             <VerdictTargets
@@ -177,6 +180,11 @@ export function MoodCard(props: {
         </Text>
       ) : (
         <Text style={styles.muted}>{COPY.noPiece}</Text>
+      )}
+      {v.reference && !yours && (
+        <Text style={styles.muted} testID="mood-reference">
+          {referenceLine(v.reference)}
+        </Text>
       )}
       {yours && props.onSetMood && <SetMoodButton label={COPY.changeMood} a11yLabel={COPY.changeMoodA11y} onPress={props.onSetMood} />}
       <View style={styles.rule} />

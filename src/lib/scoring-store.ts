@@ -4,7 +4,11 @@
 // chapter ("Set the mood", src/lib/mood-match.ts), kept apart from the research so a seed alone is never a scoring
 // run, and read with it (`chapters`). The replace rule: a later research result replaces a chapter's seed only when it
 // comes back `scored`; a `too-little` result keeps the seed.
+// 05.3 (spec 05 A3): a book scored before v2 is re-matched against the music catalog the device loaded, from its stored
+// emotions, with no request to the proxy (`rematch`, src/lib/catalog-match.ts); its old named piece becomes the
+// chapter's reference, shown as "In the spirit of" and never played (D13).
 // Pure: over the same key-value backend as the library (src/lib/library-store.ts), reached only through src/lib/.
+import { rematchScores, type MatchablePiece } from "./catalog-match.ts";
 import type { Kv } from "./library-store.ts";
 import type { Book, BookScores, Chapter, ChapterScore, JobView, ScoringJob } from "./types.ts";
 
@@ -63,7 +67,10 @@ export function toBookScores(book: Pick<Book, "chapters">, view: JobView, previo
     const scenePieces = c.pieces?.scenePieces && c.mood.scenes && c.pieces.scenePieces.length === c.mood.scenes.length ? c.pieces.scenePieces.map((p) => p.id) : undefined;
     const old = previous?.chapters.find((x) => x.mood.chapterIndex === c.index && x.mood.chapterTitle === mine.title)?.playlist;
     const keepPick = old && old.pick !== "auto" && pieces.some((p) => p.id === old.pick) ? old.pick : "auto";
+    // The reference (05.3, D13): shown as "In the spirit of", never played, so never among the pieces.
+    const reference = c.pieces?.reference && !pieces.some((p) => p.id === c.pieces!.reference!.id) ? { reference: c.pieces.reference } : {};
     chapters.push({
+      ...reference,
       mood: { ...c.mood, chapterTitle: mine.title },
       pieces,
       playlist: c.pieces
@@ -160,6 +167,18 @@ export function createScoringStore(kv: Kv) {
       if (playlist.pick === next) return true;
       const chapters = s.chapters.map((c, i) => (i === at ? { ...c, playlist: { ...playlist, pick: next } } : c));
       write(scoresKey(bookId), { ...s, chapters });
+      return true;
+    },
+    /**
+     * Re-matches a book scored before v2 against the catalog (05.3, A3): every researched chapter whose pieces are not
+     * all catalog pieces gets the catalog's, from its stored emotions; nothing is sent anywhere. True when it changed
+     * anything; an empty catalog, or a book already on it, changes nothing.
+     */
+    rematch(bookId: string, catalog: readonly MatchablePiece[]): boolean {
+      const s = read<BookScores>(scoresKey(bookId));
+      const next = s && rematchScores(s, catalog);
+      if (!next) return false;
+      write(scoresKey(bookId), next);
       return true;
     },
     forget(bookId: string) {

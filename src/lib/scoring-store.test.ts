@@ -1,6 +1,10 @@
 import assert from "node:assert/strict";
+import fs from "node:fs";
+import path from "node:path";
 import { test } from "node:test";
+import { fileURLToPath } from "node:url";
 
+import { readCatalog, type CatalogPiece } from "./catalog.ts";
 import type { Kv } from "./library-store.ts";
 import { knownPieces, matchPiece, seedScore } from "./mood-match.ts";
 import { createScoringRunner } from "./scoring-runner.ts";
@@ -183,4 +187,56 @@ test("forgetting a book forgets its seeds", () => {
   store.seed("b", [seedOf(0, "One")]);
   store.forget("b");
   assert.deepEqual(store.chapters("b"), []);
+});
+
+// ---- 05.3 (spec 05 A3): the re-match of a book scored before v2 ----
+
+const CATALOG: CatalogPiece[] = readCatalog(JSON.parse(fs.readFileSync(path.join(path.dirname(fileURLToPath(import.meta.url)), "..", "..", "catalog", "catalog.json"), "utf8"))).catalog.pieces;
+const CATALOG_IDS = new Set(CATALOG.map((p) => p.id));
+
+test("a book scored before v2 is re-matched on the device: its pieces become catalog pieces, with no request to the proxy (A3)", () => {
+  const real = globalThis.fetch;
+  let calls = 0;
+  globalThis.fetch = (async () => {
+    calls++;
+    throw new Error("no request may leave for a re-match");
+  }) as typeof fetch;
+  try {
+    const store = createScoringStore(mapKv());
+    const book = chapters(["One", "Two"]);
+    store.saveScores("b", toBookScores(book, doneView(["One", "Two"]), null)!);
+    store.savePick("b", book.chapters[0], "q0");
+    let told = 0;
+    store.subscribe(() => told++);
+    assert.equal(store.rematch("b", []), false, "an empty catalog changes nothing");
+    assert.equal(store.rematch("b", CATALOG), true);
+    assert.equal(told, 1, "the screens hear of it once");
+    for (const c of store.scores("b")!.chapters) {
+      const pl = c.playlist!;
+      for (const id of [pl.piece, ...pl.alternates]) assert.ok(CATALOG_IDS.has(id), `${id} is a catalog piece`);
+      assert.equal(pl.pick, "auto", "a pick that is not a catalog piece goes back to auto");
+      assert.equal(c.reference?.id, `p${c.mood.chapterIndex}`, "the old named piece is the reference, never played");
+      assert.ok(!c.pieces.some((p) => p.id === c.reference!.id));
+      assert.deepEqual(c.mood.emotions, [{ emotion: "calm", intensity: 0.5 }], "the stored emotions, no new research");
+    }
+    assert.equal(store.rematch("b", CATALOG), false, "once on the catalog, nothing changes again");
+    assert.equal(store.rematch("nobody", CATALOG), false);
+    // A catalog pick from the new alternates is saved and kept.
+    const alt = store.scores("b")!.chapters[0].playlist!.alternates[0];
+    assert.equal(store.savePick("b", book.chapters[0], alt), true);
+    assert.equal(store.scores("b")!.chapters[0].playlist!.pick, alt);
+    assert.equal(calls, 0);
+  } finally {
+    globalThis.fetch = real;
+  }
+});
+
+test("a v2 result keeps its reference beside the catalog pieces, never among them (D13)", () => {
+  const view = doneView(["One"]);
+  const ref = { ...piece("famous--theme"), title: "Famous Theme" };
+  view.result!.chapters[0].pieces!.reference = ref;
+  const kept = toBookScores(chapters(["One"]), view, null)!.chapters[0];
+  assert.deepEqual(kept.reference, ref);
+  assert.ok(!kept.pieces.some((p) => p.id === ref.id));
+  assert.equal(toBookScores(chapters(["One"]), doneView(["One"]), null)!.chapters[0].reference, undefined);
 });
