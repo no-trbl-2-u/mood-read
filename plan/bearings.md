@@ -115,6 +115,15 @@ Scripts (package.json):
                                    POST /v1/prescore, one at a time, at most 80 a day (.nexus/prescore-ledger.json),
                                    30 s apart; stops once pre-scoring's half of the cap is spent. Run it as
                                    node scripts/secrets.mjs run --only PRESCORE_TOKEN -- pnpm prescore
+  pnpm prescore --from [file]      owner only (05.22): the same, for the owner's own books in dev-audiobooks.json
+                                   (gitignored; shape in dev-audiobooks.example.json, as Settings' "Copy books for
+                                   pre-scoring" copies it); every entry is checked as the proxy would first, and one
+                                   bad entry sends nothing; a book with no LibriVox number is cached, not indexed
+  pnpm catalog:add <audio> --piece <json> --verdict <json> [--dry-run]   owner only (05.1): one piece into the
+                                   music catalog, the R2 bucket mood-read-catalog (public read at
+                                   https://pub-4a8a6c86fad24ced839c7dc3d3f4dc66.r2.dev, expo.extra.catalogBaseUrl;
+                                   docs/catalog.md). Run it through the vault: node scripts/secrets.mjs run --only
+                                   CLOUDFLARE_S3_ACCESS_KEY_ID,CLOUDFLARE_S3_SECRET_ACCESS_KEY,S3_API_ENDPOINT -- ...
   pnpm plan:check | settle | claims | progress | order | pulse | secrets ...   the nexus scripts
 
 Scoring proxy (01.2; proxy/src/http.ts): it receives only a book's title, author and chapter titles, and for a
@@ -127,9 +136,10 @@ LibriVox book its public LibriVox and Project Gutenberg numbers (05.9).
   POST /v1/verdicts        {rows: [{pieceId, emotions, verdict}]} at most 200, no other field (07.5): counts per
                            piece and emotion set, never a row; at most daily from a device, never with "Share what
                            fits" off; 01.21's limiter in its own bucket (verdict posts)       -> 204 | 400 | 429
-  POST /v1/prescore        owner only (Authorization: Bearer PRESCORE_TOKEN; 05.10), the /v1/score body with its
-                           librivoxId: a pre-score run, billed to pre-scoring's half of the cap -> {jobId, state,
-                           progress, budget} | 401 | 429 once the half is spent       (proxy/src/prescore-http.ts)
+  POST /v1/prescore        owner only (Authorization: Bearer PRESCORE_TOKEN; 05.10), the /v1/score body: a
+                           pre-score run, billed to pre-scoring's half of the cap, no limiter; indexed for Browse
+                           only with a librivoxId (05.22) -> {jobId, state, progress, budget} | 401 | 429 once the
+                           half is spent                                              (proxy/src/prescore-http.ts)
   GET  /v1/overall?ids=1,2 read only, for Browse: each pre-scored book's overall emotions (top three by mean
                            intensity over its scored chapters) by LibriVox number, never a chapter's; starts no run
                                                                                    -> {books: {"<id>": {emotions}}}

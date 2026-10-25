@@ -7,6 +7,22 @@
 
 ## Pending — [needs-user-call]
 
+### [needs-user-call] Redeploy the scoring proxy so pre-scoring takes your own books (05.22)
+- category: production
+- logged: 2026-10-25 (05.22, /heads-down capella)
+- what: `pnpm prescore --from dev-audiobooks.json` is on main, and so is the proxy change that lets
+  POST /v1/prescore take a book with no LibriVox number. The deployed Worker predates it, so it still answers
+  such a book with 400 until `wrangler deploy --config proxy/wrangler.jsonc` runs again.
+- default taken: no deploy from the loop (a production action nobody okayed for this chunk); LibriVox books
+  pre-score as before. Say "deploy" to have the next loop redeploy it with 01.26's steps.
+
+### [needs-user-call] Spotify chapter playlists and the stores stay held (05.13, 05.14, 05.15, 05.18)
+- category: product
+- logged: 2026-10-25 (/heads-down capella, the owner's relayed instruction to claim spec 05)
+- what: 05.13 waits on Spotify's written confirmation (05.12's unclear verdict); 05.14 and 05.15 need a Play
+  Store developer account and the Apple Developer Program; 05.18 waits on 05.14.
+- default taken: none claimed or built; they stay in the Held lane until you lift a line.
+
 ### [needs-user-call] The app now asks librivox.org's API for a book's Gutenberg number (05.9)
 - category: product
 - logged: 2026-10-24 (05.9, /loop)

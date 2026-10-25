@@ -152,15 +152,9 @@ Decisions made upfront (do not ask):
   bookmarks, moods, picks and mixes onto matching books.
 - **A20** Mood Read appears in Android Auto (and in CarPlay once iOS ships) with its library, chapters and
   transport.
-- **A21** The catalog bucket exists and serves `catalog.json` and its pieces read-only to
-  mood-read.pages.dev, and the app reads it from `expo.extra.catalogBaseUrl`.
 - **A23** In a build with owner tools on, Settings' "Copy books for pre-scoring" copies a JSON list with,
   per library book, only title, author, chapter titles and the LibriVox and Gutenberg numbers when known; with
   owner tools off (every store and production build) the action isn't there.
-- **A24** `pnpm prescore --from <file>` reads that list, refuses an entry the proxy would refuse
-  before sending anything, skips books it has already scored, and scores the rest through the owner-only route,
-  including books with no LibriVox number (cached, not indexed for Browse), under the same throttle, token and
-  cap as the LibriVox walk.
 
 ## Open questions
 
@@ -181,9 +175,9 @@ Decisions made upfront (do not ask):
   GitHub workflow later).
 
 ## Chunks
-Measure: 16 open · 8 closed · next A25
+Measure: 14 open · 10 closed · next A25
 
-- [ ] **05.2** Seed the catalog across every emotion and intensity · L · closes A2 · needs 05.19
+- [ ] **05.2** Seed the catalog across every emotion and intensity · L · closes A2 · needs —
   - Sources the 01.13 study ranks, and D7's hand-picked CC-BY / CC-BY-SA tracks; every one through `catalog:add`.
 - [ ] **05.3** The scorer names catalog pieces only, and re-matches books scored before v2 · M · closes A3 ·
   needs 05.2
@@ -203,14 +197,6 @@ Measure: 16 open · 8 closed · next A25
 - [ ] **05.17** Export and import the library, never the audio · S · closes A19 · needs 05.7
 - [ ] **05.18** Android Auto, then CarPlay · M · closes A20 · needs 05.14
   - Android Auto lists only apps from Google Play, so this waits on 05.14 (held); CarPlay waits on 05.15.
-- [ ] **05.19** Turn the catalog on: the R2 bucket, public read and the app's catalog URL · S ·
-  closes A21 · needs — · secrets CLOUDFLARE_S3_ACCESS_KEY_ID, CLOUDFLARE_S3_SECRET_ACCESS_KEY, S3_API_ENDPOINT
-  - The owner's production step 05.1 left (`docs/catalog.md`): bucket `mood-read-catalog`, an R2 token with
-    Object Read and Write on it, public read (r2.dev or a custom domain) with a CORS GET rule for
-    `https://mood-read.pages.dev`, then `expo.extra.catalogBaseUrl` in `app.json` (and the placeholder assertion
-    in `src/lib/catalog-api.test.ts`).
-  - Name `pnpm catalog:add` and the bucket in `plan/bearings.md`, and give `S3_API_ENDPOINT` and
-    `CLOUDFLARE_S3_SECRET_ACCESS_KEY` real descriptions in `nexus.secrets.json`.
 - [ ] **05.21** Owner tools: copy the library's books for pre-scoring · S · closes A23 · needs —
   - Gate on `expo.extra.ownerTools` (set in `eas.json`'s preview profile through the app config, and in local
     web dev); a Settings row under an "Owner tools" heading, copying `scoringRequest(book)` for every library
@@ -218,12 +204,3 @@ Measure: 16 open · 8 closed · next A25
   - Tests: the copied JSON parses through the proxy's `parseBookRequest` for every entry (the contract test's
     pattern); e2e with owner tools on shows the row and off hides it.
   - On the phone it is reachable once a preview APK exists (04.1); until then, local web dev.
-- [ ] **05.22** `pnpm prescore --from dev-audiobooks.json`: the owner's own books · S ·
-  closes A24 · needs —
-  - `scripts/prescore.mjs` gains `--from <file>` (default `dev-audiobooks.json`); `.gitignore` gains the file,
-    and `dev-audiobooks.example.json` shows the shape.
-  - `proxy/src/prescore-http.ts` accepts a book without `librivoxId`: it runs as a pre-score (no limiter, the
-    pre-score half of the cap) and lands in the cache, and only a book with one goes into `PrescoreIndex`.
-  - The ledger's done set keys a book by its LibriVox number, else by title and author, so a rerun skips it;
-    the proxy's cache also answers an already-scored book with no new run.
-  - Needs the proxy live (01.20) to run for real; `--dry-run` works before.
