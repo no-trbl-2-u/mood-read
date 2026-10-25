@@ -67,3 +67,4 @@ identity · deleted in <sha>`; recover its text with
 - 2026-10-25 · 05.22 · pnpm prescore --from scores the owner's own books · 7f9e0fb2..8e668757
 - 2026-10-25 · 05.21 · Owner builds copy the library's books for pre-scoring · 814254b9..a01032b7
 - 2026-10-25 · 05.2 · The catalog holds 46 cleared pieces across every emotion · 63b23d67..032a04e2
+- 2026-10-25 · 05.3 · The scorer names catalog pieces only; old books re-match · a3daf1a4..8d572585

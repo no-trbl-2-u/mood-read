@@ -84,7 +84,8 @@ dashboard click it cannot make writes `setup/NN_<service>.md` (`nexus/customizat
 | Surface | AI's role | Human gate | Model |
 |---|---|---|---|
 | A chapter's emotions (01.2) | generated from research on the book, with sources cited | a chapter with too little written about it is unscored, never guessed (A19) | OpenAI `gpt-5-mini` over Brave Search results, through the proxy |
-| A chapter's named piece and alternates (01.2) | suggested; every piece no-vocals (A20) | the listener's pick over `auto` (01.4) | OpenAI `gpt-5-mini`, with a second no-vocals check and a name screen (`proxy/src/pieces.ts`) |
+| A chapter's piece, alternates and scene pieces (01.2, 05.3) | none: matched from the music catalog by the chapter's emotions (`src/lib/catalog-match.ts`, D8) | the listener's pick over `auto` (01.4) | — |
+| A chapter's reference, "In the spirit of" (05.3, D13) | suggested; no-vocals (A20); shown, never played | — | OpenAI `gpt-5-mini`, with a second no-vocals check and a name screen (`proxy/src/pieces.ts`) |
 | The listener's audio | none: never uploaded or transcribed (spec 01, Contracts) | — | — |
 | Licenses and terms | none: checked by `rights-checker` against primary sources, decided by the owner | owner | — |
 
@@ -155,6 +156,10 @@ LibriVox book its public LibriVox and Project Gutenberg numbers (05.9).
   "gutenberg:<n>" when a Gutenberg number is sent). The ids are digit strings; any other body field is a 400.
   With a Gutenberg number the proxy reads the book's text from Project Gutenberg in memory and keeps no copy
   (proxy/src/gutenberg.ts, text-research.ts). The app's base URL is `expo.extra.scoringProxyUrl` in app.json.
+Every job view names catalog pieces only (05.3, proxy/src/catalog.ts over the bundled catalog/catalog.json): a
+result cached before v2 is re-matched from its stored emotions as it is served, its old piece becoming
+`pieces.reference`, the chapter's "In the spirit of" piece, never played. A refreshed snapshot reaches the scorer on
+the next proxy deploy; the app re-matches a stored book against the live catalog when its screen opens.
 ```
 
 ## Repository shape
@@ -204,7 +209,7 @@ frame by frame; this is its summary. Options A and C stay in `design/layouts/` a
 - **Library:** a list of book rows (cover, title, chapter count and state); empty, a centred "Import a book".
 - **Chapter river:** the book's chapters are one scrolling list, which is also the chapter list. A reached row
   shows its title and emotion chips; the playing row expands in place to the mood card (all emotion chips, the
-  named piece, alternates) and the inline mixer (balance, master, duck, layer chips); an unreached row is muted,
+  named catalog piece with its license, alternates, and the "In the spirit of" reference, 05.3) and the inline mixer (balance, master, duck, layer chips); an unreached row is muted,
   locked and shows no emotions (A21); an unscored row carries an "Unscored" chip and never a guessed mood.
 - **Import note (A7):** a full-screen state of Import: what the file is, why it can't open, how to bring a
   DRM-free copy, "Choose another file".

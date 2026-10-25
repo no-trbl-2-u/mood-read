@@ -211,7 +211,7 @@ plays. **Part 2, moods and named pieces:** 01.2, then 01.4. **After v1:** 01.9 (
 pieces). Ids keep the order they were written in. The app itself (Expo at the repo root, the gates) is spec 02.
 
 - [ ] **01.10** After v1: play the chapter's piece, looped under the narration · M · closes A17, A18 ·
-  needs 05.3
+  needs —
   - The pick, else auto, loops for the whole chapter through the layer and mixer, from a licensed source: the
     royalty-free catalog. 01.9 found no compliant path for a connected paid account (`docs/streaming-sources.md`).
   - It plays the catalog piece 05.3 picks for the chapter (D8), with no closest-match search of its own, so it

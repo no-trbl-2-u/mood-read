@@ -129,8 +129,6 @@ Decisions made upfront (do not ask):
 
 ## Acceptance
 
-- **A3** Every piece the scorer names, as the main piece or an alternate, is a catalog piece; a book scored before
-  v2 is re-matched without a new research run.
 - **A4** One "Build playlist" press downloads every chapter's piece with progress; afterwards the book plays offline
   from any chapter, each chapter's piece looping until that chapter ends.
 - **A5** Changing a chapter's pick downloads the new piece and releases the old one.
@@ -170,15 +168,13 @@ Decisions made upfront (do not ask):
   GitHub workflow later).
 
 ## Chunks
-Measure: 12 open · 12 closed · next A25
+Measure: 11 open · 13 closed · next A25
 
-- [ ] **05.3** The scorer names catalog pieces only, and re-matches books scored before v2 · M · closes A3 ·
-  needs —
-- [ ] **05.4** One button builds and pre-downloads a book's playlist · M · closes A4, A5 · needs 01.10, 05.3
+- [ ] **05.4** One button builds and pre-downloads a book's playlist · M · closes A4, A5 · needs 01.10
 - [ ] **05.7** Library management: remove a download, keep the book; shared pieces survive deletion · M ·
   closes A7, A8 · needs 05.4
 - [ ] **05.11** Split a one-file book into chapter files on the device · M · closes A13 · needs 04.1
-- [ ] **05.13** Spotify chapter playlists, sized to each chapter · M · closes A15 · needs 01.11, 05.3
+- [ ] **05.13** Spotify chapter playlists, sized to each chapter · M · closes A15 · needs 01.11
   - Rewrite the privacy policy's Spotify section (`src/app/privacy.tsx`) to say what a connected account shares.
   - Replace Settings' disabled "Spotify, Not available yet" row (06.3, `src/app/settings.tsx`) with connect and
     disconnect.
