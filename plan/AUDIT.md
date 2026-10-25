@@ -61,6 +61,8 @@
   waits on what the phone shows, so it is not guessed here.
 - default taken: 01.23 stays unclaimed and off the loop's pick list in practice (no code to ship without the
   phone); the loop keeps working other chunks until this is checked.
+- owner (2026-10-25): companion mode works on the Android preview APK (a24589f). Off hold: Android's half of
+  A36 is checked; the iPhone half waits on an iOS build (05.15).
 
 ### [needs-user-call] Shrink the verify gate: the kit's script tests take about 7 minutes on Windows
 - category: tooling

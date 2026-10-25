@@ -241,9 +241,11 @@ pieces). Ids keep the order they were written in. The app itself (Expo at the re
     run-cost chunk); this step points the app at it: `expo.extra.scoringProxyUrl` in `app.json` set to the
     Worker's URL (the placeholder resolves nowhere), then score one real book end to end on mood-read.pages.dev.
 - [ ] **01.23** Companion mode beside Audible on a real phone · S · closes A36 ·
-  needs —
+  needs 05.15
   - The owner's check on 04.1's preview APK (and an iPhone when iOS builds exist); 01.14 built and tested the rest
     of A27 on web.
+  - Android checked by the owner (2026-10-25, APK a24589f): companion mode works beside Audible. Left: the
+    iPhone check, once 05.15 gives an iOS build.
   - Main risk: expo-audio stops Android background playback after about 3 minutes without lock-screen controls,
     which companion mode turns off. If the bed stops, decide between a foreground service with no media session
     and accepting the limit; note the limit in `docs/workarounds.md`.
