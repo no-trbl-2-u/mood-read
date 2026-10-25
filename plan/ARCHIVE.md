@@ -72,3 +72,4 @@ identity · deleted in <sha>`; recover its text with
 - 2026-10-25 · 05.4 · One Build playlist press downloads every piece a book plays · 07726c1b..07726c1b
 - 2026-10-25 · 05.7 · Remove download keeps the book; shared pieces survive deletion · 39405a54..39405a54
 - 2026-10-25 · 05.16 · Finished books, and the shelf sorts, filters by state and searches past ten books · 2c70c6ac..2c70c6ac
+- 2026-10-25 · 05.17 · Settings exports the library, no audio, and imports it back · ec48a8aa..ec48a8aa

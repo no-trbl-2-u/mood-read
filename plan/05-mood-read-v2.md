@@ -135,8 +135,6 @@ Decisions made upfront (do not ask):
   matching its emotions, at least as long as the chapter; Mood Read plays none of it.
 - **A16** Mood Read is published on Google Play.
 - **A17** Mood Read is on TestFlight and published on the App Store.
-- **A19** "Export library" writes one file with no audio in it, and "Import library" restores positions,
-  bookmarks, moods, picks and mixes onto matching books.
 - **A20** Mood Read appears in Android Auto (and in CarPlay once iOS ships) with its library, chapters and
   transport.
 
@@ -159,7 +157,7 @@ Decisions made upfront (do not ask):
   GitHub workflow later).
 
 ## Chunks
-Measure: 6 open · 18 closed · next A25
+Measure: 5 open · 19 closed · next A25
 
 - [ ] **05.11** Split a one-file book into chapter files on the device · M · closes A13 · needs 04.1
 - [ ] **05.13** Spotify chapter playlists, sized to each chapter · M · closes A15 · needs 01.11
@@ -169,8 +167,5 @@ Measure: 6 open · 18 closed · next A25
 - [ ] **05.14** Google Play release · M · closes A16 · needs 04.1 · secrets EXPO_TOKEN
 - [ ] **05.15** TestFlight and the App Store · M · closes A17 · needs 05.14 · secrets EXPO_TOKEN
   - Needs the owner in the Apple Developer Program (D6, `plan/AUDIT.md`).
-- [ ] **05.17** Export and import the library, never the audio · S · closes A19 · needs —
-  - Match imported books with 05.7's `matchReattach` (`src/lib/reattach.ts`: title and author, length within
-    10 s or 1%).
 - [ ] **05.18** Android Auto, then CarPlay · M · closes A20 · needs 05.14
   - Android Auto lists only apps from Google Play, so this waits on 05.14 (held); CarPlay waits on 05.15.
