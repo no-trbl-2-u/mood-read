@@ -107,6 +107,12 @@ just name the pieces/scores/songs/instrumentals (It's important that there's no 
 - **A36** Companion mode is checked with Audible on a real iOS and Android phone: both play
   together whichever starts first, through a pause, a call and Bluetooth, the bed keeps playing with the screen
   off, and the narration's lock-screen controls are unchanged when companion mode is off.
+- **A39** The deployed proxy pre-scores through a GitHub Actions job: `prescore.yml` runs
+  `pnpm prescore` daily and on demand with `PRESCORE_TOKEN` as a repository secret, keeps its ledger across runs,
+  and one test run scores real LibriVox books that Browse then reads as Scored.
+- **A40** The average cost of one scoring run is known from the meter's own spend over real runs, the
+  meter's prices match OpenAI's and Brave's current rates, and whether Brave is needed is decided by scoring the
+  same books with and without it.
 
 ## Owner decisions (all answered)
 
@@ -197,7 +203,7 @@ Every question below is answered; none is open. Elsewhere in the plan, "Open que
    no emotions on its card (A21).
 
 ## Chunks
-Measure: 7 open · 31 closed · next A39
+Measure: 9 open · 31 closed · next A41
 
 Build order follows the owner's two-part v1, and the lines below are in that order. **Part 1, the player:** 01.1,
 01.6, 01.3, 01.5, 01.7: the player, then real books in it, then the second layer, its mixer and the soundscapes it
@@ -237,19 +243,13 @@ pieces). Ids keep the order they were written in. The app itself (Expo at the re
     Check iOS, and decide whether Android needs another path.
   - Listen to 01.7's six synthesized soundscapes under narration (nobody has heard them yet): the wrap of each
     loop, and whether Low Café reads as a distant room rather than a crowd. Swap any that sound wrong.
-- [ ] **01.20** Turn scoring on: keys to the Worker, deploy the proxy, set the app's proxy URL · S ·
-  closes A33 · needs —
+- [ ] **01.20** Turn scoring on: set the app's proxy URL · S ·
+  closes A33 · needs 01.27
   - The owner chose (2026-10-24, D33) to go live on OpenAI and Brave as 01.2 built the proxy; the move to Claude
     (D15) is dropped.
-  - The owner's production step 01.2 left (it spends against the $20 cap): `pnpm secrets:sync` through the vault,
-    `wrangler deploy --config proxy/wrangler.jsonc` (creates the `BookJob` and `SpendMeter` Durable Objects), then
-    `expo.extra.scoringProxyUrl` in `app.json` set to the Worker's URL (the placeholder resolves nowhere).
-  - Check `proxy/src/meter.ts`'s prices (gpt-5-mini at $0.25 / $2 per million tokens, Brave at $0.005 a query)
-    against the providers' current rates, and score one real book end to end.
-  - 05.10's pre-scoring rides the same deploy (it creates `PrescoreIndex`): set `PRESCORE_TOKEN` (64 hex) in the
-    vault before `pnpm secrets:sync`, then `pnpm prescore --dry-run` and one real
-    `node scripts/secrets.mjs run --only PRESCORE_TOKEN -- pnpm prescore`; check once that archive.org's search
-    returns `call_number`, or Browse rows never read Scored.
+  - The proxy is already deployed and pre-scoring tested (the prescore-job chunk) and the run cost known (the
+    run-cost chunk); this step points the app at it: `expo.extra.scoringProxyUrl` in `app.json` set to the
+    Worker's URL (the placeholder resolves nowhere), then score one real book end to end on mood-read.pages.dev.
 - [ ] **01.23** Companion mode beside Audible on a real phone · S · closes A36 ·
   needs —
   - The owner's check on 04.1's preview APK (and an iPhone when iOS builds exist); 01.14 built and tested the rest
@@ -257,3 +257,23 @@ pieces). Ids keep the order they were written in. The app itself (Expo at the re
   - Main risk: expo-audio stops Android background playback after about 3 minutes without lock-screen controls,
     which companion mode turns off. If the bed stops, decide between a foreground service with no media session
     and accepting the limit; note the limit in `docs/workarounds.md`.
+- [ ] **01.26** Pre-scoring as a GitHub Actions job, tested on the deployed proxy · S ·
+  closes A39 · needs —
+  - The owner chose (2026-10-25) to test pre-scoring through the GitHub job first, before the app points at the
+    proxy. The proxy deploy moves here from 01.20: `pnpm secrets:sync` through the vault, then
+    `wrangler deploy --config proxy/wrangler.jsonc` (creates `BookJob`, `SpendMeter`, `PrescoreIndex` and
+    `RateLimiter`); the app's `scoringProxyUrl` stays the placeholder, so no listener reaches it yet.
+  - `.github/workflows/prescore.yml`: `workflow_dispatch` (with a `limit` input) and a daily schedule; it runs
+    `pnpm prescore` with `PRESCORE_TOKEN` from repository secrets (`node scripts/secrets.mjs push PRESCORE_TOKEN
+    --to github-actions`) and the proxy's URL as a repository variable, and restores and saves
+    `.nexus/prescore-ledger.json` through `actions/cache` so the daily ceiling and done set hold across runs.
+  - The test: `pnpm prescore --dry-run` locally, then one dispatch with `limit: 3`; check archive.org's search
+    returns `call_number` (or Browse rows never read Scored) and that `GET /v1/prescored` lists the three books.
+- [ ] **01.27** What one scoring run costs, and whether Brave is needed · S · closes A40 ·
+  needs 01.26
+  - Read the meter's spend over the test runs and give the average per book and per chapter; check
+    `proxy/src/meter.ts`'s prices (gpt-5-mini at $0.25 / $2 per million tokens, Brave at $0.005 a query) against
+    the providers' current rates.
+  - Score the same few books with OpenAI's own web search in place of Brave (a proxy setting, not a second
+    deploy) and compare the moods, the named pieces and the cost; record the choice as a decision, and if Brave
+    goes, drop `BRAVE_SEARCH_API_KEY` from the secrets list.
