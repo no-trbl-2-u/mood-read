@@ -83,6 +83,15 @@
 
 ## Pending — findings
 
+### [4.5] Wi-Fi only gates on the setting alone: the queue never reads the network
+- category: correctness
+- impact: 4 (with Wi-Fi only on, a phone on mobile data still downloads books and playlist pieces, since
+  `onWifi` is never passed to the app's queue and defaults to true)
+- ease: 5 (pass an `onWifi` from a network-status module, e.g. expo-network, in `src/lib/downloads.ts`, and
+  re-run the queue when the network changes)
+- seen: 2026-10-25 (05.4 builder, heads-down arcturus)
+- next: /iterate
+
 ### [4.2] A chapter is reached (and its pieces logged) only while the book's screen is open
 - category: correctness
 - impact: 4 (playback that runs into the next chapter while the listener is on another screen leaves that chapter

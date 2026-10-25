@@ -129,9 +129,6 @@ Decisions made upfront (do not ask):
 
 ## Acceptance
 
-- **A4** One "Build playlist" press downloads every chapter's piece with progress; afterwards the book plays offline
-  from any chapter, each chapter's piece looping until that chapter ends.
-- **A5** Changing a chapter's pick downloads the new piece and releases the old one.
 - **A7** "Remove download" deletes a book's file and keeps the book, its position, bookmarks, moods, picks and mix;
   a LibriVox book downloads again in one tap, an imported one asks for its file again.
 - **A8** Removing or deleting a book deletes each of its pieces unless another book still on the device has that
@@ -168,11 +165,12 @@ Decisions made upfront (do not ask):
   GitHub workflow later).
 
 ## Chunks
-Measure: 11 open · 13 closed · next A25
+Measure: 9 open · 15 closed · next A25
 
-- [ ] **05.4** One button builds and pre-downloads a book's playlist · M · closes A4, A5 · needs —
 - [ ] **05.7** Library management: remove a download, keep the book; shared pieces survive deletion · M ·
-  closes A7, A8 · needs 05.4
+  closes A7, A8 · needs —
+  - 05.4 left the shared-piece rule ready: `unreferenced` in `src/lib/playlist.ts` and `releaseBook(bookId)` in
+    `src/lib/playlists.ts`; `library.removeBook` does not call it yet.
 - [ ] **05.11** Split a one-file book into chapter files on the device · M · closes A13 · needs 04.1
 - [ ] **05.13** Spotify chapter playlists, sized to each chapter · M · closes A15 · needs 01.11
   - Rewrite the privacy policy's Spotify section (`src/app/privacy.tsx`) to say what a connected account shares.
