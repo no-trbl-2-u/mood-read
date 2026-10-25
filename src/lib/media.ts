@@ -127,6 +127,39 @@ export function localPieceUri(key: string): string | null {
   }
 }
 
+/**
+ * Downloads a catalog piece into its one shared file (05.4, A4): the file `pieceFile` names, which every book that
+ * plays the piece reads. A file already there is replaced (a resumed download starts over).
+ */
+export async function downloadPieceFile(
+  key: string,
+  url: string,
+  onProgress: (bytes: number, totalBytes: number | null) => void,
+  signal: AbortSignal,
+): Promise<void> {
+  new Directory(Paths.document, 'pieces').create({ idempotent: true, intermediates: true });
+  await File.downloadFileAsync(url, pieceFile(key), {
+    idempotent: true,
+    signal,
+    onProgress: (p) => onProgress(p.bytesWritten, p.totalBytes < 0 ? null : p.totalBytes),
+  });
+}
+
+/** Deletes a piece's file (05.4, A5): only once no book's playlist on the device still has it (src/lib/playlist.ts). */
+export async function deletePieceFile(key: string): Promise<void> {
+  try {
+    const file = pieceFile(key);
+    if (file.exists) file.delete();
+  } catch {
+    // Already gone: nothing to release.
+  }
+}
+
+/** The web build reads its kept pieces back once per session; on a phone each file is read where it lies. */
+export async function warmPieces(): Promise<boolean> {
+  return false;
+}
+
 /** A playable (or displayable) URI for a stored ref. */
 export async function resolveFile(ref: string): Promise<string> {
   return ref;

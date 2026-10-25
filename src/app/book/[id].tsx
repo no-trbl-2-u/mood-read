@@ -2,7 +2,7 @@ import { router, useLocalSearchParams } from "expo-router";
 import { useEffect, useMemo, useState } from "react";
 import { StyleSheet, Text, View } from "react-native";
 
-import { chapterBed, pickFor } from "@/lib/bed";
+import { chapterBed, MUSIC_PICK, pickFor, pickLayer } from "@/lib/bed";
 import { useCatalog } from "@/lib/catalog-config";
 import { licenseName } from "@/lib/credits";
 import { speedLabel } from "@/lib/labels";
@@ -12,7 +12,8 @@ import { draftFrom } from "@/lib/mood-match";
 import { isReached } from "@/lib/reached";
 import { notes, useNoteDismissed } from "@/lib/notes";
 import { scoring, scoringStore, useBookScores, useScoringJob } from "@/lib/scoring";
-import { settings } from "@/lib/settings";
+import { buildPlaylist, usePlaylist } from "@/lib/playlists";
+import { settings, useSettings } from "@/lib/settings";
 import { seedable } from "@/lib/scoring-store";
 import { setMood, useChapterScores } from "@/lib/seeding";
 import { soundtrack } from "@/lib/soundtrack";
@@ -26,6 +27,7 @@ import { LayerPicker } from "@/player/LayerPicker";
 import { MiniPlayer } from "@/player/MiniPlayer";
 import { RescoreConfirm, RESCORE_MENU, ScoringBand } from "@/player/ScoringBand";
 import { Mixer } from "@/player/Mixer";
+import { PlaylistBand } from "@/player/PlaylistBand";
 import { usePlayer } from "@/player/PlayerProvider";
 import { SOUNDSCAPE_IDS } from "@/player/soundscapes";
 import { SetMoodSheet } from "@/player/SetMoodSheet";
@@ -35,6 +37,8 @@ import { OverflowMenu } from "@/ui/OverflowMenu";
 import { Toast } from "@/ui/Toast";
 import { colors, spacing, typography } from "@/ui/theme";
 import { TopBar, TopBarButton } from "@/ui/TopBar";
+
+const NO_BOOK = { id: "", chapters: [] };
 
 const backToLibrary = () => (router.canGoBack() ? router.back() : router.replace("/"));
 
@@ -70,6 +74,9 @@ export default function BookScreen() {
   // The research with the listener's seeds (07.6): what the rows, the card and "Your soundtrack" read.
   const chapterScores = useChapterScores(id ?? "");
   const furthest = useFurthestReached(id ?? "");
+  // "Build playlist" (05.4, A4): shown once the book has a piece to download; null for an unscored book.
+  const playlist = usePlaylist(book ?? NO_BOOK);
+  const wifiOnly = useSettings().wifiOnly;
   const bookVerdicts = useBookVerdicts(id ?? "");
   // The music catalog (05.3, A3): the card names each catalog piece's license, and a book scored before v2 is
   // re-matched against it here, from its stored emotions, with no request to the proxy.
@@ -190,6 +197,18 @@ export default function BookScreen() {
         onRescore={() => void scoring.start(book, true)}
         onSetMood={unscoredBook && chapter ? () => setSheet({ mood: chapter.index }) : undefined}
       />
+      {playlist && !confirmRescore && (
+        <PlaylistBand
+          status={playlist}
+          wifiOnly={wifiOnly}
+          onBuild={() => {
+            void buildPlaylist(book);
+            // The playlist is what plays from now on: the book's layer turns to Music, keeping its soundscape as the
+            // fallback for an unscored chapter (01.10). A chapter with a layer of its own keeps it.
+            if (active && p.bed.layer !== "music") p.setMix(pickLayer(p.bed, null, MUSIC_PICK));
+          }}
+        />
+      )}
       {active && p.error && (
         <Text style={styles.error} role="alert">
           {COPY.playError(p.error)}

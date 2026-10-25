@@ -9,7 +9,8 @@ import type { Page } from "@playwright/test";
 // The music catalog's real address (05.19) answers here with an empty catalog, so no page reaches R2; a spec that
 // needs pieces routes catalog.json itself (a page route outranks this one).
 const APP_JSON = path.join(path.dirname(fileURLToPath(import.meta.url)), "..", "app.json");
-const CATALOG_BASE: string = JSON.parse(fs.readFileSync(APP_JSON, "utf8")).expo.extra.catalogBaseUrl;
+/** The catalog's configured public address (app.json expo.extra.catalogBaseUrl). */
+export const CATALOG_BASE: string = JSON.parse(fs.readFileSync(APP_JSON, "utf8")).expo.extra.catalogBaseUrl;
 const EMPTY_CATALOG = { schema: 1, version: 0, updatedAt: "2026-10-25T00:00:00.000Z", pieces: [] };
 
 /** The committed snapshot of the live catalog (catalog/catalog.json, 05.2), for a spec that needs real pieces. */

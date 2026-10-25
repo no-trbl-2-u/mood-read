@@ -7,7 +7,7 @@
 import type { CatalogPiece } from "./catalog";
 import { CATALOG_BASE_URL, loadCatalog } from "./catalog-config";
 import { downloadStore } from "./downloads";
-import { localPieceUri } from "./media";
+import { localPieceUri, warmPieces } from "./media";
 import { pieceSource, type PieceSource } from "./piece-source";
 
 /** After a failed catalog read, the next try waits this long (ms). */
@@ -27,6 +27,24 @@ function local(piece: CatalogPiece): string | null {
     .some((d) => d.state === "done" && d.target.kind === "piece" && d.target.pieceId === piece.id);
   return done ? localPieceUri(piece.file.key) : null;
 }
+
+// The web build reads the pieces it kept (05.4) back once per session; finding any re-plans the bed onto them.
+void warmPieces().then((found) => found && notify());
+// A piece landing (or released) changes where it plays from: the bed re-plans, on that change only, not on progress.
+const donePieces = () =>
+  downloadStore
+    .list()
+    .filter((d) => d.state === "done" && d.target.kind === "piece")
+    .map((d) => (d.target.kind === "piece" ? d.target.pieceId : ""))
+    .sort()
+    .join(" ");
+let landed = donePieces();
+downloadStore.subscribe(() => {
+  const now = donePieces();
+  if (now === landed) return;
+  landed = now;
+  notify();
+});
 
 export const music = {
   /** Reads the catalog if it is not read yet (once per session; a failed read is tried again after a minute). */

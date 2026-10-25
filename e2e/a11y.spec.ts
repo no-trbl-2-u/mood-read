@@ -2,7 +2,7 @@
 // its overflow menu, Import, Settings (with the default soundscape open, and with Share what fits off, 07.5), the privacy policy, Downloads (05.6,
 // empty on the web build), the licenses, Credits (05.5), Your soundtrack empty and filled (07.8), a book that is not on the device, and a real book's river
 // with the playing row expanded (the mixer inline), its Speed & Sleep sheet and its Bookmarks sheet, and a scored book
-// (01.4): the playing row's mood card (emotion stickers, the named piece, alternates and the pick chips), a
+// (01.4; its playlist band paused and done, 05.4): the playing row's mood card (emotion stickers, the named piece, alternates and the pick chips), a
 // reached row's stickers and a locked row; the shelf with a scored book's fingerprint and a mood lit (07.7); 07.4's verdict targets with "Fits" lit (and 07.5's one-time "what is shared" notice), and with "Doesn't fit" lit and the
 // other pieces offered in place; 07.6's "Set the mood" sheet open with emotions lit, and a seeded chapter's card
 // ("Your mood", its matched piece); and Browse and a LibriVox book's page (05.8, archive.org stubbed by
@@ -18,9 +18,9 @@ import { expect, test, type Page } from "@playwright/test";
 import { toneAndSilence, wavFile } from "../src/lib/meta/test-fixtures";
 import { sizes } from "../src/ui/theme";
 
-import { guard, serveCatalog } from "./guard";
+import { guard, serveCatalog, servePieces } from "./guard";
 import { IDENTIFIER, stubArchiveOrg } from "./librivox-fixtures";
-import { scoredBook, unscoredBook } from "./scored-book";
+import { scoredBook, unscoredBook, wav } from "./scored-book";
 
 /** The smallest touch target, in CSS px: 44, the size A5 holds (WCAG 2.5.5; 2.5.8's AA floor is 24). */
 const TOUCH = sizes.touch;
@@ -254,6 +254,50 @@ const STATES: State[] = [
       const row0 = page.getByTestId("chapter-row-0");
       await expect(row0.getByTestId("mood-reference")).toBeVisible();
       await expect(row0.getByTestId("mood-piece")).toContainText("CC BY");
+      const play = page.getByTestId("mini-play-pause");
+      if ((await play.getAttribute("aria-label")) === "Pause") await play.click();
+      await expect(play).toHaveAttribute("aria-label", "Play");
+    },
+  },
+  {
+    name: "/book/<id> scored: the playlist paused part way, its progress bar and Resume (05.4)",
+    open: async (page) => {
+      await serveCatalog(page);
+      const id = await scoredBook(page);
+      // Built, one piece on the device and the rest paused, as the queue keeps them (src/lib/download-store.ts).
+      await page.evaluate((id) => {
+        const chapters = JSON.parse(localStorage.getItem(`scores:${id}`)!).chapters as { playlist: { piece: string } }[];
+        const ids = [...new Set(chapters.map((c) => c.playlist.piece))];
+        const row = (pieceId: string, i: number) => ({
+          id: `a11y-${i}`,
+          target: { kind: "piece", pieceId },
+          state: i === 0 ? "done" : "paused",
+          bytes: i === 0 ? 1000 : 10,
+          totalBytes: 1000,
+          error: null,
+          attempts: 0,
+          queuedAt: i,
+          updatedAt: i,
+        });
+        localStorage.setItem("downloads", JSON.stringify(ids.map(row)));
+        localStorage.setItem("playlists", JSON.stringify([{ bookId: id, pieces: ids.map((p) => ({ id: p, key: `pieces/${p}.m4a` })), builtAt: 1 }]));
+      }, id);
+      await page.reload();
+      await expect(page.getByTestId("playlist-progress")).toContainText("Music paused");
+      await expect(page.getByTestId("playlist-resume")).toBeVisible();
+      const play = page.getByTestId("mini-play-pause");
+      if ((await play.getAttribute("aria-label")) === "Pause") await play.click();
+      await expect(play).toHaveAttribute("aria-label", "Play");
+    },
+  },
+  {
+    name: "/book/<id> scored: the playlist on this device (05.4)",
+    open: async (page) => {
+      await serveCatalog(page);
+      await servePieces(page, wav(2));
+      await scoredBook(page);
+      await page.getByTestId("build-playlist").click();
+      await expect(page.getByTestId("playlist-done")).toBeVisible();
       const play = page.getByTestId("mini-play-pause");
       if ((await play.getAttribute("aria-label")) === "Pause") await play.click();
       await expect(play).toHaveAttribute("aria-label", "Play");

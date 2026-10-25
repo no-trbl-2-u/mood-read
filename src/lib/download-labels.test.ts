@@ -1,7 +1,7 @@
 import assert from "node:assert/strict";
 import { test } from "node:test";
 
-import { downloadCaption, downloadKindLabel } from "./download-labels.ts";
+import { downloadCaption, downloadKindLabel, playlistLine } from "./download-labels.ts";
 import type { Download } from "./types.ts";
 
 function download(over: Partial<Download>): Download {
@@ -50,4 +50,15 @@ test("A6: a failed download's caption carries its error, when it has one", () =>
 
 test("a finished download reads simply as downloaded", () => {
   assert.equal(downloadCaption(download({ state: "done" })), "Book · downloaded");
+});
+
+test("A4: the playlist band says how many pieces and bytes are on the device, and when it is done", () => {
+  const s = { done: 1, total: 3, bytes: 1_258_291, totalBytes: 4_718_592, failed: 0 };
+  assert.equal(playlistLine({ ...s, state: "unbuilt" }), null);
+  assert.equal(playlistLine({ ...s, state: "building" }), "Downloading music: 1 of 3 pieces · 1.2 MB of 4.5 MB");
+  assert.equal(playlistLine({ ...s, state: "paused" }), "Music paused: 1 of 3 pieces");
+  assert.equal(playlistLine({ ...s, state: "failed", failed: 2 }), "2 pieces didn't download: 1 of 3 pieces on this device");
+  assert.equal(playlistLine({ ...s, state: "failed", failed: 1 }), "1 piece didn't download: 1 of 3 pieces on this device");
+  assert.equal(playlistLine({ ...s, done: 3, bytes: 4_718_592, state: "done" }), "Playlist on this device: 3 pieces · 4.5 MB");
+  assert.equal(playlistLine({ done: 1, total: 1, bytes: 10, totalBytes: 10, failed: 0, state: "done" }), "Playlist on this device: 1 piece · 10 B");
 });

@@ -1,6 +1,7 @@
 import { router } from "expo-router";
 import { Platform, ScrollView, StyleSheet, Text, View } from "react-native";
 
+import { useCatalog } from "@/lib/catalog-config";
 import { downloadCaption, downloadKindLabel } from "@/lib/download-labels";
 import { downloadQueue, useDownloads, useStorageMeter } from "@/lib/downloads";
 import { useBook } from "@/lib/library";
@@ -13,9 +14,8 @@ import { SettingsSection } from "@/ui/SettingsList";
 import { colors, radii, sizes, spacing, strokes, typography } from "@/ui/theme";
 import { TopBar } from "@/ui/TopBar";
 
-// Downloads (spec 05, 05.6, A6), from the library's overflow menu and Settings' Storage row: the queue (empty is
-// correct until 05.1-05.4's music catalog and 05.8's LibriVox browse give it something to hold) and the storage
-// meter, splitting books from music. All its copy lives here.
+// Downloads (spec 05, 05.6, A6), from the library's overflow menu and Settings' Storage row: the queue (LibriVox
+// books, 05.8, and the pieces a built playlist needs, 05.4) and the storage meter, splitting books from music. All its copy lives here.
 const COPY = {
   title: "Downloads",
   back: "Your shelf",
@@ -109,7 +109,12 @@ function EmptyQueue() {
 
 function DownloadRow({ item }: { item: Download }) {
   const book = useBook(item.target.kind === "book" ? item.target.bookId : undefined);
-  const title = item.target.kind === "book" ? book?.title ?? downloadKindLabel(item.target) : downloadKindLabel(item.target);
+  // A piece's row is titled by the catalog (05.4): its title and artist, else "Piece" until the catalog is read.
+  const catalog = useCatalog();
+  const pieceId = item.target.kind === "piece" ? item.target.pieceId : null;
+  const piece = pieceId && catalog.status === "ready" ? catalog.pieces.find((p) => p.id === pieceId) : undefined;
+  const title =
+    item.target.kind === "book" ? (book?.title ?? downloadKindLabel(item.target)) : piece ? `${piece.title} · ${piece.artist}` : downloadKindLabel(item.target);
   const action =
     item.state === "running"
       ? { label: COPY.pause, onPress: () => downloadQueue.pause(item.id) }

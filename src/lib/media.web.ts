@@ -94,6 +94,30 @@ export async function storeCover(bookId: string, picture: Picture): Promise<stri
   return ref;
 }
 
+/** Fetches a URL whole, reporting bytes as they arrive; the blob keeps the response's content type. */
+async function fetchBlob(url: string, onProgress: (bytes: number, totalBytes: number | null) => void, signal: AbortSignal): Promise<Blob> {
+  const res = await fetch(url, { signal });
+  if (!res.ok) throw new Error(`Could not download ${url} (${res.status})`);
+  const total = Number(res.headers.get('content-length')) || null;
+  const type = res.headers.get('content-type') ?? undefined;
+  if (!res.body) {
+    const blob = await res.blob();
+    onProgress(blob.size, blob.size);
+    return blob;
+  }
+  const reader = res.body.getReader();
+  const chunks: Uint8Array[] = [];
+  let bytes = 0;
+  for (;;) {
+    const { done, value } = await reader.read();
+    if (done) break;
+    chunks.push(value);
+    bytes += value.length;
+    onProgress(bytes, total);
+  }
+  return new Blob(chunks as BlobPart[], { type });
+}
+
 /**
  * Downloads a URL into the book's IndexedDB store (05.8, LibriVox's chapter and cover files), the web build's
  * equivalent of media.ts's native `downloadFileInto`: same signature, same `idb:<bookId>/<name>` ref convention
@@ -106,27 +130,7 @@ export async function downloadFileInto(
   onProgress: (bytes: number, totalBytes: number | null) => void,
   signal: AbortSignal,
 ): Promise<{ ref: string }> {
-  const res = await fetch(url, { signal });
-  if (!res.ok) throw new Error(`Could not download ${url} (${res.status})`);
-  const total = Number(res.headers.get('content-length')) || null;
-  const type = res.headers.get('content-type') ?? undefined;
-  let blob: Blob;
-  if (res.body) {
-    const reader = res.body.getReader();
-    const chunks: Uint8Array[] = [];
-    let bytes = 0;
-    for (;;) {
-      const { done, value } = await reader.read();
-      if (done) break;
-      chunks.push(value);
-      bytes += value.length;
-      onProgress(bytes, total);
-    }
-    blob = new Blob(chunks as BlobPart[], { type });
-  } else {
-    blob = await res.blob();
-    onProgress(blob.size, blob.size);
-  }
+  const blob = await fetchBlob(url, onProgress, signal);
   const ref = `idb:${bookId}/${name}`;
   await tx('readwrite', (s) => s.put(blob, ref));
   return { ref };
@@ -143,9 +147,61 @@ export async function resolveFile(ref: string): Promise<string> {
   return url;
 }
 
-/** The web build streams catalog pieces (01.10): none is kept in the browser yet, so there is no local file. */
-export function localPieceUri(_key: string): string | null {
-  return null;
+// A catalog piece kept in this browser (05.4, A4): one blob per piece under `piece:<file name>`, shared by every book
+// that plays it, the web build's equivalent of media.ts's documents/pieces/<name>. The web build keeps one book's
+// playlist (src/lib/playlists.ts); the object URLs the bed plays are made once per session (warmPieces) or as a piece
+// lands, so `localPieceUri` answers synchronously, as the bed asks.
+const pieceName = (key: string) => key.split('/').pop() ?? key;
+const pieceRef = (key: string) => `piece:${pieceName(key)}`;
+const pieceUrls = new Map<string, string>();
+
+/** The piece's object URL once it is kept in this browser and read this session, else null (the bed then streams it). */
+export function localPieceUri(key: string): string | null {
+  return pieceUrls.get(pieceRef(key)) ?? null;
+}
+
+/** Downloads a catalog piece into this browser (05.4): the web build's `downloadPieceFile`. */
+export async function downloadPieceFile(
+  key: string,
+  url: string,
+  onProgress: (bytes: number, totalBytes: number | null) => void,
+  signal: AbortSignal,
+): Promise<void> {
+  const blob = await fetchBlob(url, onProgress, signal);
+  const ref = pieceRef(key);
+  await tx('readwrite', (s) => s.put(blob, ref));
+  const old = pieceUrls.get(ref);
+  if (old) URL.revokeObjectURL(old);
+  pieceUrls.set(ref, URL.createObjectURL(blob));
+}
+
+/** Deletes a kept piece (05.4, A5): only once no book's playlist still has it (src/lib/playlist.ts). */
+export async function deletePieceFile(key: string): Promise<void> {
+  const ref = pieceRef(key);
+  await tx('readwrite', (s) => s.delete(ref));
+  const url = pieceUrls.get(ref);
+  if (url) URL.revokeObjectURL(url);
+  pieceUrls.delete(ref);
+}
+
+/** Reads every kept piece back once per session; true when any was found, so the bed re-plans onto it. */
+export async function warmPieces(): Promise<boolean> {
+  try {
+    const range = IDBKeyRange.bound('piece:', 'piece:￿');
+    const keys = await tx<IDBValidKey[]>('readonly', (s) => s.getAllKeys(range));
+    let found = false;
+    for (const key of keys) {
+      const ref = String(key);
+      if (pieceUrls.has(ref)) continue;
+      const blob = await tx<Blob | undefined>('readonly', (s) => s.get(ref));
+      if (!blob) continue;
+      pieceUrls.set(ref, URL.createObjectURL(blob));
+      found = true;
+    }
+    return found;
+  } catch {
+    return false;
+  }
 }
 
 export async function deleteBookFiles(bookId: string): Promise<void> {
