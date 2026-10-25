@@ -7,6 +7,19 @@
 
 ## Pending — [needs-user-call]
 
+### [needs-user-call] Cloud march can't confirm a green deploy: CLOUDFLARE_API_TOKEN is wired-off in march.yml (#2)
+- category: tooling
+- logged: 2026-10-25 (triage, cloud march tick, issue #2 filed by an earlier cloud tick)
+- what: `.github/workflows/march.yml`'s job `env:` block has `CLOUDFLARE_API_TOKEN` / `CLOUDFLARE_ACCOUNT_ID` commented
+  out (around line 210). `pnpm deploy:check` exits 3 ("CLOUDFLARE_API_TOKEN is not set") every cloud tick since
+  chunk 02.3 shipped the live deploy gate, which blocks Step 2 (critique's green-deploy condition) and Step 12 of
+  any chunk a cloud tick lands.
+- default taken: cloud ticks that can't confirm a green deploy stop clean (no half-commit) per march.yml's own
+  failure-mode instructions; chunk work routes around the deploy-confirmation step only when nothing was pushed
+  this tick. Needs the owner to either (1) push `CLOUDFLARE_API_TOKEN`/`CLOUDFLARE_ACCOUNT_ID` to GitHub Actions
+  and uncomment the two lines, or (2) decide to exempt cloud ticks from deploy confirmation and say so in
+  march.yml explicitly.
+
 ### [needs-user-call] Spotify chapter playlists and the stores stay held (05.13, 05.14, 05.15, 05.18)
 - category: product
 - logged: 2026-10-25 (/heads-down capella, the owner's relayed instruction to claim spec 05)
