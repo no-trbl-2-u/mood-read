@@ -74,8 +74,8 @@ just name the pieces/scores/songs/instrumentals (It's important that there's no 
 - **Data:** `Book` (title, author, narrator, cover, files, duration, position),
   `Chapter` (book, index, title, start/end within the book's audio), `ChapterMood` (chapter, emotions with
   intensities, sources cited, coverage: `scored` | `too-little`, model and version, scored at), `Piece` (id,
-  title, composer or artist, kind: `score` | `instrumental` | `ambient`, vocals: always `none`, mood tags; from
-  01.10 also a licensed source, duration and license), `ChapterPlaylist` (chapter, one named piece that loops for
+  title, composer or artist, kind: `score` | `instrumental` | `ambient`, vocals: always `none`, mood tags; a played
+  piece is a `CatalogPiece`, spec 05), `ChapterPlaylist` (chapter, one named piece that loops for
   the chapter, two or more alternates, the listener's pick or `auto`), `Soundscape` (id, name, loop file), `Mix`
   (book, balance and master volume, from which the narration and bed levels follow, duck on/off, layer:
   `soundscape` | `music` (from 01.10) | `off`, soundscape id).
@@ -96,9 +96,6 @@ just name the pieces/scores/songs/instrumentals (It's important that there's no 
 - **A2** Speed runs 0.5× to 3× without pitch change (0.5× to 2× on Android and iOS, where the audio engine caps it);
   a sleep timer stops playback after N minutes or at chapter end.
 - **A4** Playback continues in the background and answers lock-screen / media-key controls.
-- **A17** (After v1, 01.10.) The chapter's piece, meaning the saved pick or else auto, loops under that chapter on
-  every listen.
-- **A18** Every piece and soundscape Mood Read plays carries a license that allows playing it in the app.
 - **A24** Each chapter's mood card links out to its reference piece ("In the spirit of") on Spotify, YouTube /
   YouTube Music and Apple Music, and Mood Read plays none of it; a listener can save a book's reference pieces as
   a playlist in their own YouTube or Apple Music account.
@@ -203,23 +200,14 @@ Every question below is answered; none is open. Elsewhere in the plan, "Open que
    no emotions on its card (A21).
 
 ## Chunks
-Measure: 9 open · 31 closed · next A41
+Measure: 7 open · 33 closed · next A41
 
 Build order follows the owner's two-part v1, and the lines below are in that order. **Part 1, the player:** 01.1,
 01.6, 01.3, 01.5, 01.7: the player, then real books in it, then the second layer, its mixer and the soundscapes it
 plays. **Part 2, moods and named pieces:** 01.2, then 01.4. **After v1:** 01.9 (a study), then 01.10 (play the
 pieces). Ids keep the order they were written in. The app itself (Expo at the repo root, the gates) is spec 02.
 
-- [ ] **01.10** After v1: play the chapter's piece, looped under the narration · M · closes A17, A18 ·
-  needs —
-  - The pick, else auto, loops for the whole chapter through the layer and mixer, from a licensed source: the
-    royalty-free catalog. 01.9 found no compliant path for a connected paid account (`docs/streaming-sources.md`).
-  - It plays the catalog piece 05.3 picks for the chapter (D8), with no closest-match search of its own, so it
-    waits for the catalog (05.1, 05.2) and the catalog-only scorer (05.3).
-  - Sources, best first (`docs/workarounds.md`): Kevin MacLeod's CC BY catalog and hand-picked CC0 / CC BY /
-    CC BY-SA tracks (D7), each cleared by the rights-checker; AIVA Pro or a commissioned composer only on the
-    owner's word. Any CC BY track needs the Credits screen (05.5).
-- [ ] **01.11** Mood-card link-outs and playlist saving · M · closes A24 · needs 01.10
+- [ ] **01.11** Mood-card link-outs and playlist saving · M · closes A24 · needs —
   - The links go to the chapter's reference piece: the famous no-vocals piece shown only as "In the spirit of"
     beside the catalog pick (D13). Mood Read never plays it.
   - As `docs/streaming-sources.md` sets them: each service's branding rules; Spotify gets plain links only (its
@@ -238,6 +226,8 @@ pieces). Ids keep the order they were written in. The app itself (Expo at the re
     the APK and check each.
   - Listen to 01.3's bed on the phone: loop seams, the crossfade's volume ramp, and two bed players sharing the
     audio session with the narration.
+  - 01.10's Music layer streams a catalog .m4a from R2 into a bed deck, never tried on a phone: check it loads
+    within the engine's 10 s timeout over mobile data and loops cleanly.
   - 01.5's duck under voice: on iOS it samples the narration through expo-audio's tap (untried on a device); on
     Android it is a no-op, since expo-audio samples only with RECORD_AUDIO and Mood Read asks for no microphone.
     Check iOS, and decide whether Android needs another path.

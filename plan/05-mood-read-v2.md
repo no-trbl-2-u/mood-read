@@ -170,7 +170,7 @@ Decisions made upfront (do not ask):
 ## Chunks
 Measure: 11 open · 13 closed · next A25
 
-- [ ] **05.4** One button builds and pre-downloads a book's playlist · M · closes A4, A5 · needs 01.10
+- [ ] **05.4** One button builds and pre-downloads a book's playlist · M · closes A4, A5 · needs —
 - [ ] **05.7** Library management: remove a download, keep the book; shared pieces survive deletion · M ·
   closes A7, A8 · needs 05.4
 - [ ] **05.11** Split a one-file book into chapter files on the device · M · closes A13 · needs 04.1
