@@ -51,6 +51,7 @@
     "build": "expo export -p web",
     "build:android:preview": "eas build --platform android --profile preview --non-interactive --wait",
     "e2e": "playwright test",
+    "e2e:owner": "node scripts/e2e-owner.mjs",
     "verify": "pnpm plan:check && pnpm secrets:scan && pnpm typecheck && pnpm lint && pnpm test:run && pnpm test:scripts && pnpm build && pnpm e2e",
     "deploy:check": "node scripts/deploy-check.mjs",
     "pulse": "node scripts/pulse.mjs",

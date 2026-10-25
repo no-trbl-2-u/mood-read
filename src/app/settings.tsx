@@ -2,13 +2,17 @@ import { router } from "expo-router";
 import { useState } from "react";
 import { ScrollView, StyleSheet, View } from "react-native";
 
+import { copyText } from "@/lib/clipboard";
+import { useBooks } from "@/lib/library";
+import { prescoreList } from "@/lib/owner-tools";
+import { OWNER_TOOLS } from "@/lib/owner-tools-config";
 import { settings, SOUNDSCAPE_OFF, useSettings } from "@/lib/settings";
 import { useStorageMeter } from "@/lib/downloads";
 import { DEFAULT_SOUNDSCAPE_ID } from "@/lib/soundscapes";
 import { formatBytes } from "@/lib/storage";
 import { SOUNDSCAPES } from "@/player/soundscapes";
 import { Chip } from "@/ui/Chip";
-import { LinkRow, RowDrawer, SettingsSection, SwitchRow, UnavailableRow } from "@/ui/SettingsList";
+import { ActionRow, LinkRow, RowDrawer, SettingsSection, SwitchRow, UnavailableRow } from "@/ui/SettingsList";
 import { colors, spacing } from "@/ui/theme";
 import { TopBar } from "@/ui/TopBar";
 
@@ -16,6 +20,8 @@ import { TopBar } from "@/ui/TopBar";
 // as it changes (src/lib/settings.ts), with no Save button (design/layouts/DECISION.md, Settings). A row for what
 // has not shipped (Spotify, 05.13) is shown as "Not available yet" and goes live with its chunk; Credits (05.5)
 // pushes /credits. Storage (05.6) links to /downloads, where the storage meter and the queue live. All its copy lives here.
+// "Owner tools" (05.21, spec 05 A23) shows only in a build whose app config turns them on (app.config.ts: local dev and
+// the preview APK); a store or production build never has the section.
 
 /** "Share what fits" (07.5, spec 07 A6): what the switch sends, in the privacy policy's terms. */
 const SHARE_CAPTION =
@@ -35,6 +41,29 @@ const SOUNDSCAPE_CHOICES: { id: string; label: string }[] = [
   { id: SOUNDSCAPE_OFF, label: "Off" },
   ...SOUNDSCAPES.map((s) => ({ id: s.id, label: s.name })),
 ];
+
+/** "Copy books for pre-scoring" (05.21, A23): what the row says, and how the copy went. */
+const PRESCORE_TITLE = "Copy books for pre-scoring";
+const PRESCORE_CAPTION = "Each book's title, author, chapter titles and catalog numbers, as JSON for pnpm prescore.";
+const copiedCaption = (n: number) => (n === 1 ? "Copied 1 book." : `Copied ${n} books.`);
+const COPY_FAILED = "Couldn't copy. Try again.";
+
+/** The owner's own section: copies every library book's scoring request; the app sends it nowhere itself. */
+function OwnerTools() {
+  const books = useBooks();
+  const [caption, setCaption] = useState(PRESCORE_CAPTION);
+  const copy = () => {
+    copyText(prescoreList(books)).then(
+      () => setCaption(copiedCaption(books.length)),
+      () => setCaption(COPY_FAILED),
+    );
+  };
+  return (
+    <SettingsSection label="Owner tools">
+      <ActionRow testID="setting-prescore-copy" title={PRESCORE_TITLE} caption={caption} onPress={copy} />
+    </SettingsSection>
+  );
+}
 
 const goBack = () => (router.canGoBack() ? router.back() : router.replace("/"));
 
@@ -108,6 +137,8 @@ export default function SettingsScreen() {
         <SettingsSection label="Connected accounts">
           <UnavailableRow testID="setting-spotify" title="Spotify" />
         </SettingsSection>
+
+        {OWNER_TOOLS && <OwnerTools />}
 
         <SettingsSection label="About">
           <LinkRow testID="setting-credits" title="Credits" onPress={() => router.push("/credits")} />

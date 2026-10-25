@@ -14,6 +14,8 @@
 node_modules/
 .expo/
 dist/
+# The owner-tools web build (pnpm e2e:owner, 05.21)
+dist-owner/
 web-build/
 expo-env.d.ts
 # Local Playwright MCP captures

@@ -1,7 +1,8 @@
 // A small static server over the web build (dist/) for the hermetic e2e: Node built-ins only, localhost only.
 // A path that names a file in dist/ serves that file; a path with no file extension (a client route such as
 // /book/abc) falls back to index.html, the single-page app; a missing asset is a 404, so the smoke walk sees it.
-// Usage: node e2e/serve.mjs [port]   (default 4173; root is dist/ beside this folder)
+// Usage: node e2e/serve.mjs [port]   (default 4173; root is dist/ beside this folder, or E2E_DIST: the owner-tools
+// build in dist-owner/, scripts/e2e-owner.mjs)
 import { createReadStream, statSync } from 'node:fs';
 import { createServer } from 'node:http';
 import path from 'node:path';
@@ -119,7 +120,7 @@ export function createStaticServer(root) {
 }
 
 if (process.argv[1] && path.resolve(process.argv[1]) === fileURLToPath(import.meta.url)) {
-  const root = path.join(path.dirname(fileURLToPath(import.meta.url)), '..', 'dist');
+  const root = path.join(path.dirname(fileURLToPath(import.meta.url)), '..', process.env.E2E_DIST || 'dist');
   const port = Number(process.argv[2] ?? process.env.PORT ?? 4173);
   if (!isFile(path.join(root, 'index.html'))) {
     console.error(`serve: no ${path.join(root, 'index.html')}; run pnpm build first`);

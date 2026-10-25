@@ -84,6 +84,22 @@ export function LinkRow(props: {
   );
 }
 
+/** A row that does something in place when pressed; its caption can report how that went. */
+export function ActionRow(props: { title: string; caption?: string; onPress: () => void; testID?: string }) {
+  return (
+    <Pressable testID={props.testID} role="button" aria-label={props.title} onPress={props.onPress} style={styles.row}>
+      <View style={styles.text}>
+        <Text style={styles.title}>{props.title}</Text>
+        {props.caption && (
+          <Text style={styles.caption} aria-live="polite">
+            {props.caption}
+          </Text>
+        )}
+      </View>
+    </Pressable>
+  );
+}
+
 /** A row for something that has not shipped yet: shown, dimmed, read as its two words, and not a control. */
 export function UnavailableRow(props: { title: string; testID?: string }) {
   return (
