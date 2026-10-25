@@ -1,6 +1,16 @@
 // The hermetic guard every e2e page runs under: no console error, no page error, no failed request, and no origin
 // but localhost (blob: and data: URLs are the page's own). A spec asserts the collected list is empty.
+import fs from "node:fs";
+import path from "node:path";
+import { fileURLToPath } from "node:url";
+
 import type { Page } from "@playwright/test";
+
+// The music catalog's real address (05.19) answers here with an empty catalog, so no page reaches R2; a spec that
+// needs pieces routes catalog.json itself (a page route outranks this one).
+const APP_JSON = path.join(path.dirname(fileURLToPath(import.meta.url)), "..", "app.json");
+const CATALOG_BASE: string = JSON.parse(fs.readFileSync(APP_JSON, "utf8")).expo.extra.catalogBaseUrl;
+const EMPTY_CATALOG = { schema: 1, version: 0, updatedAt: "2026-10-25T00:00:00.000Z", pieces: [] };
 
 const isLocal = (url: string) => {
   const { protocol, hostname } = new URL(url);
@@ -14,6 +24,7 @@ export async function guard(page: Page): Promise<string[]> {
   await page.context().route("**/*", (route) => {
     const url = route.request().url();
     if (isLocal(url)) return route.continue();
+    if (url === `${CATALOG_BASE}/catalog.json`) return route.fulfill({ status: 200, json: EMPTY_CATALOG });
     problems.push(`blocked non-localhost request: ${url}`);
     return route.abort("blockedbyclient");
   });

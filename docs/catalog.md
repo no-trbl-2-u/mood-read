@@ -14,8 +14,11 @@ validator). This page writes it out for people. If the two ever differ, the code
 - `pieces/<sha256>.<ext>`: one audio file per piece, named by the SHA-256 of its bytes, so a key never changes
   meaning. `<ext>` is `m4a` (AAC, `audio/mp4`) or `opus` (Opus, `audio/ogg`).
 - The app reads both from one public base URL, `expo.extra.catalogBaseUrl` in `app.json`
-  (`src/lib/catalog-config.ts`). Until the owner sets it, it is `https://mood-read-catalog.invalid` and the app
-  fetches nothing.
+  (`src/lib/catalog-config.ts`): the bucket's r2.dev address, `https://pub-4a8a6c86fad24ced839c7dc3d3f4dc66.r2.dev`
+  (05.19). With the placeholder `https://mood-read-catalog.invalid` the app fetches nothing.
+- Public read is r2.dev's; writes need the vault's S3 credentials. The bucket's CORS rule allows GET and HEAD
+  (with `Range`) from `https://mood-read.pages.dev` and `http://localhost:8081` (local web dev); native builds need
+  none. The e2e guard (`e2e/guard.ts`) answers the address with an empty catalog, so no test reaches R2.
 
 ## catalog.json
 

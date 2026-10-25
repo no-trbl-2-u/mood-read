@@ -1,5 +1,5 @@
 // Credits (spec 05, 05.5, A12) on the web build: reached from the library's overflow menu (last, under a rule) and
-// from Settings' About. With the catalog's address still the placeholder, nothing is fetched and Music says so; the
+// from Settings' About. The catalog answers empty (e2e/guard.ts stubs its address), so Music says so; the
 // six soundscapes open inline with their license; a LibriVox book from Browse (archive.org stubbed by
 // e2e/librivox-fixtures.ts) is thanked with its reader, public domain; and the notices link to /licenses.
 import { expect, test } from "@playwright/test";

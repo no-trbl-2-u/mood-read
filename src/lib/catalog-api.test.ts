@@ -65,9 +65,11 @@ test("a piece's audio is its content-addressed key under the base URL", () => {
   assert.equal(pieceAudioUrl(BASE, p), `https://catalog.example/${p.file.key}`);
 });
 
-test("app.json holds the catalog's one public base URL, the placeholder until the owner sets it", () => {
+test("app.json holds the catalog's one public base URL: the mood-read-catalog bucket's r2.dev address (05.19)", () => {
   const app = JSON.parse(fs.readFileSync(path.join(ROOT, "app.json"), "utf8"));
   const url = app.expo.extra.catalogBaseUrl;
   assert.match(url, /^https:\/\/[^/]+$/);
-  assert.equal(url, CATALOG_PLACEHOLDER);
+  assert.notEqual(url, CATALOG_PLACEHOLDER);
+  assert.equal(url, "https://pub-4a8a6c86fad24ced839c7dc3d3f4dc66.r2.dev");
+  assert.equal(catalogConfigured(url), true);
 });
