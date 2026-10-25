@@ -12,7 +12,7 @@ export const PIECE_KINDS = ["score", "instrumental", "ambient"] as const;
 export type PieceKind = (typeof PIECE_KINDS)[number];
 
 /** Bumped when the research or naming changes enough that a cached book should read as older work. */
-export const SCORER_VERSION = "07.1.0";
+export const SCORER_VERSION = "05.3.0";
 
 /** Everything the proxy accepts about a book: exactly these fields. */
 export type BookRequest = {
@@ -77,11 +77,14 @@ export type Piece = {
 };
 
 /**
- * The named piece for the whole chapter, its alternates (two or more) and, when the mood has scenes, one piece per
- * scene in the same order (`scenePieces`, the same length as `mood.scenes`), each through the same no-vocals checks
- * (A20). A scene no checked piece fits plays the chapter's piece. Absent on a book scored before 07.1.
+ * The named piece for the whole chapter, its alternates (two to four) and, when the mood has scenes, one piece per
+ * scene in the same order (`scenePieces`, the same length as `mood.scenes`). From v2 (05.3, A3; D8) every one of them
+ * is a catalog piece, matched from the chapter's emotions (src/lib/catalog-match.ts), so the piece the card names is
+ * the piece that plays. `reference` (D13) is the one famous no-vocals piece the research names for the chapter,
+ * through the no-vocals checks (A20), shown only as "In the spirit of" and never played: never a catalog id (its id
+ * holds "--", which no catalog id may) and never among the pieces. Absent when no candidate passed the checks.
  */
-export type ChapterPieces = { piece: Piece; alternates: Piece[]; scenePieces?: Piece[] };
+export type ChapterPieces = { piece: Piece; alternates: Piece[]; scenePieces?: Piece[]; reference?: Piece };
 
 export type ChapterResult = {
   index: number;

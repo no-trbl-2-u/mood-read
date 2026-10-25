@@ -1,21 +1,20 @@
-// Naming pieces (01.2, A14, A20): for each scored chapter, one film or game score, instrumental or ambient piece that
-// fits its emotions and would loop for the whole chapter, plus at least two alternates. Nothing is played (v1 names
-// pieces only). A piece with vocals (singing or spoken words) is never named, as the main piece or an alternate: a
+// The reference piece (01.2, A14, A20; from 05.3, D13): for each scored chapter, one famous film or game score,
+// instrumental or ambient piece that fits its emotions, shown only as "In the spirit of" and never played. The pieces
+// that play, the chapter's, its alternates and its scenes', are catalog pieces matched in catalog.ts (D8, A3), never
+// named by the model. A piece with vocals (singing or spoken words) is never named, as a reference either: a
 // candidate is dropped when the model flags any vocals or is unsure, when its name trips the no-vocals screen, or
 // when a second, separate check does not confirm it instrumental. Unclear counts as vocals (agents.md rule 6).
-// A chapter with scenes (07.1) also gets one piece per scene, chosen from the same candidates after the same checks.
 // 07.5: when the proxy answers a job view, a chapter's alternates are ordered by the listeners' verdicts (orderJobView).
 import type { CompletionRequest, JsonSchema } from "./clients.ts";
-import { EMOTIONS, PIECE_KINDS, type BookRequest, type ChapterPieces, type Emotion, type EmotionScore, type JobView, type Piece, type PieceKind, type Scene } from "./contract.ts";
+import { EMOTIONS, PIECE_KINDS, type BookRequest, type Emotion, type EmotionScore, type JobView, type Piece, type PieceKind } from "./contract.ts";
 import type { PieceCounts, VerdictCount } from "./store.ts";
 import { emotionSetKey } from "./validate.ts";
 
-/** Candidates asked for per chapter; at least three must survive the guard (one piece and two alternates). */
-export const CANDIDATES_PER_CHAPTER = 6;
-/** Extra candidates asked for per scene when a chapter has two or more, so each scene has some that fit it. */
-export const CANDIDATES_PER_SCENE = 2;
-export const MIN_ALTERNATES = 2;
-export const MAX_ALTERNATES = 4;
+/**
+ * Candidates asked for per chapter; one must survive every guard to be the chapter's reference (05.3: six while the
+ * model named a piece and its alternates, three now that it names only the reference).
+ */
+export const CANDIDATES_PER_CHAPTER = 3;
 
 export type Candidate = {
   title: string;
@@ -25,22 +24,8 @@ export type Candidate = {
   moodTags: Emotion[];
 };
 
-/** One chapter's ask: its emotions and, from 07.1, its scenes (absent or one scene: the chapter alone). */
-export type ChapterAsk = { index: number; emotions: EmotionScore[]; exclude: string[]; scenes?: Scene[] };
-
-const sequence = (a: ChapterAsk): Scene[] => (a.scenes && a.scenes.length > 1 ? a.scenes : []);
-
-/** How many candidates a chapter is asked for, and read: more when it has scenes. */
-export function candidateCount(a: ChapterAsk): number {
-  return CANDIDATES_PER_CHAPTER + sequence(a).length * CANDIDATES_PER_SCENE;
-}
-
-/** Every emotion a chapter's candidates may fit: the chapter's own and its scenes'. */
-export function askEmotions(a: ChapterAsk): EmotionScore[] {
-  const best = new Map<Emotion, number>();
-  for (const e of [...a.emotions, ...sequence(a).flatMap((s) => s.emotions)]) best.set(e.emotion, Math.max(best.get(e.emotion) ?? 0, e.intensity));
-  return [...best].map(([emotion, intensity]) => ({ emotion, intensity }));
-}
+/** One chapter's ask: its emotions, and what not to suggest again on a retry. */
+export type ChapterAsk = { index: number; emotions: EmotionScore[]; exclude: string[] };
 
 const candidateSchema: JsonSchema = {
   type: "object",
@@ -81,9 +66,7 @@ const describe = (e: EmotionScore[]) => e.map((x) => `${x.emotion} ${x.intensity
 export function candidateRequest(book: BookRequest, asks: ChapterAsk[]): CompletionRequest {
   const lines = asks.map((a) => {
     const ex = a.exclude.length ? ` Do not suggest: ${a.exclude.join("; ")}.` : "";
-    const seq = sequence(a);
-    const sc = seq.length ? ` Scenes in order: ${seq.map((s, k) => `${k + 1}) ${describe(s.emotions)}`).join("; ")}. Suggest ${candidateCount(a)} pieces, some for each scene.` : "";
-    return `Chapter ${a.index + 1}: ${describe(a.emotions)}.${sc}${ex}`;
+    return `Chapter ${a.index + 1}: ${describe(a.emotions)}.${ex}`;
   });
   return {
     name: "chapter_pieces",
@@ -94,7 +77,6 @@ export function candidateRequest(book: BookRequest, asks: ChapterAsk[]): Complet
       "Every piece must be fully instrumental: no singing, no choir, no humming, no spoken words or samples of speech, in any well-known recording.",
       "Set vocals to none only if you are sure; otherwise some or unsure.",
       `Tag each piece with the emotions it fits, from: ${EMOTIONS.join(", ")}.`,
-      "When a chapter lists its scenes, include pieces that fit each scene's emotions, under the same rules.",
       "Give the title and the composer or artist exactly as the recording is credited. Answer with the chapter numbers given.",
     ].join(" "),
     user: `Book: ${book.title}${book.author ? ` by ${book.author}` : ""}\n\n${lines.join("\n")}`,
@@ -216,47 +198,12 @@ export function fit(c: Pick<Candidate, "moodTags">, emotions: EmotionScore[]): n
 }
 
 /**
- * The chapter's piece (the best fit; ties keep the model's order) and its alternates, from candidates that passed
- * every guard and fit the chapter's own emotions (a candidate that only fits a scene stays a scene's). Null when
- * fewer than one piece plus two alternates are left.
+ * The chapter's reference (D13): the best fit for its emotions among the candidates that passed every guard, ties in
+ * the model's order. Null when none passed: the chapter shows no "In the spirit of", and its catalog pieces stand.
  */
-export function choosePieces(passed: Candidate[], emotions: EmotionScore[]): ChapterPieces | null {
-  const fitting = passed.filter((c) => fit(c, emotions) > 0);
-  if (fitting.length < 1 + MIN_ALTERNATES) return null;
-  const ranked = fitting.map((c, i) => ({ c, i, f: fit(c, emotions) })).sort((a, b) => b.f - a.f || a.i - b.i);
-  const [first, ...rest] = ranked.map((r) => toPiece(r.c));
-  return { piece: first, alternates: rest.slice(0, MAX_ALTERNATES) };
-}
-
-/**
- * One piece per scene, in order (07.1): the best fit for the scene's emotions among the chapter's piece, its
- * alternates and the other candidates that passed every guard (ties go to the chapter's piece, then the alternates,
- * then the model's order), so a scene's piece went through exactly the checks the chapter's did (A20). A scene
- * nothing fits plays the chapter's piece; a chapter with one scene plays its own piece.
- */
-export function chooseScenePieces(passed: Candidate[], scenes: Scene[], chosen: ChapterPieces): Piece[] {
-  if (scenes.length <= 1) return scenes.map(() => chosen.piece);
-  const pool: Piece[] = [chosen.piece, ...chosen.alternates];
-  const ids = new Set(pool.map((p) => p.id));
-  for (const c of passed) {
-    const p = toPiece(c);
-    if (!ids.has(p.id)) {
-      ids.add(p.id);
-      pool.push(p);
-    }
-  }
-  return scenes.map((s) => {
-    let best: Piece = chosen.piece;
-    let bestFit = 0;
-    for (const p of pool) {
-      const f = fit(p, s.emotions);
-      if (f > bestFit + 1e-9) {
-        best = p;
-        bestFit = f;
-      }
-    }
-    return best;
-  });
+export function chooseReference(passed: Candidate[], emotions: EmotionScore[]): Piece | null {
+  const ranked = passed.map((c, i) => ({ c, i, f: fit(c, emotions) })).filter((r) => r.f > 0).sort((a, b) => b.f - a.f || a.i - b.i);
+  return ranked.length ? toPiece(ranked[0].c) : null;
 }
 
 // ---- ordering by the listeners' verdicts (07.5, spec 07 A6) ----

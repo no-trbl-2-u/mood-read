@@ -198,9 +198,12 @@ export type SoundtrackEntry = { bookId: string; pieceId: string };
 
 /**
  * What the device keeps per chapter. `playlist` is null when the mood is `too-little` (unscored), and when the
- * emotions were found but no piece passed the no-vocals checks (A20).
+ * emotions were found but no piece fits them. From v2 (05.3, A3) every piece in `pieces` and every id in `playlist` is
+ * a catalog piece; a book scored before v2 is re-matched on the device (src/lib/catalog-match.ts rematchScores).
+ * `reference` is the famous no-vocals piece the research named beside the catalog pick, shown only as "In the spirit
+ * of" and never played (D13): never in `pieces`, never in `playlist`.
  */
-export type ChapterScore = { mood: ChapterMood; pieces: Piece[]; playlist: ChapterPlaylist | null };
+export type ChapterScore = { mood: ChapterMood; pieces: Piece[]; playlist: ChapterPlaylist | null; reference?: Piece };
 
 export type BookScores = {
   /** The proxy's job id for the book (its cache key). */
@@ -225,8 +228,11 @@ export type RemoteChapter = {
   index: number;
   title: string;
   mood: ResearchMood;
-  /** `scenePieces`: one per scene, in order, when the mood has scenes (07.1). */
-  pieces: { piece: Piece; alternates: Piece[]; scenePieces?: Piece[] } | null;
+  /**
+   * `scenePieces`: one per scene, in order, when the mood has scenes (07.1). From v2 (05.3) the piece, alternates and
+   * scene pieces are catalog pieces; `reference` is the famous piece shown as "In the spirit of", never played (D13).
+   */
+  pieces: { piece: Piece; alternates: Piece[]; scenePieces?: Piece[]; reference?: Piece } | null;
 };
 
 export type JobView = {

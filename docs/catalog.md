@@ -128,3 +128,13 @@ after every add and committed with the piece's sources. `src/lib/catalog-coverag
 contract with no entry ignored, to A2 (every emotion at low and high intensity, at least three pieces each;
 `src/lib/catalog-coverage.ts`), and to its sources, which must match their entries one for one. Audio is never
 committed. How to add a piece end to end: `catalog/README.md`.
+
+## How the scorer uses it (05.3)
+
+From v2 the scorer names catalog pieces only (spec 05 A3, D8): the scoring proxy bundles `catalog/catalog.json` into
+the Worker (`proxy/src/catalog.ts`) and matches each chapter's piece, alternates and scene pieces from its emotions
+with the matcher the app shares (`src/lib/catalog-match.ts`); the model names only one famous no-vocals piece per
+chapter, the reference, shown as "In the spirit of" and never played (D13). A book scored before v2 is re-matched from
+its stored emotions, by the proxy as it serves a cached result and by the app against the catalog it loaded, with no
+new research run. A piece added to the bucket is named by the scorer once the snapshot is refreshed and the proxy is
+redeployed; the app re-matches against the live catalog at once.

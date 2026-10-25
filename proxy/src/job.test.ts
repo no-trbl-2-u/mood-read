@@ -5,6 +5,8 @@ import type { BookRequest } from "./contract.ts";
 import type { CompletionRequest, ModelClient } from "./clients.ts";
 import { admitted, fakeModel, fakeSearch, type FakeModelOptions } from "./fakes.ts";
 import { createBookJob, MAX_ATTEMPTS, type BookJob, type Run } from "./job.ts";
+import { CATALOG } from "./catalog.ts";
+import type { CatalogPiece } from "../../src/lib/catalog.ts";
 import { createRateLimiter, DAY_MS, HOUR_MS, type Limiter } from "./limiter.ts";
 import { BRAVE_USD_PER_QUERY, createMeter, estimateUsage, monthOf, openAiCost, type Meter } from "./meter.ts";
 import { memoryStore, type Store } from "./store.ts";
@@ -26,7 +28,11 @@ type Setup = {
   limiter?: Limiter;
   /** Left out: 0, so the older tests may rescore at once; the minimum age has its own tests. */
   rescoreMinAgeMs?: number;
+  /** The catalog pieces are named from; the bundled snapshot unless given (05.3). */
+  catalog?: readonly CatalogPiece[];
 };
+
+const CATALOG_IDS = new Set(CATALOG.map((p) => p.id));
 
 function setup(s: Setup = {}) {
   const store = s.store ?? memoryStore();
@@ -34,7 +40,7 @@ function setup(s: Setup = {}) {
   const search = fakeSearch();
   const model = fakeModel(s.model);
   const rescoreMinAgeMs = "rescoreMinAgeMs" in s ? s.rescoreMinAgeMs : 0;
-  const raw = createBookJob({ store, meter, capUsd: s.cap ?? 20, search, model, now: s.now ?? (() => NOW), limiter: s.limiter, rescoreMinAgeMs });
+  const raw = createBookJob({ store, meter, capUsd: s.cap ?? 20, search, model, now: s.now ?? (() => NOW), limiter: s.limiter, rescoreMinAgeMs, catalog: s.catalog });
   return { store, meter, search, model, job: admitted(raw), raw };
 }
 
@@ -85,13 +91,20 @@ test("a book is researched from its title, author and chapter titles, then score
     assert.equal(ch.mood.scoredAt, NOW);
     const p = ch.pieces!;
     assert.ok(p.piece.title && p.piece.artist && ["score", "instrumental", "ambient"].includes(p.piece.kind));
-    assert.ok(p.alternates.length >= 2, "at least two alternates");
-    for (const piece of [p.piece, ...p.alternates]) {
+    assert.ok(p.alternates.length >= 2 && p.alternates.length <= 4, "two to four alternates");
+    for (const piece of [p.piece, ...p.alternates, ...(p.scenePieces ?? [])]) {
+      assert.ok(CATALOG_IDS.has(piece.id), `${piece.id}: every piece named is a catalog piece (05.3, A3)`);
       assert.equal(piece.vocals, "none");
       assert.ok(piece.moodTags.some((t) => ch.mood.emotions.some((e) => e.emotion === t)), "mood tags match the chapter's emotions");
-      assert.doesNotMatch(piece.title, /Sung|Song/, "a piece the model flagged or the screen caught is never named (A20)");
     }
     assert.ok(!p.alternates.some((a) => a.id === p.piece.id));
+    // The reference (D13): the model's famous piece, through every no-vocals check, never a catalog piece, never played.
+    const ref = p.reference!;
+    assert.ok(ref, "a reference is kept beside the catalog pick");
+    assert.ok(!CATALOG_IDS.has(ref.id), "the reference is never a catalog id");
+    assert.ok(![p.piece, ...p.alternates, ...(p.scenePieces ?? [])].some((x) => x.id === ref.id), "the reference is never among the pieces");
+    assert.equal(ref.vocals, "none");
+    assert.doesNotMatch(ref.title, /Sung|Song/, "a piece the model flagged or the screen caught is never named (A20)");
   }
 
   // Stored results keep findings and links only: no search snippets, no events.
@@ -197,45 +210,52 @@ test("the cap stops new runs, not one already going", async () => {
   assert.equal((await next.job.start(await bookKey({ ...book, title: "Carmilla" }), { ...book, title: "Carmilla" })).view.state, "capped");
 });
 
-test("a vocal piece is never named: when too few pass the vocals checks, the chapter names none (A20)", async () => {
-  const { job } = setup({ model: { clean: 4, vocalByCheck: [] } });
-  await job.start(await bookKey(book), book);
-  await drain(job);
-  const ok = (await job.status()).view!.result!;
-  assert.ok(ok.chapters.every((c) => c.pieces === null || c.pieces.alternates.length >= 2));
-
-  // The second check rejects every clean candidate: nothing is left, so nothing is named.
+test("a vocal piece is never named: when no candidate passes the vocals checks, the chapter has no reference, only its catalog pieces (A20)", async () => {
   const titles: string[] = [];
   for (let ch = 1; ch <= 4; ch++) for (let round = 1; round <= 2; round++) for (let k = 1; k <= 4; k++) titles.push(`Theme ${ch}.${round}.${k}`);
   const strict = setup({ model: { clean: 4, vocalByCheck: titles } });
   await strict.job.start(await bookKey(book), book);
   await drain(strict.job);
   const none = (await strict.job.status()).view!.result!;
-  for (const c of none.chapters) assert.equal(c.pieces, null);
+  for (const c of none.chapters) {
+    assert.equal(c.pieces!.reference, undefined, "nothing passed: no reference");
+    assert.ok([c.pieces!.piece, ...c.pieces!.alternates].every((p) => CATALOG_IDS.has(p.id)), "the catalog pieces stand");
+  }
+  assert.doesNotMatch(JSON.stringify(none), /Theme \d|Sung|Song for/, "no piece the checks refused is named anywhere");
 });
 
-test("a chapter with researched emotions but too few no-vocals pieces keeps its emotions and names no piece (A13, A20)", async () => {
-  const { job } = setup({ model: { clean: 1 } });
+test("a chapter with researched emotions the catalog cannot match keeps its emotions and names no piece (A13)", async () => {
+  const { job } = setup({ catalog: [] });
   await job.start(await bookKey(book), book);
   await drain(job);
   const result = (await job.status()).view!.result!;
   for (const c of result.chapters) {
-    assert.equal(c.pieces, null, "too few pieces passed: none is named");
+    assert.equal(c.pieces, null, "no catalog piece fits: none is named");
     assert.equal(c.mood.coverage, "scored", "the research found enough: not stored as too little written");
     assert.deepEqual(c.mood.emotions.map((e) => e.emotion), ["tension", "dread"]);
     assert.ok(c.mood.sources.length > 0, "the emotions keep their cited sources");
   }
 });
 
-test("too few candidates in the first round asks again, excluding what passed", async () => {
-  const { job, model } = setup({ model: { clean: 2 } });
+test("when no reference passes the first round it asks again, excluding what it offered", async () => {
+  const { job, model } = setup({ model: { vocalByCheck: [1, 2, 3, 4].map((n) => `Theme ${n}.1.1`) } });
   await job.start(await bookKey(book), book);
   await drain(job);
   const asks = model.calls.filter((c) => c.name === "chapter_pieces");
-  assert.ok(asks.length >= 2);
-  assert.match(asks[asks.length - 1].user, /Do not suggest: Theme/);
+  assert.equal(asks.length, 2);
+  assert.match(asks[1].user, /Do not suggest: .*Theme \d\.1\.1 by Composer 1/);
   const result = (await job.status()).view!.result!;
-  for (const c of result.chapters.filter((x) => x.mood.coverage === "scored")) assert.ok(c.pieces!.alternates.length >= 2);
+  for (const c of result.chapters) assert.match(c.pieces!.reference!.title, /^Theme \d\.2\.1$/);
+});
+
+test("the model is asked for three candidates a chapter, the reference alone, with no scene asks (05.3)", async () => {
+  const scenes = { "Chapter 1": [{ emotions: [{ emotion: "calm", intensity: 0.6 }], span: 0.5 }, { emotions: [{ emotion: "dread", intensity: 0.9 }], span: 0.5 }] };
+  const { job, model } = setup({ model: { scenes } });
+  await job.start(await bookKey(book), book);
+  await drain(job);
+  const ask = model.calls.find((c) => c.name === "chapter_pieces")!;
+  assert.match(ask.system, /suggest 3 real, well-known pieces/);
+  assert.doesNotMatch(ask.user, /Scenes in order/);
 });
 
 test("a failing step is retried, then the run is marked failed; a new start runs it again", async () => {
@@ -299,7 +319,7 @@ test("a failed or capped rescore still shows the cached result on status, as sta
   assert.deepEqual(polled.result, cached);
 });
 
-test("a chapter the sources describe as a sequence is scored as ordered scenes with one checked piece each; the rest have one scene (A1, A20)", async () => {
+test("a chapter the sources describe as a sequence is scored as ordered scenes with one catalog piece each; the rest have one scene (A1, A3)", async () => {
   const scenes = {
     "Chapter 2": [
       { emotions: [{ emotion: "calm", intensity: 0.6 }], span: 0.4, summary: "a quiet supper at the castle" },
@@ -331,20 +351,10 @@ test("a chapter the sources describe as a sequence is scored as ordered scenes w
   assert.ok(per[0].moodTags.includes("calm"), "the calm scene gets a calm piece");
   for (const p of per) {
     assert.equal(p.vocals, "none");
-    assert.doesNotMatch(p.title, /Sung|Song/, "a scene piece passes the same no-vocals checks (A20)");
+    assert.ok(CATALOG_IDS.has(p.id), "a scene's piece is a catalog piece (05.3)");
   }
   // The chapter's piece and alternates still fit the chapter's emotions, never a scene's alone (A14).
   for (const p of [two.pieces!.piece, ...two.pieces!.alternates]) assert.ok(p.moodTags.some((t) => t === "tension" || t === "dread"));
-});
-
-test("a scene whose candidates fail the second vocals check plays the chapter's piece", async () => {
-  const scenes = { "Chapter 1": [{ emotions: [{ emotion: "calm", intensity: 0.6 }], span: 0.5 }, { emotions: [{ emotion: "dread", intensity: 0.9 }], span: 0.5 }] };
-  const { job } = setup({ model: { scenes, vocalByCheck: ["Scene Theme 2.1 calm", "Scene Theme 2.2 calm"] } });
-  await job.start(await bookKey(book), book);
-  await drain(job);
-  const ch = (await job.status()).view!.result!.chapters[1];
-  assert.equal(ch.mood.scenes!.length, 2);
-  assert.equal(ch.pieces!.scenePieces![0].id, ch.pieces!.piece.id);
 });
 
 test("a run saved before 07.1 (drafts with no scenes) finishes with one scene per scored chapter", async () => {

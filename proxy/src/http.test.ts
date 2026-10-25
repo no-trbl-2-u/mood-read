@@ -223,3 +223,39 @@ test("when the counts cannot be read, the job view goes out in the scorer's orde
   assert.equal(res.status, 200);
   assert.equal(((await res.json()) as JobView).state, "done");
 });
+
+test("a result cached before v2 goes out on the catalog, from POST /v1/score and GET /v1/jobs/:id alike, with no new run (05.3, A3)", async () => {
+  const { CATALOG } = await import("./catalog.ts");
+  const ids = new Set(CATALOG.map((p) => p.id));
+  const old = { id: "composer-1--theme-1", title: "Theme 1", artist: "Composer 1", kind: "score" as const, vocals: "none" as const, moodTags: ["tension" as const] };
+  const key = "b".repeat(64);
+  const cached: JobView = {
+    jobId: key,
+    state: "done",
+    progress: { step: 1, steps: 1, chaptersDone: 1, chapters: 1 },
+    result: {
+      key,
+      chapters: [
+        {
+          index: 0,
+          title: "Chapter 1",
+          mood: { chapterIndex: 0, chapterTitle: "Chapter 1", emotions: [{ emotion: "tension", intensity: 0.8 }], sources: [], coverage: "scored", model: "gpt-5-mini", version: "07.1.0", scoredAt: 1 },
+          pieces: { piece: old, alternates: [{ ...old, id: "composer-2--theme-2" }, { ...old, id: "composer-3--theme-3" }] },
+        },
+      ],
+      model: "gpt-5-mini",
+      version: "07.1.0",
+      scoredAt: 1,
+      costUsd: 0.1,
+    },
+  };
+  let starts = 0;
+  const api: Jobs = { start: async () => (starts++, cached), status: async () => cached };
+  for (const req of [post("/v1/score", book), new Request(`${BASE}/v1/jobs/${key}`)]) {
+    const view = (await (await route(req, () => api, () => memoryVerdicts())).json()) as JobView;
+    const p = view.result!.chapters[0].pieces!;
+    assert.ok([p.piece, ...p.alternates].every((x) => ids.has(x.id)), "every piece a catalog piece");
+    assert.deepEqual(p.reference, old, "the old named piece is the reference");
+  }
+  assert.equal(starts, 1, "the cached book was read, never researched again");
+});

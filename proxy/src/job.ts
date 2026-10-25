@@ -35,13 +35,11 @@ import { matchChapters } from "./match.ts";
 import { DAY_MS, DEFAULT_RESCORE_MIN_AGE_DAYS, UNKNOWN_CLIENT, type Limiter, type Refusal } from "./limiter.ts";
 import { BRAVE_USD_PER_QUERY, estimateUsage, monthOf, openAiCost, underCap, type Meter } from "./meter.ts";
 import { PRESCORE_BUCKET, prescoreOpen } from "./prescore.ts";
+import { CATALOG, catalogPieces } from "./catalog.ts";
 import {
-  MIN_ALTERNATES,
-  askEmotions,
-  candidateCount,
+  CANDIDATES_PER_CHAPTER,
   candidateRequest,
-  choosePieces,
-  chooseScenePieces,
+  chooseReference,
   confirmedInstrumental,
   firstGuard,
   nameKey,
@@ -52,6 +50,7 @@ import {
 } from "./pieces.ts";
 import { addSources, buildQueries, moodRequest, parseMoods, sourcesFor, type Query, type Source } from "./research.ts";
 import type { Store } from "./store.ts";
+import type { CatalogPiece } from "../../src/lib/catalog.ts";
 import { textStep, type TextRun, type TextSource } from "./text-research.ts";
 
 export const SEARCHES_PER_STEP = 6;
@@ -112,6 +111,8 @@ export type JobDeps = {
   /** How old a cached result must be before a rescore may replace it; 7 days unless given. */
   rescoreMinAgeMs?: number;
   now?: () => number;
+  /** The catalog pieces a chapter's pieces come from (05.3); the snapshot bundled into the Worker unless given. */
+  catalog?: readonly CatalogPiece[];
   /** Told when a run finishes (05.10: the pre-scored books' index). A failure here never fails the run. */
   onFinish?: (done: { key: string; book: BookRequest; prescore: boolean }, result: BookResult) => Promise<void>;
 };
@@ -276,26 +277,31 @@ export function createBookJob(deps: JobDeps) {
     }
   }
 
+  // A chapter's pieces (05.3, A3): the catalog's, matched from its emotions and scenes (catalog.ts), never the
+  // model's. The model names only the chapter's reference (D13), one famous piece shown as "In the spirit of" and
+  // never played, through the same no-vocals checks as ever (A20): the flag, the name screen, the tags, and a second,
+  // separate check.
   async function piecesFor(run: Run, indices: number[]) {
     const passed = new Map<number, Candidate[]>(indices.map((i) => [i, []]));
     const rejected = new Map<number, Set<string>>(indices.map((i) => [i, new Set()]));
+    const tried = new Map<number, Set<string>>(indices.map((i) => [i, new Set()]));
     for (let round = 0; round < PIECE_ROUNDS; round++) {
-      const short = indices.filter((i) => passed.get(i)!.length < 1 + MIN_ALTERNATES);
+      const short = indices.filter((i) => passed.get(i)!.length < 1);
       if (!short.length) break;
       const asks: ChapterAsk[] = short.map((i) => ({
         index: i,
         emotions: run.drafts[i]!.emotions,
-        scenes: scenesOf(run.drafts[i]!),
-        exclude: round === 0 ? [] : [...passed.get(i)!.map((c) => `${c.title} by ${c.artist}`)],
+        // A retry asks the model not to suggest again what it offered and the checks refused.
+        exclude: [...tried.get(i)!],
       }));
       const offered = parseCandidates(await complete(run, candidateRequest(run.book, asks)));
       const fresh: { i: number; c: Candidate; id: string }[] = [];
       for (const ask of asks) {
         const i = ask.index;
-        const have = new Set(passed.get(i)!.map(nameKey));
-        // A scene's candidates take the same guard as the chapter's: the flag, the name screen, the tags (A14, A20).
-        const ok = firstGuard((offered.get(i) ?? []).slice(0, candidateCount(ask)), askEmotions(ask), rejected.get(i)!);
-        for (const c of ok) if (!have.has(nameKey(c))) fresh.push({ i, c, id: `p${fresh.length + 1}` });
+        const some = (offered.get(i) ?? []).slice(0, CANDIDATES_PER_CHAPTER);
+        for (const c of some) tried.get(i)!.add(`${c.title} by ${c.artist}`);
+        const ok = firstGuard(some, ask.emotions, rejected.get(i)!);
+        for (const c of ok) fresh.push({ i, c, id: `p${fresh.length + 1}` });
       }
       if (!fresh.length) continue;
       const confirmed = confirmedInstrumental(await complete(run, vocalsCheckRequest(fresh.map((f) => ({ id: f.id, title: f.c.title, artist: f.c.artist })))));
@@ -305,12 +311,13 @@ export function createBookJob(deps: JobDeps) {
       }
     }
     for (const i of indices) {
-      const chosen = choosePieces(passed.get(i)!, run.drafts[i]!.emotions);
-      // One piece per scene from the same checked candidates; a scene nothing fits plays the chapter's piece.
-      const pieces = chosen && { ...chosen, scenePieces: chooseScenePieces(passed.get(i)!, scenesOf(run.drafts[i]!), chosen) };
-      // A chapter with too few pieces that passed every guard names none, never a vocal piece (A20), but keeps the
-      // emotions the research found and their sources (A13): its mood is scored, only its pieces are missing.
-      run.results[i] = { index: i, title: run.book.chapters[i], mood: mood(run, i, run.drafts[i]), pieces };
+      const d = run.drafts[i]!;
+      const reference = chooseReference(passed.get(i)!, d.emotions);
+      // Catalog pieces for the chapter and each of its scenes; null only when the catalog has too few that fit, and
+      // then the mood stays scored with its sources (A13) and no piece is named.
+      const matched = catalogPieces({ emotions: d.emotions, scenes: scenesOf(d) }, deps.catalog ?? CATALOG);
+      const pieces = matched && (reference ? { ...matched, reference } : matched);
+      run.results[i] = { index: i, title: run.book.chapters[i], mood: mood(run, i, d), pieces };
       run.drafts[i] = null;
     }
   }

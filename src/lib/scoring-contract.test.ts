@@ -109,6 +109,20 @@ test("a book cached before 07.1, with no scenes and no scene pieces, is still a 
   assert.equal(toProxy(old).pieces?.scenePieces, undefined);
 });
 
+test("a chapter's reference (05.3, D13) reads the same on both sides, beside catalog pieces, and is optional", () => {
+  const catalogPiece: Piece = { id: "clean-soul", title: "Clean Soul", artist: "Kevin MacLeod", kind: "ambient", vocals: "none", moodTags: ["calm"] };
+  const reference: proxy.Piece = { id: "composer--theme", title: "Theme", artist: "Composer", kind: "score", vocals: "none", moodTags: ["calm"] };
+  const chapter: proxy.ChapterResult = {
+    index: 0,
+    title: "One",
+    mood: { chapterIndex: 0, chapterTitle: "One", emotions: [{ emotion: "calm", intensity: 0.4 }], sources: [], coverage: "scored", model: "m", version: proxy.SCORER_VERSION, scoredAt: 1 },
+    pieces: { piece: catalogPiece, alternates: [catalogPiece, catalogPiece], reference },
+  };
+  assert.deepEqual(toApp(toProxy(toApp(chapter))).pieces?.reference, reference);
+  assert.match(reference.id, /--/, "a reference id holds a double dash, which no catalog id may (src/lib/catalog.ts)");
+  assert.equal(proxy.SCORER_VERSION, "05.3.0", "the scorer's version names the catalog-only scorer");
+});
+
 // Typechecked both ways: the proxy's coverages are the research's, and "listener" (07.6) is the app's alone.
 const coverageToApp = (c: proxy.ChapterMood["coverage"]): ResearchCoverage => c;
 const coverageToProxy = (c: ResearchCoverage): proxy.ChapterMood["coverage"] => c;

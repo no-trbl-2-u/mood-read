@@ -20,6 +20,11 @@
 // a 400; it is rate-limited per client and per hour by 01.21's limiter in its own bucket (limiter.ts
 // VERDICT_POST_LIMITS: verdict posts never count against scoring runs) and folded into counts, never kept as rows. Every job
 // view the proxy answers orders each chapter's alternates by those counts (pieces.ts orderJobView).
+//
+// The catalog (05.3, A3): every job view the proxy answers names catalog pieces only. A result cached before v2 is
+// re-matched against the bundled catalog from its stored emotions as it goes out (catalog.ts catalogJobView), with no
+// new research run; its old named piece becomes the chapter's reference (D13).
+import { catalogJobView } from "./catalog.ts";
 import type { BookRequest, JobView, VerdictRow } from "./contract.ts";
 import { retryAfterSeconds, UNKNOWN_CLIENT, type Limiter, type Refusal, type RefusalReason } from "./limiter.ts";
 import { alternateIds, orderJobView } from "./pieces.ts";
@@ -105,10 +110,11 @@ async function postVerdicts(request: Request, verdicts: Verdicts): Promise<Respo
 }
 
 /**
- * A job view with each chapter's alternates in the listeners' order (07.5). Without verdicts, or when the counts
+ * A job view on the catalog (05.3) with each chapter's alternates in the listeners' order (07.5). Without verdicts, or when the counts
  * cannot be read, the view goes out as the job holds it: an ordering never stands between a listener and a score.
  */
-async function ordered(view: JobView, verdicts: (() => Verdicts) | undefined): Promise<JobView> {
+async function ordered(raw: JobView, verdicts: (() => Verdicts) | undefined): Promise<JobView> {
+  const view = catalogJobView(raw);
   if (!verdicts || !view.result) return view;
   const ids = alternateIds(view);
   if (!ids.length) return view;

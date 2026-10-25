@@ -31,4 +31,7 @@ committed; they live in R2 under their content address.
    curl -fsS "https://pub-4a8a6c86fad24ced839c7dc3d3f4dc66.r2.dev/catalog.json?v=<version>" -o catalog/catalog.json
    ```
 
+5. The scoring proxy names pieces from this snapshot, bundled into the Worker (05.3, `proxy/src/catalog.ts`): the new
+   piece is named by the scorer once the proxy is redeployed with the refreshed snapshot.
+
 If `catalog:add` refuses a piece, it does not enter: delete its two source files.
