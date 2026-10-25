@@ -1,0 +1,24 @@
+{
+  "id": "clean-soul",
+  "title": "Clean Soul",
+  "artist": "Kevin MacLeod",
+  "kind": "ambient",
+  "vocals": "none",
+  "moodTags": [
+    "calm",
+    "wonder"
+  ],
+  "intensity": "low",
+  "source": "https://incompetech.com/music/royalty-free/index.html?isrc=USUAN1300033",
+  "license": {
+    "id": "cc-by",
+    "version": "4.0",
+    "url": "https://creativecommons.org/licenses/by/4.0/"
+  },
+  "credit": "\"Clean Soul\" Kevin MacLeod (incompetech.com) Licensed under Creative Commons: By Attribution 4.0 License http://creativecommons.org/licenses/by/4.0/",
+  "loop": {
+    "start": 0,
+    "end": 306.73
+  },
+  "duration": 306.73
+}

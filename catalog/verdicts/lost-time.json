@@ -1,0 +1,45 @@
+{
+  "by": "rights-checker",
+  "verdict": "allowed",
+  "vocals": "none",
+  "useChecked": "stream from Mood Read's catalog and loop under narration in a free app, credited on a Credits screen",
+  "source": "https://incompetech.com/music/royalty-free/index.html?isrc=USUAN1500032",
+  "license": {
+    "id": "cc-by",
+    "version": "4.0"
+  },
+  "evidence": [
+    {
+      "quote": "Licensed under Creative Commons: By Attribution 4.0",
+      "url": "https://incompetech.com/music/royalty-free/faq.html",
+      "readOn": "2026-10-25"
+    },
+    {
+      "quote": "Most commonly, credits are placed on a “Credits” screen found in the settings menu.",
+      "url": "https://incompetech.com/music/royalty-free/faq.html",
+      "readOn": "2026-10-25"
+    },
+    {
+      "quote": "reproduce and Share the Licensed Material, in whole or in part",
+      "url": "https://creativecommons.org/licenses/by/4.0/legalcode.en",
+      "readOn": "2026-10-25"
+    },
+    {
+      "quote": "in any reasonable manner based on the medium, means, and context",
+      "url": "https://creativecommons.org/licenses/by/4.0/legalcode.en",
+      "readOn": "2026-10-25"
+    },
+    {
+      "quote": "Violas, Cellos, Basses",
+      "url": "https://incompetech.com/music/royalty-free/pieces.json",
+      "readOn": "2026-10-25"
+    },
+    {
+      "quote": "Dark and moving, this piece will make you cry and not get in the way of those final bits of dialog!",
+      "url": "https://incompetech.com/music/royalty-free/pieces.json",
+      "readOn": "2026-10-25"
+    }
+  ],
+  "conditions": "The Credits screen must carry the actual title, so not a placeholder: \"Lost Time\" Kevin MacLeod (incompetech.com), Licensed under Creative Commons: By Attribution 4.0, https://creativecommons.org/licenses/by/4.0/. The credit must be easy to find. The incompetech FAQ says the credit must not be \"obscured\". If the audio is edited (trimmed or crossfaded for the loop), the credits must make clear which parts are Mood Read's. Under CC BY 4.0 s.2(a)(5)(B), Mood Read must not add DRM or extra terms that stop people using the file. A public R2 bucket meets that. The license covers this recording only (ISRC USUAN1500032); it does not cover other versions.",
+  "checkedOn": "2026-10-25"
+}

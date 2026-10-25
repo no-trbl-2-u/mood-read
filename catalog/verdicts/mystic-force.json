@@ -1,0 +1,45 @@
+{
+  "by": "rights-checker",
+  "verdict": "allowed",
+  "vocals": "none",
+  "useChecked": "stream from Mood Read's catalog and loop under narration in a free app, credited on a Credits screen",
+  "source": "https://incompetech.com/music/royalty-free/index.html?isrc=USUAN1500060",
+  "license": {
+    "id": "cc-by",
+    "version": "4.0"
+  },
+  "evidence": [
+    {
+      "quote": "Licensed under Creative Commons: By Attribution 4.0",
+      "url": "https://incompetech.com/music/royalty-free/faq.html",
+      "readOn": "2026-10-25"
+    },
+    {
+      "quote": "reproduce and Share the Licensed Material, in whole or in part; and",
+      "url": "https://creativecommons.org/licenses/by/4.0/legalcode.en",
+      "readOn": "2026-10-25"
+    },
+    {
+      "quote": "to make material available to the public including in ways that members of the public may access",
+      "url": "https://creativecommons.org/licenses/by/4.0/legalcode.en",
+      "readOn": "2026-10-25"
+    },
+    {
+      "quote": "in any reasonable manner based on the medium, means,",
+      "url": "https://creativecommons.org/licenses/by/4.0/legalcode.en",
+      "readOn": "2026-10-25"
+    },
+    {
+      "quote": "\"instruments\": \"Gamelan, Helicon, Percussion\"",
+      "url": "https://incompetech.com/music/royalty-free/pieces.json",
+      "readOn": "2026-10-25"
+    },
+    {
+      "quote": "Vaguely exotic sounding, yet still comfortably tonal, this piece certainly falls between some cracks.",
+      "url": "https://incompetech.com/music/royalty-free/pieces.json",
+      "readOn": "2026-10-25"
+    }
+  ],
+  "conditions": "Show this credit on the Credits screen: \"Mystic Force Kevin MacLeod (incompetech.com) / Licensed under Creative Commons: By Attribution 4.0 / https://creativecommons.org/licenses/by/4.0/\". Under CC BY 4.0 you must also say if you changed the track. The FAQ says cutting and splicing don't need a credit note, so looping or trimming is fine. Re-encoding is fine too. Adding new material does need a note. Do not add DRM or technical restrictions to the shared file (CC BY 4.0 s.2(a)(5)(C)). There is no region restriction and no Premium-only condition.",
+  "checkedOn": "2026-10-25"
+}

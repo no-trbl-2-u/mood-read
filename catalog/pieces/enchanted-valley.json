@@ -1,0 +1,24 @@
+{
+  "id": "enchanted-valley",
+  "title": "Enchanted Valley",
+  "artist": "Kevin MacLeod",
+  "kind": "instrumental",
+  "vocals": "none",
+  "moodTags": [
+    "wonder",
+    "joy"
+  ],
+  "intensity": "high",
+  "source": "https://incompetech.com/music/royalty-free/index.html?isrc=USUAN1200093",
+  "license": {
+    "id": "cc-by",
+    "version": "4.0",
+    "url": "https://creativecommons.org/licenses/by/4.0/"
+  },
+  "credit": "\"Enchanted Valley\" Kevin MacLeod (incompetech.com) Licensed under Creative Commons: By Attribution 4.0 License http://creativecommons.org/licenses/by/4.0/",
+  "loop": {
+    "start": 0,
+    "end": 190.276
+  },
+  "duration": 190.276
+}

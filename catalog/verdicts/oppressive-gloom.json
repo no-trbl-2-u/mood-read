@@ -1,0 +1,45 @@
+{
+  "by": "rights-checker",
+  "verdict": "allowed",
+  "vocals": "none",
+  "useChecked": "stream from Mood Read's catalog and loop under narration in a free app, credited on a Credits screen",
+  "source": "https://incompetech.com/music/royalty-free/index.html?isrc=USUAN1100885",
+  "license": {
+    "id": "cc-by",
+    "version": "4.0"
+  },
+  "evidence": [
+    {
+      "quote": "Licensed under Creative Commons: By Attribution 4.0",
+      "url": "https://incompetech.com/music/royalty-free/faq.html",
+      "readOn": "2026-10-25"
+    },
+    {
+      "quote": "Most commonly, credits are placed on a “Credits” screen found in the settings menu.",
+      "url": "https://incompetech.com/music/royalty-free/faq.html",
+      "readOn": "2026-10-25"
+    },
+    {
+      "quote": "No charge. Requires that you credit the music.",
+      "url": "https://incompetech.com/music/royalty-free/licenses/",
+      "readOn": "2026-10-25"
+    },
+    {
+      "quote": "the Licensor hereby grants You a worldwide, royalty-free, non-sublicensable, non-exclusive, irrevocable license",
+      "url": "https://creativecommons.org/licenses/by/4.0/legalcode.en",
+      "readOn": "2026-10-25"
+    },
+    {
+      "quote": "in any reasonable manner based on the medium, means, and context",
+      "url": "https://creativecommons.org/licenses/by/4.0/legalcode.en",
+      "readOn": "2026-10-25"
+    },
+    {
+      "quote": "\"instruments\":\"Strings, Bass Clarinet, Percussion\" ... \"description\":\"Moody moody dark score. Almost a death march. Loops pretty darned well - but you need to trim the end.\" ... \"isrc\":\"USUAN1100885\"",
+      "url": "https://incompetech.com/music/royalty-free/pieces.json",
+      "readOn": "2026-10-25"
+    }
+  ],
+  "conditions": "Credit on the Credits screen, in the site's template: \"Oppressive Gloom Kevin MacLeod (incompetech.com) / Licensed under Creative Commons: By Attribution 4.0 / http://creativecommons.org/licenses/by/4.0/\". The description says you need to trim the end to loop it. A trimmed file counts as an adaptation, so the credit must say it was modified (CC BY 4.0 s.3(a)(1)(B)). No Premium or region limits. A free app is fine because CC BY 4.0 allows commercial use.",
+  "checkedOn": "2026-10-25"
+}

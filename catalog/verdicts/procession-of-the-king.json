@@ -1,0 +1,60 @@
+{
+  "by": "rights-checker",
+  "verdict": "allowed",
+  "vocals": "none",
+  "useChecked": "stream from Mood Read's catalog and loop under narration in a free app, credited on a Credits screen",
+  "source": "https://incompetech.com/music/royalty-free/index.html?isrc=USUAN1100745",
+  "license": {
+    "id": "cc-by",
+    "version": "4.0"
+  },
+  "evidence": [
+    {
+      "quote": "\"title\":\"Procession of the King\",\"filename\":\"Procession of the King.mp3\",\"length\":\"00:03:04\",\"instruments\":\"Strings\"",
+      "url": "https://incompetech.com/music/royalty-free/pieces.json",
+      "readOn": "2026-10-25"
+    },
+    {
+      "quote": "A strings only piece, evocative of love, romance, and pride.",
+      "url": "https://incompetech.com/music/royalty-free/pieces.json",
+      "readOn": "2026-10-25"
+    },
+    {
+      "quote": "Licensed under Creative Commons: By Attribution 4.0",
+      "url": "https://incompetech.com/music/royalty-free/faq.html",
+      "readOn": "2026-10-25"
+    },
+    {
+      "quote": "The Creative Commons license that I offer all of my music under almost always gives you more rights than those contracts.",
+      "url": "https://incompetech.com/music/royalty-free/faq.html",
+      "readOn": "2026-10-25"
+    },
+    {
+      "quote": "Most commonly, credits are placed on a \"Credits\" screen found in the settings menu.",
+      "url": "https://incompetech.com/music/royalty-free/faq.html",
+      "readOn": "2026-10-25"
+    },
+    {
+      "quote": "Creative Commons — Free: No charge. Requires that you credit the music.",
+      "url": "https://incompetech.com/music/royalty-free/licenses/",
+      "readOn": "2026-10-25"
+    },
+    {
+      "quote": "the Licensor hereby grants You a worldwide, royalty-free, non-sublicensable, non-exclusive, irrevocable license",
+      "url": "https://creativecommons.org/licenses/by/4.0/legalcode.en",
+      "readOn": "2026-10-25"
+    },
+    {
+      "quote": "to provide material to the public by any means or process that requires permission under the Licensed Rights",
+      "url": "https://creativecommons.org/licenses/by/4.0/legalcode.en",
+      "readOn": "2026-10-25"
+    },
+    {
+      "quote": "You may satisfy the conditions in Section 3(a)(1) in any reasonable manner based on the medium, means, and context",
+      "url": "https://creativecommons.org/licenses/by/4.0/legalcode.en",
+      "readOn": "2026-10-25"
+    }
+  ],
+  "conditions": "Attribution is required. Use the Incompetech format: \"Procession of the King\" Kevin MacLeod (incompetech.com), Licensed under Creative Commons: By Attribution 4.0, with a link to https://creativecommons.org/licenses/by/4.0/. Put it on a Credits screen that is easy to find and not hidden. If the file is changed (for example re-encoded with edited loop points or fades), the credit must say it was modified. Hosting the file in a public R2 bucket counts as \"Share\" under CC BY 4.0, so the attribution should also travel with the catalog entry (in its metadata or license field). There is no region or Premium restriction.",
+  "checkedOn": "2026-10-25"
+}

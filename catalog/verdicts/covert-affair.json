@@ -1,0 +1,45 @@
+{
+  "by": "rights-checker",
+  "verdict": "allowed",
+  "vocals": "none",
+  "useChecked": "stream from Mood Read's catalog and loop under narration in a free app, credited on a Credits screen",
+  "source": "https://incompetech.com/music/royalty-free/index.html?isrc=USUAN1100795",
+  "license": {
+    "id": "cc-by",
+    "version": "4.0"
+  },
+  "evidence": [
+    {
+      "quote": "Licensed under Creative Commons: By Attribution 4.0",
+      "url": "https://incompetech.com/music/royalty-free/faq.html",
+      "readOn": "2026-10-25"
+    },
+    {
+      "quote": "Most commonly, credits are placed on a \"Credits\" screen found in the settings menu.",
+      "url": "https://incompetech.com/music/royalty-free/faq.html",
+      "readOn": "2026-10-25"
+    },
+    {
+      "quote": "reproduce and Share the Licensed Material, in whole or in part; and",
+      "url": "https://creativecommons.org/licenses/by/4.0/legalcode.en",
+      "readOn": "2026-10-25"
+    },
+    {
+      "quote": "You may satisfy the conditions in Section 3(a)(1) in any reasonable manner based on the medium, means, and context",
+      "url": "https://creativecommons.org/licenses/by/4.0/legalcode.en",
+      "readOn": "2026-10-25"
+    },
+    {
+      "quote": "\"instruments\":\"Bass, Electric Piano, Drum Kit, Trumpet\"",
+      "url": "https://incompetech.com/music/royalty-free/pieces.json",
+      "readOn": "2026-10-25"
+    },
+    {
+      "quote": "\"isrc\":\"USUAN1100795\"",
+      "url": "https://incompetech.com/music/royalty-free/pieces.json",
+      "readOn": "2026-10-25"
+    }
+  ],
+  "conditions": "Show this credit on the Credits screen, changing only the title: \"Covert Affair Kevin MacLeod (incompetech.com) / Licensed under Creative Commons: By Attribution 4.0 / https://creativecommons.org/licenses/by/4.0/\". CC BY 4.0 Section 3(a)(1) also requires saying the audio was modified if it was, for example trimmed into a loop or re-encoded. Adding DRM or other technical restrictions on the audio is not allowed (Section 2(a)(5)(C)). No Premium or region limits.",
+  "checkedOn": "2026-10-25"
+}

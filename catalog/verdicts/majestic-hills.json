@@ -1,0 +1,50 @@
+{
+  "by": "rights-checker",
+  "verdict": "allowed",
+  "vocals": "none",
+  "useChecked": "stream from Mood Read's catalog and loop under narration in a free app, credited on a Credits screen",
+  "source": "https://incompetech.com/music/royalty-free/index.html?isrc=USUAN1100423",
+  "license": {
+    "id": "cc-by",
+    "version": "4.0"
+  },
+  "evidence": [
+    {
+      "quote": "Licensed under Creative Commons: By Attribution 4.0",
+      "url": "https://incompetech.com/music/royalty-free/faq.html",
+      "readOn": "2026-10-25"
+    },
+    {
+      "quote": "Most commonly, credits are placed on a “Credits” screen found in the settings menu.",
+      "url": "https://incompetech.com/music/royalty-free/faq.html",
+      "readOn": "2026-10-25"
+    },
+    {
+      "quote": "Creative Commons — Free. No charge. Requires that you credit the music.",
+      "url": "https://incompetech.com/music/royalty-free/licenses/",
+      "readOn": "2026-10-25"
+    },
+    {
+      "quote": "reproduce and Share the Licensed Material, in whole or in part; and",
+      "url": "https://creativecommons.org/licenses/by/4.0/legalcode.en",
+      "readOn": "2026-10-25"
+    },
+    {
+      "quote": "You may satisfy the conditions in Section 3(a)(1) in any reasonable manner based on the medium, means, and context in which You Share the Licensed Material.",
+      "url": "https://creativecommons.org/licenses/by/4.0/legalcode.en",
+      "readOn": "2026-10-25"
+    },
+    {
+      "quote": "instruments: Brass, Strings, Winds, Percussion",
+      "url": "https://incompetech.com/music/royalty-free/pieces.json",
+      "readOn": "2026-10-25"
+    },
+    {
+      "quote": "Several feel, tempo, and instrumentation changes throughout this orchestral piece.",
+      "url": "https://incompetech.com/music/royalty-free/pieces.json",
+      "readOn": "2026-10-25"
+    }
+  ],
+  "conditions": "The Credits screen must show this credit word for word: \"Majestic Hills Kevin MacLeod (incompetech.com) / Licensed under Creative Commons: By Attribution 4.0 / https://creativecommons.org/licenses/by/4.0/\". Looping the file unchanged is fine. If the file is trimmed, crossfaded or otherwise edited before it goes into R2, the credit must say it was modified (CC BY 4.0 s3(a)(1)(B)). Don't add DRM or other technical locks to the hosted file (s2(a)(5)(B)), and don't suggest that MacLeod endorses the app. There are no region, Premium or fee limits.",
+  "checkedOn": "2026-10-25"
+}

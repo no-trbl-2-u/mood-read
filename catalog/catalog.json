@@ -1,0 +1,3612 @@
+{
+  "schema": 1,
+  "version": 46,
+  "updatedAt": "2026-10-25T04:14:28.559Z",
+  "pieces": [
+    {
+      "id": "clean-soul",
+      "title": "Clean Soul",
+      "artist": "Kevin MacLeod",
+      "kind": "ambient",
+      "vocals": "none",
+      "moodTags": [
+        "calm",
+        "wonder"
+      ],
+      "intensity": "low",
+      "source": "https://incompetech.com/music/royalty-free/index.html?isrc=USUAN1300033",
+      "license": {
+        "id": "cc-by",
+        "version": "4.0",
+        "url": "https://creativecommons.org/licenses/by/4.0/"
+      },
+      "credit": "\"Clean Soul\" Kevin MacLeod (incompetech.com) Licensed under Creative Commons: By Attribution 4.0 License http://creativecommons.org/licenses/by/4.0/",
+      "verdict": {
+        "by": "rights-checker",
+        "verdict": "allowed",
+        "vocals": "none",
+        "useChecked": "stream from Mood Read's catalog and loop under narration in a free app, credited on a Credits screen",
+        "source": "https://incompetech.com/music/royalty-free/index.html?isrc=USUAN1300033",
+        "license": {
+          "id": "cc-by",
+          "version": "4.0"
+        },
+        "evidence": [
+          {
+            "quote": "Licensed under Creative Commons: By Attribution 4.0",
+            "url": "https://incompetech.com/music/royalty-free/faq.html",
+            "readOn": "2026-10-25"
+          },
+          {
+            "quote": "Most commonly, credits are placed on a “Credits” screen found in the settings menu.",
+            "url": "https://incompetech.com/music/royalty-free/faq.html",
+            "readOn": "2026-10-25"
+          },
+          {
+            "quote": "reproduce and Share the Licensed Material, in whole or in part; and",
+            "url": "https://creativecommons.org/licenses/by/4.0/legalcode.en",
+            "readOn": "2026-10-25"
+          },
+          {
+            "quote": "and to make material available to the public including in ways that members of the public may access",
+            "url": "https://creativecommons.org/licenses/by/4.0/legalcode.en",
+            "readOn": "2026-10-25"
+          },
+          {
+            "quote": "You may satisfy the conditions in Section 3(a)(1) in any reasonable manner based on the medium, means,",
+            "url": "https://creativecommons.org/licenses/by/4.0/legalcode.en",
+            "readOn": "2026-10-25"
+          },
+          {
+            "quote": "\"instruments\":\"Electric Piano, Bass\"",
+            "url": "https://incompetech.com/music/royalty-free/pieces.json",
+            "readOn": "2026-10-25"
+          },
+          {
+            "quote": "\"description\":\"Very clean soft piece with a lot of space in it.\"",
+            "url": "https://incompetech.com/music/royalty-free/pieces.json",
+            "readOn": "2026-10-25"
+          }
+        ],
+        "conditions": "Put this credit on the Credits screen, where it is easy to find (the FAQ says \"the credit should not be obscured\"): \"Clean Soul Kevin MacLeod (incompetech.com) / Licensed under Creative Commons: By Attribution 4.0 / https://creativecommons.org/licenses/by/4.0/\". If the file is changed (trimmed, re-encoded with fades, edited at the loop point), the credit must say so, under CC BY 4.0 s.3(a)(1)(B) and the FAQ's \"You MUST make it clear in the credits which parts are yours, and which parts are mine\". Playing the unedited file on repeat is not a change. No region or Premium limits.",
+        "checkedOn": "2026-10-25"
+      },
+      "duration": 306.73,
+      "loop": {
+        "start": 0,
+        "end": 306.73
+      },
+      "file": {
+        "key": "pieces/84995e524c814576592809e5c2b2cc4acd65f962eecf6ff0bfbcc3d6adaad3d0.m4a",
+        "sha256": "84995e524c814576592809e5c2b2cc4acd65f962eecf6ff0bfbcc3d6adaad3d0",
+        "bytes": 4980022,
+        "format": "aac",
+        "contentType": "audio/mp4"
+      },
+      "addedAt": "2026-10-25T04:11:54.906Z"
+    },
+    {
+      "id": "canon-in-d-for-two-harps",
+      "title": "Canon in D for Two Harps",
+      "artist": "Kevin MacLeod",
+      "kind": "instrumental",
+      "vocals": "none",
+      "moodTags": [
+        "calm",
+        "romance"
+      ],
+      "intensity": "low",
+      "source": "https://incompetech.com/music/royalty-free/index.html?isrc=USUAN2000015",
+      "license": {
+        "id": "cc-by",
+        "version": "4.0",
+        "url": "https://creativecommons.org/licenses/by/4.0/"
+      },
+      "credit": "\"Canon in D for Two Harps\" Kevin MacLeod (incompetech.com) Licensed under Creative Commons: By Attribution 4.0 License http://creativecommons.org/licenses/by/4.0/",
+      "verdict": {
+        "by": "rights-checker",
+        "verdict": "allowed",
+        "vocals": "none",
+        "useChecked": "stream from Mood Read's catalog and loop under narration in a free app, credited on a Credits screen",
+        "source": "https://incompetech.com/music/royalty-free/index.html?isrc=USUAN2000015",
+        "license": {
+          "id": "cc-by",
+          "version": "4.0"
+        },
+        "evidence": [
+          {
+            "quote": "Licensed under Creative Commons: By Attribution 4.0",
+            "url": "https://incompetech.com/music/royalty-free/faq.html",
+            "readOn": "2026-10-25"
+          },
+          {
+            "quote": "Most commonly, credits are placed on a “Credits” screen found in the settings menu.",
+            "url": "https://incompetech.com/music/royalty-free/faq.html",
+            "readOn": "2026-10-25"
+          },
+          {
+            "quote": "Yes. Be sure to credit me.",
+            "url": "https://incompetech.com/music/royalty-free/faq.html",
+            "readOn": "2026-10-25"
+          },
+          {
+            "quote": "worldwide, royalty-free, non-sublicensable, non-exclusive, irrevocable license to exercise the Licensed Rights",
+            "url": "https://creativecommons.org/licenses/by/4.0/legalcode.en",
+            "readOn": "2026-10-25"
+          },
+          {
+            "quote": "in any reasonable manner based on the medium, means, and context in which You Share the Licensed Material",
+            "url": "https://creativecommons.org/licenses/by/4.0/legalcode.en",
+            "readOn": "2026-10-25"
+          },
+          {
+            "quote": "\"instruments\": \"Concert Harps\"",
+            "url": "https://incompetech.com/music/royalty-free/pieces.json",
+            "readOn": "2026-10-25"
+          },
+          {
+            "quote": "I believe this is the best arrangement of this piece for 2 harps; A thing which should never have been tried.",
+            "url": "https://incompetech.com/music/royalty-free/pieces.json",
+            "readOn": "2026-10-25"
+          }
+        ],
+        "conditions": "Put the credit on the Credits screen using the FAQ template, word for word with the real title: \"Canon in D for Two Harps Kevin MacLeod (incompetech.com) / Licensed under Creative Commons: By Attribution 4.0 / https://creativecommons.org/licenses/by/4.0/\". The credit must be easy to find. If the hosted file is edited in any way (trimmed, re-encoded with a fade, or re-mastered), the credits must say what was changed, per the FAQ (\"You MUST make it clear in the credits which parts are yours, and which parts are mine\") and CC BY 4.0 s.3(a)(1)(B). Looping the file unchanged and mixing it under narration at playback does not edit the file. No region or Premium limits. CC BY 4.0 does allow hosting a copy in a public R2 bucket (\"Share\"). The composition is public domain, but the recording is copyrighted: \"All of this music is copyrighted.\"",
+        "checkedOn": "2026-10-25"
+      },
+      "duration": 339.618,
+      "loop": {
+        "start": 0,
+        "end": 339.618
+      },
+      "file": {
+        "key": "pieces/f7922cb94e536c6044ec3feac52f6a24e53d684ebde677145b97442130c06bfb.m4a",
+        "sha256": "f7922cb94e536c6044ec3feac52f6a24e53d684ebde677145b97442130c06bfb",
+        "bytes": 5449820,
+        "format": "aac",
+        "contentType": "audio/mp4"
+      },
+      "addedAt": "2026-10-25T04:11:58.639Z"
+    },
+    {
+      "id": "easy-lemon",
+      "title": "Easy Lemon",
+      "artist": "Kevin MacLeod",
+      "kind": "instrumental",
+      "vocals": "none",
+      "moodTags": [
+        "joy",
+        "calm"
+      ],
+      "intensity": "low",
+      "source": "https://incompetech.com/music/royalty-free/index.html?isrc=USUAN1200076",
+      "license": {
+        "id": "cc-by",
+        "version": "4.0",
+        "url": "https://creativecommons.org/licenses/by/4.0/"
+      },
+      "credit": "\"Easy Lemon\" Kevin MacLeod (incompetech.com) Licensed under Creative Commons: By Attribution 4.0 License http://creativecommons.org/licenses/by/4.0/",
+      "verdict": {
+        "by": "rights-checker",
+        "verdict": "allowed",
+        "vocals": "none",
+        "useChecked": "stream from Mood Read's catalog and loop under narration in a free app, credited on a Credits screen",
+        "source": "https://incompetech.com/music/royalty-free/index.html?isrc=USUAN1200076",
+        "license": {
+          "id": "cc-by",
+          "version": "4.0"
+        },
+        "evidence": [
+          {
+            "quote": "\"instruments\":\"Guitar, Bass, Drum Kit, Celesta, Marimba\"",
+            "url": "https://incompetech.com/music/royalty-free/pieces.json",
+            "readOn": "2026-10-25"
+          },
+          {
+            "quote": "\"description\":\"Super non-offending little piece. Takes voice-over very well. Available in several lengths.\"",
+            "url": "https://incompetech.com/music/royalty-free/pieces.json",
+            "readOn": "2026-10-25"
+          },
+          {
+            "quote": "Licensed under Creative Commons: By Attribution 4.0",
+            "url": "https://incompetech.com/music/royalty-free/faq.html",
+            "readOn": "2026-10-25"
+          },
+          {
+            "quote": "Creative Commons — Free: No charge. Requires that you credit the music.",
+            "url": "https://incompetech.com/music/royalty-free/licenses/",
+            "readOn": "2026-10-25"
+          },
+          {
+            "quote": "reproduce and Share the Licensed Material, in whole or in part; and",
+            "url": "https://creativecommons.org/licenses/by/4.0/legalcode.en",
+            "readOn": "2026-10-25"
+          },
+          {
+            "quote": "Share means to provide material to the public by any means or process that requires permission",
+            "url": "https://creativecommons.org/licenses/by/4.0/legalcode.en",
+            "readOn": "2026-10-25"
+          },
+          {
+            "quote": "You may satisfy the conditions in Section 3(a)(1) in any reasonable manner based on the medium, means, and context",
+            "url": "https://creativecommons.org/licenses/by/4.0/legalcode.en",
+            "readOn": "2026-10-25"
+          }
+        ],
+        "conditions": "Put this attribution on the Credits screen: \"Easy Lemon Kevin MacLeod (incompetech.com) / Licensed under Creative Commons: By Attribution 4.0 / https://creativecommons.org/licenses/by/4.0/\". The incompetech FAQ names a \"Credits\" screen as the usual place for credits. Under CC BY 4.0 s.2(a)(5)(B) you may not add DRM or extra terms that restrict what downstream users can do. Hosting the file in a public R2 bucket meets that. If you trim or edit the file to make the loop, the credit must say it was modified (CC BY 4.0 s.3(a)(1)(B), and the incompetech FAQ asks that the credits make clear what you changed). No Premium, region or payment conditions apply.",
+        "checkedOn": "2026-10-25"
+      },
+      "duration": 126.381,
+      "loop": {
+        "start": 0,
+        "end": 126.38
+      },
+      "file": {
+        "key": "pieces/020c216eff7d243727886e0aef82c3f450f766489d583961a9026b8b38baf490.m4a",
+        "sha256": "020c216eff7d243727886e0aef82c3f450f766489d583961a9026b8b38baf490",
+        "bytes": 2075387,
+        "format": "aac",
+        "contentType": "audio/mp4"
+      },
+      "addedAt": "2026-10-25T04:12:02.712Z"
+    },
+    {
+      "id": "life-of-riley",
+      "title": "Life of Riley",
+      "artist": "Kevin MacLeod",
+      "kind": "instrumental",
+      "vocals": "none",
+      "moodTags": [
+        "joy"
+      ],
+      "intensity": "low",
+      "source": "https://incompetech.com/music/royalty-free/index.html?isrc=USUAN1400054",
+      "license": {
+        "id": "cc-by",
+        "version": "4.0",
+        "url": "https://creativecommons.org/licenses/by/4.0/"
+      },
+      "credit": "\"Life of Riley\" Kevin MacLeod (incompetech.com) Licensed under Creative Commons: By Attribution 4.0 License http://creativecommons.org/licenses/by/4.0/",
+      "verdict": {
+        "by": "rights-checker",
+        "verdict": "allowed",
+        "vocals": "none",
+        "useChecked": "stream from Mood Read's catalog and loop under narration in a free app, credited on a Credits screen",
+        "source": "https://incompetech.com/music/royalty-free/index.html?isrc=USUAN1400054",
+        "license": {
+          "id": "cc-by",
+          "version": "4.0"
+        },
+        "evidence": [
+          {
+            "quote": "\"instruments\":\"Glockenspiel, Ukulele, Guitar, Percussion\" ... \"description\":\"Mid-tempo cheery music for all!\" ... \"isrc\":\"USUAN1400054\"",
+            "url": "https://incompetech.com/music/royalty-free/pieces.json",
+            "readOn": "2026-10-25"
+          },
+          {
+            "quote": "Licensed under Creative Commons: By Attribution 4.0",
+            "url": "https://incompetech.com/music/royalty-free/faq.html",
+            "readOn": "2026-10-25"
+          },
+          {
+            "quote": "A reasonable effort may be expended (e.g. clicking on a credits option) but the credit should not be obscured.",
+            "url": "https://incompetech.com/music/royalty-free/faq.html",
+            "readOn": "2026-10-25"
+          },
+          {
+            "quote": "Share — copy and redistribute the material in any medium or format for any purpose, even commercially.",
+            "url": "https://creativecommons.org/licenses/by/4.0/",
+            "readOn": "2026-10-25"
+          },
+          {
+            "quote": "Adapt — remix, transform, and build upon the material for any purpose, even commercially.",
+            "url": "https://creativecommons.org/licenses/by/4.0/",
+            "readOn": "2026-10-25"
+          }
+        ],
+        "conditions": "You must show attribution on a Credits screen the user can reach, and it must not be hidden. Use the text: \"Life of Riley Kevin MacLeod (incompetech.com) / Licensed under Creative Commons: By Attribution 4.0 / https://creativecommons.org/licenses/by/4.0/\". Say whether changes were made. Looping and mixing under narration is probably fine without a note, but add \"looped and mixed under narration\" to be safe. Do not suggest the author endorses the app. There are no region or Premium limits.",
+        "checkedOn": "2026-10-25"
+      },
+      "duration": 235.364,
+      "loop": {
+        "start": 0,
+        "end": 235.363
+      },
+      "file": {
+        "key": "pieces/1a26eeb6146ef0fa35e2f005c06dfa2940438bb420fe8cea91bd23a2f0a6b572.m4a",
+        "sha256": "1a26eeb6146ef0fa35e2f005c06dfa2940438bb420fe8cea91bd23a2f0a6b572",
+        "bytes": 3837382,
+        "format": "aac",
+        "contentType": "audio/mp4"
+      },
+      "addedAt": "2026-10-25T04:12:05.492Z"
+    },
+    {
+      "id": "carefree",
+      "title": "Carefree",
+      "artist": "Kevin MacLeod",
+      "kind": "instrumental",
+      "vocals": "none",
+      "moodTags": [
+        "joy",
+        "calm"
+      ],
+      "intensity": "low",
+      "source": "https://incompetech.com/music/royalty-free/index.html?isrc=USUAN1400037",
+      "license": {
+        "id": "cc-by",
+        "version": "4.0",
+        "url": "https://creativecommons.org/licenses/by/4.0/"
+      },
+      "credit": "\"Carefree\" Kevin MacLeod (incompetech.com) Licensed under Creative Commons: By Attribution 4.0 License http://creativecommons.org/licenses/by/4.0/",
+      "verdict": {
+        "by": "rights-checker",
+        "verdict": "allowed",
+        "vocals": "none",
+        "useChecked": "stream from Mood Read's catalog and loop under narration in a free app, credited on a Credits screen",
+        "source": "https://incompetech.com/music/royalty-free/index.html?isrc=USUAN1400037",
+        "license": {
+          "id": "cc-by",
+          "version": "4.0"
+        },
+        "evidence": [
+          {
+            "quote": "Licensed under Creative Commons: By Attribution 4.0",
+            "url": "https://incompetech.com/music/royalty-free/faq.html",
+            "readOn": "2026-10-25"
+          },
+          {
+            "quote": "Most commonly, credits are placed on a \"Credits\" screen found in the settings menu.",
+            "url": "https://incompetech.com/music/royalty-free/faq.html",
+            "readOn": "2026-10-25"
+          },
+          {
+            "quote": "Yes, you can sing over, chop, splice, compress, lengthen, and add instruments to anything you like.",
+            "url": "https://incompetech.com/music/royalty-free/faq.html",
+            "readOn": "2026-10-25"
+          },
+          {
+            "quote": "No charge. Requires that you credit the music.",
+            "url": "https://incompetech.com/music/royalty-free/licenses/",
+            "readOn": "2026-10-25"
+          },
+          {
+            "quote": "the Licensor hereby grants You a worldwide, royalty-free, non-sublicensable, non-exclusive, irrevocable license",
+            "url": "https://creativecommons.org/licenses/by/4.0/legalcode.en",
+            "readOn": "2026-10-25"
+          },
+          {
+            "quote": "You may satisfy the conditions in Section 3(a)(1) in any reasonable manner based on the medium, means, and context",
+            "url": "https://creativecommons.org/licenses/by/4.0/legalcode.en",
+            "readOn": "2026-10-25"
+          },
+          {
+            "quote": "\"title\":\"Carefree\" ... \"instruments\":\"Ukulele, Guitar, Marimba, Glockenspiel, Percussion\" ... \"description\":\"Nothing says \\\"It'll be okay\\\" quite like a ukulele.\" ... \"isrc\":\"USUAN1400037\"",
+            "url": "https://incompetech.com/music/royalty-free/pieces.json",
+            "readOn": "2026-10-25"
+          }
+        ],
+        "conditions": "Attribution on the Credits screen, in the FAQ's form: \"Carefree Kevin MacLeod (incompetech.com) / Licensed under Creative Commons: By Attribution 4.0 / https://creativecommons.org/licenses/by/4.0/\". If the hosted file is trimmed, crossfaded or re-encoded beyond plain looping, say it was modified (CC BY 4.0 s.3(a)(1)(B)). Do not put DRM or extra terms on the R2-hosted file that restrict recipients (s.2(a)(5)(B)). No region limit and no Premium requirement. Host the same Carefree.mp3 (ISRC USUAN1400037).",
+        "checkedOn": "2026-10-25"
+      },
+      "duration": 205.14,
+      "loop": {
+        "start": 0,
+        "end": 205.139
+      },
+      "file": {
+        "key": "pieces/f31f612ef760ef91da3a023dc42984f5c4b45513dab1f2f9b97295d4a41b644b.m4a",
+        "sha256": "f31f612ef760ef91da3a023dc42984f5c4b45513dab1f2f9b97295d4a41b644b",
+        "bytes": 3337784,
+        "format": "aac",
+        "contentType": "audio/mp4"
+      },
+      "addedAt": "2026-10-25T04:12:09.015Z"
+    },
+    {
+      "id": "royal-coupling",
+      "title": "Royal Coupling",
+      "artist": "Kevin MacLeod",
+      "kind": "score",
+      "vocals": "none",
+      "moodTags": [
+        "triumph",
+        "joy"
+      ],
+      "intensity": "low",
+      "source": "https://incompetech.com/music/royalty-free/index.html?isrc=USUAN1900054",
+      "license": {
+        "id": "cc-by",
+        "version": "4.0",
+        "url": "https://creativecommons.org/licenses/by/4.0/"
+      },
+      "credit": "\"Royal Coupling\" Kevin MacLeod (incompetech.com) Licensed under Creative Commons: By Attribution 4.0 License http://creativecommons.org/licenses/by/4.0/",
+      "verdict": {
+        "by": "rights-checker",
+        "verdict": "allowed",
+        "vocals": "none",
+        "useChecked": "stream from Mood Read's catalog and loop under narration in a free app, credited on a Credits screen",
+        "source": "https://incompetech.com/music/royalty-free/index.html?isrc=USUAN1900054",
+        "license": {
+          "id": "cc-by",
+          "version": "4.0"
+        },
+        "evidence": [
+          {
+            "quote": "Licensed under Creative Commons: By Attribution 4.0",
+            "url": "https://incompetech.com/music/royalty-free/faq.html",
+            "readOn": "2026-10-25"
+          },
+          {
+            "quote": "Most commonly, credits are placed on a “Credits” screen found in the settings menu.",
+            "url": "https://incompetech.com/music/royalty-free/faq.html",
+            "readOn": "2026-10-25"
+          },
+          {
+            "quote": "Yes, you can sing over, chop, splice, compress, lengthen, and add instruments to anything you like.",
+            "url": "https://incompetech.com/music/royalty-free/faq.html",
+            "readOn": "2026-10-25"
+          },
+          {
+            "quote": "the Licensor hereby grants You a worldwide, royalty-free, non-sublicensable, non-exclusive, irrevocable license",
+            "url": "https://creativecommons.org/licenses/by/4.0/legalcode.en",
+            "readOn": "2026-10-25"
+          },
+          {
+            "quote": "You may satisfy the conditions in Section 3(a)(1) in any reasonable manner based on the medium, means, and context",
+            "url": "https://creativecommons.org/licenses/by/4.0/legalcode.en",
+            "readOn": "2026-10-25"
+          },
+          {
+            "quote": "Flutes, Clarinets, French Horns, Basses, Cellos, Violins, Violas, Tuba, Trombones, Percussion",
+            "url": "https://incompetech.com/music/royalty-free/pieces.json",
+            "readOn": "2026-10-25"
+          },
+          {
+            "quote": "Light and airy, with a bit of a march going on. Parallel chords and Ravel-like crescendo.",
+            "url": "https://incompetech.com/music/royalty-free/pieces.json",
+            "readOn": "2026-10-25"
+          }
+        ],
+        "conditions": "Attribution required, visible and not obscured, on the Credits screen, using incompetech's template: \"Royal Coupling Kevin MacLeod (incompetech.com) / Licensed under Creative Commons: By Attribution 4.0 / https://creativecommons.org/licenses/by/4.0/\". CC BY 4.0 also needs a note if the audio is modified (for example trimmed or crossfaded for a seamless loop), and no implied endorsement. No region or Premium limits.",
+        "checkedOn": "2026-10-25"
+      },
+      "duration": 134.01,
+      "loop": {
+        "start": 0,
+        "end": 134.009
+      },
+      "file": {
+        "key": "pieces/9a0847a84751f124300c9e82671aa1fd2ff654f937e3292d7decc3066abf745a.m4a",
+        "sha256": "9a0847a84751f124300c9e82671aa1fd2ff654f937e3292d7decc3066abf745a",
+        "bytes": 2134813,
+        "format": "aac",
+        "contentType": "audio/mp4"
+      },
+      "addedAt": "2026-10-25T04:12:12.678Z"
+    },
+    {
+      "id": "wholesome",
+      "title": "Wholesome",
+      "artist": "Kevin MacLeod",
+      "kind": "instrumental",
+      "vocals": "none",
+      "moodTags": [
+        "calm",
+        "joy"
+      ],
+      "intensity": "high",
+      "source": "https://incompetech.com/music/royalty-free/index.html?isrc=USUAN1900022",
+      "license": {
+        "id": "cc-by",
+        "version": "4.0",
+        "url": "https://creativecommons.org/licenses/by/4.0/"
+      },
+      "credit": "\"Wholesome\" Kevin MacLeod (incompetech.com) Licensed under Creative Commons: By Attribution 4.0 License http://creativecommons.org/licenses/by/4.0/",
+      "verdict": {
+        "by": "rights-checker",
+        "verdict": "allowed",
+        "vocals": "none",
+        "useChecked": "stream from Mood Read's catalog and loop under narration in a free app, credited on a Credits screen",
+        "source": "https://incompetech.com/music/royalty-free/index.html?isrc=USUAN1900022",
+        "license": {
+          "id": "cc-by",
+          "version": "4.0"
+        },
+        "evidence": [
+          {
+            "quote": "Licensed under Creative Commons: By Attribution 4.0",
+            "url": "https://incompetech.com/music/royalty-free/faq.html",
+            "readOn": "2026-10-25"
+          },
+          {
+            "quote": "Yes. Be sure to credit me.",
+            "url": "https://incompetech.com/music/royalty-free/faq.html",
+            "readOn": "2026-10-25"
+          },
+          {
+            "quote": "Yes, you can sing over, chop, splice, compress, lengthen, and add instruments to anything you like.",
+            "url": "https://incompetech.com/music/royalty-free/faq.html",
+            "readOn": "2026-10-25"
+          },
+          {
+            "quote": "worldwide, royalty-free, non-sublicensable, non-exclusive, irrevocable",
+            "url": "https://creativecommons.org/licenses/by/4.0/legalcode.en",
+            "readOn": "2026-10-25"
+          },
+          {
+            "quote": "based on the medium, means, and context in which You Share the Licensed Material.",
+            "url": "https://creativecommons.org/licenses/by/4.0/legalcode.en",
+            "readOn": "2026-10-25"
+          },
+          {
+            "quote": "\"title\":\"Wholesome\" \"instruments\":\"Cello, Viola, Marimba, Drums\" \"isrc\":\"USUAN1900022\"",
+            "url": "https://incompetech.com/music/royalty-free/pieces.json",
+            "readOn": "2026-10-25"
+          }
+        ],
+        "conditions": "Attribution on the Credits screen, in the form the FAQ gives: \"Wholesome Kevin MacLeod (incompetech.com)\" / \"Licensed under Creative Commons: By Attribution 4.0\" / \"https://creativecommons.org/licenses/by/4.0/\". If the file is changed (trimmed, crossfaded for looping), the credit should say it was modified (CC BY 4.0 s.3(a)(1)(B); the FAQ asks the credit to make clear \"which parts are yours, and which parts are mine\"). Mixing it under narration counts as an adaptation, and the license allows that. No region limit and no Premium requirement.",
+        "checkedOn": "2026-10-25"
+      },
+      "duration": 363.808,
+      "loop": {
+        "start": 0,
+        "end": 363.807
+      },
+      "file": {
+        "key": "pieces/2f8c281783831eccfffbe158514f3aa34febba21800f19bd1521f4303a097809.m4a",
+        "sha256": "2f8c281783831eccfffbe158514f3aa34febba21800f19bd1521f4303a097809",
+        "bytes": 5921614,
+        "format": "aac",
+        "contentType": "audio/mp4"
+      },
+      "addedAt": "2026-10-25T04:12:15.966Z"
+    },
+    {
+      "id": "fireflies-and-stardust",
+      "title": "Fireflies and Stardust",
+      "artist": "Kevin MacLeod",
+      "kind": "instrumental",
+      "vocals": "none",
+      "moodTags": [
+        "joy",
+        "calm"
+      ],
+      "intensity": "high",
+      "source": "https://incompetech.com/music/royalty-free/index.html?isrc=USUAN1600061",
+      "license": {
+        "id": "cc-by",
+        "version": "4.0",
+        "url": "https://creativecommons.org/licenses/by/4.0/"
+      },
+      "credit": "\"Fireflies and Stardust\" Kevin MacLeod (incompetech.com) Licensed under Creative Commons: By Attribution 4.0 License http://creativecommons.org/licenses/by/4.0/",
+      "verdict": {
+        "by": "rights-checker",
+        "verdict": "allowed",
+        "vocals": "none",
+        "useChecked": "stream from Mood Read's catalog and loop under narration in a free app, credited on a Credits screen",
+        "source": "https://incompetech.com/music/royalty-free/index.html?isrc=USUAN1600061",
+        "license": {
+          "id": "cc-by",
+          "version": "4.0"
+        },
+        "evidence": [
+          {
+            "quote": "Licensed under Creative Commons: By Attribution 4.0",
+            "url": "https://incompetech.com/music/royalty-free/faq.html",
+            "readOn": "2026-10-25"
+          },
+          {
+            "quote": "Most commonly, credits are placed on a \"Credits\" screen found in the settings menu.",
+            "url": "https://incompetech.com/music/royalty-free/faq.html",
+            "readOn": "2026-10-25"
+          },
+          {
+            "quote": "Yes, you can sing over, chop, splice, compress, lengthen, and add instruments to anything you like.",
+            "url": "https://incompetech.com/music/royalty-free/faq.html",
+            "readOn": "2026-10-25"
+          },
+          {
+            "quote": "grants You a worldwide, royalty-free, non-sublicensable, non-exclusive, irrevocable license to exercise the Licensed Rights in the Licensed Material",
+            "url": "https://creativecommons.org/licenses/by/4.0/legalcode.en",
+            "readOn": "2026-10-25"
+          },
+          {
+            "quote": "Banjo, Violins, Mandolin, Guitars, Bass, Drums",
+            "url": "https://incompetech.com/music/royalty-free/pieces.json",
+            "readOn": "2026-10-25"
+          },
+          {
+            "quote": "Some beautiful rural americana-type music.",
+            "url": "https://incompetech.com/music/royalty-free/pieces.json",
+            "readOn": "2026-10-25"
+          }
+        ],
+        "conditions": "Attribution required, shown where a curious listener can find it easily (a Credits screen is fine): \"Fireflies and Stardust Kevin MacLeod (incompetech.com) / Licensed under Creative Commons: By Attribution 4.0 / https://creativecommons.org/licenses/by/4.0/\". Looping or trimming counts as modifying the track, so the credit should say it was modified (looped). Do not register the track with Content ID or any fingerprinting service. Hosting the file in R2 counts as Sharing under CC BY 4.0, and the same attribution covers it.",
+        "checkedOn": "2026-10-25"
+      },
+      "duration": 255.06,
+      "loop": {
+        "start": 0,
+        "end": 255.059
+      },
+      "file": {
+        "key": "pieces/a5e3fe5ce51f0f4f500216e746fae9c9f1588176ce9450a4fb96487a88f651f5.m4a",
+        "sha256": "a5e3fe5ce51f0f4f500216e746fae9c9f1588176ce9450a4fb96487a88f651f5",
+        "bytes": 4169483,
+        "format": "aac",
+        "contentType": "audio/mp4"
+      },
+      "addedAt": "2026-10-25T04:12:19.466Z"
+    },
+    {
+      "id": "crinoline-dreams",
+      "title": "Crinoline Dreams",
+      "artist": "Kevin MacLeod",
+      "kind": "instrumental",
+      "vocals": "none",
+      "moodTags": [
+        "calm",
+        "joy",
+        "romance"
+      ],
+      "intensity": "high",
+      "source": "https://incompetech.com/music/royalty-free/index.html?isrc=USUAN1700073",
+      "license": {
+        "id": "cc-by",
+        "version": "4.0",
+        "url": "https://creativecommons.org/licenses/by/4.0/"
+      },
+      "credit": "\"Crinoline Dreams\" Kevin MacLeod (incompetech.com) Licensed under Creative Commons: By Attribution 4.0 License http://creativecommons.org/licenses/by/4.0/",
+      "verdict": {
+        "by": "rights-checker",
+        "verdict": "allowed",
+        "vocals": "none",
+        "useChecked": "stream from Mood Read's catalog and loop under narration in a free app, credited on a Credits screen",
+        "source": "https://incompetech.com/music/royalty-free/index.html?isrc=USUAN1700073",
+        "license": {
+          "id": "cc-by",
+          "version": "4.0"
+        },
+        "evidence": [
+          {
+            "quote": "Licensed under Creative Commons: By Attribution 4.0",
+            "url": "https://incompetech.com/music/royalty-free/faq.html",
+            "readOn": "2026-10-25"
+          },
+          {
+            "quote": "Video Games — Most commonly, credits are placed on a “Credits” screen found in the settings menu.",
+            "url": "https://incompetech.com/music/royalty-free/faq.html",
+            "readOn": "2026-10-25"
+          },
+          {
+            "quote": "Yes, you can sing over, chop, splice, compress, lengthen, and add instruments to anything you like.",
+            "url": "https://incompetech.com/music/royalty-free/faq.html",
+            "readOn": "2026-10-25"
+          },
+          {
+            "quote": "reproduce and Share the Licensed Material, in whole or in part; and",
+            "url": "https://creativecommons.org/licenses/by/4.0/legalcode.en",
+            "readOn": "2026-10-25"
+          },
+          {
+            "quote": "You may satisfy the conditions in Section 3(a)(1) in any reasonable manner based on the medium, means, and context",
+            "url": "https://creativecommons.org/licenses/by/4.0/legalcode.en",
+            "readOn": "2026-10-25"
+          },
+          {
+            "quote": "\"instruments\": \"Piano, Violin, Viola, Bass, Cello, Double Bass\"",
+            "url": "https://incompetech.com/music/royalty-free/pieces.json",
+            "readOn": "2026-10-25"
+          },
+          {
+            "quote": "\"feel\": \"Bright, Calming, Relaxed\"",
+            "url": "https://incompetech.com/music/royalty-free/pieces.json",
+            "readOn": "2026-10-25"
+          }
+        ],
+        "conditions": "Show this credit on the Credits screen: \"Crinoline Dreams\" Kevin MacLeod (incompetech.com) / Licensed under Creative Commons: By Attribution 4.0 / https://creativecommons.org/licenses/by/4.0/. CC BY 4.0 3(a)(1)(B) also requires saying the track was modified if it was edited (for example trimmed or crossfaded into a loop). Plain looping and mixing it under the voice need no such note. Don't add DRM or other technical restrictions to the file (CC BY 4.0 2(a)(5)(C)). Region: none.",
+        "checkedOn": "2026-10-25"
+      },
+      "duration": 246.44,
+      "loop": {
+        "start": 0,
+        "end": 246.439
+      },
+      "file": {
+        "key": "pieces/0d21924a66cfe9df7064038eb5e746f5c568dd6e36865b259ec4325952070b7c.m4a",
+        "sha256": "0d21924a66cfe9df7064038eb5e746f5c568dd6e36865b259ec4325952070b7c",
+        "bytes": 4069078,
+        "format": "aac",
+        "contentType": "audio/mp4"
+      },
+      "addedAt": "2026-10-25T04:12:22.835Z"
+    },
+    {
+      "id": "night-in-venice",
+      "title": "Night in Venice",
+      "artist": "Kevin MacLeod",
+      "kind": "instrumental",
+      "vocals": "none",
+      "moodTags": [
+        "romance",
+        "calm"
+      ],
+      "intensity": "high",
+      "source": "https://incompetech.com/music/royalty-free/index.html?isrc=USUAN1900056",
+      "license": {
+        "id": "cc-by",
+        "version": "4.0",
+        "url": "https://creativecommons.org/licenses/by/4.0/"
+      },
+      "credit": "\"Night in Venice\" Kevin MacLeod (incompetech.com) Licensed under Creative Commons: By Attribution 4.0 License http://creativecommons.org/licenses/by/4.0/",
+      "verdict": {
+        "by": "rights-checker",
+        "verdict": "allowed",
+        "vocals": "none",
+        "useChecked": "stream from Mood Read's catalog and loop under narration in a free app, credited on a Credits screen",
+        "source": "https://incompetech.com/music/royalty-free/index.html?isrc=USUAN1900056",
+        "license": {
+          "id": "cc-by",
+          "version": "4.0"
+        },
+        "evidence": [
+          {
+            "quote": "Licensed under Creative Commons: By Attribution 4.0",
+            "url": "https://incompetech.com/music/royalty-free/faq.html",
+            "readOn": "2026-10-25"
+          },
+          {
+            "quote": "Title Kevin MacLeod (incompetech.com) / Licensed under Creative Commons: By Attribution 4.0 / https://creativecommons.org/licenses/by/4.0/",
+            "url": "https://incompetech.com/music/royalty-free/faq.html",
+            "readOn": "2026-10-25"
+          },
+          {
+            "quote": "Yes, you can sing over, chop, splice, compress, lengthen, and add instruments to anything you like.",
+            "url": "https://incompetech.com/music/royalty-free/faq.html",
+            "readOn": "2026-10-25"
+          },
+          {
+            "quote": "the Licensor hereby grants You a worldwide, royalty-free, non-sublicensable, non-exclusive, irrevocable license",
+            "url": "https://creativecommons.org/licenses/by/4.0/legalcode.en",
+            "readOn": "2026-10-25"
+          },
+          {
+            "quote": "You may satisfy the conditions in Section 3(a)(1) in any reasonable manner based on the medium,",
+            "url": "https://creativecommons.org/licenses/by/4.0/legalcode.en",
+            "readOn": "2026-10-25"
+          },
+          {
+            "quote": "\"instruments\": \"Alto Sax, Electric Piano, Bass, Drums\"",
+            "url": "https://incompetech.com/music/royalty-free/pieces.json",
+            "readOn": "2026-10-25"
+          },
+          {
+            "quote": "Just your run of the mill nice jazz; processed to sound a lot older than it is.",
+            "url": "https://incompetech.com/music/royalty-free/pieces.json",
+            "readOn": "2026-10-25"
+          }
+        ],
+        "conditions": "The Credits screen must carry the attribution: \"Night in Venice Kevin MacLeod (incompetech.com) / Licensed under Creative Commons: By Attribution 4.0 / https://creativecommons.org/licenses/by/4.0/\". CC BY 4.0 also asks you to say if the audio was modified. Looping or ducking it under narration probably doesn't count as a modification. If the catalog file is trimmed or re-encoded, though, the credit should say so (\"modified\"). Do not add DRM or technical measures that restrict others' CC BY rights to the file (Section 2(a)(5)(C)). No region or Premium limits.",
+        "checkedOn": "2026-10-25"
+      },
+      "duration": 218.149,
+      "loop": {
+        "start": 0,
+        "end": 218.148
+      },
+      "file": {
+        "key": "pieces/f32c2153a311dc01c517e5ca37544f93c797422c0b58af192a91c43999def150.m4a",
+        "sha256": "f32c2153a311dc01c517e5ca37544f93c797422c0b58af192a91c43999def150",
+        "bytes": 3516914,
+        "format": "aac",
+        "contentType": "audio/mp4"
+      },
+      "addedAt": "2026-10-25T04:12:26.106Z"
+    },
+    {
+      "id": "there-is-romance",
+      "title": "There is Romance",
+      "artist": "Kevin MacLeod",
+      "kind": "instrumental",
+      "vocals": "none",
+      "moodTags": [
+        "romance"
+      ],
+      "intensity": "low",
+      "source": "https://incompetech.com/music/royalty-free/index.html?isrc=USUAN1100044",
+      "license": {
+        "id": "cc-by",
+        "version": "4.0",
+        "url": "https://creativecommons.org/licenses/by/4.0/"
+      },
+      "credit": "\"There is Romance\" Kevin MacLeod (incompetech.com) Licensed under Creative Commons: By Attribution 4.0 License http://creativecommons.org/licenses/by/4.0/",
+      "verdict": {
+        "by": "rights-checker",
+        "verdict": "allowed",
+        "vocals": "none",
+        "useChecked": "stream from Mood Read's catalog and loop under narration in a free app, credited on a Credits screen",
+        "source": "https://incompetech.com/music/royalty-free/index.html?isrc=USUAN1100044",
+        "license": {
+          "id": "cc-by",
+          "version": "4.0"
+        },
+        "evidence": [
+          {
+            "quote": "Licensed under Creative Commons: By Attribution 4.0",
+            "url": "https://incompetech.com/music/royalty-free/faq.html",
+            "readOn": "2026-10-25"
+          },
+          {
+            "quote": "Most commonly, credits are placed on a “Credits” screen found in the settings menu.",
+            "url": "https://incompetech.com/music/royalty-free/faq.html",
+            "readOn": "2026-10-25"
+          },
+          {
+            "quote": "Yes, you can sing over, chop, splice, compress, lengthen, and add instruments to anything you like.",
+            "url": "https://incompetech.com/music/royalty-free/faq.html",
+            "readOn": "2026-10-25"
+          },
+          {
+            "quote": "reproduce and Share the Licensed Material, in whole or in part; and",
+            "url": "https://creativecommons.org/licenses/by/4.0/legalcode.en",
+            "readOn": "2026-10-25"
+          },
+          {
+            "quote": "produce, reproduce, and Share Adapted Material.",
+            "url": "https://creativecommons.org/licenses/by/4.0/legalcode.en",
+            "readOn": "2026-10-25"
+          },
+          {
+            "quote": "You may satisfy the conditions in Section 3(a)(1) in any reasonable manner based on the medium, means, and context",
+            "url": "https://creativecommons.org/licenses/by/4.0/legalcode.en",
+            "readOn": "2026-10-25"
+          },
+          {
+            "quote": "\"instruments\":\"Piano\"",
+            "url": "https://incompetech.com/music/royalty-free/pieces.json",
+            "readOn": "2026-10-25"
+          },
+          {
+            "quote": "\"isrc\":\"USUAN1100044\"",
+            "url": "https://incompetech.com/music/royalty-free/pieces.json",
+            "readOn": "2026-10-25"
+          }
+        ],
+        "conditions": "Attribution is required. Show it on the Credits screen in incompetech's format: \"There is Romance Kevin MacLeod (incompetech.com)\" / \"Licensed under Creative Commons: By Attribution 4.0\" / \"https://creativecommons.org/licenses/by/4.0/\". If the app loops or trims the file, the credit must say it was modified (CC BY 4.0 Section 3(a)(1)(B)). Don't add DRM that stops people re-using the file (Section 2(a)(5)(C)), though serving it from a public R2 bucket is fine. Kevin MacLeod is not affiliated with Mood Read and doesn't endorse it, so the credit must not suggest he does.",
+        "checkedOn": "2026-10-25"
+      },
+      "duration": 197.664,
+      "loop": {
+        "start": 0,
+        "end": 197.664
+      },
+      "file": {
+        "key": "pieces/2d4172875db91fc33af61b2e65419fba2c5f8886124a070aa326b5f93122703f.m4a",
+        "sha256": "2d4172875db91fc33af61b2e65419fba2c5f8886124a070aa326b5f93122703f",
+        "bytes": 3207624,
+        "format": "aac",
+        "contentType": "audio/mp4"
+      },
+      "addedAt": "2026-10-25T04:12:29.654Z"
+    },
+    {
+      "id": "reawakening",
+      "title": "Reawakening",
+      "artist": "Kevin MacLeod",
+      "kind": "instrumental",
+      "vocals": "none",
+      "moodTags": [
+        "romance",
+        "calm"
+      ],
+      "intensity": "low",
+      "source": "https://incompetech.com/music/royalty-free/index.html?isrc=USUAN1400017",
+      "license": {
+        "id": "cc-by",
+        "version": "4.0",
+        "url": "https://creativecommons.org/licenses/by/4.0/"
+      },
+      "credit": "\"Reawakening\" Kevin MacLeod (incompetech.com) Licensed under Creative Commons: By Attribution 4.0 License http://creativecommons.org/licenses/by/4.0/",
+      "verdict": {
+        "by": "rights-checker",
+        "verdict": "allowed",
+        "vocals": "none",
+        "useChecked": "stream from Mood Read's catalog and loop under narration in a free app, credited on a Credits screen",
+        "source": "https://incompetech.com/music/royalty-free/index.html?isrc=USUAN1400017",
+        "license": {
+          "id": "cc-by",
+          "version": "4.0"
+        },
+        "evidence": [
+          {
+            "quote": "Licensed under Creative Commons: By Attribution 4.0",
+            "url": "https://incompetech.com/music/royalty-free/faq.html",
+            "readOn": "2026-10-25"
+          },
+          {
+            "quote": "\"title\":\"Reawakening\" ... \"isrc\":\"USUAN1400017\" ... \"instruments\":\"Piano, Cello\" ... \"description\":\"Easy love theme; Useful for quiet talks.\"",
+            "url": "https://incompetech.com/music/royalty-free/pieces.json",
+            "readOn": "2026-10-25"
+          },
+          {
+            "quote": "to provide material to the public by any means or process that requires permission under the Licensed Rights, such as reproduction, public display, public performance, distribution, dissemination, communication, or importation, and to make material available to the public including in ways that members of the public may access the material from a place and at a time individually chosen by them.",
+            "url": "https://creativecommons.org/licenses/by/4.0/legalcode.en",
+            "readOn": "2026-10-25"
+          },
+          {
+            "quote": "You may satisfy the conditions in Section 3(a)(1) in any reasonable manner based on the medium, means, and context in which You Share the Licensed Material.",
+            "url": "https://creativecommons.org/licenses/by/4.0/legalcode.en",
+            "readOn": "2026-10-25"
+          }
+        ],
+        "conditions": "Attribution is required, on the Credits screen, in the form the FAQ gives: \"Reawakening Kevin MacLeod (incompetech.com)\" / \"Licensed under Creative Commons: By Attribution 4.0\" / \"https://creativecommons.org/licenses/by/4.0/\". Where practicable, also link to the track page (CC BY 4.0 s.3(a)(1)(A)(v)). If the file is edited (trimmed, crossfaded for looping, re-encoded in a way that changes the content), the credit must say so (s.3(a)(1)(B); the FAQ says \"You MUST make it clear in the credits which parts are yours\"). Do not put DRM or extra terms on the file that restrict recipients (s.2(a)(5)(B)). The public R2 bucket is fine.",
+        "checkedOn": "2026-10-25"
+      },
+      "duration": 214.074,
+      "loop": {
+        "start": 0,
+        "end": 214.073
+      },
+      "file": {
+        "key": "pieces/10d058e8d331dd862e8039053e027d253e0dbbe18cb3802e91033c56a5b481b4.m4a",
+        "sha256": "10d058e8d331dd862e8039053e027d253e0dbbe18cb3802e91033c56a5b481b4",
+        "bytes": 3424970,
+        "format": "aac",
+        "contentType": "audio/mp4"
+      },
+      "addedAt": "2026-10-25T04:12:33.684Z"
+    },
+    {
+      "id": "gymnopedie-no-1",
+      "title": "Gymnopedie No. 1",
+      "artist": "Kevin MacLeod",
+      "kind": "instrumental",
+      "vocals": "none",
+      "moodTags": [
+        "romance",
+        "sorrow",
+        "calm"
+      ],
+      "intensity": "low",
+      "source": "https://incompetech.com/music/royalty-free/index.html?isrc=USUAN1100787",
+      "license": {
+        "id": "cc-by",
+        "version": "4.0",
+        "url": "https://creativecommons.org/licenses/by/4.0/"
+      },
+      "credit": "\"Gymnopedie No. 1\" Kevin MacLeod (incompetech.com) Licensed under Creative Commons: By Attribution 4.0 License http://creativecommons.org/licenses/by/4.0/",
+      "verdict": {
+        "by": "rights-checker",
+        "verdict": "allowed",
+        "vocals": "none",
+        "useChecked": "stream from Mood Read's catalog and loop under narration in a free app, credited on a Credits screen",
+        "source": "https://incompetech.com/music/royalty-free/index.html?isrc=USUAN1100787",
+        "license": {
+          "id": "cc-by",
+          "version": "4.0"
+        },
+        "evidence": [
+          {
+            "quote": "Licensed under Creative Commons: By Attribution 4.0",
+            "url": "https://incompetech.com/music/royalty-free/faq.html",
+            "readOn": "2026-10-25"
+          },
+          {
+            "quote": "Most commonly, credits are placed on a “Credits” screen found in the settings menu.",
+            "url": "https://incompetech.com/music/royalty-free/faq.html",
+            "readOn": "2026-10-25"
+          },
+          {
+            "quote": "No charge. Requires that you credit the music.",
+            "url": "https://incompetech.com/music/royalty-free/licenses/",
+            "readOn": "2026-10-25"
+          },
+          {
+            "quote": "a worldwide, royalty-free, non-sublicensable, non-exclusive, irrevocable license",
+            "url": "https://creativecommons.org/licenses/by/4.0/legalcode.en",
+            "readOn": "2026-10-25"
+          },
+          {
+            "quote": "You may satisfy the conditions in Section 3(a)(1) in any reasonable manner",
+            "url": "https://creativecommons.org/licenses/by/4.0/legalcode.en",
+            "readOn": "2026-10-25"
+          },
+          {
+            "quote": "instruments: Piano (entry isrc USUAN1100787, title \"Gymnopedie No. 1\", filename \"Gymnopedie No 1.mp3\")",
+            "url": "https://incompetech.com/music/royalty-free/pieces.json",
+            "readOn": "2026-10-25"
+          },
+          {
+            "quote": "Elegant and slightly dark, the simplicity of the piano melody is light and touching, with a feeling of pensive restraint.",
+            "url": "https://incompetech.com/music/royalty-free/pieces.json",
+            "readOn": "2026-10-25"
+          }
+        ],
+        "conditions": "You must show attribution where users can see it. The FAQ says credits have to be visible (\"Do I have to put the credit where people can see it? Yes.\"), and a Credits screen is fine. Use the FAQ template with the actual title: \"Gymnopedie No. 1\" Kevin MacLeod (incompetech.com), \"Licensed under Creative Commons: By Attribution 4.0\", and a link to https://creativecommons.org/licenses/by/4.0/. CC BY 4.0 Section 3(a)(1)(A)(iii) also requires saying that the material was modified, so note that it is looped and mixed under narration. CC BY 4.0 is non-sublicensable and Section 2(a)(5)(C) forbids adding DRM or effective technological measures that restrict recipients, so the public R2 delivery must not add such restrictions. Satie's composition itself is public domain. There are no region limits and no Premium requirement.",
+        "checkedOn": "2026-10-25"
+      },
+      "duration": 187.089,
+      "loop": {
+        "start": 0,
+        "end": 187.089
+      },
+      "file": {
+        "key": "pieces/4a7dfe3e4cff3a13f5f2e10e3862ca87d43408b01d9b4f8170fc236aff18e9bb.m4a",
+        "sha256": "4a7dfe3e4cff3a13f5f2e10e3862ca87d43408b01d9b4f8170fc236aff18e9bb",
+        "bytes": 3038377,
+        "format": "aac",
+        "contentType": "audio/mp4"
+      },
+      "addedAt": "2026-10-25T04:12:36.983Z"
+    },
+    {
+      "id": "love-song",
+      "title": "Love Song",
+      "artist": "Kevin MacLeod",
+      "kind": "instrumental",
+      "vocals": "none",
+      "moodTags": [
+        "romance",
+        "sorrow"
+      ],
+      "intensity": "low",
+      "source": "https://incompetech.com/music/royalty-free/index.html?isrc=USUAN1100170",
+      "license": {
+        "id": "cc-by",
+        "version": "4.0",
+        "url": "https://creativecommons.org/licenses/by/4.0/"
+      },
+      "credit": "\"Love Song\" Kevin MacLeod (incompetech.com) Licensed under Creative Commons: By Attribution 4.0 License http://creativecommons.org/licenses/by/4.0/",
+      "verdict": {
+        "by": "rights-checker",
+        "verdict": "allowed",
+        "vocals": "none",
+        "useChecked": "stream from Mood Read's catalog and loop under narration in a free app, credited on a Credits screen",
+        "source": "https://incompetech.com/music/royalty-free/index.html?isrc=USUAN1100170",
+        "license": {
+          "id": "cc-by",
+          "version": "4.0"
+        },
+        "evidence": [
+          {
+            "quote": "Licensed under Creative Commons: By Attribution 4.0",
+            "url": "https://incompetech.com/music/royalty-free/faq.html",
+            "readOn": "2026-10-25"
+          },
+          {
+            "quote": "Most commonly, credits are placed on a “Credits” screen found in the settings menu.",
+            "url": "https://incompetech.com/music/royalty-free/faq.html",
+            "readOn": "2026-10-25"
+          },
+          {
+            "quote": "the Licensor hereby grants You a worldwide, royalty-free, non-sublicensable, non-exclusive, irrevocable license",
+            "url": "https://creativecommons.org/licenses/by/4.0/legalcode.en",
+            "readOn": "2026-10-25"
+          },
+          {
+            "quote": "in any reasonable manner based on the medium, means, and context in which You Share the Licensed Material",
+            "url": "https://creativecommons.org/licenses/by/4.0/legalcode.en",
+            "readOn": "2026-10-25"
+          },
+          {
+            "quote": "\"title\":\"Love Song\",\"filename\":\"Love Song.mp3\",\"length\":\"00:03:00\",\"instruments\":\"Flute, Alto Flute, Bass Flute, Piano, Harp, Horn\"",
+            "url": "https://incompetech.com/music/royalty-free/pieces.json",
+            "readOn": "2026-10-25"
+          },
+          {
+            "quote": "\"description\":\"Plaintive and hopeful. Originally written for a musical, this piece got cut.\",\"feel\":\"Relaxed, Somber, Eerie, Mysterious\",\"uploaded\":\"2005-01-01\",\"isrc\":\"USUAN1100170\"",
+            "url": "https://incompetech.com/music/royalty-free/pieces.json",
+            "readOn": "2026-10-25"
+          }
+        ],
+        "conditions": "Attribution is required. Show it on the Credits screen in incompetech's template: \"Love Song Kevin MacLeod (incompetech.com) / Licensed under Creative Commons: By Attribution 4.0 / https://creativecommons.org/licenses/by/4.0/\". Use the real track title. The FAQ says credits must be easy to find. If the file is edited (trimmed or crossfaded for the loop), the credit must say it was modified (CC BY 4.0, Section 3(a)(1)(B)). No Premium, region or non-commercial limits.",
+        "checkedOn": "2026-10-25"
+      },
+      "duration": 180.219,
+      "loop": {
+        "start": 0,
+        "end": 180.218
+      },
+      "file": {
+        "key": "pieces/b68068f6e7cb9ca5e6a3c8c588beb676721044591459c8a9f92cee8230236bf8.m4a",
+        "sha256": "b68068f6e7cb9ca5e6a3c8c588beb676721044591459c8a9f92cee8230236bf8",
+        "bytes": 2849719,
+        "format": "aac",
+        "contentType": "audio/mp4"
+      },
+      "addedAt": "2026-10-25T04:12:40.320Z"
+    },
+    {
+      "id": "procession-of-the-king",
+      "title": "Procession of the King",
+      "artist": "Kevin MacLeod",
+      "kind": "score",
+      "vocals": "none",
+      "moodTags": [
+        "romance",
+        "triumph"
+      ],
+      "intensity": "high",
+      "source": "https://incompetech.com/music/royalty-free/index.html?isrc=USUAN1100745",
+      "license": {
+        "id": "cc-by",
+        "version": "4.0",
+        "url": "https://creativecommons.org/licenses/by/4.0/"
+      },
+      "credit": "\"Procession of the King\" Kevin MacLeod (incompetech.com) Licensed under Creative Commons: By Attribution 4.0 License http://creativecommons.org/licenses/by/4.0/",
+      "verdict": {
+        "by": "rights-checker",
+        "verdict": "allowed",
+        "vocals": "none",
+        "useChecked": "stream from Mood Read's catalog and loop under narration in a free app, credited on a Credits screen",
+        "source": "https://incompetech.com/music/royalty-free/index.html?isrc=USUAN1100745",
+        "license": {
+          "id": "cc-by",
+          "version": "4.0"
+        },
+        "evidence": [
+          {
+            "quote": "\"title\":\"Procession of the King\",\"filename\":\"Procession of the King.mp3\",\"length\":\"00:03:04\",\"instruments\":\"Strings\"",
+            "url": "https://incompetech.com/music/royalty-free/pieces.json",
+            "readOn": "2026-10-25"
+          },
+          {
+            "quote": "A strings only piece, evocative of love, romance, and pride.",
+            "url": "https://incompetech.com/music/royalty-free/pieces.json",
+            "readOn": "2026-10-25"
+          },
+          {
+            "quote": "Licensed under Creative Commons: By Attribution 4.0",
+            "url": "https://incompetech.com/music/royalty-free/faq.html",
+            "readOn": "2026-10-25"
+          },
+          {
+            "quote": "The Creative Commons license that I offer all of my music under almost always gives you more rights than those contracts.",
+            "url": "https://incompetech.com/music/royalty-free/faq.html",
+            "readOn": "2026-10-25"
+          },
+          {
+            "quote": "Most commonly, credits are placed on a \"Credits\" screen found in the settings menu.",
+            "url": "https://incompetech.com/music/royalty-free/faq.html",
+            "readOn": "2026-10-25"
+          },
+          {
+            "quote": "Creative Commons — Free: No charge. Requires that you credit the music.",
+            "url": "https://incompetech.com/music/royalty-free/licenses/",
+            "readOn": "2026-10-25"
+          },
+          {
+            "quote": "the Licensor hereby grants You a worldwide, royalty-free, non-sublicensable, non-exclusive, irrevocable license",
+            "url": "https://creativecommons.org/licenses/by/4.0/legalcode.en",
+            "readOn": "2026-10-25"
+          },
+          {
+            "quote": "to provide material to the public by any means or process that requires permission under the Licensed Rights",
+            "url": "https://creativecommons.org/licenses/by/4.0/legalcode.en",
+            "readOn": "2026-10-25"
+          },
+          {
+            "quote": "You may satisfy the conditions in Section 3(a)(1) in any reasonable manner based on the medium, means, and context",
+            "url": "https://creativecommons.org/licenses/by/4.0/legalcode.en",
+            "readOn": "2026-10-25"
+          }
+        ],
+        "conditions": "Attribution is required. Use the Incompetech format: \"Procession of the King\" Kevin MacLeod (incompetech.com), Licensed under Creative Commons: By Attribution 4.0, with a link to https://creativecommons.org/licenses/by/4.0/. Put it on a Credits screen that is easy to find and not hidden. If the file is changed (for example re-encoded with edited loop points or fades), the credit must say it was modified. Hosting the file in a public R2 bucket counts as \"Share\" under CC BY 4.0, so the attribution should also travel with the catalog entry (in its metadata or license field). There is no region or Premium restriction.",
+        "checkedOn": "2026-10-25"
+      },
+      "duration": 184.059,
+      "loop": {
+        "start": 0,
+        "end": 184.058
+      },
+      "file": {
+        "key": "pieces/adf61962196a6e2ac94fd223fab8368c721edd0b13cc2416edddcfb4a4ff7cc8.m4a",
+        "sha256": "adf61962196a6e2ac94fd223fab8368c721edd0b13cc2416edddcfb4a4ff7cc8",
+        "bytes": 2915949,
+        "format": "aac",
+        "contentType": "audio/mp4"
+      },
+      "addedAt": "2026-10-25T04:12:43.353Z"
+    },
+    {
+      "id": "devonshire-waltz-allegretto",
+      "title": "Devonshire Waltz Allegretto",
+      "artist": "Kevin MacLeod",
+      "kind": "instrumental",
+      "vocals": "none",
+      "moodTags": [
+        "romance",
+        "joy"
+      ],
+      "intensity": "high",
+      "source": "https://incompetech.com/music/royalty-free/index.html?isrc=USUAN2100017",
+      "license": {
+        "id": "cc-by",
+        "version": "4.0",
+        "url": "https://creativecommons.org/licenses/by/4.0/"
+      },
+      "credit": "\"Devonshire Waltz Allegretto\" Kevin MacLeod (incompetech.com) Licensed under Creative Commons: By Attribution 4.0 License http://creativecommons.org/licenses/by/4.0/",
+      "verdict": {
+        "by": "rights-checker",
+        "verdict": "allowed",
+        "vocals": "none",
+        "useChecked": "stream from Mood Read's catalog and loop under narration in a free app, credited on a Credits screen",
+        "source": "https://incompetech.com/music/royalty-free/index.html?isrc=USUAN2100017",
+        "license": {
+          "id": "cc-by",
+          "version": "4.0"
+        },
+        "evidence": [
+          {
+            "quote": "Licensed under Creative Commons: By Attribution 4.0",
+            "url": "https://incompetech.com/music/royalty-free/faq.html",
+            "readOn": "2026-10-25"
+          },
+          {
+            "quote": "Most commonly, credits are placed on a “Credits” screen found in the settings menu.",
+            "url": "https://incompetech.com/music/royalty-free/faq.html",
+            "readOn": "2026-10-25"
+          },
+          {
+            "quote": "reproduce and Share the Licensed Material, in whole or in part; and",
+            "url": "https://creativecommons.org/licenses/by/4.0/legalcode.en",
+            "readOn": "2026-10-25"
+          },
+          {
+            "quote": "You may satisfy the conditions in Section 3(a)(1) in any reasonable manner",
+            "url": "https://creativecommons.org/licenses/by/4.0/legalcode.en",
+            "readOn": "2026-10-25"
+          },
+          {
+            "quote": "Piano, Bass, Strings, French Horn, Trumpet, Flutes, Clarinets, Drum Kit",
+            "url": "https://incompetech.com/music/royalty-free/pieces.json",
+            "readOn": "2026-10-25"
+          }
+        ],
+        "conditions": "Show the credit somewhere a listener can easily find it (the Credits screen works): \"Devonshire Waltz Allegretto Kevin MacLeod (incompetech.com) / Licensed under Creative Commons: By Attribution 4.0 / https://creativecommons.org/licenses/by/4.0/\". The FAQ requires that \"a person who wants to know where the music came from should have no difficulty in finding it.\" If Mood Read edits the audio beyond plain looping (cutting, adding instruments), the FAQ says the credits \"MUST make it clear ... which parts are yours, and which parts are mine.\" The licence has no Premium or region limits.",
+        "checkedOn": "2026-10-25"
+      },
+      "duration": 313.47,
+      "loop": {
+        "start": 0,
+        "end": 313.469
+      },
+      "file": {
+        "key": "pieces/e246a2f163de59f5dc3eb24fa51c9ef7782f04cf70cabfec6d28d16e3fc7c55b.m4a",
+        "sha256": "e246a2f163de59f5dc3eb24fa51c9ef7782f04cf70cabfec6d28d16e3fc7c55b",
+        "bytes": 5144275,
+        "format": "aac",
+        "contentType": "audio/mp4"
+      },
+      "addedAt": "2026-10-25T04:12:46.620Z"
+    },
+    {
+      "id": "verano-sensual",
+      "title": "Verano Sensual",
+      "artist": "Kevin MacLeod",
+      "kind": "instrumental",
+      "vocals": "none",
+      "moodTags": [
+        "romance",
+        "joy"
+      ],
+      "intensity": "high",
+      "source": "https://incompetech.com/music/royalty-free/index.html?isrc=USUAN1900020",
+      "license": {
+        "id": "cc-by",
+        "version": "4.0",
+        "url": "https://creativecommons.org/licenses/by/4.0/"
+      },
+      "credit": "\"Verano Sensual\" Kevin MacLeod (incompetech.com) Licensed under Creative Commons: By Attribution 4.0 License http://creativecommons.org/licenses/by/4.0/",
+      "verdict": {
+        "by": "rights-checker",
+        "verdict": "allowed",
+        "vocals": "none",
+        "useChecked": "stream from Mood Read's catalog and loop under narration in a free app, credited on a Credits screen",
+        "source": "https://incompetech.com/music/royalty-free/index.html?isrc=USUAN1900020",
+        "license": {
+          "id": "cc-by",
+          "version": "4.0"
+        },
+        "evidence": [
+          {
+            "quote": "Licensed under Creative Commons: By Attribution 4.0",
+            "url": "https://incompetech.com/music/royalty-free/faq.html",
+            "readOn": "2026-10-25"
+          },
+          {
+            "quote": "reproduce and Share the Licensed Material, in whole or in part; and",
+            "url": "https://creativecommons.org/licenses/by/4.0/legalcode.en",
+            "readOn": "2026-10-25"
+          },
+          {
+            "quote": "and to make material available to the public including in ways that members of the public may access the material",
+            "url": "https://creativecommons.org/licenses/by/4.0/legalcode.en",
+            "readOn": "2026-10-25"
+          },
+          {
+            "quote": "You may satisfy the conditions in Section 3(a)(1) in any reasonable manner based on the medium, means, and context",
+            "url": "https://creativecommons.org/licenses/by/4.0/legalcode.en",
+            "readOn": "2026-10-25"
+          },
+          {
+            "quote": "\"instruments\": Piano, Bass, Drums, Percussion; \"description\": This one was designed to be played at low volumes under people doing things like talking or fixing broken PS4s.",
+            "url": "https://incompetech.com/music/royalty-free/pieces.json",
+            "readOn": "2026-10-25"
+          }
+        ],
+        "conditions": "Attribution is required. Show this on the Credits screen: \"Verano Sensual\" / \"Kevin MacLeod (incompetech.com)\" / \"Licensed under Creative Commons: By Attribution 4.0\" / https://creativecommons.org/licenses/by/4.0/ (the incompetech FAQ asks for the actual title in place of \"Title\"). If the file is edited, for example trimmed or crossfaded into a loop point, the credit must say it was modified (CC BY 4.0 s.3(a)(1)(B)). Looping playback alone does not change the file. Do not add DRM or extra terms that stop others using the file under CC BY (s.2(a)(5)(B)). Serving it from a public R2 bucket is fine. No region restriction, no Premium requirement, and commercial use is not restricted.",
+        "checkedOn": "2026-10-25"
+      },
+      "duration": 301.375,
+      "loop": {
+        "start": 0,
+        "end": 301.374
+      },
+      "file": {
+        "key": "pieces/b2d342a1822cfc9b633e896468eb7bf444f092cee39f721de8d0ad2951a5549a.m4a",
+        "sha256": "b2d342a1822cfc9b633e896468eb7bf444f092cee39f721de8d0ad2951a5549a",
+        "bytes": 4948273,
+        "format": "aac",
+        "contentType": "audio/mp4"
+      },
+      "addedAt": "2026-10-25T04:12:50.253Z"
+    },
+    {
+      "id": "lost-time",
+      "title": "Lost Time",
+      "artist": "Kevin MacLeod",
+      "kind": "score",
+      "vocals": "none",
+      "moodTags": [
+        "sorrow"
+      ],
+      "intensity": "low",
+      "source": "https://incompetech.com/music/royalty-free/index.html?isrc=USUAN1500032",
+      "license": {
+        "id": "cc-by",
+        "version": "4.0",
+        "url": "https://creativecommons.org/licenses/by/4.0/"
+      },
+      "credit": "\"Lost Time\" Kevin MacLeod (incompetech.com) Licensed under Creative Commons: By Attribution 4.0 License http://creativecommons.org/licenses/by/4.0/",
+      "verdict": {
+        "by": "rights-checker",
+        "verdict": "allowed",
+        "vocals": "none",
+        "useChecked": "stream from Mood Read's catalog and loop under narration in a free app, credited on a Credits screen",
+        "source": "https://incompetech.com/music/royalty-free/index.html?isrc=USUAN1500032",
+        "license": {
+          "id": "cc-by",
+          "version": "4.0"
+        },
+        "evidence": [
+          {
+            "quote": "Licensed under Creative Commons: By Attribution 4.0",
+            "url": "https://incompetech.com/music/royalty-free/faq.html",
+            "readOn": "2026-10-25"
+          },
+          {
+            "quote": "Most commonly, credits are placed on a “Credits” screen found in the settings menu.",
+            "url": "https://incompetech.com/music/royalty-free/faq.html",
+            "readOn": "2026-10-25"
+          },
+          {
+            "quote": "reproduce and Share the Licensed Material, in whole or in part",
+            "url": "https://creativecommons.org/licenses/by/4.0/legalcode.en",
+            "readOn": "2026-10-25"
+          },
+          {
+            "quote": "in any reasonable manner based on the medium, means, and context",
+            "url": "https://creativecommons.org/licenses/by/4.0/legalcode.en",
+            "readOn": "2026-10-25"
+          },
+          {
+            "quote": "Violas, Cellos, Basses",
+            "url": "https://incompetech.com/music/royalty-free/pieces.json",
+            "readOn": "2026-10-25"
+          },
+          {
+            "quote": "Dark and moving, this piece will make you cry and not get in the way of those final bits of dialog!",
+            "url": "https://incompetech.com/music/royalty-free/pieces.json",
+            "readOn": "2026-10-25"
+          }
+        ],
+        "conditions": "The Credits screen must carry the actual title, so not a placeholder: \"Lost Time\" Kevin MacLeod (incompetech.com), Licensed under Creative Commons: By Attribution 4.0, https://creativecommons.org/licenses/by/4.0/. The credit must be easy to find. The incompetech FAQ says the credit must not be \"obscured\". If the audio is edited (trimmed or crossfaded for the loop), the credits must make clear which parts are Mood Read's. Under CC BY 4.0 s.2(a)(5)(B), Mood Read must not add DRM or extra terms that stop people using the file. A public R2 bucket meets that. The license covers this recording only (ISRC USUAN1500032); it does not cover other versions.",
+        "checkedOn": "2026-10-25"
+      },
+      "duration": 227.396,
+      "loop": {
+        "start": 0,
+        "end": 227.396
+      },
+      "file": {
+        "key": "pieces/5d4b5289095b576068742569c57535e51023920de4cac4011ca5e7f7bfe98fda.m4a",
+        "sha256": "5d4b5289095b576068742569c57535e51023920de4cac4011ca5e7f7bfe98fda",
+        "bytes": 3487410,
+        "format": "aac",
+        "contentType": "audio/mp4"
+      },
+      "addedAt": "2026-10-25T04:12:53.855Z"
+    },
+    {
+      "id": "the-parting",
+      "title": "The Parting",
+      "artist": "Kevin MacLeod",
+      "kind": "score",
+      "vocals": "none",
+      "moodTags": [
+        "sorrow",
+        "triumph"
+      ],
+      "intensity": "low",
+      "source": "https://incompetech.com/music/royalty-free/index.html?isrc=USUAN1100638",
+      "license": {
+        "id": "cc-by",
+        "version": "4.0",
+        "url": "https://creativecommons.org/licenses/by/4.0/"
+      },
+      "credit": "\"The Parting\" Kevin MacLeod (incompetech.com) Licensed under Creative Commons: By Attribution 4.0 License http://creativecommons.org/licenses/by/4.0/",
+      "verdict": {
+        "by": "rights-checker",
+        "verdict": "allowed",
+        "vocals": "none",
+        "useChecked": "stream from Mood Read's catalog and loop under narration in a free app, credited on a Credits screen",
+        "source": "https://incompetech.com/music/royalty-free/index.html?isrc=USUAN1100638",
+        "license": {
+          "id": "cc-by",
+          "version": "4.0"
+        },
+        "evidence": [
+          {
+            "quote": "\"instruments\":\"Oboe, Flute, Strings, Trombones, Horn, Tuba\"",
+            "url": "https://incompetech.com/music/royalty-free/pieces.json",
+            "readOn": "2026-10-25"
+          },
+          {
+            "quote": "\"feel\":\"Calming, Relaxed, Somber, Uplifting\"",
+            "url": "https://incompetech.com/music/royalty-free/pieces.json",
+            "readOn": "2026-10-25"
+          },
+          {
+            "quote": "Licensed under Creative Commons: By Attribution 4.0",
+            "url": "https://incompetech.com/music/royalty-free/faq.html",
+            "readOn": "2026-10-25"
+          },
+          {
+            "quote": "Yes. Be sure to credit me.",
+            "url": "https://incompetech.com/music/royalty-free/faq.html",
+            "readOn": "2026-10-25"
+          },
+          {
+            "quote": "the Licensor hereby grants You a worldwide, royalty-free, non-sublicensable, non-exclusive, irrevocable license",
+            "url": "https://creativecommons.org/licenses/by/4.0/legalcode.en",
+            "readOn": "2026-10-25"
+          },
+          {
+            "quote": "means to provide material to the public by any means or process that requires permission under the Licensed Rights",
+            "url": "https://creativecommons.org/licenses/by/4.0/legalcode.en",
+            "readOn": "2026-10-25"
+          },
+          {
+            "quote": "You may satisfy the conditions in Section 3(a)(1) in any reasonable manner based on the medium, means, and context",
+            "url": "https://creativecommons.org/licenses/by/4.0/legalcode.en",
+            "readOn": "2026-10-25"
+          }
+        ],
+        "conditions": "The Credits screen must show the attribution, not hidden: \"The Parting Kevin MacLeod (incompetech.com)\", plus \"Licensed under Creative Commons: By Attribution 4.0\" with a link to https://creativecommons.org/licenses/by/4.0/. If Mood Read edits the audio (loop points, trims, fades baked into the file), the credit must say it was modified (CC BY 4.0 s.3(a)(1)(B)). The app may not add DRM or extra terms that restrict the file (s.2(a)(5)(B)). There are no region or Premium limits.",
+        "checkedOn": "2026-10-25"
+      },
+      "duration": 183.876,
+      "loop": {
+        "start": 0,
+        "end": 183.876
+      },
+      "file": {
+        "key": "pieces/64cd471d383f3c8fc83c260d96abd6ab8b2d8cc750229d394a80ce4045635659.m4a",
+        "sha256": "64cd471d383f3c8fc83c260d96abd6ab8b2d8cc750229d394a80ce4045635659",
+        "bytes": 2952343,
+        "format": "aac",
+        "contentType": "audio/mp4"
+      },
+      "addedAt": "2026-10-25T04:12:57.587Z"
+    },
+    {
+      "id": "death-of-kings",
+      "title": "Death of Kings",
+      "artist": "Kevin MacLeod",
+      "kind": "score",
+      "vocals": "none",
+      "moodTags": [
+        "sorrow",
+        "triumph"
+      ],
+      "intensity": "low",
+      "source": "https://incompetech.com/music/royalty-free/index.html?isrc=USUAN1100876",
+      "license": {
+        "id": "cc-by",
+        "version": "4.0",
+        "url": "https://creativecommons.org/licenses/by/4.0/"
+      },
+      "credit": "\"Death of Kings\" Kevin MacLeod (incompetech.com) Licensed under Creative Commons: By Attribution 4.0 License http://creativecommons.org/licenses/by/4.0/",
+      "verdict": {
+        "by": "rights-checker",
+        "verdict": "allowed",
+        "vocals": "none",
+        "useChecked": "stream from Mood Read's catalog and loop under narration in a free app, credited on a Credits screen",
+        "source": "https://incompetech.com/music/royalty-free/index.html?isrc=USUAN1100876",
+        "license": {
+          "id": "cc-by",
+          "version": "4.0"
+        },
+        "evidence": [
+          {
+            "quote": "Licensed under Creative Commons: By Attribution 4.0",
+            "url": "https://incompetech.com/music/royalty-free/faq.html",
+            "readOn": "2026-10-25"
+          },
+          {
+            "quote": "Most commonly, credits are placed on a “Credits” screen found in the settings menu.",
+            "url": "https://incompetech.com/music/royalty-free/faq.html",
+            "readOn": "2026-10-25"
+          },
+          {
+            "quote": "Creative Commons, Free: No charge. Requires that you credit the music.",
+            "url": "https://incompetech.com/music/royalty-free/licenses/",
+            "readOn": "2026-10-25"
+          },
+          {
+            "quote": "non-sublicensable, non-exclusive, irrevocable license to exercise the Licensed Rights in the Licensed Material to:",
+            "url": "https://creativecommons.org/licenses/by/4.0/legalcode.en",
+            "readOn": "2026-10-25"
+          },
+          {
+            "quote": "You may satisfy the conditions in Section 3(a)(1) in any reasonable manner based on the medium, means,",
+            "url": "https://creativecommons.org/licenses/by/4.0/legalcode.en",
+            "readOn": "2026-10-25"
+          },
+          {
+            "quote": "instruments: \"French Horns, Trombones, Cimbasso, Trumpets, Drum, Chimes\"",
+            "url": "https://incompetech.com/music/royalty-free/pieces.json",
+            "readOn": "2026-10-25"
+          },
+          {
+            "quote": "Deep and rich piece of remembrance for brass. The melody is carried by the horn, with some help later by trumpets.",
+            "url": "https://incompetech.com/music/royalty-free/pieces.json",
+            "readOn": "2026-10-25"
+          }
+        ],
+        "conditions": "Credit is required. Show it on the Credits screen in incompetech's format: \"Death of Kings Kevin MacLeod (incompetech.com)\" / \"Licensed under Creative Commons: By Attribution 4.0\" / \"https://creativecommons.org/licenses/by/4.0/\". Indicate any modification, for example a trim or loop edit, if one was made (CC BY 4.0 s3(a)(1)(B)). Do not add DRM or terms that restrict recipients (s2(a)(5)(B)). Hosting the unchanged MP3 in a public R2 bucket counts as Sharing, and the license allows it. There is no region limit and no paid tier.",
+        "checkedOn": "2026-10-25"
+      },
+      "duration": 144.223,
+      "loop": {
+        "start": 0,
+        "end": 144.222
+      },
+      "file": {
+        "key": "pieces/b37477b747d70f43995a621097d890d32f625b2ed47b9a96ab9069d4a245351d.m4a",
+        "sha256": "b37477b747d70f43995a621097d890d32f625b2ed47b9a96ab9069d4a245351d",
+        "bytes": 2341625,
+        "format": "aac",
+        "contentType": "audio/mp4"
+      },
+      "addedAt": "2026-10-25T04:13:00.985Z"
+    },
+    {
+      "id": "peaceful-desolation",
+      "title": "Peaceful Desolation",
+      "artist": "Kevin MacLeod",
+      "kind": "score",
+      "vocals": "none",
+      "moodTags": [
+        "triumph",
+        "calm"
+      ],
+      "intensity": "low",
+      "source": "https://incompetech.com/music/royalty-free/index.html?isrc=USUAN1200017",
+      "license": {
+        "id": "cc-by",
+        "version": "4.0",
+        "url": "https://creativecommons.org/licenses/by/4.0/"
+      },
+      "credit": "\"Peaceful Desolation\" Kevin MacLeod (incompetech.com) Licensed under Creative Commons: By Attribution 4.0 License http://creativecommons.org/licenses/by/4.0/",
+      "verdict": {
+        "by": "rights-checker",
+        "verdict": "allowed",
+        "vocals": "none",
+        "useChecked": "stream from Mood Read's catalog and loop under narration in a free app, credited on a Credits screen",
+        "source": "https://incompetech.com/music/royalty-free/index.html?isrc=USUAN1200017",
+        "license": {
+          "id": "cc-by",
+          "version": "4.0"
+        },
+        "evidence": [
+          {
+            "quote": "Licensed under Creative Commons: By Attribution 4.0",
+            "url": "https://incompetech.com/music/royalty-free/faq.html",
+            "readOn": "2026-10-25"
+          },
+          {
+            "quote": "Most commonly, credits are placed on a “Credits” screen found in the settings menu.",
+            "url": "https://incompetech.com/music/royalty-free/faq.html",
+            "readOn": "2026-10-25"
+          },
+          {
+            "quote": "reproduce and Share the Licensed Material, in whole or in part; and",
+            "url": "https://creativecommons.org/licenses/by/4.0/legalcode.en",
+            "readOn": "2026-10-25"
+          },
+          {
+            "quote": "produce, reproduce, and Share Adapted Material.",
+            "url": "https://creativecommons.org/licenses/by/4.0/legalcode.en",
+            "readOn": "2026-10-25"
+          },
+          {
+            "quote": "You may satisfy the conditions in Section 3(a)(1) in any reasonable manner based on the medium, means, and context",
+            "url": "https://creativecommons.org/licenses/by/4.0/legalcode.en",
+            "readOn": "2026-10-25"
+          },
+          {
+            "quote": "Brass, Timpani, Glockenspiel, Flute, Clarinet, Oboe, Strings",
+            "url": "https://incompetech.com/music/royalty-free/pieces.json",
+            "readOn": "2026-10-25"
+          },
+          {
+            "quote": "Low-key mood establisher with chords moving in parallel blocks for the melody. Starts dark, ends open and airy.",
+            "url": "https://incompetech.com/music/royalty-free/pieces.json",
+            "readOn": "2026-10-25"
+          }
+        ],
+        "conditions": "Attribution is required and must be visible in the app's Credits screen, using the FAQ format: \"Peaceful Desolation Kevin MacLeod (incompetech.com) / Licensed under Creative Commons: By Attribution 4.0 / https://creativecommons.org/licenses/by/4.0/\". If the file is edited (trimmed, crossfaded or re-encoded into a loop), the credit must say so (FAQ: \"You MUST make it clear in the credits which parts are yours, and which parts are mine\"). Do not add terms or DRM that stop others using the file (CC BY 4.0 s.2(a)(5)(B)). A public R2 bucket is fine. No region or Premium limits apply.",
+        "checkedOn": "2026-10-25"
+      },
+      "duration": 91.168,
+      "loop": {
+        "start": 0,
+        "end": 91.167
+      },
+      "file": {
+        "key": "pieces/9479a03a4e59f23461c0462b43f0a69733f5a1426d5d03735099e28b2fad7306.m4a",
+        "sha256": "9479a03a4e59f23461c0462b43f0a69733f5a1426d5d03735099e28b2fad7306",
+        "bytes": 1447121,
+        "format": "aac",
+        "contentType": "audio/mp4"
+      },
+      "addedAt": "2026-10-25T04:13:04.245Z"
+    },
+    {
+      "id": "for-the-fallen",
+      "title": "For the Fallen",
+      "artist": "Kevin MacLeod",
+      "kind": "score",
+      "vocals": "none",
+      "moodTags": [
+        "sorrow",
+        "triumph"
+      ],
+      "intensity": "high",
+      "source": "https://incompetech.com/music/royalty-free/index.html?isrc=USUAN1100704",
+      "license": {
+        "id": "cc-by",
+        "version": "4.0",
+        "url": "https://creativecommons.org/licenses/by/4.0/"
+      },
+      "credit": "\"For the Fallen\" Kevin MacLeod (incompetech.com) Licensed under Creative Commons: By Attribution 4.0 License http://creativecommons.org/licenses/by/4.0/",
+      "verdict": {
+        "by": "rights-checker",
+        "verdict": "allowed",
+        "vocals": "none",
+        "useChecked": "stream from Mood Read's catalog and loop under narration in a free app, credited on a Credits screen",
+        "source": "https://incompetech.com/music/royalty-free/index.html?isrc=USUAN1100704",
+        "license": {
+          "id": "cc-by",
+          "version": "4.0"
+        },
+        "evidence": [
+          {
+            "quote": "Licensed under Creative Commons: By Attribution 4.0",
+            "url": "https://incompetech.com/music/royalty-free/faq.html",
+            "readOn": "2026-10-25"
+          },
+          {
+            "quote": "on streaming sites? Yes. Be sure to credit me.",
+            "url": "https://incompetech.com/music/royalty-free/faq.html",
+            "readOn": "2026-10-25"
+          },
+          {
+            "quote": "Most commonly, credits are placed on a “Credits” screen found in the settings menu.",
+            "url": "https://incompetech.com/music/royalty-free/faq.html",
+            "readOn": "2026-10-25"
+          },
+          {
+            "quote": "reproduce and Share the Licensed Material, in whole or in part; and",
+            "url": "https://creativecommons.org/licenses/by/4.0/legalcode.en",
+            "readOn": "2026-10-25"
+          },
+          {
+            "quote": "You may satisfy the conditions in Section 3(a)(1) in any reasonable manner based on the medium, means, and context",
+            "url": "https://creativecommons.org/licenses/by/4.0/legalcode.en",
+            "readOn": "2026-10-25"
+          },
+          {
+            "quote": "\"instruments\": \"Brass, Strings, Percussion\"",
+            "url": "https://incompetech.com/music/royalty-free/pieces.json",
+            "readOn": "2026-10-25"
+          },
+          {
+            "quote": "Beginning with beautiful symphonic chords accentuated by a glockenspiel, For The Fallen builds gently and with emotion.",
+            "url": "https://incompetech.com/music/royalty-free/pieces.json",
+            "readOn": "2026-10-25"
+          }
+        ],
+        "conditions": "The Credits screen must show the attribution: \"For the Fallen Kevin MacLeod (incompetech.com)\" / \"Licensed under Creative Commons: By Attribution 4.0\" / \"https://creativecommons.org/licenses/by/4.0/\". It must use the actual title. If the app edits the audio (trimming or crossfading for the loop), say that it was modified (CC BY 4.0 s3(a)(1)(B)). Don't add DRM or other technical restrictions to the R2 copy (s2(a)(5)(C)). There are no region or Premium limits.",
+        "checkedOn": "2026-10-25"
+      },
+      "duration": 95.16,
+      "loop": {
+        "start": 0,
+        "end": 95.16
+      },
+      "file": {
+        "key": "pieces/36f25bec43daae2d480d5392c9c81d01a6fe650768ff85bc8e4fefccf1e9a8a6.m4a",
+        "sha256": "36f25bec43daae2d480d5392c9c81d01a6fe650768ff85bc8e4fefccf1e9a8a6",
+        "bytes": 1547363,
+        "format": "aac",
+        "contentType": "audio/mp4"
+      },
+      "addedAt": "2026-10-25T04:13:07.215Z"
+    },
+    {
+      "id": "majestic-hills",
+      "title": "Majestic Hills",
+      "artist": "Kevin MacLeod",
+      "kind": "score",
+      "vocals": "none",
+      "moodTags": [
+        "sorrow",
+        "triumph"
+      ],
+      "intensity": "high",
+      "source": "https://incompetech.com/music/royalty-free/index.html?isrc=USUAN1100423",
+      "license": {
+        "id": "cc-by",
+        "version": "4.0",
+        "url": "https://creativecommons.org/licenses/by/4.0/"
+      },
+      "credit": "\"Majestic Hills\" Kevin MacLeod (incompetech.com) Licensed under Creative Commons: By Attribution 4.0 License http://creativecommons.org/licenses/by/4.0/",
+      "verdict": {
+        "by": "rights-checker",
+        "verdict": "allowed",
+        "vocals": "none",
+        "useChecked": "stream from Mood Read's catalog and loop under narration in a free app, credited on a Credits screen",
+        "source": "https://incompetech.com/music/royalty-free/index.html?isrc=USUAN1100423",
+        "license": {
+          "id": "cc-by",
+          "version": "4.0"
+        },
+        "evidence": [
+          {
+            "quote": "Licensed under Creative Commons: By Attribution 4.0",
+            "url": "https://incompetech.com/music/royalty-free/faq.html",
+            "readOn": "2026-10-25"
+          },
+          {
+            "quote": "Most commonly, credits are placed on a “Credits” screen found in the settings menu.",
+            "url": "https://incompetech.com/music/royalty-free/faq.html",
+            "readOn": "2026-10-25"
+          },
+          {
+            "quote": "Creative Commons — Free. No charge. Requires that you credit the music.",
+            "url": "https://incompetech.com/music/royalty-free/licenses/",
+            "readOn": "2026-10-25"
+          },
+          {
+            "quote": "reproduce and Share the Licensed Material, in whole or in part; and",
+            "url": "https://creativecommons.org/licenses/by/4.0/legalcode.en",
+            "readOn": "2026-10-25"
+          },
+          {
+            "quote": "You may satisfy the conditions in Section 3(a)(1) in any reasonable manner based on the medium, means, and context in which You Share the Licensed Material.",
+            "url": "https://creativecommons.org/licenses/by/4.0/legalcode.en",
+            "readOn": "2026-10-25"
+          },
+          {
+            "quote": "instruments: Brass, Strings, Winds, Percussion",
+            "url": "https://incompetech.com/music/royalty-free/pieces.json",
+            "readOn": "2026-10-25"
+          },
+          {
+            "quote": "Several feel, tempo, and instrumentation changes throughout this orchestral piece.",
+            "url": "https://incompetech.com/music/royalty-free/pieces.json",
+            "readOn": "2026-10-25"
+          }
+        ],
+        "conditions": "The Credits screen must show this credit word for word: \"Majestic Hills Kevin MacLeod (incompetech.com) / Licensed under Creative Commons: By Attribution 4.0 / https://creativecommons.org/licenses/by/4.0/\". Looping the file unchanged is fine. If the file is trimmed, crossfaded or otherwise edited before it goes into R2, the credit must say it was modified (CC BY 4.0 s3(a)(1)(B)). Don't add DRM or other technical locks to the hosted file (s2(a)(5)(B)), and don't suggest that MacLeod endorses the app. There are no region, Premium or fee limits.",
+        "checkedOn": "2026-10-25"
+      },
+      "duration": 199.158,
+      "loop": {
+        "start": 0,
+        "end": 199.157
+      },
+      "file": {
+        "key": "pieces/330527d2fe55af3be565d6f741743d570c59270e41513226c8637cb1961e1513.m4a",
+        "sha256": "330527d2fe55af3be565d6f741743d570c59270e41513226c8637cb1961e1513",
+        "bytes": 3215667,
+        "format": "aac",
+        "contentType": "audio/mp4"
+      },
+      "addedAt": "2026-10-25T04:13:09.960Z"
+    },
+    {
+      "id": "the-pyre",
+      "title": "The Pyre",
+      "artist": "Kevin MacLeod",
+      "kind": "score",
+      "vocals": "none",
+      "moodTags": [
+        "sorrow",
+        "dread"
+      ],
+      "intensity": "high",
+      "source": "https://incompetech.com/music/royalty-free/index.html?isrc=USUAN1100846",
+      "license": {
+        "id": "cc-by",
+        "version": "4.0",
+        "url": "https://creativecommons.org/licenses/by/4.0/"
+      },
+      "credit": "\"The Pyre\" Kevin MacLeod (incompetech.com) Licensed under Creative Commons: By Attribution 4.0 License http://creativecommons.org/licenses/by/4.0/",
+      "verdict": {
+        "by": "rights-checker",
+        "verdict": "allowed",
+        "vocals": "none",
+        "useChecked": "stream from Mood Read's catalog and loop under narration in a free app, credited on a Credits screen",
+        "source": "https://incompetech.com/music/royalty-free/index.html?isrc=USUAN1100846",
+        "license": {
+          "id": "cc-by",
+          "version": "4.0"
+        },
+        "evidence": [
+          {
+            "quote": "\"title\": \"The Pyre\" ... \"instruments\": \"Cellos, Mandolin, Percussion, Violins\" ... \"isrc\": \"USUAN1100846\"",
+            "url": "https://incompetech.com/music/royalty-free/pieces.json",
+            "readOn": "2026-10-25"
+          },
+          {
+            "quote": "Vaguely medieval overtones. The opening section repeats in the second half with violins added.",
+            "url": "https://incompetech.com/music/royalty-free/pieces.json",
+            "readOn": "2026-10-25"
+          },
+          {
+            "quote": "Licensed under Creative Commons: By Attribution 4.0",
+            "url": "https://incompetech.com/music/royalty-free/faq.html",
+            "readOn": "2026-10-25"
+          },
+          {
+            "quote": "Most commonly, credits are placed on a “Credits” screen found in the settings menu.",
+            "url": "https://incompetech.com/music/royalty-free/faq.html",
+            "readOn": "2026-10-25"
+          },
+          {
+            "quote": "Yes, you can sing over, chop, splice, compress, lengthen, and add instruments to anything you like.",
+            "url": "https://incompetech.com/music/royalty-free/faq.html",
+            "readOn": "2026-10-25"
+          },
+          {
+            "quote": "reproduce and Share the Licensed Material, in whole or in part; and",
+            "url": "https://creativecommons.org/licenses/by/4.0/legalcode.en",
+            "readOn": "2026-10-25"
+          },
+          {
+            "quote": "You may satisfy the conditions in Section 3(a)(1) in any reasonable manner based on the medium, means, and context",
+            "url": "https://creativecommons.org/licenses/by/4.0/legalcode.en",
+            "readOn": "2026-10-25"
+          }
+        ],
+        "conditions": "The Credits screen must show this credit, and someone looking for it must be able to find it: \"The Pyre Kevin MacLeod (incompetech.com) / Licensed under Creative Commons: By Attribution 4.0 / https://creativecommons.org/licenses/by/4.0/\". If the app edits the audio beyond plain looping (cuts, fades or added layers), the credits must say what was changed (\"You MUST make it clear in the credits which parts are yours, and which parts are mine\"). Don't add DRM or other technical restrictions to the shared file (CC BY 4.0, Section 2(a)(5)(C)).",
+        "checkedOn": "2026-10-25"
+      },
+      "duration": 233.405,
+      "loop": {
+        "start": 0,
+        "end": 233.404
+      },
+      "file": {
+        "key": "pieces/f94f055b1bc3b85f7963ea125e19d6dfff1640f9a44637f106d5230846c1473d.m4a",
+        "sha256": "f94f055b1bc3b85f7963ea125e19d6dfff1640f9a44637f106d5230846c1473d",
+        "bytes": 3744285,
+        "format": "aac",
+        "contentType": "audio/mp4"
+      },
+      "addedAt": "2026-10-25T04:13:13.648Z"
+    },
+    {
+      "id": "oppressive-gloom",
+      "title": "Oppressive Gloom",
+      "artist": "Kevin MacLeod",
+      "kind": "score",
+      "vocals": "none",
+      "moodTags": [
+        "dread",
+        "sorrow",
+        "tension"
+      ],
+      "intensity": "high",
+      "source": "https://incompetech.com/music/royalty-free/index.html?isrc=USUAN1100885",
+      "license": {
+        "id": "cc-by",
+        "version": "4.0",
+        "url": "https://creativecommons.org/licenses/by/4.0/"
+      },
+      "credit": "\"Oppressive Gloom\" Kevin MacLeod (incompetech.com) Licensed under Creative Commons: By Attribution 4.0 License http://creativecommons.org/licenses/by/4.0/",
+      "verdict": {
+        "by": "rights-checker",
+        "verdict": "allowed",
+        "vocals": "none",
+        "useChecked": "stream from Mood Read's catalog and loop under narration in a free app, credited on a Credits screen",
+        "source": "https://incompetech.com/music/royalty-free/index.html?isrc=USUAN1100885",
+        "license": {
+          "id": "cc-by",
+          "version": "4.0"
+        },
+        "evidence": [
+          {
+            "quote": "Licensed under Creative Commons: By Attribution 4.0",
+            "url": "https://incompetech.com/music/royalty-free/faq.html",
+            "readOn": "2026-10-25"
+          },
+          {
+            "quote": "Most commonly, credits are placed on a “Credits” screen found in the settings menu.",
+            "url": "https://incompetech.com/music/royalty-free/faq.html",
+            "readOn": "2026-10-25"
+          },
+          {
+            "quote": "No charge. Requires that you credit the music.",
+            "url": "https://incompetech.com/music/royalty-free/licenses/",
+            "readOn": "2026-10-25"
+          },
+          {
+            "quote": "the Licensor hereby grants You a worldwide, royalty-free, non-sublicensable, non-exclusive, irrevocable license",
+            "url": "https://creativecommons.org/licenses/by/4.0/legalcode.en",
+            "readOn": "2026-10-25"
+          },
+          {
+            "quote": "in any reasonable manner based on the medium, means, and context",
+            "url": "https://creativecommons.org/licenses/by/4.0/legalcode.en",
+            "readOn": "2026-10-25"
+          },
+          {
+            "quote": "\"instruments\":\"Strings, Bass Clarinet, Percussion\" ... \"description\":\"Moody moody dark score. Almost a death march. Loops pretty darned well - but you need to trim the end.\" ... \"isrc\":\"USUAN1100885\"",
+            "url": "https://incompetech.com/music/royalty-free/pieces.json",
+            "readOn": "2026-10-25"
+          }
+        ],
+        "conditions": "Credit on the Credits screen, in the site's template: \"Oppressive Gloom Kevin MacLeod (incompetech.com) / Licensed under Creative Commons: By Attribution 4.0 / http://creativecommons.org/licenses/by/4.0/\". The description says you need to trim the end to loop it. A trimmed file counts as an adaptation, so the credit must say it was modified (CC BY 4.0 s.3(a)(1)(B)). No Premium or region limits. A free app is fine because CC BY 4.0 allows commercial use.",
+        "checkedOn": "2026-10-25"
+      },
+      "duration": 199.393,
+      "loop": {
+        "start": 0,
+        "end": 199.392
+      },
+      "file": {
+        "key": "pieces/4bf3fcb9adac37d4806c8cbb701c33c378ea093307c5a4ee6602bb7c87589ace.m4a",
+        "sha256": "4bf3fcb9adac37d4806c8cbb701c33c378ea093307c5a4ee6602bb7c87589ace",
+        "bytes": 3226940,
+        "format": "aac",
+        "contentType": "audio/mp4"
+      },
+      "addedAt": "2026-10-25T04:13:17.797Z"
+    },
+    {
+      "id": "dark-times",
+      "title": "Dark Times",
+      "artist": "Kevin MacLeod",
+      "kind": "score",
+      "vocals": "none",
+      "moodTags": [
+        "sorrow",
+        "dread"
+      ],
+      "intensity": "high",
+      "source": "https://incompetech.com/music/royalty-free/index.html?isrc=USUAN1100747",
+      "license": {
+        "id": "cc-by",
+        "version": "4.0",
+        "url": "https://creativecommons.org/licenses/by/4.0/"
+      },
+      "credit": "\"Dark Times\" Kevin MacLeod (incompetech.com) Licensed under Creative Commons: By Attribution 4.0 License http://creativecommons.org/licenses/by/4.0/",
+      "verdict": {
+        "by": "rights-checker",
+        "verdict": "allowed",
+        "vocals": "none",
+        "useChecked": "stream from Mood Read's catalog and loop under narration in a free app, credited on a Credits screen",
+        "source": "https://incompetech.com/music/royalty-free/index.html?isrc=USUAN1100747",
+        "license": {
+          "id": "cc-by",
+          "version": "4.0"
+        },
+        "evidence": [
+          {
+            "quote": "Licensed under Creative Commons: By Attribution 4.0",
+            "url": "https://incompetech.com/music/royalty-free/faq.html",
+            "readOn": "2026-10-25"
+          },
+          {
+            "quote": "Most commonly, credits are placed on a \"Credits\" screen found in the settings menu.",
+            "url": "https://incompetech.com/music/royalty-free/faq.html",
+            "readOn": "2026-10-25"
+          },
+          {
+            "quote": "Creative Commons — Free: No charge. Requires that you credit the music.",
+            "url": "https://incompetech.com/music/royalty-free/licenses/",
+            "readOn": "2026-10-25"
+          },
+          {
+            "quote": "the Licensor hereby grants You a worldwide, royalty-free, non-sublicensable, non-exclusive, irrevocable license to exercise the Licensed Rights in the Licensed Material to: A. reproduce and Share the Licensed Material, in whole or in part",
+            "url": "https://creativecommons.org/licenses/by/4.0/legalcode.en",
+            "readOn": "2026-10-25"
+          },
+          {
+            "quote": "You may satisfy the conditions in Section 3(a)(1) in any reasonable manner based on the medium, means, and context",
+            "url": "https://creativecommons.org/licenses/by/4.0/legalcode.en",
+            "readOn": "2026-10-25"
+          },
+          {
+            "quote": "\"title\":\"Dark Times\",\"filename\":\"Dark Times.mp3\",\"length\":\"00:03:04\",\"instruments\":\"Strings\"",
+            "url": "https://incompetech.com/music/royalty-free/pieces.json",
+            "readOn": "2026-10-25"
+          },
+          {
+            "quote": "Deeply troubling and somber, this piece is heavy on the bass strings, especially in the last minute.",
+            "url": "https://incompetech.com/music/royalty-free/pieces.json",
+            "readOn": "2026-10-25"
+          }
+        ],
+        "conditions": "Put the credit on the Credits screen using the FAQ format: \"Dark Times Kevin MacLeod (incompetech.com)\", followed by \"Licensed under Creative Commons: By Attribution 4.0\", with a link or URL to https://creativecommons.org/licenses/by/4.0/. If the file is edited (trimmed or crossfaded to make the loop), the credit must say so: CC BY 4.0 Section 3(a)(1)(B) requires it, and the FAQ says \"MUST make it clear in the credits which parts are yours\". Do not add DRM or other technical measures that stop people using the file under the license (Section 2(a)(5)(C)). A plain public R2 object is fine. Do not suggest Kevin MacLeod endorses Mood Read.",
+        "checkedOn": "2026-10-25"
+      },
+      "duration": 183.696,
+      "loop": {
+        "start": 0,
+        "end": 183.696
+      },
+      "file": {
+        "key": "pieces/7a66094ba4cd3591516b0ea76f1e52fe1e7c73be8aa6f8a1d9cc7a5cf176dfd4.m4a",
+        "sha256": "7a66094ba4cd3591516b0ea76f1e52fe1e7c73be8aa6f8a1d9cc7a5cf176dfd4",
+        "bytes": 2885435,
+        "format": "aac",
+        "contentType": "audio/mp4"
+      },
+      "addedAt": "2026-10-25T04:13:21.033Z"
+    },
+    {
+      "id": "americana",
+      "title": "Americana",
+      "artist": "Kevin MacLeod",
+      "kind": "score",
+      "vocals": "none",
+      "moodTags": [
+        "triumph"
+      ],
+      "intensity": "high",
+      "source": "https://incompetech.com/music/royalty-free/index.html?isrc=USUAN1200092",
+      "license": {
+        "id": "cc-by",
+        "version": "4.0",
+        "url": "https://creativecommons.org/licenses/by/4.0/"
+      },
+      "credit": "\"Americana\" Kevin MacLeod (incompetech.com) Licensed under Creative Commons: By Attribution 4.0 License http://creativecommons.org/licenses/by/4.0/",
+      "verdict": {
+        "by": "rights-checker",
+        "verdict": "allowed",
+        "vocals": "none",
+        "useChecked": "stream from Mood Read's catalog and loop under narration in a free app, credited on a Credits screen",
+        "source": "https://incompetech.com/music/royalty-free/index.html?isrc=USUAN1200092",
+        "license": {
+          "id": "cc-by",
+          "version": "4.0"
+        },
+        "evidence": [
+          {
+            "quote": "Licensed under Creative Commons: By Attribution 4.0",
+            "url": "https://incompetech.com/music/royalty-free/faq.html",
+            "readOn": "2026-10-25"
+          },
+          {
+            "quote": "Most commonly, credits are placed on a \"Credits\" screen found in the settings menu.",
+            "url": "https://incompetech.com/music/royalty-free/faq.html",
+            "readOn": "2026-10-25"
+          },
+          {
+            "quote": "the Licensor hereby grants You a worldwide, royalty-free, non-sublicensable, non-exclusive, irrevocable license",
+            "url": "https://creativecommons.org/licenses/by/4.0/legalcode.en",
+            "readOn": "2026-10-25"
+          },
+          {
+            "quote": "in any reasonable manner based on the medium, means, and context in which You Share the Licensed Material.",
+            "url": "https://creativecommons.org/licenses/by/4.0/legalcode.en",
+            "readOn": "2026-10-25"
+          },
+          {
+            "quote": "\"instruments\":\"Cellos, Bass Clarinet, Alto Flute, English Horn, Clarinet, French Horns, Trombones, Tubas, Percussion, Celesta, Violins, Basses\"",
+            "url": "https://incompetech.com/music/royalty-free/pieces.json",
+            "readOn": "2026-10-25"
+          },
+          {
+            "quote": "Starts out simply on the plains with cellos and winds, becomes disrupted bit a bit and piles on the grandiose with a lot of brass!",
+            "url": "https://incompetech.com/music/royalty-free/pieces.json",
+            "readOn": "2026-10-25"
+          }
+        ],
+        "conditions": "Show the attribution on the Credits screen, worded as the incompetech FAQ gives it: \"Americana Kevin MacLeod (incompetech.com)\" / \"Licensed under Creative Commons: By Attribution 4.0\" / https://creativecommons.org/licenses/by/4.0/. If the loop is edited (trimmed or crossfaded), say it was modified (CC BY 4.0 s3(a)(1)(B)). Do not add DRM or terms that stop others using the file (s2(a)(5)(C)). No region or Premium limits.",
+        "checkedOn": "2026-10-25"
+      },
+      "duration": 202.214,
+      "loop": {
+        "start": 0,
+        "end": 202.214
+      },
+      "file": {
+        "key": "pieces/8c43d90a9c97ae49225a59669edde71abe8fa809776553023a296af93c2ee002.m4a",
+        "sha256": "8c43d90a9c97ae49225a59669edde71abe8fa809776553023a296af93c2ee002",
+        "bytes": 3262965,
+        "format": "aac",
+        "contentType": "audio/mp4"
+      },
+      "addedAt": "2026-10-25T04:13:24.421Z"
+    },
+    {
+      "id": "heroic-age",
+      "title": "Heroic Age",
+      "artist": "Kevin MacLeod",
+      "kind": "score",
+      "vocals": "none",
+      "moodTags": [
+        "triumph",
+        "joy"
+      ],
+      "intensity": "high",
+      "source": "https://incompetech.com/music/royalty-free/index.html?isrc=USUAN1100848",
+      "license": {
+        "id": "cc-by",
+        "version": "4.0",
+        "url": "https://creativecommons.org/licenses/by/4.0/"
+      },
+      "credit": "\"Heroic Age\" Kevin MacLeod (incompetech.com) Licensed under Creative Commons: By Attribution 4.0 License http://creativecommons.org/licenses/by/4.0/",
+      "verdict": {
+        "by": "rights-checker",
+        "verdict": "allowed",
+        "vocals": "none",
+        "useChecked": "stream from Mood Read's catalog and loop under narration in a free app, credited on a Credits screen",
+        "source": "https://incompetech.com/music/royalty-free/index.html?isrc=USUAN1100848",
+        "license": {
+          "id": "cc-by",
+          "version": "4.0"
+        },
+        "evidence": [
+          {
+            "quote": "Licensed under Creative Commons: By Attribution 4.0",
+            "url": "https://incompetech.com/music/royalty-free/faq.html",
+            "readOn": "2026-10-25"
+          },
+          {
+            "quote": "reproduce and Share the Licensed Material, in whole or in part; and",
+            "url": "https://creativecommons.org/licenses/by/4.0/legalcode.en",
+            "readOn": "2026-10-25"
+          },
+          {
+            "quote": "You may satisfy the conditions in Section 3(a)(1) in any reasonable manner based on the medium, means, and context",
+            "url": "https://creativecommons.org/licenses/by/4.0/legalcode.en",
+            "readOn": "2026-10-25"
+          },
+          {
+            "quote": "Flutes, Clarinets, Oboes, Trombones, Tuba, Cellos, Basses, Percussion, Celesta",
+            "url": "https://incompetech.com/music/royalty-free/pieces.json",
+            "readOn": "2026-10-25"
+          },
+          {
+            "quote": "See title, instrumentation, tempo, and feels for description. Originally written for a live performance.",
+            "url": "https://incompetech.com/music/royalty-free/pieces.json",
+            "readOn": "2026-10-25"
+          }
+        ],
+        "conditions": "You must show attribution on the Credits screen, in a place the listener can reach from the app. Use the site's own template: \"Heroic Age Kevin MacLeod (incompetech.com) / Licensed under Creative Commons: By Attribution 4.0\" with a link to https://creativecommons.org/licenses/by/4.0/. Looping the unmodified file is just playback. If the file is trimmed or edited to make loop points, the credit must say it was modified (CC BY 4.0 s.3(a)(1)(B)). Don't add DRM or any other technical restriction to the shared file (s.2(a)(5)(C)). No region limit and no Premium tier.",
+        "checkedOn": "2026-10-25"
+      },
+      "duration": 97.463,
+      "loop": {
+        "start": 0,
+        "end": 97.463
+      },
+      "file": {
+        "key": "pieces/d338e422b2633bbc92d5b5ab271c968cee56b809a30b5ba5ccc3deb24a7739f1.m4a",
+        "sha256": "d338e422b2633bbc92d5b5ab271c968cee56b809a30b5ba5ccc3deb24a7739f1",
+        "bytes": 1496142,
+        "format": "aac",
+        "contentType": "audio/mp4"
+      },
+      "addedAt": "2026-10-25T04:13:27.676Z"
+    },
+    {
+      "id": "enchanted-journey",
+      "title": "Enchanted Journey",
+      "artist": "Kevin MacLeod",
+      "kind": "instrumental",
+      "vocals": "none",
+      "moodTags": [
+        "wonder",
+        "calm"
+      ],
+      "intensity": "low",
+      "source": "https://incompetech.com/music/royalty-free/index.html?isrc=USUAN1100799",
+      "license": {
+        "id": "cc-by",
+        "version": "4.0",
+        "url": "https://creativecommons.org/licenses/by/4.0/"
+      },
+      "credit": "\"Enchanted Journey\" Kevin MacLeod (incompetech.com) Licensed under Creative Commons: By Attribution 4.0 License http://creativecommons.org/licenses/by/4.0/",
+      "verdict": {
+        "by": "rights-checker",
+        "verdict": "allowed",
+        "vocals": "none",
+        "useChecked": "stream from Mood Read's catalog and loop under narration in a free app, credited on a Credits screen",
+        "source": "https://incompetech.com/music/royalty-free/index.html?isrc=USUAN1100799",
+        "license": {
+          "id": "cc-by",
+          "version": "4.0"
+        },
+        "evidence": [
+          {
+            "quote": "Licensed under Creative Commons: By Attribution 4.0",
+            "url": "https://incompetech.com/music/royalty-free/faq.html",
+            "readOn": "2026-10-25"
+          },
+          {
+            "quote": "Most commonly, credits are placed on a “Credits” screen found in the settings menu.",
+            "url": "https://incompetech.com/music/royalty-free/faq.html",
+            "readOn": "2026-10-25"
+          },
+          {
+            "quote": "the Licensor hereby grants You a worldwide, royalty-free, non-sublicensable, non-exclusive, irrevocable license to exercise the Licensed Rights in the Licensed Material to: reproduce and Share the Licensed Material, in whole or in part; and produce, reproduce, and Share Adapted Material",
+            "url": "https://creativecommons.org/licenses/by/4.0/legalcode.en",
+            "readOn": "2026-10-25"
+          },
+          {
+            "quote": "You may satisfy the conditions in Section 3(a)(1) in any reasonable manner based on the medium, means, and context in which You Share the Licensed Material.",
+            "url": "https://creativecommons.org/licenses/by/4.0/legalcode.en",
+            "readOn": "2026-10-25"
+          },
+          {
+            "quote": "\"instruments\": \"Harp\" ... \"description\": \"A harp solo in several distinct sections. It works well as a contained piece, but also contains several smaller sections that stand alone.\"",
+            "url": "https://incompetech.com/music/royalty-free/pieces.json",
+            "readOn": "2026-10-25"
+          }
+        ],
+        "conditions": "Show the CC BY 4.0 credit on the Credits screen: \"Enchanted Journey Kevin MacLeod (incompetech.com) / Licensed under Creative Commons: By Attribution 4.0 / https://creativecommons.org/licenses/by/4.0/\". CC BY 4.0 Section 3(a)(1) also asks you to say whether the audio was modified, so note it if the loop is edited or trimmed. Per the FAQ, if a credit can't be shown, a paid Standard License is needed.",
+        "checkedOn": "2026-10-25"
+      },
+      "duration": 269.558,
+      "loop": {
+        "start": 0,
+        "end": 269.557
+      },
+      "file": {
+        "key": "pieces/0d7f32c520c587de0ca2a7128610baf60d95b3652076984600f1e85a6f735c92.m4a",
+        "sha256": "0d7f32c520c587de0ca2a7128610baf60d95b3652076984600f1e85a6f735c92",
+        "bytes": 4357327,
+        "format": "aac",
+        "contentType": "audio/mp4"
+      },
+      "addedAt": "2026-10-25T04:13:30.637Z"
+    },
+    {
+      "id": "frost-waltz",
+      "title": "Frost Waltz",
+      "artist": "Kevin MacLeod",
+      "kind": "instrumental",
+      "vocals": "none",
+      "moodTags": [
+        "wonder"
+      ],
+      "intensity": "low",
+      "source": "https://incompetech.com/music/royalty-free/index.html?isrc=USUAN1100516",
+      "license": {
+        "id": "cc-by",
+        "version": "4.0",
+        "url": "https://creativecommons.org/licenses/by/4.0/"
+      },
+      "credit": "\"Frost Waltz\" Kevin MacLeod (incompetech.com) Licensed under Creative Commons: By Attribution 4.0 License http://creativecommons.org/licenses/by/4.0/",
+      "verdict": {
+        "by": "rights-checker",
+        "verdict": "allowed",
+        "vocals": "none",
+        "useChecked": "stream from Mood Read's catalog and loop under narration in a free app, credited on a Credits screen",
+        "source": "https://incompetech.com/music/royalty-free/index.html?isrc=USUAN1100516",
+        "license": {
+          "id": "cc-by",
+          "version": "4.0"
+        },
+        "evidence": [
+          {
+            "quote": "Licensed under Creative Commons: By Attribution 4.0",
+            "url": "https://incompetech.com/music/royalty-free/faq.html",
+            "readOn": "2026-10-25"
+          },
+          {
+            "quote": "Subject to the terms and conditions of this Public License, the Licensor hereby grants You a worldwide, royalty-free, non-sublicensable, non-exclusive, irrevocable license to exercise the Licensed Rights in the Licensed Material to: A. reproduce and Share the Licensed Material, in whole or in part; and B. produce, reproduce, and Share Adapted Material.",
+            "url": "https://creativecommons.org/licenses/by/4.0/legalcode.en",
+            "readOn": "2026-10-25"
+          },
+          {
+            "quote": "You may satisfy the conditions in Section 3(a)(1) in any reasonable manner based on the medium, means, and context in which You Share the Licensed Material.",
+            "url": "https://creativecommons.org/licenses/by/4.0/legalcode.en",
+            "readOn": "2026-10-25"
+          },
+          {
+            "quote": "\"instruments\": \"Celesta, Glockenspiel, Basses, Cellos, Violas, Violins, French Horns\" (entry \"title\": \"Frost Waltz\", \"isrc\": \"USUAN1100516\")",
+            "url": "https://incompetech.com/music/royalty-free/pieces.json",
+            "readOn": "2026-10-25"
+          },
+          {
+            "quote": "A calm buy mysterious composition that uses Glockenspiel and Celesta throughout.",
+            "url": "https://incompetech.com/music/royalty-free/pieces.json",
+            "readOn": "2026-10-25"
+          }
+        ],
+        "conditions": "Attribution required, easy to find (a Credits screen is fine; the FAQ names a \"Credits\" screen in settings as the usual place). Use the FAQ's format: \"Frost Waltz Kevin MacLeod (incompetech.com)\" plus \"Licensed under Creative Commons: By Attribution 4.0 License\", linked to http://creativecommons.org/licenses/by/4.0/. If the app edits the file (cuts it, crossfades the loop seam, changes it in some other way), the credit must say it was modified (CC BY 4.0 s.3(a)(1)(B); the FAQ says \"You MUST make it clear in the credits which parts are yours\"). Playing it in a loop and lowering the volume under narration are not edits to the file. Don't add DRM or extra terms that stop others using the file (s.2(a)(5)(C)); a public R2 bucket meets this. No region or Premium limits.",
+        "checkedOn": "2026-10-25"
+      },
+      "duration": 135.472,
+      "loop": {
+        "start": 0,
+        "end": 135.471
+      },
+      "file": {
+        "key": "pieces/d7a3c7e43ebf135f5c3cb82a44113290a118eaf32b94064cf5dad8b666cea761.m4a",
+        "sha256": "d7a3c7e43ebf135f5c3cb82a44113290a118eaf32b94064cf5dad8b666cea761",
+        "bytes": 2192883,
+        "format": "aac",
+        "contentType": "audio/mp4"
+      },
+      "addedAt": "2026-10-25T04:13:34.282Z"
+    },
+    {
+      "id": "floating-cities",
+      "title": "Floating Cities",
+      "artist": "Kevin MacLeod",
+      "kind": "ambient",
+      "vocals": "none",
+      "moodTags": [
+        "wonder",
+        "calm"
+      ],
+      "intensity": "low",
+      "source": "https://incompetech.com/music/royalty-free/index.html?isrc=USUAN1600018",
+      "license": {
+        "id": "cc-by",
+        "version": "4.0",
+        "url": "https://creativecommons.org/licenses/by/4.0/"
+      },
+      "credit": "\"Floating Cities\" Kevin MacLeod (incompetech.com) Licensed under Creative Commons: By Attribution 4.0 License http://creativecommons.org/licenses/by/4.0/",
+      "verdict": {
+        "by": "rights-checker",
+        "verdict": "allowed",
+        "vocals": "none",
+        "useChecked": "stream from Mood Read's catalog and loop under narration in a free app, credited on a Credits screen",
+        "source": "https://incompetech.com/music/royalty-free/index.html?isrc=USUAN1600018",
+        "license": {
+          "id": "cc-by",
+          "version": "4.0"
+        },
+        "evidence": [
+          {
+            "quote": "Licensed under Creative Commons: By Attribution 4.0",
+            "url": "https://incompetech.com/music/royalty-free/faq.html",
+            "readOn": "2026-10-25"
+          },
+          {
+            "quote": "\"instruments\":\"Synths, Percussion\"",
+            "url": "https://incompetech.com/music/royalty-free/pieces.json",
+            "readOn": "2026-10-25"
+          },
+          {
+            "quote": "\"isrc\":\"USUAN1600018\"",
+            "url": "https://incompetech.com/music/royalty-free/pieces.json",
+            "readOn": "2026-10-25"
+          },
+          {
+            "quote": "reproduce and Share the Licensed Material, in whole or in part; and",
+            "url": "https://creativecommons.org/licenses/by/4.0/legalcode.en",
+            "readOn": "2026-10-25"
+          },
+          {
+            "quote": "and to make material available to the public including in ways that members of the public may access the material",
+            "url": "https://creativecommons.org/licenses/by/4.0/legalcode.en",
+            "readOn": "2026-10-25"
+          },
+          {
+            "quote": "You may satisfy the conditions in Section 3(a)(1) in any reasonable manner based on the medium, means, and context",
+            "url": "https://creativecommons.org/licenses/by/4.0/legalcode.en",
+            "readOn": "2026-10-25"
+          },
+          {
+            "quote": "Most commonly, credits are placed on a “Credits” screen found in the settings menu.",
+            "url": "https://incompetech.com/music/royalty-free/faq.html",
+            "readOn": "2026-10-25"
+          }
+        ],
+        "conditions": "Put this credit on the Credits screen, using the publisher's own wording: \"Floating Cities Kevin MacLeod (incompetech.com) / Licensed under Creative Commons: By Attribution 4.0 / https://creativecommons.org/licenses/by/4.0/\". CC BY 4.0 Section 3(a)(1)(B) means a credit should say if the audio was changed (re-encoded, trimmed or re-mastered). Looping the unchanged file is fine. Under Section 2(a)(5)(B), don't add DRM that stops people using the file under the license. A public R2 bucket is fine. No region or Premium limits.",
+        "checkedOn": "2026-10-25"
+      },
+      "duration": 184.059,
+      "loop": {
+        "start": 0,
+        "end": 184.058
+      },
+      "file": {
+        "key": "pieces/0fdaa59ac2c6e1aaf9cfe501d24c86ad133b3d1767db3a553ad8077bed854182.m4a",
+        "sha256": "0fdaa59ac2c6e1aaf9cfe501d24c86ad133b3d1767db3a553ad8077bed854182",
+        "bytes": 3004470,
+        "format": "aac",
+        "contentType": "audio/mp4"
+      },
+      "addedAt": "2026-10-25T04:13:37.515Z"
+    },
+    {
+      "id": "the-snow-queen",
+      "title": "The Snow Queen",
+      "artist": "Kevin MacLeod",
+      "kind": "score",
+      "vocals": "none",
+      "moodTags": [
+        "wonder",
+        "tension"
+      ],
+      "intensity": "high",
+      "source": "https://incompetech.com/music/royalty-free/index.html?isrc=USUAN1100872",
+      "license": {
+        "id": "cc-by",
+        "version": "4.0",
+        "url": "https://creativecommons.org/licenses/by/4.0/"
+      },
+      "credit": "\"The Snow Queen\" Kevin MacLeod (incompetech.com) Licensed under Creative Commons: By Attribution 4.0 License http://creativecommons.org/licenses/by/4.0/",
+      "verdict": {
+        "by": "rights-checker",
+        "verdict": "allowed",
+        "vocals": "none",
+        "useChecked": "stream from Mood Read's catalog and loop under narration in a free app, credited on a Credits screen",
+        "source": "https://incompetech.com/music/royalty-free/index.html?isrc=USUAN1100872",
+        "license": {
+          "id": "cc-by",
+          "version": "4.0"
+        },
+        "evidence": [
+          {
+            "quote": "Licensed under Creative Commons: By Attribution 4.0",
+            "url": "https://incompetech.com/music/royalty-free/faq.html",
+            "readOn": "2026-10-25"
+          },
+          {
+            "quote": "\"title\": \"The Snow Queen\" ... \"instruments\": \"Strings, Bassoon, Bass Clarinet, Flute, Celesta, Timpani\" ... \"isrc\": \"USUAN1100872\"",
+            "url": "https://incompetech.com/music/royalty-free/pieces.json",
+            "readOn": "2026-10-25"
+          },
+          {
+            "quote": "Handy, because it does loop back to the beginning.",
+            "url": "https://incompetech.com/music/royalty-free/pieces.json",
+            "readOn": "2026-10-25"
+          },
+          {
+            "quote": "reproduce and Share the Licensed Material, in whole or in part",
+            "url": "https://creativecommons.org/licenses/by/4.0/legalcode.en",
+            "readOn": "2026-10-25"
+          },
+          {
+            "quote": "Share means to provide material to the public by any means or process that requires permission under the Licensed Rights",
+            "url": "https://creativecommons.org/licenses/by/4.0/legalcode.en",
+            "readOn": "2026-10-25"
+          },
+          {
+            "quote": "You may satisfy the conditions in Section 3(a)(1) in any reasonable manner based on the medium, means, and context in which You Share the Licensed Material.",
+            "url": "https://creativecommons.org/licenses/by/4.0/legalcode.en",
+            "readOn": "2026-10-25"
+          },
+          {
+            "quote": "Most commonly, credits are placed on a “Credits” screen found in the settings menu.",
+            "url": "https://incompetech.com/music/royalty-free/faq.html",
+            "readOn": "2026-10-25"
+          },
+          {
+            "quote": "Yes, you can sing over, chop, splice, compress, lengthen, and add instruments to anything you like.",
+            "url": "https://incompetech.com/music/royalty-free/faq.html",
+            "readOn": "2026-10-25"
+          }
+        ],
+        "conditions": "Show this credit on the Credits screen: \"The Snow Queen Kevin MacLeod (incompetech.com) / Licensed under Creative Commons: By Attribution 4.0\" with a link to https://creativecommons.org/licenses/by/4.0/. If the file is edited (trimmed, crossfaded at the loop point, re-encoded with changes), say on the Credits screen that it was modified (CC BY 4.0 s3(a)(1)(B)). Do not put DRM or extra terms on the file that stop others using it under the license (s2(a)(5)(B)). The R2 bucket is public, so anyone can download the file, and CC BY allows that. No Premium, region, or non-commercial limits. Possible side risk: incompetech reports false third-party Content ID claims on its tracks. That affects YouTube uploads, not this use.",
+        "checkedOn": "2026-10-25"
+      },
+      "duration": 220.056,
+      "loop": {
+        "start": 0,
+        "end": 220.055
+      },
+      "file": {
+        "key": "pieces/dd73763a0011672a42c7158857d7982468e2b269d614defb8a047770b7143c5d.m4a",
+        "sha256": "dd73763a0011672a42c7158857d7982468e2b269d614defb8a047770b7143c5d",
+        "bytes": 3574291,
+        "format": "aac",
+        "contentType": "audio/mp4"
+      },
+      "addedAt": "2026-10-25T04:13:40.642Z"
+    },
+    {
+      "id": "enchanted-valley",
+      "title": "Enchanted Valley",
+      "artist": "Kevin MacLeod",
+      "kind": "instrumental",
+      "vocals": "none",
+      "moodTags": [
+        "wonder",
+        "joy"
+      ],
+      "intensity": "high",
+      "source": "https://incompetech.com/music/royalty-free/index.html?isrc=USUAN1200093",
+      "license": {
+        "id": "cc-by",
+        "version": "4.0",
+        "url": "https://creativecommons.org/licenses/by/4.0/"
+      },
+      "credit": "\"Enchanted Valley\" Kevin MacLeod (incompetech.com) Licensed under Creative Commons: By Attribution 4.0 License http://creativecommons.org/licenses/by/4.0/",
+      "verdict": {
+        "by": "rights-checker",
+        "verdict": "allowed",
+        "vocals": "none",
+        "useChecked": "stream from Mood Read's catalog and loop under narration in a free app, credited on a Credits screen",
+        "source": "https://incompetech.com/music/royalty-free/index.html?isrc=USUAN1200093",
+        "license": {
+          "id": "cc-by",
+          "version": "4.0"
+        },
+        "evidence": [
+          {
+            "quote": "Licensed under Creative Commons: By Attribution 4.0",
+            "url": "https://incompetech.com/music/royalty-free/faq.html",
+            "readOn": "2026-10-25"
+          },
+          {
+            "quote": "credits are placed on a \"Credits\" screen found in the settings menu.",
+            "url": "https://incompetech.com/music/royalty-free/faq.html",
+            "readOn": "2026-10-25"
+          },
+          {
+            "quote": "reproduce and Share the Licensed Material, in whole or in part; and",
+            "url": "https://creativecommons.org/licenses/by/4.0/legalcode.en",
+            "readOn": "2026-10-25"
+          },
+          {
+            "quote": "You may satisfy the conditions in Section 3(a)(1) in any reasonable manner based on the medium, means, and context",
+            "url": "https://creativecommons.org/licenses/by/4.0/legalcode.en",
+            "readOn": "2026-10-25"
+          },
+          {
+            "quote": "Celesta, Clarinet, Flute, Alto Flute, Bass Clarinet, Violins, Cellos",
+            "url": "https://incompetech.com/music/royalty-free/pieces.json",
+            "readOn": "2026-10-25"
+          },
+          {
+            "quote": "Nice light little piece.",
+            "url": "https://incompetech.com/music/royalty-free/pieces.json",
+            "readOn": "2026-10-25"
+          }
+        ],
+        "conditions": "Attribution is required. Put it on the Credits screen in incompetech's format: \"Enchanted Valley Kevin MacLeod (incompetech.com) / Licensed under Creative Commons: By Attribution 4.0 / https://creativecommons.org/licenses/by/4.0/\". Do not suggest that Kevin MacLeod endorses the app. Do not add terms or DRM that stop listeners from using the file under CC BY. A public R2 bucket is fine. If the file is edited (cut, re-looped, mixed down) instead of played as-is, the credits must say it was modified. No region or Premium limits.",
+        "checkedOn": "2026-10-25"
+      },
+      "duration": 190.276,
+      "loop": {
+        "start": 0,
+        "end": 190.276
+      },
+      "file": {
+        "key": "pieces/a2820ddea81998710cb6a2414c62f87ca6b1f6174f9982f1190095bb98e23b49.m4a",
+        "sha256": "a2820ddea81998710cb6a2414c62f87ca6b1f6174f9982f1190095bb98e23b49",
+        "bytes": 3076747,
+        "format": "aac",
+        "contentType": "audio/mp4"
+      },
+      "addedAt": "2026-10-25T04:13:43.731Z"
+    },
+    {
+      "id": "dreamy-flashback",
+      "title": "Dreamy Flashback",
+      "artist": "Kevin MacLeod",
+      "kind": "instrumental",
+      "vocals": "none",
+      "moodTags": [
+        "wonder",
+        "joy"
+      ],
+      "intensity": "high",
+      "source": "https://incompetech.com/music/royalty-free/index.html?isrc=USUAN1100532",
+      "license": {
+        "id": "cc-by",
+        "version": "4.0",
+        "url": "https://creativecommons.org/licenses/by/4.0/"
+      },
+      "credit": "\"Dreamy Flashback\" Kevin MacLeod (incompetech.com) Licensed under Creative Commons: By Attribution 4.0 License http://creativecommons.org/licenses/by/4.0/",
+      "verdict": {
+        "by": "rights-checker",
+        "verdict": "allowed",
+        "vocals": "none",
+        "useChecked": "stream from Mood Read's catalog and loop under narration in a free app, credited on a Credits screen",
+        "source": "https://incompetech.com/music/royalty-free/index.html?isrc=USUAN1100532",
+        "license": {
+          "id": "cc-by",
+          "version": "4.0"
+        },
+        "evidence": [
+          {
+            "quote": "Licensed under Creative Commons: By Attribution 4.0",
+            "url": "https://incompetech.com/music/royalty-free/faq.html",
+            "readOn": "2026-10-25"
+          },
+          {
+            "quote": "the Creative Commons license that I offer all of my music under almost always gives you more rights than those contracts.",
+            "url": "https://incompetech.com/music/royalty-free/faq.html",
+            "readOn": "2026-10-25"
+          },
+          {
+            "quote": "Most commonly, credits are placed on a “Credits” screen found in the settings menu.",
+            "url": "https://incompetech.com/music/royalty-free/faq.html",
+            "readOn": "2026-10-25"
+          },
+          {
+            "quote": "reproduce and Share the Licensed Material, in whole or in part; and",
+            "url": "https://creativecommons.org/licenses/by/4.0/legalcode.en",
+            "readOn": "2026-10-25"
+          },
+          {
+            "quote": "You may satisfy the conditions in Section 3(a)(1) in any reasonable manner based on the medium, means,",
+            "url": "https://creativecommons.org/licenses/by/4.0/legalcode.en",
+            "readOn": "2026-10-25"
+          },
+          {
+            "quote": "Harp, Bells, Pizzicato Strings",
+            "url": "https://incompetech.com/music/royalty-free/pieces.json",
+            "readOn": "2026-10-25"
+          },
+          {
+            "quote": "This piece features repetitive triplet arpeggi and a lydian scale to invoke a dreamy feel.",
+            "url": "https://incompetech.com/music/royalty-free/pieces.json",
+            "readOn": "2026-10-25"
+          }
+        ],
+        "conditions": "Attribution is required on the Credits screen, in the incompetech template: \"Dreamy Flashback\" Kevin MacLeod (incompetech.com), Licensed under Creative Commons: By Attribution 4.0, plus a link to the license (https://creativecommons.org/licenses/by/4.0/). Use the actual title. If the file is edited (trimmed or crossfaded for looping), the credit must say it was modified (CC BY 4.0 s.3(a)(1)(B)). There is no Premium or region condition, and charging nothing is fine. CC BY 4.0 does not allow adding restrictions that stop others from using the work (s.2(a)(5)(B)). Hosting it in a public R2 bucket is fine under that rule.",
+        "checkedOn": "2026-10-25"
+      },
+      "duration": 126.616,
+      "loop": {
+        "start": 0,
+        "end": 126.615
+      },
+      "file": {
+        "key": "pieces/9bbd5a082fa9bfb65e060fcef0a0cca0e83c35c42180f40934536f79d65f61e3.m4a",
+        "sha256": "9bbd5a082fa9bfb65e060fcef0a0cca0e83c35c42180f40934536f79d65f61e3",
+        "bytes": 2053726,
+        "format": "aac",
+        "contentType": "audio/mp4"
+      },
+      "addedAt": "2026-10-25T04:13:47.612Z"
+    },
+    {
+      "id": "magic-forest",
+      "title": "Magic Forest",
+      "artist": "Kevin MacLeod",
+      "kind": "score",
+      "vocals": "none",
+      "moodTags": [
+        "wonder",
+        "tension"
+      ],
+      "intensity": "high",
+      "source": "https://incompetech.com/music/royalty-free/index.html?isrc=USUAN1600044",
+      "license": {
+        "id": "cc-by",
+        "version": "4.0",
+        "url": "https://creativecommons.org/licenses/by/4.0/"
+      },
+      "credit": "\"Magic Forest\" Kevin MacLeod (incompetech.com) Licensed under Creative Commons: By Attribution 4.0 License http://creativecommons.org/licenses/by/4.0/",
+      "verdict": {
+        "by": "rights-checker",
+        "verdict": "allowed",
+        "vocals": "none",
+        "useChecked": "stream from Mood Read's catalog and loop under narration in a free app, credited on a Credits screen",
+        "source": "https://incompetech.com/music/royalty-free/index.html?isrc=USUAN1600044",
+        "license": {
+          "id": "cc-by",
+          "version": "4.0"
+        },
+        "evidence": [
+          {
+            "quote": "Licensed under Creative Commons: By Attribution 4.0",
+            "url": "https://incompetech.com/music/royalty-free/faq.html",
+            "readOn": "2026-10-25"
+          },
+          {
+            "quote": "No charge. Requires that you credit the music.",
+            "url": "https://incompetech.com/music/royalty-free/licenses/",
+            "readOn": "2026-10-25"
+          },
+          {
+            "quote": "Most commonly, credits are placed on a \"Credits\" screen found in the settings menu.",
+            "url": "https://incompetech.com/music/royalty-free/faq.html",
+            "readOn": "2026-10-25"
+          },
+          {
+            "quote": "reproduce and Share the Licensed Material, in whole or in part; and",
+            "url": "https://creativecommons.org/licenses/by/4.0/legalcode.en",
+            "readOn": "2026-10-25"
+          },
+          {
+            "quote": "You may satisfy the conditions in Section 3(a)(1) in any reasonable manner based on the medium,",
+            "url": "https://creativecommons.org/licenses/by/4.0/legalcode.en",
+            "readOn": "2026-10-25"
+          },
+          {
+            "quote": "\"title\": \"Magic Forest\" ... \"instruments\": \"Cello, Violin, Synths\" ... \"feel\": \"Mystical, Dark, Mysterious\" ... \"isrc\": \"USUAN1600044\"",
+            "url": "https://incompetech.com/music/royalty-free/pieces.json",
+            "readOn": "2026-10-25"
+          }
+        ],
+        "conditions": "Attribution required (CC BY 4.0 s.3(a)). Show it on the Credits screen in the incompetech format, with the real title in place of \"Title\": \"Magic Forest\" Kevin MacLeod (incompetech.com), Licensed under Creative Commons: By Attribution 4.0, linking to the CC BY 4.0 license. Looping under narration may count as an adaptation, and CC BY 4.0 s.2(a)(1) allows that. If the audio is edited (trimmed or crossfaded to make the loop), the credit should say it was modified (s.3(a)(1)(B)). No other limits found on region, Premium tiers, apps, or hosting the file on the app's own server.",
+        "checkedOn": "2026-10-25"
+      },
+      "duration": 260.076,
+      "loop": {
+        "start": 0,
+        "end": 260.075
+      },
+      "file": {
+        "key": "pieces/aee531353b3d29f6c5aca4326afdfacc3afa81167820c43c3f486735553746fe.m4a",
+        "sha256": "aee531353b3d29f6c5aca4326afdfacc3afa81167820c43c3f486735553746fe",
+        "bytes": 4219942,
+        "format": "aac",
+        "contentType": "audio/mp4"
+      },
+      "addedAt": "2026-10-25T04:13:50.668Z"
+    },
+    {
+      "id": "mystic-force",
+      "title": "Mystic Force",
+      "artist": "Kevin MacLeod",
+      "kind": "instrumental",
+      "vocals": "none",
+      "moodTags": [
+        "wonder"
+      ],
+      "intensity": "high",
+      "source": "https://incompetech.com/music/royalty-free/index.html?isrc=USUAN1500060",
+      "license": {
+        "id": "cc-by",
+        "version": "4.0",
+        "url": "https://creativecommons.org/licenses/by/4.0/"
+      },
+      "credit": "\"Mystic Force\" Kevin MacLeod (incompetech.com) Licensed under Creative Commons: By Attribution 4.0 License http://creativecommons.org/licenses/by/4.0/",
+      "verdict": {
+        "by": "rights-checker",
+        "verdict": "allowed",
+        "vocals": "none",
+        "useChecked": "stream from Mood Read's catalog and loop under narration in a free app, credited on a Credits screen",
+        "source": "https://incompetech.com/music/royalty-free/index.html?isrc=USUAN1500060",
+        "license": {
+          "id": "cc-by",
+          "version": "4.0"
+        },
+        "evidence": [
+          {
+            "quote": "Licensed under Creative Commons: By Attribution 4.0",
+            "url": "https://incompetech.com/music/royalty-free/faq.html",
+            "readOn": "2026-10-25"
+          },
+          {
+            "quote": "reproduce and Share the Licensed Material, in whole or in part; and",
+            "url": "https://creativecommons.org/licenses/by/4.0/legalcode.en",
+            "readOn": "2026-10-25"
+          },
+          {
+            "quote": "to make material available to the public including in ways that members of the public may access",
+            "url": "https://creativecommons.org/licenses/by/4.0/legalcode.en",
+            "readOn": "2026-10-25"
+          },
+          {
+            "quote": "in any reasonable manner based on the medium, means,",
+            "url": "https://creativecommons.org/licenses/by/4.0/legalcode.en",
+            "readOn": "2026-10-25"
+          },
+          {
+            "quote": "\"instruments\": \"Gamelan, Helicon, Percussion\"",
+            "url": "https://incompetech.com/music/royalty-free/pieces.json",
+            "readOn": "2026-10-25"
+          },
+          {
+            "quote": "Vaguely exotic sounding, yet still comfortably tonal, this piece certainly falls between some cracks.",
+            "url": "https://incompetech.com/music/royalty-free/pieces.json",
+            "readOn": "2026-10-25"
+          }
+        ],
+        "conditions": "Show this credit on the Credits screen: \"Mystic Force Kevin MacLeod (incompetech.com) / Licensed under Creative Commons: By Attribution 4.0 / https://creativecommons.org/licenses/by/4.0/\". Under CC BY 4.0 you must also say if you changed the track. The FAQ says cutting and splicing don't need a credit note, so looping or trimming is fine. Re-encoding is fine too. Adding new material does need a note. Do not add DRM or technical restrictions to the shared file (CC BY 4.0 s.2(a)(5)(C)). There is no region restriction and no Premium-only condition.",
+        "checkedOn": "2026-10-25"
+      },
+      "duration": 223.792,
+      "loop": {
+        "start": 0,
+        "end": 223.791
+      },
+      "file": {
+        "key": "pieces/79f9ed4e6382601228af694e109b79f5c92a5eaf1e6ebb60cb3f5a9c1dbde06e.m4a",
+        "sha256": "79f9ed4e6382601228af694e109b79f5c92a5eaf1e6ebb60cb3f5a9c1dbde06e",
+        "bytes": 3687181,
+        "format": "aac",
+        "contentType": "audio/mp4"
+      },
+      "addedAt": "2026-10-25T04:13:54.222Z"
+    },
+    {
+      "id": "crypto",
+      "title": "Crypto",
+      "artist": "Kevin MacLeod",
+      "kind": "ambient",
+      "vocals": "none",
+      "moodTags": [
+        "tension",
+        "dread"
+      ],
+      "intensity": "low",
+      "source": "https://incompetech.com/music/royalty-free/index.html?isrc=USUAN1600013",
+      "license": {
+        "id": "cc-by",
+        "version": "4.0",
+        "url": "https://creativecommons.org/licenses/by/4.0/"
+      },
+      "credit": "\"Crypto\" Kevin MacLeod (incompetech.com) Licensed under Creative Commons: By Attribution 4.0 License http://creativecommons.org/licenses/by/4.0/",
+      "verdict": {
+        "by": "rights-checker",
+        "verdict": "allowed",
+        "vocals": "none",
+        "useChecked": "stream from Mood Read's catalog and loop under narration in a free app, credited on a Credits screen",
+        "source": "https://incompetech.com/music/royalty-free/index.html?isrc=USUAN1600013",
+        "license": {
+          "id": "cc-by",
+          "version": "4.0"
+        },
+        "evidence": [
+          {
+            "quote": "Licensed under Creative Commons: By Attribution 4.0",
+            "url": "https://incompetech.com/music/royalty-free/faq.html",
+            "readOn": "2026-10-25"
+          },
+          {
+            "quote": "Most commonly, credits are placed on a “Credits” screen found in the settings menu.",
+            "url": "https://incompetech.com/music/royalty-free/faq.html",
+            "readOn": "2026-10-25"
+          },
+          {
+            "quote": "Share means to provide material to the public by any means or process that requires permission under the Licensed Rights, such as reproduction, public display, public performance, distribution, dissemination, communication, or importation, and to make material available to the public including in ways that members of the public may access the material from a place and at a time individually chosen by them.",
+            "url": "https://creativecommons.org/licenses/by/4.0/legalcode.en",
+            "readOn": "2026-10-25"
+          },
+          {
+            "quote": "You may satisfy the conditions in Section 3(a)(1) in any reasonable manner based on the medium, means, and context in which You Share the Licensed Material.",
+            "url": "https://creativecommons.org/licenses/by/4.0/legalcode.en",
+            "readOn": "2026-10-25"
+          },
+          {
+            "quote": "\"instruments\":\"Flute, Percussion, Synths\" (entry \"Crypto\", isrc \"USUAN1600013\", feel \"Dark, Eerie, Unnerving, Suspenseful\")",
+            "url": "https://incompetech.com/music/royalty-free/pieces.json",
+            "readOn": "2026-10-25"
+          }
+        ],
+        "conditions": "Attribution is required and must be visible to users. A Credits screen works. Use the publisher's credit lines exactly: \"Crypto Kevin MacLeod (incompetech.com)\" / \"Licensed under Creative Commons: By Attribution 4.0\" / \"https://creativecommons.org/licenses/by/4.0/\". If the file is edited (trimmed, crossfaded, re-encoded with changes), the credit must say so: FAQ: \"You MUST make it clear in the credits which parts are yours, and which parts are mine.\" Do not add DRM or other technical measures that stop users from exercising the license (CC BY 4.0 s.2(a)(5)(C)); a public R2 bucket is fine. No region limits and no non-commercial limit.",
+        "checkedOn": "2026-10-25"
+      },
+      "duration": 204.069,
+      "loop": {
+        "start": 0,
+        "end": 204.068
+      },
+      "file": {
+        "key": "pieces/4869760dbacb3e5e678ef4d4f97df5102c230ce372813cbf72e41b45eb8e06b3.m4a",
+        "sha256": "4869760dbacb3e5e678ef4d4f97df5102c230ce372813cbf72e41b45eb8e06b3",
+        "bytes": 3314699,
+        "format": "aac",
+        "contentType": "audio/mp4"
+      },
+      "addedAt": "2026-10-25T04:13:57.399Z"
+    },
+    {
+      "id": "spider-eyes",
+      "title": "Spider Eyes",
+      "artist": "Kevin MacLeod",
+      "kind": "ambient",
+      "vocals": "none",
+      "moodTags": [
+        "tension",
+        "dread"
+      ],
+      "intensity": "low",
+      "source": "https://incompetech.com/music/royalty-free/index.html?isrc=USUAN1100526",
+      "license": {
+        "id": "cc-by",
+        "version": "4.0",
+        "url": "https://creativecommons.org/licenses/by/4.0/"
+      },
+      "credit": "\"Spider Eyes\" Kevin MacLeod (incompetech.com) Licensed under Creative Commons: By Attribution 4.0 License http://creativecommons.org/licenses/by/4.0/",
+      "verdict": {
+        "by": "rights-checker",
+        "verdict": "allowed",
+        "vocals": "none",
+        "useChecked": "stream from Mood Read's catalog and loop under narration in a free app, credited on a Credits screen",
+        "source": "https://incompetech.com/music/royalty-free/index.html?isrc=USUAN1100526",
+        "license": {
+          "id": "cc-by",
+          "version": "4.0"
+        },
+        "evidence": [
+          {
+            "quote": "Licensed under Creative Commons: By Attribution 4.0",
+            "url": "https://incompetech.com/music/royalty-free/faq.html",
+            "readOn": "2026-10-25"
+          },
+          {
+            "quote": "Most commonly, credits are placed on a \"Credits\" screen found in the settings menu.",
+            "url": "https://incompetech.com/music/royalty-free/faq.html",
+            "readOn": "2026-10-25"
+          },
+          {
+            "quote": "reproduce and Share the Licensed Material, in whole or in part; and",
+            "url": "https://creativecommons.org/licenses/by/4.0/legalcode.en",
+            "readOn": "2026-10-25"
+          },
+          {
+            "quote": "and to make material available to the public including in ways that members of the public may access the material",
+            "url": "https://creativecommons.org/licenses/by/4.0/legalcode.en",
+            "readOn": "2026-10-25"
+          },
+          {
+            "quote": "\"instruments\":\"Bells, Affected Piano, Strings\"",
+            "url": "https://incompetech.com/music/royalty-free/pieces.json",
+            "readOn": "2026-10-25"
+          },
+          {
+            "quote": "Spider Eyes is an eerie soundscape created with distant high strings, dissonant non-percussive piano textures, and alternately tuned bells.",
+            "url": "https://incompetech.com/music/royalty-free/pieces.json",
+            "readOn": "2026-10-25"
+          }
+        ],
+        "conditions": "Put this credit on the Credits screen, visible and not obscured: \"Spider Eyes Kevin MacLeod (incompetech.com) / Licensed under Creative Commons: By Attribution 4.0 / https://creativecommons.org/licenses/by/4.0/\". If the file is edited (trimmed, crossfaded for looping, re-encoded with changes), CC BY 4.0 s3(a)(1)(B) and the FAQ require saying it was modified. No region or Premium limits.",
+        "checkedOn": "2026-10-25"
+      },
+      "duration": 215.328,
+      "loop": {
+        "start": 0,
+        "end": 215.327
+      },
+      "file": {
+        "key": "pieces/159f0ea6329e2f0ea1b5e356b65a06aef440c401ff74bd7115be6a326c4ae134.m4a",
+        "sha256": "159f0ea6329e2f0ea1b5e356b65a06aef440c401ff74bd7115be6a326c4ae134",
+        "bytes": 3486786,
+        "format": "aac",
+        "contentType": "audio/mp4"
+      },
+      "addedAt": "2026-10-25T04:14:01.292Z"
+    },
+    {
+      "id": "static-motion",
+      "title": "Static Motion",
+      "artist": "Kevin MacLeod",
+      "kind": "ambient",
+      "vocals": "none",
+      "moodTags": [
+        "tension",
+        "dread"
+      ],
+      "intensity": "low",
+      "source": "https://incompetech.com/music/royalty-free/index.html?isrc=USUAN1200062",
+      "license": {
+        "id": "cc-by",
+        "version": "4.0",
+        "url": "https://creativecommons.org/licenses/by/4.0/"
+      },
+      "credit": "\"Static Motion\" Kevin MacLeod (incompetech.com) Licensed under Creative Commons: By Attribution 4.0 License http://creativecommons.org/licenses/by/4.0/",
+      "verdict": {
+        "by": "rights-checker",
+        "verdict": "allowed",
+        "vocals": "none",
+        "useChecked": "stream from Mood Read's catalog and loop under narration in a free app, credited on a Credits screen",
+        "source": "https://incompetech.com/music/royalty-free/index.html?isrc=USUAN1200062",
+        "license": {
+          "id": "cc-by",
+          "version": "4.0"
+        },
+        "evidence": [
+          {
+            "quote": "Licensed under Creative Commons: By Attribution 4.0",
+            "url": "https://incompetech.com/music/royalty-free/faq.html",
+            "readOn": "2026-10-25"
+          },
+          {
+            "quote": "Most commonly, credits are placed on a “Credits” screen found in the settings menu.",
+            "url": "https://incompetech.com/music/royalty-free/faq.html",
+            "readOn": "2026-10-25"
+          },
+          {
+            "quote": "to make material available to the public including in ways that members of the public may access the material from a place and at a time individually chosen by them",
+            "url": "https://creativecommons.org/licenses/by/4.0/legalcode.en",
+            "readOn": "2026-10-25"
+          },
+          {
+            "quote": "You may satisfy the conditions in Section 3(a)(1) in any reasonable manner based on the medium, means, and context in which You Share the Licensed Material.",
+            "url": "https://creativecommons.org/licenses/by/4.0/legalcode.en",
+            "readOn": "2026-10-25"
+          },
+          {
+            "quote": "Sharp subtle percussive clicks accompany with otherworldly drone.",
+            "url": "https://incompetech.com/music/royalty-free/pieces.json",
+            "readOn": "2026-10-25"
+          },
+          {
+            "quote": "Instruments: Synths (ISRC USUAN1200062, Static Motion.mp3, 00:03:09)",
+            "url": "https://incompetech.com/music/royalty-free/pieces.json",
+            "readOn": "2026-10-25"
+          }
+        ],
+        "conditions": "Show this credit on a Credits screen that users can easily find (not hidden): \"Static Motion Kevin MacLeod (incompetech.com) / Licensed under Creative Commons: By Attribution 4.0 / https://creativecommons.org/licenses/by/4.0/\". Per the incompetech FAQ, if the audio is changed (for example re-mixed, filtered, or crossfaded into a new arrangement), the credits must say which parts are Mood Read's. Cutting and splicing alone, which covers plain looping, needs no mention. CC BY 4.0 4.0 2(a)(5)(C) also forbids adding DRM or other technical measures that restrict the licensed file, so the R2 copy must stay unencrypted.",
+        "checkedOn": "2026-10-25"
+      },
+      "duration": 188.787,
+      "loop": {
+        "start": 0,
+        "end": 188.787
+      },
+      "file": {
+        "key": "pieces/a042f0e6fd16f0c8d923eade18de0aab4098ba7969ae79c26aa36af6de139659.m4a",
+        "sha256": "a042f0e6fd16f0c8d923eade18de0aab4098ba7969ae79c26aa36af6de139659",
+        "bytes": 3092383,
+        "format": "aac",
+        "contentType": "audio/mp4"
+      },
+      "addedAt": "2026-10-25T04:14:04.860Z"
+    },
+    {
+      "id": "long-note-three",
+      "title": "Long Note Three",
+      "artist": "Kevin MacLeod",
+      "kind": "ambient",
+      "vocals": "none",
+      "moodTags": [
+        "tension",
+        "sorrow"
+      ],
+      "intensity": "low",
+      "source": "https://incompetech.com/music/royalty-free/index.html?isrc=USUAN1100424",
+      "license": {
+        "id": "cc-by",
+        "version": "4.0",
+        "url": "https://creativecommons.org/licenses/by/4.0/"
+      },
+      "credit": "\"Long Note Three\" Kevin MacLeod (incompetech.com) Licensed under Creative Commons: By Attribution 4.0 License http://creativecommons.org/licenses/by/4.0/",
+      "verdict": {
+        "by": "rights-checker",
+        "verdict": "allowed",
+        "vocals": "none",
+        "useChecked": "stream from Mood Read's catalog and loop under narration in a free app, credited on a Credits screen",
+        "source": "https://incompetech.com/music/royalty-free/index.html?isrc=USUAN1100424",
+        "license": {
+          "id": "cc-by",
+          "version": "4.0"
+        },
+        "evidence": [
+          {
+            "quote": "Licensed under Creative Commons: By Attribution 4.0",
+            "url": "https://incompetech.com/music/royalty-free/faq.html",
+            "readOn": "2026-10-25"
+          },
+          {
+            "quote": "Most commonly, credits are placed on a “Credits” screen found in the settings menu.",
+            "url": "https://incompetech.com/music/royalty-free/faq.html",
+            "readOn": "2026-10-25"
+          },
+          {
+            "quote": "A reasonable effort may be expended (e.g. clicking on a credits option) but the credit should not be obscured.",
+            "url": "https://incompetech.com/music/royalty-free/faq.html",
+            "readOn": "2026-10-25"
+          },
+          {
+            "quote": "\"title\":\"Long Note Three\",\"filename\":\"Long Note Three.mp3\",\"length\":\"00:03:12\",\"instruments\":\"Strings, Synths\"",
+            "url": "https://incompetech.com/music/royalty-free/pieces.json",
+            "readOn": "2026-10-25"
+          },
+          {
+            "quote": "\"description\":\"A very long dark note. Use under dialog, or to kill site noise.\"",
+            "url": "https://incompetech.com/music/royalty-free/pieces.json",
+            "readOn": "2026-10-25"
+          },
+          {
+            "quote": "royalty-free, non-sublicensable, non-exclusive, irrevocable license to exercise the Licensed Rights",
+            "url": "https://creativecommons.org/licenses/by/4.0/legalcode.en",
+            "readOn": "2026-10-25"
+          },
+          {
+            "quote": "You may satisfy the conditions in Section 3(a)(1) in any reasonable manner based on the medium, means,",
+            "url": "https://creativecommons.org/licenses/by/4.0/legalcode.en",
+            "readOn": "2026-10-25"
+          }
+        ],
+        "conditions": "Attribution is required. The Credits screen must show the credit lines \"Long Note Three Kevin MacLeod (incompetech.com)\", \"Licensed under Creative Commons: By Attribution 4.0\" and \"https://creativecommons.org/licenses/by/4.0/\". The credits can sit one tap away, but they must not be hidden. If the file is edited (trimmed, crossfaded for looping), CC BY 4.0 3(a)(1)(B) requires saying so, and the incompetech FAQ asks for credits that make the changes clear. Do not add DRM or technical measures that stop others using the hosted file (CC BY 4.0 2(a)(5)(B)). No region or Premium limits.",
+        "checkedOn": "2026-10-25"
+      },
+      "duration": 192.053,
+      "loop": {
+        "start": 0,
+        "end": 192.052
+      },
+      "file": {
+        "key": "pieces/569b67f630779d5cc3370cb2c5a0f9bc1cc60a3ee849c276f8a8127111644ac1.m4a",
+        "sha256": "569b67f630779d5cc3370cb2c5a0f9bc1cc60a3ee849c276f8a8127111644ac1",
+        "bytes": 3027950,
+        "format": "aac",
+        "contentType": "audio/mp4"
+      },
+      "addedAt": "2026-10-25T04:14:08.261Z"
+    },
+    {
+      "id": "covert-affair",
+      "title": "Covert Affair",
+      "artist": "Kevin MacLeod",
+      "kind": "instrumental",
+      "vocals": "none",
+      "moodTags": [
+        "tension",
+        "romance"
+      ],
+      "intensity": "low",
+      "source": "https://incompetech.com/music/royalty-free/index.html?isrc=USUAN1100795",
+      "license": {
+        "id": "cc-by",
+        "version": "4.0",
+        "url": "https://creativecommons.org/licenses/by/4.0/"
+      },
+      "credit": "\"Covert Affair\" Kevin MacLeod (incompetech.com) Licensed under Creative Commons: By Attribution 4.0 License http://creativecommons.org/licenses/by/4.0/",
+      "verdict": {
+        "by": "rights-checker",
+        "verdict": "allowed",
+        "vocals": "none",
+        "useChecked": "stream from Mood Read's catalog and loop under narration in a free app, credited on a Credits screen",
+        "source": "https://incompetech.com/music/royalty-free/index.html?isrc=USUAN1100795",
+        "license": {
+          "id": "cc-by",
+          "version": "4.0"
+        },
+        "evidence": [
+          {
+            "quote": "Licensed under Creative Commons: By Attribution 4.0",
+            "url": "https://incompetech.com/music/royalty-free/faq.html",
+            "readOn": "2026-10-25"
+          },
+          {
+            "quote": "Most commonly, credits are placed on a \"Credits\" screen found in the settings menu.",
+            "url": "https://incompetech.com/music/royalty-free/faq.html",
+            "readOn": "2026-10-25"
+          },
+          {
+            "quote": "reproduce and Share the Licensed Material, in whole or in part; and",
+            "url": "https://creativecommons.org/licenses/by/4.0/legalcode.en",
+            "readOn": "2026-10-25"
+          },
+          {
+            "quote": "You may satisfy the conditions in Section 3(a)(1) in any reasonable manner based on the medium, means, and context",
+            "url": "https://creativecommons.org/licenses/by/4.0/legalcode.en",
+            "readOn": "2026-10-25"
+          },
+          {
+            "quote": "\"instruments\":\"Bass, Electric Piano, Drum Kit, Trumpet\"",
+            "url": "https://incompetech.com/music/royalty-free/pieces.json",
+            "readOn": "2026-10-25"
+          },
+          {
+            "quote": "\"isrc\":\"USUAN1100795\"",
+            "url": "https://incompetech.com/music/royalty-free/pieces.json",
+            "readOn": "2026-10-25"
+          }
+        ],
+        "conditions": "Show this credit on the Credits screen, changing only the title: \"Covert Affair Kevin MacLeod (incompetech.com) / Licensed under Creative Commons: By Attribution 4.0 / https://creativecommons.org/licenses/by/4.0/\". CC BY 4.0 Section 3(a)(1) also requires saying the audio was modified if it was, for example trimmed into a loop or re-encoded. Adding DRM or other technical restrictions on the audio is not allowed (Section 2(a)(5)(C)). No Premium or region limits.",
+        "checkedOn": "2026-10-25"
+      },
+      "duration": 194.195,
+      "loop": {
+        "start": 0,
+        "end": 194.194
+      },
+      "file": {
+        "key": "pieces/a21f3b48ae42d1d849ace03c1ccd36b28e57a419586e4613dc0d488e0b46d700.m4a",
+        "sha256": "a21f3b48ae42d1d849ace03c1ccd36b28e57a419586e4613dc0d488e0b46d700",
+        "bytes": 3195359,
+        "format": "aac",
+        "contentType": "audio/mp4"
+      },
+      "addedAt": "2026-10-25T04:14:11.465Z"
+    },
+    {
+      "id": "satiate-only-strings",
+      "title": "Satiate - only strings",
+      "artist": "Kevin MacLeod",
+      "kind": "score",
+      "vocals": "none",
+      "moodTags": [
+        "tension"
+      ],
+      "intensity": "high",
+      "source": "https://incompetech.com/music/royalty-free/index.html?isrc=USUAN1200056",
+      "license": {
+        "id": "cc-by",
+        "version": "4.0",
+        "url": "https://creativecommons.org/licenses/by/4.0/"
+      },
+      "credit": "\"Satiate - only strings\" Kevin MacLeod (incompetech.com) Licensed under Creative Commons: By Attribution 4.0 License http://creativecommons.org/licenses/by/4.0/",
+      "verdict": {
+        "by": "rights-checker",
+        "verdict": "allowed",
+        "vocals": "none",
+        "useChecked": "stream from Mood Read's catalog and loop under narration in a free app, credited on a Credits screen",
+        "source": "https://incompetech.com/music/royalty-free/index.html?isrc=USUAN1200056",
+        "license": {
+          "id": "cc-by",
+          "version": "4.0"
+        },
+        "evidence": [
+          {
+            "quote": "Licensed under Creative Commons: By Attribution 4.0",
+            "url": "https://incompetech.com/music/royalty-free/faq.html",
+            "readOn": "2026-10-25"
+          },
+          {
+            "quote": "Yes, you can sing over, chop, splice, compress, lengthen, and add instruments to anything you like.",
+            "url": "https://incompetech.com/music/royalty-free/faq.html",
+            "readOn": "2026-10-25"
+          },
+          {
+            "quote": "reproduce and Share the Licensed Material, in whole or in part; and",
+            "url": "https://creativecommons.org/licenses/by/4.0/legalcode.en",
+            "readOn": "2026-10-25"
+          },
+          {
+            "quote": "You may satisfy the conditions in Section 3(a)(1) in any reasonable manner based on the medium, means, and context",
+            "url": "https://creativecommons.org/licenses/by/4.0/legalcode.en",
+            "readOn": "2026-10-25"
+          },
+          {
+            "quote": "\"title\":\"Satiate - only strings\" ... \"instruments\":\"Strings\" ... \"isrc\":\"USUAN1200056\"",
+            "url": "https://incompetech.com/music/royalty-free/pieces.json",
+            "readOn": "2026-10-25"
+          }
+        ],
+        "conditions": "Show the attribution on the Credits screen in incompetech's FAQ format: \"Satiate - only strings Kevin MacLeod (incompetech.com) / Licensed under Creative Commons: By Attribution 4.0 / https://creativecommons.org/licenses/by/4.0/\". The FAQ says \"the credit should not be obscured\", so keep it easy to reach. If the file is edited (trimmed, crossfaded for the loop, re-encoded with changes), the credit must say it was modified. The FAQ says you \"MUST make it clear in the credits which parts are yours, and which parts are mine\". No Premium requirement and no region limit. Do not add DRM or technical measures that stop recipients using the file (CC BY 4.0 s.2(a)(5)(C)). A public R2 bucket meets this.",
+        "checkedOn": "2026-10-25"
+      },
+      "duration": 192.053,
+      "loop": {
+        "start": 0,
+        "end": 192.052
+      },
+      "file": {
+        "key": "pieces/f3a7000b74a148506579186c6d6bf59200fbae31db74c96b880ec1c3adb8b249.m4a",
+        "sha256": "f3a7000b74a148506579186c6d6bf59200fbae31db74c96b880ec1c3adb8b249",
+        "bytes": 3031180,
+        "format": "aac",
+        "contentType": "audio/mp4"
+      },
+      "addedAt": "2026-10-25T04:14:14.825Z"
+    },
+    {
+      "id": "stormfront",
+      "title": "Stormfront",
+      "artist": "Kevin MacLeod",
+      "kind": "score",
+      "vocals": "none",
+      "moodTags": [
+        "tension",
+        "dread"
+      ],
+      "intensity": "high",
+      "source": "https://incompetech.com/music/royalty-free/index.html?isrc=USUAN1200043",
+      "license": {
+        "id": "cc-by",
+        "version": "4.0",
+        "url": "https://creativecommons.org/licenses/by/4.0/"
+      },
+      "credit": "\"Stormfront\" Kevin MacLeod (incompetech.com) Licensed under Creative Commons: By Attribution 4.0 License http://creativecommons.org/licenses/by/4.0/",
+      "verdict": {
+        "by": "rights-checker",
+        "verdict": "allowed",
+        "vocals": "none",
+        "useChecked": "stream from Mood Read's catalog and loop under narration in a free app, credited on a Credits screen",
+        "source": "https://incompetech.com/music/royalty-free/index.html?isrc=USUAN1200043",
+        "license": {
+          "id": "cc-by",
+          "version": "4.0"
+        },
+        "evidence": [
+          {
+            "quote": "Licensed under Creative Commons: By Attribution 4.0",
+            "url": "https://incompetech.com/music/royalty-free/faq.html",
+            "readOn": "2026-10-25"
+          },
+          {
+            "quote": "royalty-free, non-sublicensable, non-exclusive, irrevocable license to exercise the Licensed Rights",
+            "url": "https://creativecommons.org/licenses/by/4.0/legalcode.en",
+            "readOn": "2026-10-25"
+          },
+          {
+            "quote": "produce, reproduce, and Share Adapted Material.",
+            "url": "https://creativecommons.org/licenses/by/4.0/legalcode.en",
+            "readOn": "2026-10-25"
+          },
+          {
+            "quote": "You may satisfy the conditions in Section 3(a)(1) in any reasonable manner based on the medium, means,",
+            "url": "https://creativecommons.org/licenses/by/4.0/legalcode.en",
+            "readOn": "2026-10-25"
+          },
+          {
+            "quote": "\"title\":\"Stormfront\" ... \"instruments\":\"Percussion, Synths\"",
+            "url": "https://incompetech.com/music/royalty-free/pieces.json",
+            "readOn": "2026-10-25"
+          },
+          {
+            "quote": "Intense and reserved, this unrelenting piece of drumming will be well at home in the soundtrack of your summer blockbuster.",
+            "url": "https://incompetech.com/music/royalty-free/pieces.json",
+            "readOn": "2026-10-25"
+          }
+        ],
+        "conditions": "Put the CC BY 4.0 attribution on the Credits screen. Use the incompetech credit template: \"Stormfront\" Kevin MacLeod (incompetech.com), Licensed under Creative Commons: By Attribution 4.0, with a link to http://creativecommons.org/licenses/by/4.0/. If the loop is edited (trimmed or crossfaded), say that it was modified (CC BY 4.0 s3(a)(1)(B)). Don't add DRM or terms that stop recipients exercising the licensed rights (s2(a)(5)(C)). No region or Premium limits. The free-app and mixing uses are allowed because CC BY 4.0 permits commercial use and adaptations.",
+        "checkedOn": "2026-10-25"
+      },
+      "duration": 334.054,
+      "loop": {
+        "start": 0,
+        "end": 334.054
+      },
+      "file": {
+        "key": "pieces/cdfa6c412873b10ef52c796668ee8eadc3f57470aa46eb169065413652b24544.m4a",
+        "sha256": "cdfa6c412873b10ef52c796668ee8eadc3f57470aa46eb169065413652b24544",
+        "bytes": 5370010,
+        "format": "aac",
+        "contentType": "audio/mp4"
+      },
+      "addedAt": "2026-10-25T04:14:17.902Z"
+    },
+    {
+      "id": "ossuary-6-air",
+      "title": "Ossuary 6 - Air",
+      "artist": "Kevin MacLeod",
+      "kind": "ambient",
+      "vocals": "none",
+      "moodTags": [
+        "dread"
+      ],
+      "intensity": "low",
+      "source": "https://incompetech.com/music/royalty-free/index.html?isrc=USUAN1500048",
+      "license": {
+        "id": "cc-by",
+        "version": "4.0",
+        "url": "https://creativecommons.org/licenses/by/4.0/"
+      },
+      "credit": "\"Ossuary 6 - Air\" Kevin MacLeod (incompetech.com) Licensed under Creative Commons: By Attribution 4.0 License http://creativecommons.org/licenses/by/4.0/",
+      "verdict": {
+        "by": "rights-checker",
+        "verdict": "allowed",
+        "vocals": "none",
+        "useChecked": "stream from Mood Read's catalog and loop under narration in a free app, credited on a Credits screen",
+        "source": "https://incompetech.com/music/royalty-free/index.html?isrc=USUAN1500048",
+        "license": {
+          "id": "cc-by",
+          "version": "4.0"
+        },
+        "evidence": [
+          {
+            "quote": "\"title\":\"Ossuary 6 - Air\" ... \"instruments\":\"Synths\" ... \"description\":\"Well, something has taken a turn for the not-quite-as-good-as-I'd-like. Slow-moving drone of impending doom!\" ... \"isrc\":\"USUAN1500048\"",
+            "url": "https://incompetech.com/music/royalty-free/pieces.json",
+            "readOn": "2026-10-25"
+          },
+          {
+            "quote": "Licensed under Creative Commons: By Attribution 4.0",
+            "url": "https://incompetech.com/music/royalty-free/faq.html",
+            "readOn": "2026-10-25"
+          },
+          {
+            "quote": "Most commonly, credits are placed on a “Credits” screen found in the settings menu.",
+            "url": "https://incompetech.com/music/royalty-free/faq.html",
+            "readOn": "2026-10-25"
+          },
+          {
+            "quote": "Title Kevin MacLeod (incompetech.com) / Licensed under Creative Commons: By Attribution 4.0 / https://creativecommons.org/licenses/by/4.0/",
+            "url": "https://incompetech.com/music/royalty-free/faq.html",
+            "readOn": "2026-10-25"
+          },
+          {
+            "quote": "reproduce and Share the Licensed Material, in whole or in part; and",
+            "url": "https://creativecommons.org/licenses/by/4.0/legalcode.en",
+            "readOn": "2026-10-25"
+          },
+          {
+            "quote": "You may satisfy the conditions in Section 3(a)(1) in any reasonable manner based on the medium, means, and context in which You Share the Licensed Material.",
+            "url": "https://incompetech.com/music/royalty-free/faq.html",
+            "readOn": "2026-10-25"
+          }
+        ],
+        "conditions": "Attribution on a Credits screen that is easy to find (\"the credit should not be obscured\"), in the incompetech format: \"Ossuary 6 - Air Kevin MacLeod (incompetech.com) / Licensed under Creative Commons: By Attribution 4.0 / https://creativecommons.org/licenses/by/4.0/\". CC BY 4.0 Sec. 3(a)(1)(B) says to note any changes: if the file is edited (trimmed, crossfaded into a new loop file, re-encoded with edits), say it was modified. Looping it unchanged at playback is not an edit. CC BY 4.0 Sec. 2(a)(5)(B) bars adding extra terms or DRM to the redistributed file; a public R2 bucket meets this. Free or paid makes no difference under CC BY.",
+        "checkedOn": "2026-10-25"
+      },
+      "duration": 250.071,
+      "loop": {
+        "start": 0,
+        "end": 250.07
+      },
+      "file": {
+        "key": "pieces/32bf4c9c6a6686ac626126b1502f55c059bb5a679e437612a6bc139dab3cc7e1.m4a",
+        "sha256": "32bf4c9c6a6686ac626126b1502f55c059bb5a679e437612a6bc139dab3cc7e1",
+        "bytes": 4042660,
+        "format": "aac",
+        "contentType": "audio/mp4"
+      },
+      "addedAt": "2026-10-25T04:14:21.576Z"
+    },
+    {
+      "id": "penumbra",
+      "title": "Penumbra",
+      "artist": "Kevin MacLeod",
+      "kind": "ambient",
+      "vocals": "none",
+      "moodTags": [
+        "dread"
+      ],
+      "intensity": "low",
+      "source": "https://incompetech.com/music/royalty-free/index.html?isrc=USUAN1200105",
+      "license": {
+        "id": "cc-by",
+        "version": "4.0",
+        "url": "https://creativecommons.org/licenses/by/4.0/"
+      },
+      "credit": "\"Penumbra\" Kevin MacLeod (incompetech.com) Licensed under Creative Commons: By Attribution 4.0 License http://creativecommons.org/licenses/by/4.0/",
+      "verdict": {
+        "by": "rights-checker",
+        "verdict": "allowed",
+        "vocals": "none",
+        "useChecked": "stream from Mood Read's catalog and loop under narration in a free app, credited on a Credits screen",
+        "source": "https://incompetech.com/music/royalty-free/index.html?isrc=USUAN1200105",
+        "license": {
+          "id": "cc-by",
+          "version": "4.0"
+        },
+        "evidence": [
+          {
+            "quote": "Licensed under Creative Commons: By Attribution 4.0",
+            "url": "https://incompetech.com/music/royalty-free/faq.html",
+            "readOn": "2026-10-25"
+          },
+          {
+            "quote": "Most commonly, credits are placed on a “Credits” screen found in the settings menu.",
+            "url": "https://incompetech.com/music/royalty-free/faq.html",
+            "readOn": "2026-10-25"
+          },
+          {
+            "quote": "Subject to the terms and conditions of this Public License, the Licensor hereby grants You a worldwide, royalty-free,",
+            "url": "https://creativecommons.org/licenses/by/4.0/legalcode.en",
+            "readOn": "2026-10-25"
+          },
+          {
+            "quote": "You may satisfy the conditions in Section 3(a)(1) in any reasonable manner based on the medium, means, and context",
+            "url": "https://creativecommons.org/licenses/by/4.0/legalcode.en",
+            "readOn": "2026-10-25"
+          },
+          {
+            "quote": "\"isrc\":\"USUAN1200105\"",
+            "url": "https://incompetech.com/music/royalty-free/pieces.json",
+            "readOn": "2026-10-25"
+          },
+          {
+            "quote": "Piano, Synths",
+            "url": "https://incompetech.com/music/royalty-free/pieces.json",
+            "readOn": "2026-10-25"
+          },
+          {
+            "quote": "There is something in the shadows, it isn't quite perceptible, but you know it is there.",
+            "url": "https://incompetech.com/music/royalty-free/pieces.json",
+            "readOn": "2026-10-25"
+          }
+        ],
+        "conditions": "Show the attribution on the Credits screen using incompetech's template: \"Penumbra Kevin MacLeod (incompetech.com) / Licensed under Creative Commons: By Attribution 4.0 / https://creativecommons.org/licenses/by/4.0/\". If the app edits the file (trims it, re-encodes it, or adds a crossfade loop point) rather than just repeating it, the hosted file counts as Adapted Material, so the credit should also say it was modified (CC BY 4.0 s3(a)(1)(B)). Do not put DRM on the hosted file that stops recipients from using their CC rights (s2(a)(5)(C)). A public R2 bucket is fine.",
+        "checkedOn": "2026-10-25"
+      },
+      "duration": 296.072,
+      "loop": {
+        "start": 0,
+        "end": 296.072
+      },
+      "file": {
+        "key": "pieces/e49cb033e84802b578dfec0931cc3dec793611c0c512bff0fb620d29380ad91c.m4a",
+        "sha256": "e49cb033e84802b578dfec0931cc3dec793611c0c512bff0fb620d29380ad91c",
+        "bytes": 4797027,
+        "format": "aac",
+        "contentType": "audio/mp4"
+      },
+      "addedAt": "2026-10-25T04:14:25.079Z"
+    },
+    {
+      "id": "giant-wyrm",
+      "title": "Giant Wyrm",
+      "artist": "Kevin MacLeod",
+      "kind": "score",
+      "vocals": "none",
+      "moodTags": [
+        "dread"
+      ],
+      "intensity": "high",
+      "source": "https://incompetech.com/music/royalty-free/index.html?isrc=USUAN1600035",
+      "license": {
+        "id": "cc-by",
+        "version": "4.0",
+        "url": "https://creativecommons.org/licenses/by/4.0/"
+      },
+      "credit": "\"Giant Wyrm\" Kevin MacLeod (incompetech.com) Licensed under Creative Commons: By Attribution 4.0 License http://creativecommons.org/licenses/by/4.0/",
+      "verdict": {
+        "by": "rights-checker",
+        "verdict": "allowed",
+        "vocals": "none",
+        "useChecked": "stream from Mood Read's catalog and loop under narration in a free app, credited on a Credits screen",
+        "source": "https://incompetech.com/music/royalty-free/index.html?isrc=USUAN1600035",
+        "license": {
+          "id": "cc-by",
+          "version": "4.0"
+        },
+        "evidence": [
+          {
+            "quote": "Licensed under Creative Commons: By Attribution 4.0",
+            "url": "https://incompetech.com/music/royalty-free/faq.html",
+            "readOn": "2026-10-25"
+          },
+          {
+            "quote": "reproduce and Share the Licensed Material, in whole or in part; and produce, reproduce, and Share Adapted Material.",
+            "url": "https://creativecommons.org/licenses/by/4.0/legalcode.en",
+            "readOn": "2026-10-25"
+          },
+          {
+            "quote": "\"title\": \"Giant Wyrm\" ... \"instruments\": \"Piano, Synths, Brass\" ... \"feel\": \"Eerie, Unnerving, Dark\" ... \"isrc\": \"USUAN1600035\"",
+            "url": "https://incompetech.com/music/royalty-free/pieces.json",
+            "readOn": "2026-10-25"
+          },
+          {
+            "quote": "No charge. Requires that you credit the music.",
+            "url": "https://incompetech.com/music/royalty-free/licenses/",
+            "readOn": "2026-10-25"
+          }
+        ],
+        "conditions": "Show this credit on the Credits screen, clearly and easy to find: \"Giant Wyrm Kevin MacLeod (incompetech.com)\", then \"Licensed under Creative Commons: By Attribution 4.0\", then https://creativecommons.org/licenses/by/4.0/. CC BY 4.0 Section 3(a) also asks for a link to the material where reasonably practical (use the source URL), and a note if the audio was modified (trimmed, edited, or re-encoded). Looping and mixing under narration counts as Sharing and, if it is an adaptation, is covered by the Adapted Material grant. No Premium, region, or non-commercial limits apply. The credit must be removed if the licensor asks.",
+        "checkedOn": "2026-10-25"
+      },
+      "duration": 259.057,
+      "loop": {
+        "start": 0,
+        "end": 259.056
+      },
+      "file": {
+        "key": "pieces/003bca2cbc5e3e1abc0a6225598d1f722e3a9b7dfbf5c864c7b6443e8f02e49d.m4a",
+        "sha256": "003bca2cbc5e3e1abc0a6225598d1f722e3a9b7dfbf5c864c7b6443e8f02e49d",
+        "bytes": 4193800,
+        "format": "aac",
+        "contentType": "audio/mp4"
+      },
+      "addedAt": "2026-10-25T04:14:28.559Z"
+    }
+  ]
+}

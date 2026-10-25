@@ -1,0 +1,23 @@
+{
+  "id": "there-is-romance",
+  "title": "There is Romance",
+  "artist": "Kevin MacLeod",
+  "kind": "instrumental",
+  "vocals": "none",
+  "moodTags": [
+    "romance"
+  ],
+  "intensity": "low",
+  "source": "https://incompetech.com/music/royalty-free/index.html?isrc=USUAN1100044",
+  "license": {
+    "id": "cc-by",
+    "version": "4.0",
+    "url": "https://creativecommons.org/licenses/by/4.0/"
+  },
+  "credit": "\"There is Romance\" Kevin MacLeod (incompetech.com) Licensed under Creative Commons: By Attribution 4.0 License http://creativecommons.org/licenses/by/4.0/",
+  "loop": {
+    "start": 0,
+    "end": 197.664
+  },
+  "duration": 197.664
+}

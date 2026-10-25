@@ -1,0 +1,40 @@
+{
+  "by": "rights-checker",
+  "verdict": "allowed",
+  "vocals": "none",
+  "useChecked": "stream from Mood Read's catalog and loop under narration in a free app, credited on a Credits screen",
+  "source": "https://incompetech.com/music/royalty-free/index.html?isrc=USUAN1900020",
+  "license": {
+    "id": "cc-by",
+    "version": "4.0"
+  },
+  "evidence": [
+    {
+      "quote": "Licensed under Creative Commons: By Attribution 4.0",
+      "url": "https://incompetech.com/music/royalty-free/faq.html",
+      "readOn": "2026-10-25"
+    },
+    {
+      "quote": "reproduce and Share the Licensed Material, in whole or in part; and",
+      "url": "https://creativecommons.org/licenses/by/4.0/legalcode.en",
+      "readOn": "2026-10-25"
+    },
+    {
+      "quote": "and to make material available to the public including in ways that members of the public may access the material",
+      "url": "https://creativecommons.org/licenses/by/4.0/legalcode.en",
+      "readOn": "2026-10-25"
+    },
+    {
+      "quote": "You may satisfy the conditions in Section 3(a)(1) in any reasonable manner based on the medium, means, and context",
+      "url": "https://creativecommons.org/licenses/by/4.0/legalcode.en",
+      "readOn": "2026-10-25"
+    },
+    {
+      "quote": "\"instruments\": Piano, Bass, Drums, Percussion; \"description\": This one was designed to be played at low volumes under people doing things like talking or fixing broken PS4s.",
+      "url": "https://incompetech.com/music/royalty-free/pieces.json",
+      "readOn": "2026-10-25"
+    }
+  ],
+  "conditions": "Attribution is required. Show this on the Credits screen: \"Verano Sensual\" / \"Kevin MacLeod (incompetech.com)\" / \"Licensed under Creative Commons: By Attribution 4.0\" / https://creativecommons.org/licenses/by/4.0/ (the incompetech FAQ asks for the actual title in place of \"Title\"). If the file is edited, for example trimmed or crossfaded into a loop point, the credit must say it was modified (CC BY 4.0 s.3(a)(1)(B)). Looping playback alone does not change the file. Do not add DRM or extra terms that stop others using the file under CC BY (s.2(a)(5)(B)). Serving it from a public R2 bucket is fine. No region restriction, no Premium requirement, and commercial use is not restricted.",
+  "checkedOn": "2026-10-25"
+}

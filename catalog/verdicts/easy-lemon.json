@@ -1,0 +1,50 @@
+{
+  "by": "rights-checker",
+  "verdict": "allowed",
+  "vocals": "none",
+  "useChecked": "stream from Mood Read's catalog and loop under narration in a free app, credited on a Credits screen",
+  "source": "https://incompetech.com/music/royalty-free/index.html?isrc=USUAN1200076",
+  "license": {
+    "id": "cc-by",
+    "version": "4.0"
+  },
+  "evidence": [
+    {
+      "quote": "\"instruments\":\"Guitar, Bass, Drum Kit, Celesta, Marimba\"",
+      "url": "https://incompetech.com/music/royalty-free/pieces.json",
+      "readOn": "2026-10-25"
+    },
+    {
+      "quote": "\"description\":\"Super non-offending little piece. Takes voice-over very well. Available in several lengths.\"",
+      "url": "https://incompetech.com/music/royalty-free/pieces.json",
+      "readOn": "2026-10-25"
+    },
+    {
+      "quote": "Licensed under Creative Commons: By Attribution 4.0",
+      "url": "https://incompetech.com/music/royalty-free/faq.html",
+      "readOn": "2026-10-25"
+    },
+    {
+      "quote": "Creative Commons — Free: No charge. Requires that you credit the music.",
+      "url": "https://incompetech.com/music/royalty-free/licenses/",
+      "readOn": "2026-10-25"
+    },
+    {
+      "quote": "reproduce and Share the Licensed Material, in whole or in part; and",
+      "url": "https://creativecommons.org/licenses/by/4.0/legalcode.en",
+      "readOn": "2026-10-25"
+    },
+    {
+      "quote": "Share means to provide material to the public by any means or process that requires permission",
+      "url": "https://creativecommons.org/licenses/by/4.0/legalcode.en",
+      "readOn": "2026-10-25"
+    },
+    {
+      "quote": "You may satisfy the conditions in Section 3(a)(1) in any reasonable manner based on the medium, means, and context",
+      "url": "https://creativecommons.org/licenses/by/4.0/legalcode.en",
+      "readOn": "2026-10-25"
+    }
+  ],
+  "conditions": "Put this attribution on the Credits screen: \"Easy Lemon Kevin MacLeod (incompetech.com) / Licensed under Creative Commons: By Attribution 4.0 / https://creativecommons.org/licenses/by/4.0/\". The incompetech FAQ names a \"Credits\" screen as the usual place for credits. Under CC BY 4.0 s.2(a)(5)(B) you may not add DRM or extra terms that restrict what downstream users can do. Hosting the file in a public R2 bucket meets that. If you trim or edit the file to make the loop, the credit must say it was modified (CC BY 4.0 s.3(a)(1)(B), and the incompetech FAQ asks that the credits make clear what you changed). No Premium, region or payment conditions apply.",
+  "checkedOn": "2026-10-25"
+}

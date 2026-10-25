@@ -1,0 +1,50 @@
+{
+  "by": "rights-checker",
+  "verdict": "allowed",
+  "vocals": "none",
+  "useChecked": "stream from Mood Read's catalog and loop under narration in a free app, credited on a Credits screen",
+  "source": "https://incompetech.com/music/royalty-free/index.html?isrc=USUAN1100747",
+  "license": {
+    "id": "cc-by",
+    "version": "4.0"
+  },
+  "evidence": [
+    {
+      "quote": "Licensed under Creative Commons: By Attribution 4.0",
+      "url": "https://incompetech.com/music/royalty-free/faq.html",
+      "readOn": "2026-10-25"
+    },
+    {
+      "quote": "Most commonly, credits are placed on a \"Credits\" screen found in the settings menu.",
+      "url": "https://incompetech.com/music/royalty-free/faq.html",
+      "readOn": "2026-10-25"
+    },
+    {
+      "quote": "Creative Commons — Free: No charge. Requires that you credit the music.",
+      "url": "https://incompetech.com/music/royalty-free/licenses/",
+      "readOn": "2026-10-25"
+    },
+    {
+      "quote": "the Licensor hereby grants You a worldwide, royalty-free, non-sublicensable, non-exclusive, irrevocable license to exercise the Licensed Rights in the Licensed Material to: A. reproduce and Share the Licensed Material, in whole or in part",
+      "url": "https://creativecommons.org/licenses/by/4.0/legalcode.en",
+      "readOn": "2026-10-25"
+    },
+    {
+      "quote": "You may satisfy the conditions in Section 3(a)(1) in any reasonable manner based on the medium, means, and context",
+      "url": "https://creativecommons.org/licenses/by/4.0/legalcode.en",
+      "readOn": "2026-10-25"
+    },
+    {
+      "quote": "\"title\":\"Dark Times\",\"filename\":\"Dark Times.mp3\",\"length\":\"00:03:04\",\"instruments\":\"Strings\"",
+      "url": "https://incompetech.com/music/royalty-free/pieces.json",
+      "readOn": "2026-10-25"
+    },
+    {
+      "quote": "Deeply troubling and somber, this piece is heavy on the bass strings, especially in the last minute.",
+      "url": "https://incompetech.com/music/royalty-free/pieces.json",
+      "readOn": "2026-10-25"
+    }
+  ],
+  "conditions": "Put the credit on the Credits screen using the FAQ format: \"Dark Times Kevin MacLeod (incompetech.com)\", followed by \"Licensed under Creative Commons: By Attribution 4.0\", with a link or URL to https://creativecommons.org/licenses/by/4.0/. If the file is edited (trimmed or crossfaded to make the loop), the credit must say so: CC BY 4.0 Section 3(a)(1)(B) requires it, and the FAQ says \"MUST make it clear in the credits which parts are yours\". Do not add DRM or other technical measures that stop people using the file under the license (Section 2(a)(5)(C)). A plain public R2 object is fine. Do not suggest Kevin MacLeod endorses Mood Read.",
+  "checkedOn": "2026-10-25"
+}

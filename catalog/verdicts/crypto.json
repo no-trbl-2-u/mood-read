@@ -1,0 +1,40 @@
+{
+  "by": "rights-checker",
+  "verdict": "allowed",
+  "vocals": "none",
+  "useChecked": "stream from Mood Read's catalog and loop under narration in a free app, credited on a Credits screen",
+  "source": "https://incompetech.com/music/royalty-free/index.html?isrc=USUAN1600013",
+  "license": {
+    "id": "cc-by",
+    "version": "4.0"
+  },
+  "evidence": [
+    {
+      "quote": "Licensed under Creative Commons: By Attribution 4.0",
+      "url": "https://incompetech.com/music/royalty-free/faq.html",
+      "readOn": "2026-10-25"
+    },
+    {
+      "quote": "Most commonly, credits are placed on a “Credits” screen found in the settings menu.",
+      "url": "https://incompetech.com/music/royalty-free/faq.html",
+      "readOn": "2026-10-25"
+    },
+    {
+      "quote": "Share means to provide material to the public by any means or process that requires permission under the Licensed Rights, such as reproduction, public display, public performance, distribution, dissemination, communication, or importation, and to make material available to the public including in ways that members of the public may access the material from a place and at a time individually chosen by them.",
+      "url": "https://creativecommons.org/licenses/by/4.0/legalcode.en",
+      "readOn": "2026-10-25"
+    },
+    {
+      "quote": "You may satisfy the conditions in Section 3(a)(1) in any reasonable manner based on the medium, means, and context in which You Share the Licensed Material.",
+      "url": "https://creativecommons.org/licenses/by/4.0/legalcode.en",
+      "readOn": "2026-10-25"
+    },
+    {
+      "quote": "\"instruments\":\"Flute, Percussion, Synths\" (entry \"Crypto\", isrc \"USUAN1600013\", feel \"Dark, Eerie, Unnerving, Suspenseful\")",
+      "url": "https://incompetech.com/music/royalty-free/pieces.json",
+      "readOn": "2026-10-25"
+    }
+  ],
+  "conditions": "Attribution is required and must be visible to users. A Credits screen works. Use the publisher's credit lines exactly: \"Crypto Kevin MacLeod (incompetech.com)\" / \"Licensed under Creative Commons: By Attribution 4.0\" / \"https://creativecommons.org/licenses/by/4.0/\". If the file is edited (trimmed, crossfaded, re-encoded with changes), the credit must say so: FAQ: \"You MUST make it clear in the credits which parts are yours, and which parts are mine.\" Do not add DRM or other technical measures that stop users from exercising the license (CC BY 4.0 s.2(a)(5)(C)); a public R2 bucket is fine. No region limits and no non-commercial limit.",
+  "checkedOn": "2026-10-25"
+}

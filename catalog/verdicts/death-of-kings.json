@@ -1,0 +1,50 @@
+{
+  "by": "rights-checker",
+  "verdict": "allowed",
+  "vocals": "none",
+  "useChecked": "stream from Mood Read's catalog and loop under narration in a free app, credited on a Credits screen",
+  "source": "https://incompetech.com/music/royalty-free/index.html?isrc=USUAN1100876",
+  "license": {
+    "id": "cc-by",
+    "version": "4.0"
+  },
+  "evidence": [
+    {
+      "quote": "Licensed under Creative Commons: By Attribution 4.0",
+      "url": "https://incompetech.com/music/royalty-free/faq.html",
+      "readOn": "2026-10-25"
+    },
+    {
+      "quote": "Most commonly, credits are placed on a “Credits” screen found in the settings menu.",
+      "url": "https://incompetech.com/music/royalty-free/faq.html",
+      "readOn": "2026-10-25"
+    },
+    {
+      "quote": "Creative Commons, Free: No charge. Requires that you credit the music.",
+      "url": "https://incompetech.com/music/royalty-free/licenses/",
+      "readOn": "2026-10-25"
+    },
+    {
+      "quote": "non-sublicensable, non-exclusive, irrevocable license to exercise the Licensed Rights in the Licensed Material to:",
+      "url": "https://creativecommons.org/licenses/by/4.0/legalcode.en",
+      "readOn": "2026-10-25"
+    },
+    {
+      "quote": "You may satisfy the conditions in Section 3(a)(1) in any reasonable manner based on the medium, means,",
+      "url": "https://creativecommons.org/licenses/by/4.0/legalcode.en",
+      "readOn": "2026-10-25"
+    },
+    {
+      "quote": "instruments: \"French Horns, Trombones, Cimbasso, Trumpets, Drum, Chimes\"",
+      "url": "https://incompetech.com/music/royalty-free/pieces.json",
+      "readOn": "2026-10-25"
+    },
+    {
+      "quote": "Deep and rich piece of remembrance for brass. The melody is carried by the horn, with some help later by trumpets.",
+      "url": "https://incompetech.com/music/royalty-free/pieces.json",
+      "readOn": "2026-10-25"
+    }
+  ],
+  "conditions": "Credit is required. Show it on the Credits screen in incompetech's format: \"Death of Kings Kevin MacLeod (incompetech.com)\" / \"Licensed under Creative Commons: By Attribution 4.0\" / \"https://creativecommons.org/licenses/by/4.0/\". Indicate any modification, for example a trim or loop edit, if one was made (CC BY 4.0 s3(a)(1)(B)). Do not add DRM or terms that restrict recipients (s2(a)(5)(B)). Hosting the unchanged MP3 in a public R2 bucket counts as Sharing, and the license allows it. There is no region limit and no paid tier.",
+  "checkedOn": "2026-10-25"
+}

@@ -1,0 +1,24 @@
+{
+  "id": "floating-cities",
+  "title": "Floating Cities",
+  "artist": "Kevin MacLeod",
+  "kind": "ambient",
+  "vocals": "none",
+  "moodTags": [
+    "wonder",
+    "calm"
+  ],
+  "intensity": "low",
+  "source": "https://incompetech.com/music/royalty-free/index.html?isrc=USUAN1600018",
+  "license": {
+    "id": "cc-by",
+    "version": "4.0",
+    "url": "https://creativecommons.org/licenses/by/4.0/"
+  },
+  "credit": "\"Floating Cities\" Kevin MacLeod (incompetech.com) Licensed under Creative Commons: By Attribution 4.0 License http://creativecommons.org/licenses/by/4.0/",
+  "loop": {
+    "start": 0,
+    "end": 184.058
+  },
+  "duration": 184.058
+}

@@ -1,0 +1,24 @@
+{
+  "id": "magic-forest",
+  "title": "Magic Forest",
+  "artist": "Kevin MacLeod",
+  "kind": "score",
+  "vocals": "none",
+  "moodTags": [
+    "wonder",
+    "tension"
+  ],
+  "intensity": "high",
+  "source": "https://incompetech.com/music/royalty-free/index.html?isrc=USUAN1600044",
+  "license": {
+    "id": "cc-by",
+    "version": "4.0",
+    "url": "https://creativecommons.org/licenses/by/4.0/"
+  },
+  "credit": "\"Magic Forest\" Kevin MacLeod (incompetech.com) Licensed under Creative Commons: By Attribution 4.0 License http://creativecommons.org/licenses/by/4.0/",
+  "loop": {
+    "start": 0,
+    "end": 260.075
+  },
+  "duration": 260.075
+}

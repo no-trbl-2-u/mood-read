@@ -1,0 +1,50 @@
+{
+  "by": "rights-checker",
+  "verdict": "allowed",
+  "vocals": "none",
+  "useChecked": "stream from Mood Read's catalog and loop under narration in a free app, credited on a Credits screen",
+  "source": "https://incompetech.com/music/royalty-free/index.html?isrc=USUAN1100787",
+  "license": {
+    "id": "cc-by",
+    "version": "4.0"
+  },
+  "evidence": [
+    {
+      "quote": "Licensed under Creative Commons: By Attribution 4.0",
+      "url": "https://incompetech.com/music/royalty-free/faq.html",
+      "readOn": "2026-10-25"
+    },
+    {
+      "quote": "Most commonly, credits are placed on a “Credits” screen found in the settings menu.",
+      "url": "https://incompetech.com/music/royalty-free/faq.html",
+      "readOn": "2026-10-25"
+    },
+    {
+      "quote": "No charge. Requires that you credit the music.",
+      "url": "https://incompetech.com/music/royalty-free/licenses/",
+      "readOn": "2026-10-25"
+    },
+    {
+      "quote": "a worldwide, royalty-free, non-sublicensable, non-exclusive, irrevocable license",
+      "url": "https://creativecommons.org/licenses/by/4.0/legalcode.en",
+      "readOn": "2026-10-25"
+    },
+    {
+      "quote": "You may satisfy the conditions in Section 3(a)(1) in any reasonable manner",
+      "url": "https://creativecommons.org/licenses/by/4.0/legalcode.en",
+      "readOn": "2026-10-25"
+    },
+    {
+      "quote": "instruments: Piano (entry isrc USUAN1100787, title \"Gymnopedie No. 1\", filename \"Gymnopedie No 1.mp3\")",
+      "url": "https://incompetech.com/music/royalty-free/pieces.json",
+      "readOn": "2026-10-25"
+    },
+    {
+      "quote": "Elegant and slightly dark, the simplicity of the piano melody is light and touching, with a feeling of pensive restraint.",
+      "url": "https://incompetech.com/music/royalty-free/pieces.json",
+      "readOn": "2026-10-25"
+    }
+  ],
+  "conditions": "You must show attribution where users can see it. The FAQ says credits have to be visible (\"Do I have to put the credit where people can see it? Yes.\"), and a Credits screen is fine. Use the FAQ template with the actual title: \"Gymnopedie No. 1\" Kevin MacLeod (incompetech.com), \"Licensed under Creative Commons: By Attribution 4.0\", and a link to https://creativecommons.org/licenses/by/4.0/. CC BY 4.0 Section 3(a)(1)(A)(iii) also requires saying that the material was modified, so note that it is looped and mixed under narration. CC BY 4.0 is non-sublicensable and Section 2(a)(5)(C) forbids adding DRM or effective technological measures that restrict recipients, so the public R2 delivery must not add such restrictions. Satie's composition itself is public domain. There are no region limits and no Premium requirement.",
+  "checkedOn": "2026-10-25"
+}

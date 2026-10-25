@@ -1,0 +1,50 @@
+{
+  "by": "rights-checker",
+  "verdict": "allowed",
+  "vocals": "none",
+  "useChecked": "stream from Mood Read's catalog and loop under narration in a free app, credited on a Credits screen",
+  "source": "https://incompetech.com/music/royalty-free/index.html?isrc=USUAN1100424",
+  "license": {
+    "id": "cc-by",
+    "version": "4.0"
+  },
+  "evidence": [
+    {
+      "quote": "Licensed under Creative Commons: By Attribution 4.0",
+      "url": "https://incompetech.com/music/royalty-free/faq.html",
+      "readOn": "2026-10-25"
+    },
+    {
+      "quote": "Most commonly, credits are placed on a “Credits” screen found in the settings menu.",
+      "url": "https://incompetech.com/music/royalty-free/faq.html",
+      "readOn": "2026-10-25"
+    },
+    {
+      "quote": "A reasonable effort may be expended (e.g. clicking on a credits option) but the credit should not be obscured.",
+      "url": "https://incompetech.com/music/royalty-free/faq.html",
+      "readOn": "2026-10-25"
+    },
+    {
+      "quote": "\"title\":\"Long Note Three\",\"filename\":\"Long Note Three.mp3\",\"length\":\"00:03:12\",\"instruments\":\"Strings, Synths\"",
+      "url": "https://incompetech.com/music/royalty-free/pieces.json",
+      "readOn": "2026-10-25"
+    },
+    {
+      "quote": "\"description\":\"A very long dark note. Use under dialog, or to kill site noise.\"",
+      "url": "https://incompetech.com/music/royalty-free/pieces.json",
+      "readOn": "2026-10-25"
+    },
+    {
+      "quote": "royalty-free, non-sublicensable, non-exclusive, irrevocable license to exercise the Licensed Rights",
+      "url": "https://creativecommons.org/licenses/by/4.0/legalcode.en",
+      "readOn": "2026-10-25"
+    },
+    {
+      "quote": "You may satisfy the conditions in Section 3(a)(1) in any reasonable manner based on the medium, means,",
+      "url": "https://creativecommons.org/licenses/by/4.0/legalcode.en",
+      "readOn": "2026-10-25"
+    }
+  ],
+  "conditions": "Attribution is required. The Credits screen must show the credit lines \"Long Note Three Kevin MacLeod (incompetech.com)\", \"Licensed under Creative Commons: By Attribution 4.0\" and \"https://creativecommons.org/licenses/by/4.0/\". The credits can sit one tap away, but they must not be hidden. If the file is edited (trimmed, crossfaded for looping), CC BY 4.0 3(a)(1)(B) requires saying so, and the incompetech FAQ asks for credits that make the changes clear. Do not add DRM or technical measures that stop others using the hosted file (CC BY 4.0 2(a)(5)(B)). No region or Premium limits.",
+  "checkedOn": "2026-10-25"
+}

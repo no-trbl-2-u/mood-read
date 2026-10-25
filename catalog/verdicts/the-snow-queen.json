@@ -1,0 +1,55 @@
+{
+  "by": "rights-checker",
+  "verdict": "allowed",
+  "vocals": "none",
+  "useChecked": "stream from Mood Read's catalog and loop under narration in a free app, credited on a Credits screen",
+  "source": "https://incompetech.com/music/royalty-free/index.html?isrc=USUAN1100872",
+  "license": {
+    "id": "cc-by",
+    "version": "4.0"
+  },
+  "evidence": [
+    {
+      "quote": "Licensed under Creative Commons: By Attribution 4.0",
+      "url": "https://incompetech.com/music/royalty-free/faq.html",
+      "readOn": "2026-10-25"
+    },
+    {
+      "quote": "\"title\": \"The Snow Queen\" ... \"instruments\": \"Strings, Bassoon, Bass Clarinet, Flute, Celesta, Timpani\" ... \"isrc\": \"USUAN1100872\"",
+      "url": "https://incompetech.com/music/royalty-free/pieces.json",
+      "readOn": "2026-10-25"
+    },
+    {
+      "quote": "Handy, because it does loop back to the beginning.",
+      "url": "https://incompetech.com/music/royalty-free/pieces.json",
+      "readOn": "2026-10-25"
+    },
+    {
+      "quote": "reproduce and Share the Licensed Material, in whole or in part",
+      "url": "https://creativecommons.org/licenses/by/4.0/legalcode.en",
+      "readOn": "2026-10-25"
+    },
+    {
+      "quote": "Share means to provide material to the public by any means or process that requires permission under the Licensed Rights",
+      "url": "https://creativecommons.org/licenses/by/4.0/legalcode.en",
+      "readOn": "2026-10-25"
+    },
+    {
+      "quote": "You may satisfy the conditions in Section 3(a)(1) in any reasonable manner based on the medium, means, and context in which You Share the Licensed Material.",
+      "url": "https://creativecommons.org/licenses/by/4.0/legalcode.en",
+      "readOn": "2026-10-25"
+    },
+    {
+      "quote": "Most commonly, credits are placed on a “Credits” screen found in the settings menu.",
+      "url": "https://incompetech.com/music/royalty-free/faq.html",
+      "readOn": "2026-10-25"
+    },
+    {
+      "quote": "Yes, you can sing over, chop, splice, compress, lengthen, and add instruments to anything you like.",
+      "url": "https://incompetech.com/music/royalty-free/faq.html",
+      "readOn": "2026-10-25"
+    }
+  ],
+  "conditions": "Show this credit on the Credits screen: \"The Snow Queen Kevin MacLeod (incompetech.com) / Licensed under Creative Commons: By Attribution 4.0\" with a link to https://creativecommons.org/licenses/by/4.0/. If the file is edited (trimmed, crossfaded at the loop point, re-encoded with changes), say on the Credits screen that it was modified (CC BY 4.0 s3(a)(1)(B)). Do not put DRM or extra terms on the file that stop others using it under the license (s2(a)(5)(B)). The R2 bucket is public, so anyone can download the file, and CC BY allows that. No Premium, region, or non-commercial limits. Possible side risk: incompetech reports false third-party Content ID claims on its tracks. That affects YouTube uploads, not this use.",
+  "checkedOn": "2026-10-25"
+}

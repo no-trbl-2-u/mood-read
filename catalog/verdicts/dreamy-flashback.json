@@ -1,0 +1,50 @@
+{
+  "by": "rights-checker",
+  "verdict": "allowed",
+  "vocals": "none",
+  "useChecked": "stream from Mood Read's catalog and loop under narration in a free app, credited on a Credits screen",
+  "source": "https://incompetech.com/music/royalty-free/index.html?isrc=USUAN1100532",
+  "license": {
+    "id": "cc-by",
+    "version": "4.0"
+  },
+  "evidence": [
+    {
+      "quote": "Licensed under Creative Commons: By Attribution 4.0",
+      "url": "https://incompetech.com/music/royalty-free/faq.html",
+      "readOn": "2026-10-25"
+    },
+    {
+      "quote": "the Creative Commons license that I offer all of my music under almost always gives you more rights than those contracts.",
+      "url": "https://incompetech.com/music/royalty-free/faq.html",
+      "readOn": "2026-10-25"
+    },
+    {
+      "quote": "Most commonly, credits are placed on a “Credits” screen found in the settings menu.",
+      "url": "https://incompetech.com/music/royalty-free/faq.html",
+      "readOn": "2026-10-25"
+    },
+    {
+      "quote": "reproduce and Share the Licensed Material, in whole or in part; and",
+      "url": "https://creativecommons.org/licenses/by/4.0/legalcode.en",
+      "readOn": "2026-10-25"
+    },
+    {
+      "quote": "You may satisfy the conditions in Section 3(a)(1) in any reasonable manner based on the medium, means,",
+      "url": "https://creativecommons.org/licenses/by/4.0/legalcode.en",
+      "readOn": "2026-10-25"
+    },
+    {
+      "quote": "Harp, Bells, Pizzicato Strings",
+      "url": "https://incompetech.com/music/royalty-free/pieces.json",
+      "readOn": "2026-10-25"
+    },
+    {
+      "quote": "This piece features repetitive triplet arpeggi and a lydian scale to invoke a dreamy feel.",
+      "url": "https://incompetech.com/music/royalty-free/pieces.json",
+      "readOn": "2026-10-25"
+    }
+  ],
+  "conditions": "Attribution is required on the Credits screen, in the incompetech template: \"Dreamy Flashback\" Kevin MacLeod (incompetech.com), Licensed under Creative Commons: By Attribution 4.0, plus a link to the license (https://creativecommons.org/licenses/by/4.0/). Use the actual title. If the file is edited (trimmed or crossfaded for looping), the credit must say it was modified (CC BY 4.0 s.3(a)(1)(B)). There is no Premium or region condition, and charging nothing is fine. CC BY 4.0 does not allow adding restrictions that stop others from using the work (s.2(a)(5)(B)). Hosting it in a public R2 bucket is fine under that rule.",
+  "checkedOn": "2026-10-25"
+}

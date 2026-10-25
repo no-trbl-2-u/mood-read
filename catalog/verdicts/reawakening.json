@@ -1,0 +1,35 @@
+{
+  "by": "rights-checker",
+  "verdict": "allowed",
+  "vocals": "none",
+  "useChecked": "stream from Mood Read's catalog and loop under narration in a free app, credited on a Credits screen",
+  "source": "https://incompetech.com/music/royalty-free/index.html?isrc=USUAN1400017",
+  "license": {
+    "id": "cc-by",
+    "version": "4.0"
+  },
+  "evidence": [
+    {
+      "quote": "Licensed under Creative Commons: By Attribution 4.0",
+      "url": "https://incompetech.com/music/royalty-free/faq.html",
+      "readOn": "2026-10-25"
+    },
+    {
+      "quote": "\"title\":\"Reawakening\" ... \"isrc\":\"USUAN1400017\" ... \"instruments\":\"Piano, Cello\" ... \"description\":\"Easy love theme; Useful for quiet talks.\"",
+      "url": "https://incompetech.com/music/royalty-free/pieces.json",
+      "readOn": "2026-10-25"
+    },
+    {
+      "quote": "to provide material to the public by any means or process that requires permission under the Licensed Rights, such as reproduction, public display, public performance, distribution, dissemination, communication, or importation, and to make material available to the public including in ways that members of the public may access the material from a place and at a time individually chosen by them.",
+      "url": "https://creativecommons.org/licenses/by/4.0/legalcode.en",
+      "readOn": "2026-10-25"
+    },
+    {
+      "quote": "You may satisfy the conditions in Section 3(a)(1) in any reasonable manner based on the medium, means, and context in which You Share the Licensed Material.",
+      "url": "https://creativecommons.org/licenses/by/4.0/legalcode.en",
+      "readOn": "2026-10-25"
+    }
+  ],
+  "conditions": "Attribution is required, on the Credits screen, in the form the FAQ gives: \"Reawakening Kevin MacLeod (incompetech.com)\" / \"Licensed under Creative Commons: By Attribution 4.0\" / \"https://creativecommons.org/licenses/by/4.0/\". Where practicable, also link to the track page (CC BY 4.0 s.3(a)(1)(A)(v)). If the file is edited (trimmed, crossfaded for looping, re-encoded in a way that changes the content), the credit must say so (s.3(a)(1)(B); the FAQ says \"You MUST make it clear in the credits which parts are yours\"). Do not put DRM or extra terms on the file that restrict recipients (s.2(a)(5)(B)). The public R2 bucket is fine.",
+  "checkedOn": "2026-10-25"
+}

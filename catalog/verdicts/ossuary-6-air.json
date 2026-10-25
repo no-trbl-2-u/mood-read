@@ -1,0 +1,45 @@
+{
+  "by": "rights-checker",
+  "verdict": "allowed",
+  "vocals": "none",
+  "useChecked": "stream from Mood Read's catalog and loop under narration in a free app, credited on a Credits screen",
+  "source": "https://incompetech.com/music/royalty-free/index.html?isrc=USUAN1500048",
+  "license": {
+    "id": "cc-by",
+    "version": "4.0"
+  },
+  "evidence": [
+    {
+      "quote": "\"title\":\"Ossuary 6 - Air\" ... \"instruments\":\"Synths\" ... \"description\":\"Well, something has taken a turn for the not-quite-as-good-as-I'd-like. Slow-moving drone of impending doom!\" ... \"isrc\":\"USUAN1500048\"",
+      "url": "https://incompetech.com/music/royalty-free/pieces.json",
+      "readOn": "2026-10-25"
+    },
+    {
+      "quote": "Licensed under Creative Commons: By Attribution 4.0",
+      "url": "https://incompetech.com/music/royalty-free/faq.html",
+      "readOn": "2026-10-25"
+    },
+    {
+      "quote": "Most commonly, credits are placed on a “Credits” screen found in the settings menu.",
+      "url": "https://incompetech.com/music/royalty-free/faq.html",
+      "readOn": "2026-10-25"
+    },
+    {
+      "quote": "Title Kevin MacLeod (incompetech.com) / Licensed under Creative Commons: By Attribution 4.0 / https://creativecommons.org/licenses/by/4.0/",
+      "url": "https://incompetech.com/music/royalty-free/faq.html",
+      "readOn": "2026-10-25"
+    },
+    {
+      "quote": "reproduce and Share the Licensed Material, in whole or in part; and",
+      "url": "https://creativecommons.org/licenses/by/4.0/legalcode.en",
+      "readOn": "2026-10-25"
+    },
+    {
+      "quote": "You may satisfy the conditions in Section 3(a)(1) in any reasonable manner based on the medium, means, and context in which You Share the Licensed Material.",
+      "url": "https://incompetech.com/music/royalty-free/faq.html",
+      "readOn": "2026-10-25"
+    }
+  ],
+  "conditions": "Attribution on a Credits screen that is easy to find (\"the credit should not be obscured\"), in the incompetech format: \"Ossuary 6 - Air Kevin MacLeod (incompetech.com) / Licensed under Creative Commons: By Attribution 4.0 / https://creativecommons.org/licenses/by/4.0/\". CC BY 4.0 Sec. 3(a)(1)(B) says to note any changes: if the file is edited (trimmed, crossfaded into a new loop file, re-encoded with edits), say it was modified. Looping it unchanged at playback is not an edit. CC BY 4.0 Sec. 2(a)(5)(B) bars adding extra terms or DRM to the redistributed file; a public R2 bucket meets this. Free or paid makes no difference under CC BY.",
+  "checkedOn": "2026-10-25"
+}

@@ -1,0 +1,24 @@
+{
+  "id": "peaceful-desolation",
+  "title": "Peaceful Desolation",
+  "artist": "Kevin MacLeod",
+  "kind": "score",
+  "vocals": "none",
+  "moodTags": [
+    "triumph",
+    "calm"
+  ],
+  "intensity": "low",
+  "source": "https://incompetech.com/music/royalty-free/index.html?isrc=USUAN1200017",
+  "license": {
+    "id": "cc-by",
+    "version": "4.0",
+    "url": "https://creativecommons.org/licenses/by/4.0/"
+  },
+  "credit": "\"Peaceful Desolation\" Kevin MacLeod (incompetech.com) Licensed under Creative Commons: By Attribution 4.0 License http://creativecommons.org/licenses/by/4.0/",
+  "loop": {
+    "start": 0,
+    "end": 91.167
+  },
+  "duration": 91.167
+}

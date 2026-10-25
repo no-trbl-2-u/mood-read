@@ -1,0 +1,35 @@
+{
+  "by": "rights-checker",
+  "verdict": "allowed",
+  "vocals": "none",
+  "useChecked": "stream from Mood Read's catalog and loop under narration in a free app, credited on a Credits screen",
+  "source": "https://incompetech.com/music/royalty-free/index.html?isrc=USUAN1600035",
+  "license": {
+    "id": "cc-by",
+    "version": "4.0"
+  },
+  "evidence": [
+    {
+      "quote": "Licensed under Creative Commons: By Attribution 4.0",
+      "url": "https://incompetech.com/music/royalty-free/faq.html",
+      "readOn": "2026-10-25"
+    },
+    {
+      "quote": "reproduce and Share the Licensed Material, in whole or in part; and produce, reproduce, and Share Adapted Material.",
+      "url": "https://creativecommons.org/licenses/by/4.0/legalcode.en",
+      "readOn": "2026-10-25"
+    },
+    {
+      "quote": "\"title\": \"Giant Wyrm\" ... \"instruments\": \"Piano, Synths, Brass\" ... \"feel\": \"Eerie, Unnerving, Dark\" ... \"isrc\": \"USUAN1600035\"",
+      "url": "https://incompetech.com/music/royalty-free/pieces.json",
+      "readOn": "2026-10-25"
+    },
+    {
+      "quote": "No charge. Requires that you credit the music.",
+      "url": "https://incompetech.com/music/royalty-free/licenses/",
+      "readOn": "2026-10-25"
+    }
+  ],
+  "conditions": "Show this credit on the Credits screen, clearly and easy to find: \"Giant Wyrm Kevin MacLeod (incompetech.com)\", then \"Licensed under Creative Commons: By Attribution 4.0\", then https://creativecommons.org/licenses/by/4.0/. CC BY 4.0 Section 3(a) also asks for a link to the material where reasonably practical (use the source URL), and a note if the audio was modified (trimmed, edited, or re-encoded). Looping and mixing under narration counts as Sharing and, if it is an adaptation, is covered by the Adapted Material grant. No Premium, region, or non-commercial limits apply. The credit must be removed if the licensor asks.",
+  "checkedOn": "2026-10-25"
+}

@@ -1,0 +1,24 @@
+{
+  "id": "the-pyre",
+  "title": "The Pyre",
+  "artist": "Kevin MacLeod",
+  "kind": "score",
+  "vocals": "none",
+  "moodTags": [
+    "sorrow",
+    "dread"
+  ],
+  "intensity": "high",
+  "source": "https://incompetech.com/music/royalty-free/index.html?isrc=USUAN1100846",
+  "license": {
+    "id": "cc-by",
+    "version": "4.0",
+    "url": "https://creativecommons.org/licenses/by/4.0/"
+  },
+  "credit": "\"The Pyre\" Kevin MacLeod (incompetech.com) Licensed under Creative Commons: By Attribution 4.0 License http://creativecommons.org/licenses/by/4.0/",
+  "loop": {
+    "start": 0,
+    "end": 233.404
+  },
+  "duration": 233.404
+}

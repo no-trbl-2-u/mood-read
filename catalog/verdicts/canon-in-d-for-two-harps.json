@@ -1,0 +1,50 @@
+{
+  "by": "rights-checker",
+  "verdict": "allowed",
+  "vocals": "none",
+  "useChecked": "stream from Mood Read's catalog and loop under narration in a free app, credited on a Credits screen",
+  "source": "https://incompetech.com/music/royalty-free/index.html?isrc=USUAN2000015",
+  "license": {
+    "id": "cc-by",
+    "version": "4.0"
+  },
+  "evidence": [
+    {
+      "quote": "Licensed under Creative Commons: By Attribution 4.0",
+      "url": "https://incompetech.com/music/royalty-free/faq.html",
+      "readOn": "2026-10-25"
+    },
+    {
+      "quote": "Most commonly, credits are placed on a “Credits” screen found in the settings menu.",
+      "url": "https://incompetech.com/music/royalty-free/faq.html",
+      "readOn": "2026-10-25"
+    },
+    {
+      "quote": "Yes. Be sure to credit me.",
+      "url": "https://incompetech.com/music/royalty-free/faq.html",
+      "readOn": "2026-10-25"
+    },
+    {
+      "quote": "worldwide, royalty-free, non-sublicensable, non-exclusive, irrevocable license to exercise the Licensed Rights",
+      "url": "https://creativecommons.org/licenses/by/4.0/legalcode.en",
+      "readOn": "2026-10-25"
+    },
+    {
+      "quote": "in any reasonable manner based on the medium, means, and context in which You Share the Licensed Material",
+      "url": "https://creativecommons.org/licenses/by/4.0/legalcode.en",
+      "readOn": "2026-10-25"
+    },
+    {
+      "quote": "\"instruments\": \"Concert Harps\"",
+      "url": "https://incompetech.com/music/royalty-free/pieces.json",
+      "readOn": "2026-10-25"
+    },
+    {
+      "quote": "I believe this is the best arrangement of this piece for 2 harps; A thing which should never have been tried.",
+      "url": "https://incompetech.com/music/royalty-free/pieces.json",
+      "readOn": "2026-10-25"
+    }
+  ],
+  "conditions": "Put the credit on the Credits screen using the FAQ template, word for word with the real title: \"Canon in D for Two Harps Kevin MacLeod (incompetech.com) / Licensed under Creative Commons: By Attribution 4.0 / https://creativecommons.org/licenses/by/4.0/\". The credit must be easy to find. If the hosted file is edited in any way (trimmed, re-encoded with a fade, or re-mastered), the credits must say what was changed, per the FAQ (\"You MUST make it clear in the credits which parts are yours, and which parts are mine\") and CC BY 4.0 s.3(a)(1)(B). Looping the file unchanged and mixing it under narration at playback does not edit the file. No region or Premium limits. CC BY 4.0 does allow hosting a copy in a public R2 bucket (\"Share\"). The composition is public domain, but the recording is copyrighted: \"All of this music is copyrighted.\"",
+  "checkedOn": "2026-10-25"
+}

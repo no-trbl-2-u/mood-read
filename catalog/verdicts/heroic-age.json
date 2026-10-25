@@ -1,0 +1,40 @@
+{
+  "by": "rights-checker",
+  "verdict": "allowed",
+  "vocals": "none",
+  "useChecked": "stream from Mood Read's catalog and loop under narration in a free app, credited on a Credits screen",
+  "source": "https://incompetech.com/music/royalty-free/index.html?isrc=USUAN1100848",
+  "license": {
+    "id": "cc-by",
+    "version": "4.0"
+  },
+  "evidence": [
+    {
+      "quote": "Licensed under Creative Commons: By Attribution 4.0",
+      "url": "https://incompetech.com/music/royalty-free/faq.html",
+      "readOn": "2026-10-25"
+    },
+    {
+      "quote": "reproduce and Share the Licensed Material, in whole or in part; and",
+      "url": "https://creativecommons.org/licenses/by/4.0/legalcode.en",
+      "readOn": "2026-10-25"
+    },
+    {
+      "quote": "You may satisfy the conditions in Section 3(a)(1) in any reasonable manner based on the medium, means, and context",
+      "url": "https://creativecommons.org/licenses/by/4.0/legalcode.en",
+      "readOn": "2026-10-25"
+    },
+    {
+      "quote": "Flutes, Clarinets, Oboes, Trombones, Tuba, Cellos, Basses, Percussion, Celesta",
+      "url": "https://incompetech.com/music/royalty-free/pieces.json",
+      "readOn": "2026-10-25"
+    },
+    {
+      "quote": "See title, instrumentation, tempo, and feels for description. Originally written for a live performance.",
+      "url": "https://incompetech.com/music/royalty-free/pieces.json",
+      "readOn": "2026-10-25"
+    }
+  ],
+  "conditions": "You must show attribution on the Credits screen, in a place the listener can reach from the app. Use the site's own template: \"Heroic Age Kevin MacLeod (incompetech.com) / Licensed under Creative Commons: By Attribution 4.0\" with a link to https://creativecommons.org/licenses/by/4.0/. Looping the unmodified file is just playback. If the file is trimmed or edited to make loop points, the credit must say it was modified (CC BY 4.0 s.3(a)(1)(B)). Don't add DRM or any other technical restriction to the shared file (s.2(a)(5)(C)). No region limit and no Premium tier.",
+  "checkedOn": "2026-10-25"
+}

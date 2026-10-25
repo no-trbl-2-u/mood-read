@@ -1,0 +1,50 @@
+{
+  "by": "rights-checker",
+  "verdict": "allowed",
+  "vocals": "none",
+  "useChecked": "stream from Mood Read's catalog and loop under narration in a free app, credited on a Credits screen",
+  "source": "https://incompetech.com/music/royalty-free/index.html?isrc=USUAN1100638",
+  "license": {
+    "id": "cc-by",
+    "version": "4.0"
+  },
+  "evidence": [
+    {
+      "quote": "\"instruments\":\"Oboe, Flute, Strings, Trombones, Horn, Tuba\"",
+      "url": "https://incompetech.com/music/royalty-free/pieces.json",
+      "readOn": "2026-10-25"
+    },
+    {
+      "quote": "\"feel\":\"Calming, Relaxed, Somber, Uplifting\"",
+      "url": "https://incompetech.com/music/royalty-free/pieces.json",
+      "readOn": "2026-10-25"
+    },
+    {
+      "quote": "Licensed under Creative Commons: By Attribution 4.0",
+      "url": "https://incompetech.com/music/royalty-free/faq.html",
+      "readOn": "2026-10-25"
+    },
+    {
+      "quote": "Yes. Be sure to credit me.",
+      "url": "https://incompetech.com/music/royalty-free/faq.html",
+      "readOn": "2026-10-25"
+    },
+    {
+      "quote": "the Licensor hereby grants You a worldwide, royalty-free, non-sublicensable, non-exclusive, irrevocable license",
+      "url": "https://creativecommons.org/licenses/by/4.0/legalcode.en",
+      "readOn": "2026-10-25"
+    },
+    {
+      "quote": "means to provide material to the public by any means or process that requires permission under the Licensed Rights",
+      "url": "https://creativecommons.org/licenses/by/4.0/legalcode.en",
+      "readOn": "2026-10-25"
+    },
+    {
+      "quote": "You may satisfy the conditions in Section 3(a)(1) in any reasonable manner based on the medium, means, and context",
+      "url": "https://creativecommons.org/licenses/by/4.0/legalcode.en",
+      "readOn": "2026-10-25"
+    }
+  ],
+  "conditions": "The Credits screen must show the attribution, not hidden: \"The Parting Kevin MacLeod (incompetech.com)\", plus \"Licensed under Creative Commons: By Attribution 4.0\" with a link to https://creativecommons.org/licenses/by/4.0/. If Mood Read edits the audio (loop points, trims, fades baked into the file), the credit must say it was modified (CC BY 4.0 s.3(a)(1)(B)). The app may not add DRM or extra terms that restrict the file (s.2(a)(5)(B)). There are no region or Premium limits.",
+  "checkedOn": "2026-10-25"
+}

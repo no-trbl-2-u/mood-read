@@ -1,0 +1,23 @@
+{
+  "id": "giant-wyrm",
+  "title": "Giant Wyrm",
+  "artist": "Kevin MacLeod",
+  "kind": "score",
+  "vocals": "none",
+  "moodTags": [
+    "dread"
+  ],
+  "intensity": "high",
+  "source": "https://incompetech.com/music/royalty-free/index.html?isrc=USUAN1600035",
+  "license": {
+    "id": "cc-by",
+    "version": "4.0",
+    "url": "https://creativecommons.org/licenses/by/4.0/"
+  },
+  "credit": "\"Giant Wyrm\" Kevin MacLeod (incompetech.com) Licensed under Creative Commons: By Attribution 4.0 License http://creativecommons.org/licenses/by/4.0/",
+  "loop": {
+    "start": 0,
+    "end": 259.056
+  },
+  "duration": 259.056
+}

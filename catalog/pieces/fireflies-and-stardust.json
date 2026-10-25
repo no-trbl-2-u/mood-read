@@ -1,0 +1,24 @@
+{
+  "id": "fireflies-and-stardust",
+  "title": "Fireflies and Stardust",
+  "artist": "Kevin MacLeod",
+  "kind": "instrumental",
+  "vocals": "none",
+  "moodTags": [
+    "joy",
+    "calm"
+  ],
+  "intensity": "high",
+  "source": "https://incompetech.com/music/royalty-free/index.html?isrc=USUAN1600061",
+  "license": {
+    "id": "cc-by",
+    "version": "4.0",
+    "url": "https://creativecommons.org/licenses/by/4.0/"
+  },
+  "credit": "\"Fireflies and Stardust\" Kevin MacLeod (incompetech.com) Licensed under Creative Commons: By Attribution 4.0 License http://creativecommons.org/licenses/by/4.0/",
+  "loop": {
+    "start": 0,
+    "end": 255.059
+  },
+  "duration": 255.059
+}

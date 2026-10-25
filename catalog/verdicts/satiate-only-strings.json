@@ -1,0 +1,40 @@
+{
+  "by": "rights-checker",
+  "verdict": "allowed",
+  "vocals": "none",
+  "useChecked": "stream from Mood Read's catalog and loop under narration in a free app, credited on a Credits screen",
+  "source": "https://incompetech.com/music/royalty-free/index.html?isrc=USUAN1200056",
+  "license": {
+    "id": "cc-by",
+    "version": "4.0"
+  },
+  "evidence": [
+    {
+      "quote": "Licensed under Creative Commons: By Attribution 4.0",
+      "url": "https://incompetech.com/music/royalty-free/faq.html",
+      "readOn": "2026-10-25"
+    },
+    {
+      "quote": "Yes, you can sing over, chop, splice, compress, lengthen, and add instruments to anything you like.",
+      "url": "https://incompetech.com/music/royalty-free/faq.html",
+      "readOn": "2026-10-25"
+    },
+    {
+      "quote": "reproduce and Share the Licensed Material, in whole or in part; and",
+      "url": "https://creativecommons.org/licenses/by/4.0/legalcode.en",
+      "readOn": "2026-10-25"
+    },
+    {
+      "quote": "You may satisfy the conditions in Section 3(a)(1) in any reasonable manner based on the medium, means, and context",
+      "url": "https://creativecommons.org/licenses/by/4.0/legalcode.en",
+      "readOn": "2026-10-25"
+    },
+    {
+      "quote": "\"title\":\"Satiate - only strings\" ... \"instruments\":\"Strings\" ... \"isrc\":\"USUAN1200056\"",
+      "url": "https://incompetech.com/music/royalty-free/pieces.json",
+      "readOn": "2026-10-25"
+    }
+  ],
+  "conditions": "Show the attribution on the Credits screen in incompetech's FAQ format: \"Satiate - only strings Kevin MacLeod (incompetech.com) / Licensed under Creative Commons: By Attribution 4.0 / https://creativecommons.org/licenses/by/4.0/\". The FAQ says \"the credit should not be obscured\", so keep it easy to reach. If the file is edited (trimmed, crossfaded for the loop, re-encoded with changes), the credit must say it was modified. The FAQ says you \"MUST make it clear in the credits which parts are yours, and which parts are mine\". No Premium requirement and no region limit. Do not add DRM or technical measures that stop recipients using the file (CC BY 4.0 s.2(a)(5)(C)). A public R2 bucket meets this.",
+  "checkedOn": "2026-10-25"
+}

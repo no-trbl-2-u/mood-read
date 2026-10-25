@@ -1,0 +1,24 @@
+{
+  "id": "the-parting",
+  "title": "The Parting",
+  "artist": "Kevin MacLeod",
+  "kind": "score",
+  "vocals": "none",
+  "moodTags": [
+    "sorrow",
+    "triumph"
+  ],
+  "intensity": "low",
+  "source": "https://incompetech.com/music/royalty-free/index.html?isrc=USUAN1100638",
+  "license": {
+    "id": "cc-by",
+    "version": "4.0",
+    "url": "https://creativecommons.org/licenses/by/4.0/"
+  },
+  "credit": "\"The Parting\" Kevin MacLeod (incompetech.com) Licensed under Creative Commons: By Attribution 4.0 License http://creativecommons.org/licenses/by/4.0/",
+  "loop": {
+    "start": 0,
+    "end": 183.876
+  },
+  "duration": 183.876
+}

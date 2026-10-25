@@ -1,0 +1,24 @@
+{
+  "id": "carefree",
+  "title": "Carefree",
+  "artist": "Kevin MacLeod",
+  "kind": "instrumental",
+  "vocals": "none",
+  "moodTags": [
+    "joy",
+    "calm"
+  ],
+  "intensity": "low",
+  "source": "https://incompetech.com/music/royalty-free/index.html?isrc=USUAN1400037",
+  "license": {
+    "id": "cc-by",
+    "version": "4.0",
+    "url": "https://creativecommons.org/licenses/by/4.0/"
+  },
+  "credit": "\"Carefree\" Kevin MacLeod (incompetech.com) Licensed under Creative Commons: By Attribution 4.0 License http://creativecommons.org/licenses/by/4.0/",
+  "loop": {
+    "start": 0,
+    "end": 205.139
+  },
+  "duration": 205.139
+}

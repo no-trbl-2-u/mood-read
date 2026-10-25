@@ -1,0 +1,25 @@
+{
+  "id": "crinoline-dreams",
+  "title": "Crinoline Dreams",
+  "artist": "Kevin MacLeod",
+  "kind": "instrumental",
+  "vocals": "none",
+  "moodTags": [
+    "calm",
+    "joy",
+    "romance"
+  ],
+  "intensity": "high",
+  "source": "https://incompetech.com/music/royalty-free/index.html?isrc=USUAN1700073",
+  "license": {
+    "id": "cc-by",
+    "version": "4.0",
+    "url": "https://creativecommons.org/licenses/by/4.0/"
+  },
+  "credit": "\"Crinoline Dreams\" Kevin MacLeod (incompetech.com) Licensed under Creative Commons: By Attribution 4.0 License http://creativecommons.org/licenses/by/4.0/",
+  "loop": {
+    "start": 0,
+    "end": 246.439
+  },
+  "duration": 246.439
+}

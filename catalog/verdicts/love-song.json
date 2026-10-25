@@ -1,0 +1,45 @@
+{
+  "by": "rights-checker",
+  "verdict": "allowed",
+  "vocals": "none",
+  "useChecked": "stream from Mood Read's catalog and loop under narration in a free app, credited on a Credits screen",
+  "source": "https://incompetech.com/music/royalty-free/index.html?isrc=USUAN1100170",
+  "license": {
+    "id": "cc-by",
+    "version": "4.0"
+  },
+  "evidence": [
+    {
+      "quote": "Licensed under Creative Commons: By Attribution 4.0",
+      "url": "https://incompetech.com/music/royalty-free/faq.html",
+      "readOn": "2026-10-25"
+    },
+    {
+      "quote": "Most commonly, credits are placed on a “Credits” screen found in the settings menu.",
+      "url": "https://incompetech.com/music/royalty-free/faq.html",
+      "readOn": "2026-10-25"
+    },
+    {
+      "quote": "the Licensor hereby grants You a worldwide, royalty-free, non-sublicensable, non-exclusive, irrevocable license",
+      "url": "https://creativecommons.org/licenses/by/4.0/legalcode.en",
+      "readOn": "2026-10-25"
+    },
+    {
+      "quote": "in any reasonable manner based on the medium, means, and context in which You Share the Licensed Material",
+      "url": "https://creativecommons.org/licenses/by/4.0/legalcode.en",
+      "readOn": "2026-10-25"
+    },
+    {
+      "quote": "\"title\":\"Love Song\",\"filename\":\"Love Song.mp3\",\"length\":\"00:03:00\",\"instruments\":\"Flute, Alto Flute, Bass Flute, Piano, Harp, Horn\"",
+      "url": "https://incompetech.com/music/royalty-free/pieces.json",
+      "readOn": "2026-10-25"
+    },
+    {
+      "quote": "\"description\":\"Plaintive and hopeful. Originally written for a musical, this piece got cut.\",\"feel\":\"Relaxed, Somber, Eerie, Mysterious\",\"uploaded\":\"2005-01-01\",\"isrc\":\"USUAN1100170\"",
+      "url": "https://incompetech.com/music/royalty-free/pieces.json",
+      "readOn": "2026-10-25"
+    }
+  ],
+  "conditions": "Attribution is required. Show it on the Credits screen in incompetech's template: \"Love Song Kevin MacLeod (incompetech.com) / Licensed under Creative Commons: By Attribution 4.0 / https://creativecommons.org/licenses/by/4.0/\". Use the real track title. The FAQ says credits must be easy to find. If the file is edited (trimmed or crossfaded for the loop), the credit must say it was modified (CC BY 4.0, Section 3(a)(1)(B)). No Premium, region or non-commercial limits.",
+  "checkedOn": "2026-10-25"
+}

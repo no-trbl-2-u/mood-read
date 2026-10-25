@@ -1,0 +1,45 @@
+{
+  "by": "rights-checker",
+  "verdict": "allowed",
+  "vocals": "none",
+  "useChecked": "stream from Mood Read's catalog and loop under narration in a free app, credited on a Credits screen",
+  "source": "https://incompetech.com/music/royalty-free/index.html?isrc=USUAN1600044",
+  "license": {
+    "id": "cc-by",
+    "version": "4.0"
+  },
+  "evidence": [
+    {
+      "quote": "Licensed under Creative Commons: By Attribution 4.0",
+      "url": "https://incompetech.com/music/royalty-free/faq.html",
+      "readOn": "2026-10-25"
+    },
+    {
+      "quote": "No charge. Requires that you credit the music.",
+      "url": "https://incompetech.com/music/royalty-free/licenses/",
+      "readOn": "2026-10-25"
+    },
+    {
+      "quote": "Most commonly, credits are placed on a \"Credits\" screen found in the settings menu.",
+      "url": "https://incompetech.com/music/royalty-free/faq.html",
+      "readOn": "2026-10-25"
+    },
+    {
+      "quote": "reproduce and Share the Licensed Material, in whole or in part; and",
+      "url": "https://creativecommons.org/licenses/by/4.0/legalcode.en",
+      "readOn": "2026-10-25"
+    },
+    {
+      "quote": "You may satisfy the conditions in Section 3(a)(1) in any reasonable manner based on the medium,",
+      "url": "https://creativecommons.org/licenses/by/4.0/legalcode.en",
+      "readOn": "2026-10-25"
+    },
+    {
+      "quote": "\"title\": \"Magic Forest\" ... \"instruments\": \"Cello, Violin, Synths\" ... \"feel\": \"Mystical, Dark, Mysterious\" ... \"isrc\": \"USUAN1600044\"",
+      "url": "https://incompetech.com/music/royalty-free/pieces.json",
+      "readOn": "2026-10-25"
+    }
+  ],
+  "conditions": "Attribution required (CC BY 4.0 s.3(a)). Show it on the Credits screen in the incompetech format, with the real title in place of \"Title\": \"Magic Forest\" Kevin MacLeod (incompetech.com), Licensed under Creative Commons: By Attribution 4.0, linking to the CC BY 4.0 license. Looping under narration may count as an adaptation, and CC BY 4.0 s.2(a)(1) allows that. If the audio is edited (trimmed or crossfaded to make the loop), the credit should say it was modified (s.3(a)(1)(B)). No other limits found on region, Premium tiers, apps, or hosting the file on the app's own server.",
+  "checkedOn": "2026-10-25"
+}

@@ -1,0 +1,40 @@
+{
+  "by": "rights-checker",
+  "verdict": "allowed",
+  "vocals": "none",
+  "useChecked": "stream from Mood Read's catalog and loop under narration in a free app, credited on a Credits screen",
+  "source": "https://incompetech.com/music/royalty-free/index.html?isrc=USUAN1100516",
+  "license": {
+    "id": "cc-by",
+    "version": "4.0"
+  },
+  "evidence": [
+    {
+      "quote": "Licensed under Creative Commons: By Attribution 4.0",
+      "url": "https://incompetech.com/music/royalty-free/faq.html",
+      "readOn": "2026-10-25"
+    },
+    {
+      "quote": "Subject to the terms and conditions of this Public License, the Licensor hereby grants You a worldwide, royalty-free, non-sublicensable, non-exclusive, irrevocable license to exercise the Licensed Rights in the Licensed Material to: A. reproduce and Share the Licensed Material, in whole or in part; and B. produce, reproduce, and Share Adapted Material.",
+      "url": "https://creativecommons.org/licenses/by/4.0/legalcode.en",
+      "readOn": "2026-10-25"
+    },
+    {
+      "quote": "You may satisfy the conditions in Section 3(a)(1) in any reasonable manner based on the medium, means, and context in which You Share the Licensed Material.",
+      "url": "https://creativecommons.org/licenses/by/4.0/legalcode.en",
+      "readOn": "2026-10-25"
+    },
+    {
+      "quote": "\"instruments\": \"Celesta, Glockenspiel, Basses, Cellos, Violas, Violins, French Horns\" (entry \"title\": \"Frost Waltz\", \"isrc\": \"USUAN1100516\")",
+      "url": "https://incompetech.com/music/royalty-free/pieces.json",
+      "readOn": "2026-10-25"
+    },
+    {
+      "quote": "A calm buy mysterious composition that uses Glockenspiel and Celesta throughout.",
+      "url": "https://incompetech.com/music/royalty-free/pieces.json",
+      "readOn": "2026-10-25"
+    }
+  ],
+  "conditions": "Attribution required, easy to find (a Credits screen is fine; the FAQ names a \"Credits\" screen in settings as the usual place). Use the FAQ's format: \"Frost Waltz Kevin MacLeod (incompetech.com)\" plus \"Licensed under Creative Commons: By Attribution 4.0 License\", linked to http://creativecommons.org/licenses/by/4.0/. If the app edits the file (cuts it, crossfades the loop seam, changes it in some other way), the credit must say it was modified (CC BY 4.0 s.3(a)(1)(B); the FAQ says \"You MUST make it clear in the credits which parts are yours\"). Playing it in a loop and lowering the volume under narration are not edits to the file. Don't add DRM or extra terms that stop others using the file (s.2(a)(5)(C)); a public R2 bucket meets this. No region or Premium limits.",
+  "checkedOn": "2026-10-25"
+}
