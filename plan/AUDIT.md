@@ -162,9 +162,11 @@
 - seen: 2026-10-23 (06.4: the display face, moved to assets/fonts; expo-router's assets still sit there, unrequested today)
 - next: /iterate, with an e2e check that no requested asset path contains node_modules
 
-### [5.4] Two sessions' gates collide on e2e port 4173
+### [5.4] Two sessions' gates collide on e2e port 4173 [x]
 - category: tooling
 - impact: 5 (a parallel session's e2e holds 127.0.0.1:4173, so another session's `git commit` hook fails red with "is already used"; seen three times in one evening)
 - ease: 6 (`playwright.config.ts` takes `E2E_PORT` and the hook or `scripts/` picks a free port per worktree)
-- next: /iterate, with a test that two gates can run at once
-- next: /iterate, with a red-first test in scripts/__tests__
+- issue: #4
+- fixed: 2026-10-25 (/iterate, cloud march tick) — `playwright.config.ts` picks a free port automatically
+  (`scripts/e2e-port.mjs`: a seed derived from the worktree path, probed upward for one that's actually free)
+  when `E2E_PORT` is unset, so two worktrees' gates no longer need to coordinate a port by hand.

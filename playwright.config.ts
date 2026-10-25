@@ -1,9 +1,17 @@
-// The hermetic e2e: Chromium only, over the web build (dist/, from `pnpm build`) served on localhost:4173 by
-// e2e/serve.mjs. No network beyond localhost: the specs abort and fail any other origin. `E2E_PORT` moves the
-// server off 4173, so two worktrees' gates can run at once (plan/AUDIT.md, two gates collide on 4173).
+// The hermetic e2e: Chromium only, over the web build (dist/, from `pnpm build`) served on localhost by
+// e2e/serve.mjs. No network beyond localhost: the specs abort and fail any other origin. `E2E_PORT` pins an
+// exact port; left unset, the port is picked automatically (scripts/e2e-port.mjs) so two worktrees' gates
+// never collide on the same port (plan/AUDIT.md, [5.4]).
 import { defineConfig, devices } from "@playwright/test";
+import { pickPort, seedPort } from "./scripts/e2e-port.mjs";
 
-const PORT = Number(process.env.E2E_PORT) || 4173;
+// This config is evaluated more than once per run (the root process, then again per worker). Only the first
+// evaluation should probe for a free port; every later one must land on the exact same port the first one
+// chose and the webServer is actually bound to, not re-probe and find it busy. Pinning the choice into
+// `process.env.E2E_PORT`, inherited by worker processes, makes every evaluation after the first take this
+// branch instead of calling pickPort again.
+const PORT = Number(process.env.E2E_PORT) || (await pickPort(seedPort(process.cwd())));
+process.env.E2E_PORT = String(PORT);
 const BASE_URL = `http://127.0.0.1:${PORT}`;
 
 export default defineConfig({
