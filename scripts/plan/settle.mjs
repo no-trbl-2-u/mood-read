@@ -200,7 +200,7 @@ export function dropNeeds(spec, id) {
 }
 
 /** `  needs 07.3` on a wrapped line of its own, under a line that ends `·`. */
-const WRAPPED_NEEDS = /^( {2}needs )(.+)$/;
+const WRAPPED_NEEDS = /^( {2}needs )([^·]*)/;
 
 /** A needs list on its own line under a chunk line that ends `· needs`: the id out of it, and `needs —` once empty. */
 const NEED_LIST = /^ {2}(\d+\.\d+[a-z\d]*(?:,\s*\d+\.\d+[a-z\d]*)*)\s*$/;
@@ -220,14 +220,19 @@ function dropWrappedNeed(lines, id) {
   return out;
 }
 
-/** `· needs 07.3` → `· needs —`, and out of a list. */
-function dropNeed(line, id, clause = /(· needs )(.+)$/) {
+/**
+ * `· needs 07.3` → `· needs —`, and out of a list. The clause stops at the next `·` (never swallowing a
+ * trailing `· secrets ...` clause, or the bare `·` that opens a wrapped continuation, into the last item).
+ */
+function dropNeed(line, id, clause = /(· needs )([^·]*)/) {
   const m = clause.exec(line);
   if (!m) return line;
-  const items = m[2].split(/,\s*/);
-  if (!items.some((s) => s.trim() === id)) return line;
-  const kept = items.filter((s) => s.trim() !== id);
-  return line.slice(0, m.index) + m[1] + (kept.length ? kept.join(', ') : '—');
+  const items = m[2].split(/,\s*/).map((s) => s.trim()).filter(Boolean);
+  if (!items.includes(id)) return line;
+  const kept = items.filter((s) => s !== id);
+  const body = kept.length ? kept.join(', ') : '—';
+  const rest = line.slice(m.index + m[0].length);
+  return line.slice(0, m.index) + m[1] + body + (rest ? ' ' + rest : '');
 }
 
 /** The Measure line after a change: open = the A-IDs listed, closed = the old total less those, next unchanged. */

@@ -122,6 +122,20 @@ describe('closing a chunk', () => {
     assert.equal(dropNeeds(prose, '42.2'), prose);
   });
 
+  it('drops a closed id from a needs list followed by a secrets clause, on one line or wrapped', () => {
+    // [5.5]: a trailing `· secrets ...` clause used to be swallowed into the last needs item,
+    // so it never matched the closed id and never dropped.
+    const oneLine = '- [ ] **05.14** Google Play release · M · closes A16 · needs 04.1, 06.5, 06.6 · secrets EXPO_TOKEN\n';
+    assert.equal(
+      dropNeeds(oneLine, '06.6'),
+      '- [ ] **05.14** Google Play release · M · closes A16 · needs 04.1, 06.5 · secrets EXPO_TOKEN\n',
+    );
+    // A needs clause that ends the line with a bare joint (its own wrapped continuation
+    // is a `secrets` line, not a `needs` line) used to keep the closed id the same way.
+    const wrapped = '- [ ] **04.1** x · M · closes A1 · needs 01.1 ·\n  secrets EXPO_TOKEN\n';
+    assert.equal(dropNeeds(wrapped, '01.1'), '- [ ] **04.1** x · M · closes A1 · needs — ·\n  secrets EXPO_TOKEN\n');
+  });
+
   it('recounts a measure from the A-IDs listed, and sets only its row\'s N left', () => {
     assert.match(recountMeasure('Measure: 2 open · 0 closed · next A3\n- **A1** x\n- **A2** y', 'Measure: 2 open · 0 closed · next A3\n- **A2** y'), /Measure: 1 open · 1 closed · next A3/);
     const r = setLeft(README, '07-search.md', 2);

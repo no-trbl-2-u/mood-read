@@ -7,6 +7,17 @@
 
 ## Pending — [needs-user-call]
 
+### [needs-user-call] GitHub App token can't push a fix to .github/workflows/heartbeat.yml (#3)
+- category: tooling
+- logged: 2026-10-25 (/iterate, cloud march tick)
+- what: finding [5.6] (heartbeat.yml's job-level `env:` hands `GH_TOKEN`/`GH_REPO` to every step) has a
+  verified fix (workflow-lint.mjs goes from 1 problem to 0), but pushing it is rejected: "refusing to allow a
+  GitHub App to create or update workflow `.github/workflows/heartbeat.yml` without `workflows` permission".
+  No token with workflow scope is configured (`nexus.secrets.json` has none).
+- default taken: the local commit was undone (never pushed) and the fix's diff posted on issue #3 instead.
+  Needs the owner to either grant the GitHub App's installation the `workflows` permission, or apply the
+  diff from issue #3 by hand and push it themselves.
+
 ### [needs-user-call] A scheduled cloud run landed 05.16 while a local loop held its claim
 - category: tooling
 - logged: 2026-10-25 (/heads-down arcturus)
@@ -156,19 +167,4 @@
 - impact: 5 (a parallel session's e2e holds 127.0.0.1:4173, so another session's `git commit` hook fails red with "is already used"; seen three times in one evening)
 - ease: 6 (`playwright.config.ts` takes `E2E_PORT` and the hook or `scripts/` picks a free port per worktree)
 - next: /iterate, with a test that two gates can run at once
-
-### [5.5] settle leaves a closed chunk in a need that wraps onto a second line
-- category: tooling
-- impact: 5 (a done chunk still reads as a need; order and readers may hold the dependent chunk back)
-- ease: 6 (scripts/plan/settle.mjs dropNeeds: match `needs <ids> ·` when the chunk line continues on the next line)
-- seen: 2026-10-23, settling 01.1: 04.1 kept `needs 01.1 ·` before its wrapped `secrets EXPO_TOKEN` line, while 05's single-line needs were tidied; fixed by hand in bca090c
-- seen again: 2026-10-23, settling 06.6: 05.14's single-line `needs 04.1, 06.5, 06.6 · secrets EXPO_TOKEN` kept
-  06.6 (settle reported "left the needs"); fixed by hand in a116f13. The match fails whenever `secrets` follows
-  `needs`, wrapped or not.
 - next: /iterate, with a red-first test in scripts/__tests__
-
-### [5.6] heartbeat.yml reads a secret in a job-level env
-- category: ops
-- impact: 4 (a secret visible to every step of the job, not just the one that needs it)
-- ease: 9 (move `GITHUB_TOKEN` from `jobs.<id>.env` to the step's `env`)
-- next: /iterate; `node scripts/workflow-lint.mjs` names it
