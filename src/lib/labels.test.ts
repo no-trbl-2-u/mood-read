@@ -27,6 +27,11 @@ test("a finished book reads finished", () => {
   assert.equal(bookStateLine(book, 400, true), "2 ch · finished");
 });
 
+test("a book marked finished reads finished at any position", () => {
+  assert.equal(bookStateLine({ ...book, finished: true }, 0, false), "2 ch · finished");
+  assert.equal(bookStateLine({ ...book, finished: true }, 112, true), "2 ch · finished");
+});
+
 test("a bookmark reads its chapter and the time within it", () => {
   assert.equal(chapterTimeLabel(chapters, 112.7), "Ch. 2 — 0:12");
   assert.equal(chapterTimeLabel(chapters, 0), "Ch. 1 — 0:00");

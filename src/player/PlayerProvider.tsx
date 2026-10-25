@@ -384,6 +384,7 @@ export function PlayerProvider({ children }: { children: ReactNode }) {
     const fi = fileRef.current;
     if (fi + 1 >= b.files.length) {
       library.savePosition(b.id, b.duration);
+      library.setFinished(b.id, true);
       if (sleepRef.current) stopForSleep();
       return;
     }
@@ -687,7 +688,10 @@ export function PlayerProvider({ children }: { children: ReactNode }) {
       const c = companionRef.current;
       if (c) setTransport(companionPlay(c, Date.now(), b, timerRef.current));
       else if (handoff.play()) return;
-      else if (livePosition() >= b.duration - 0.25) goTo(b, 0, true);
+      else if (livePosition() >= b.duration - 0.25) {
+        library.setFinished(b.id, false);
+        goTo(b, 0, true);
+      }
       else player.play();
     };
     const isPlaying = () => companionRef.current?.playing ?? handoff.wantsPlay() ?? player.playing;

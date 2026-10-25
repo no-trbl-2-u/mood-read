@@ -1,6 +1,6 @@
 import { router, useFocusEffect } from "expo-router";
 import { useCallback, useEffect, useState } from "react";
-import { FlatList, Pressable, StyleSheet, Text, View } from "react-native";
+import { FlatList, Pressable, StyleSheet, Text, TextInput, View } from "react-native";
 
 import { filterEmotions, fingerprint, moodFilter } from "@/lib/fingerprint";
 import { bookStateLine } from "@/lib/labels";
@@ -8,14 +8,16 @@ import { library, reached, useBooks } from "@/lib/library";
 import { deleteBook, downloadAgain, removeDownload } from "@/lib/library-manage";
 import { EMOTION_NAMES } from "@/lib/mood-card";
 import { scoringStore } from "@/lib/scoring";
+import { filterShelf, searchShelf, showSearch, sortShelf, type ShelfFilter, type ShelfSort } from "@/lib/shelf";
 import type { Book, EmotionScore } from "@/lib/types";
 import { usePlayer } from "@/player/PlayerProvider";
 import { Button } from "@/ui/Button";
 import { Chip } from "@/ui/Chip";
 import { Cover } from "@/ui/Cover";
+import { Icon } from "@/ui/Icon";
 import { OverflowMenu, type MenuItem } from "@/ui/OverflowMenu";
 import { Sticker } from "@/ui/Sticker";
-import { colors, opacities, sizes, spacing, strokes, typography, type Emotion } from "@/ui/theme";
+import { colors, opacities, radii, sizes, spacing, strokes, typography, type Emotion } from "@/ui/theme";
 import { TopBar, TopBarButton } from "@/ui/TopBar";
 
 // The library, "Your shelf" (design/layouts/DECISION.md, v2): every book on the device, most recently played first.
@@ -39,6 +41,25 @@ const COPY = {
   mood: "Mood",
   moodChip: (emotion: string) => `Mood: ${emotion}`,
   fingerprint: (emotions: string) => `Mood so far: ${emotions}`,
+  // Finished books, sort, state filter and search (05.16, spec 05 A18).
+  sort: "Sort",
+  sortChips: [
+    ["recent", "Recent"],
+    ["title", "Title"],
+    ["author", "Author"],
+  ] as [ShelfSort, string][],
+  show: "Show",
+  stateChips: [
+    ["all", "All"],
+    ["in-progress", "In progress"],
+    ["not-started", "Not started"],
+    ["finished", "Finished"],
+  ] as [ShelfFilter, string][],
+  searchPlaceholder: "Search title, author or narrator",
+  clearSearch: "Clear search",
+  markFinished: "Mark as finished",
+  markNotFinished: "Mark as not finished",
+  noBooks: "No book on your shelf fits.",
   noMatch: (emotion: string) => `No book feels like ${emotion} in the chapters you've reached.`,
   // Library management (05.7, spec 05 A7, A8).
   bookMore: (title: string) => `Options for ${title}`,
@@ -87,6 +108,10 @@ export default function LibraryScreen() {
     };
   }, []);
   const [lit, setLit] = useState<Emotion | null>(null);
+  const [sort, setSort] = useState<ShelfSort>("recent");
+  const [stateFilter, setStateFilter] = useState<ShelfFilter>("all");
+  const [query, setQuery] = useState("");
+  const searching = showSearch(books.length);
 
   const importBook = () => router.push("/import");
   const browseBooks = () => router.push("/browse");
@@ -95,13 +120,17 @@ export default function LibraryScreen() {
   const resumingId = player.book?.id ?? books.find((b) => b.lastPlayedAt != null)?.id ?? null;
 
   // Each book's fingerprint; the playing chapter of the open book counts as reached, as on its river.
-  const prints = books.map((b) => ({
+  const kept = sortShelf(searchShelf(filterShelf(books, stateFilter, library.getPosition), searching ? query : ""), sort);
+  const prints = kept.map((b) => ({
     item: b,
     print: fingerprint(b, { chapters: scoringStore.chapters(b.id) }, reached.furthest(b.id), player.book?.id === b.id ? player.chapter : null),
   }));
   const printOf = new Map(prints.map((p) => [p.item.id, p.print]));
+  // The Mood chips offer what the whole shelf holds, so a state filter never hides the way back.
   const offered = filterEmotions(
-    prints.map((p) => p.print),
+    books.map((b) =>
+      fingerprint(b, { chapters: scoringStore.chapters(b.id) }, reached.furthest(b.id), player.book?.id === b.id ? player.chapter : null),
+    ),
     lit,
   );
   const shown = moodFilter(prints, lit);
@@ -117,7 +146,21 @@ export default function LibraryScreen() {
             <OverflowMenu testID="library-more" items={MENU} onOpenChange={setMenuOpen} />
           </>
         }
-        below={offered.length > 0 ? <ShelfFilters emotions={offered} lit={lit} onLight={setLit} /> : undefined}
+        below={
+          books.length > 1 || offered.length > 0 ? (
+            <ShelfFilters
+              emotions={offered}
+              lit={lit}
+              onLight={setLit}
+              sort={sort}
+              onSort={setSort}
+              state={stateFilter}
+              onState={setStateFilter}
+              query={searching ? query : null}
+              onQuery={setQuery}
+            />
+          ) : undefined
+        }
       />
       <View style={[styles.screen, menuOpen && styles.behindMenu]}>
         {books.length === 0 ? (
@@ -145,11 +188,9 @@ export default function LibraryScreen() {
             keyExtractor={(b) => b.id}
             renderItem={({ item }) => <BookRow book={item} resuming={item.id === resumingId} print={printOf.get(item.id) ?? []} />}
             ListEmptyComponent={
-              lit ? (
-                <Text style={styles.noMatch} testID="shelf-no-match" role="status">
-                  {COPY.noMatch(EMOTION_NAMES[lit])}
-                </Text>
-              ) : undefined
+              <Text style={styles.noMatch} testID="shelf-no-match" role="status">
+                {lit ? COPY.noMatch(EMOTION_NAMES[lit]) : COPY.noBooks}
+              </Text>
             }
           />
         )}
@@ -159,24 +200,71 @@ export default function LibraryScreen() {
 }
 
 /**
- * The shelf's filters, in the top bar: the Mood filter's chips (one lit at a time; a tap on the lit one clears it).
- * A row of labelled groups, so 05.16's state filter joins beside the Mood one as a second group of the same shape.
+ * The shelf's filters, in the top bar, each a labelled group of chips (one lit at a time): Sort (recent, title,
+ * author), Show (a state, 05.16) and Mood (a tap on the lit one clears it), with a search field once the shelf holds
+ * more than ten books.
  */
-function ShelfFilters(props: { emotions: Emotion[]; lit: Emotion | null; onLight: (emotion: Emotion | null) => void }) {
+function ShelfFilters(props: {
+  emotions: Emotion[];
+  lit: Emotion | null;
+  onLight: (emotion: Emotion | null) => void;
+  sort: ShelfSort;
+  onSort: (sort: ShelfSort) => void;
+  state: ShelfFilter;
+  onState: (state: ShelfFilter) => void;
+  query: string | null;
+  onQuery: (query: string) => void;
+}) {
   return (
-    <View style={styles.filters} testID="shelf-filters" role="group" aria-label={COPY.filters}>
-      <View style={styles.filterGroup} testID="mood-filter" role="group" aria-label={COPY.mood}>
-        <Text style={styles.filterLabel}>{COPY.mood}</Text>
-        {props.emotions.map((emotion) => (
-          <Chip
-            key={emotion}
-            testID={`mood-filter-${emotion}`}
-            label={EMOTION_NAMES[emotion]}
-            a11yLabel={COPY.moodChip(EMOTION_NAMES[emotion])}
-            on={props.lit === emotion}
-            onPress={() => props.onLight(props.lit === emotion ? null : emotion)}
+    <View style={styles.filtersCol} testID="shelf-filters" role="group" aria-label={COPY.filters}>
+      {props.query != null && (
+        <View style={styles.field}>
+          <Icon name="search" size="small" color={colors.textMuted} />
+          <TextInput
+            testID="shelf-search"
+            aria-label={COPY.searchPlaceholder}
+            style={styles.input}
+            value={props.query}
+            onChangeText={props.onQuery}
+            placeholder={COPY.searchPlaceholder}
+            placeholderTextColor={colors.textMuted}
+            returnKeyType="search"
           />
-        ))}
+          {props.query.length > 0 && (
+            <Pressable testID="shelf-search-clear" role="button" aria-label={COPY.clearSearch} onPress={() => props.onQuery("")} style={styles.clear}>
+              <Icon name="x" size="small" color={colors.textMuted} />
+            </Pressable>
+          )}
+        </View>
+      )}
+      <View style={styles.filters}>
+        <View style={styles.filterGroup} testID="sort-filter" role="group" aria-label={COPY.sort}>
+          <Text style={styles.filterLabel}>{COPY.sort}</Text>
+          {COPY.sortChips.map(([key, label]) => (
+            <Chip key={key} testID={`sort-${key}`} label={label} on={props.sort === key} onPress={() => props.onSort(key)} />
+          ))}
+        </View>
+        <View style={styles.filterGroup} testID="state-filter" role="group" aria-label={COPY.show}>
+          <Text style={styles.filterLabel}>{COPY.show}</Text>
+          {COPY.stateChips.map(([key, label]) => (
+            <Chip key={key} testID={`state-${key}`} label={label} on={props.state === key} onPress={() => props.onState(key)} />
+          ))}
+        </View>
+        {props.emotions.length > 0 && (
+          <View style={styles.filterGroup} testID="mood-filter" role="group" aria-label={COPY.mood}>
+            <Text style={styles.filterLabel}>{COPY.mood}</Text>
+            {props.emotions.map((emotion) => (
+              <Chip
+                key={emotion}
+                testID={`mood-filter-${emotion}`}
+                label={EMOTION_NAMES[emotion]}
+                a11yLabel={COPY.moodChip(EMOTION_NAMES[emotion])}
+                on={props.lit === emotion}
+                onPress={() => props.onLight(props.lit === emotion ? null : emotion)}
+              />
+            ))}
+          </View>
+        )}
       </View>
     </View>
   );
@@ -218,7 +306,10 @@ function bookMenu(book: Book, on: { delete: () => void; error: (message: string 
           },
         ]
       : [{ key: "find-file", label: COPY.findFile, icon: "search", onPress: () => router.push(`/book/${book.id}`) }];
-  return [...back, { key: "delete-book", label: COPY.deleteBook, icon: "x", ruleBefore: true, onPress: on.delete }];
+  const finish: MenuItem = book.finished
+    ? { key: "mark-unfinished", label: COPY.markNotFinished, icon: "x", onPress: () => library.setFinished(book.id, false) }
+    : { key: "mark-finished", label: COPY.markFinished, icon: "check", onPress: () => library.setFinished(book.id, true) };
+  return [finish, ...back, { key: "delete-book", label: COPY.deleteBook, icon: "x", ruleBefore: true, onPress: on.delete }];
 }
 
 function BookRow({ book, resuming, print }: { book: Book; resuming: boolean; print: EmotionScore[] }) {
@@ -307,6 +398,20 @@ const styles = StyleSheet.create({
   author: { ...typography.caption, color: colors.text },
   meta: typography.caption,
   fingerprint: { flexDirection: "row", flexWrap: "wrap", gap: spacing.xs, paddingVertical: spacing.xxs },
+  filtersCol: { gap: spacing.sm },
+  field: {
+    flexDirection: "row",
+    alignItems: "center",
+    gap: spacing.sm,
+    minHeight: sizes.touch,
+    paddingHorizontal: spacing.md,
+    borderRadius: radii.md,
+    borderWidth: strokes.outline,
+    borderColor: colors.edge,
+    backgroundColor: colors.surface,
+  },
+  input: { flex: 1, minHeight: sizes.touch, ...typography.body, paddingVertical: spacing.sm },
+  clear: { minHeight: sizes.touch, minWidth: sizes.touch, alignItems: "center", justifyContent: "center", marginRight: -spacing.sm },
   filters: { flexDirection: "row", flexWrap: "wrap", gap: spacing.md },
   filterGroup: { flexDirection: "row", flexWrap: "wrap", alignItems: "center", gap: spacing.xs, flexShrink: 1, maxWidth: "100%" },
   filterLabel: typography.label,

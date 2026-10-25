@@ -141,6 +141,11 @@ export function createLibraryStore(kv: Kv, now: () => number = Date.now, makeId:
       }
       saveBooks(state.books.map((x) => (x.id === id ? { ...x, chapters } : x)));
     },
+    /** Marks a book finished or not (05.16, A18); position, bookmarks and everything else stay as they are. */
+    setFinished(id: string, finished: boolean): void {
+      if (!state.books.some((b) => b.id === id && !!b.finished !== finished)) return;
+      saveBooks(state.books.map((b) => (b.id === id ? { ...b, finished } : b)));
+    },
     /** Marks a book as just played, which moves it to the top of the library. */
     markPlayed(id: string): void {
       if (!state.books.some((b) => b.id === id)) return;

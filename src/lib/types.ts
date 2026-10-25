@@ -48,6 +48,8 @@ export type Book = {
   addedAt: number;
   /** When the listener last opened it to play (ms since epoch); the library sorts on it. */
   lastPlayedAt: number | null;
+  /** True once the listener marked the book finished or its last chapter ended (05.16); absent reads not finished. */
+  finished?: boolean;
   /** Spec 05 Contracts. */
   source: BookSource;
   /** Spec 05 Contracts: false once "Remove download" (05.7) has deleted its file; true for every book today. */

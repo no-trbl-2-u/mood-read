@@ -9,8 +9,9 @@ import type { Book } from "./types.ts";
  * ("12 ch · resuming Ch.7", "9 ch · not started", "21 ch · 3% done").
  * `resuming` marks the book the listener played last.
  */
-export function bookStateLine(book: Pick<Book, "chapters" | "duration">, position: number, resuming: boolean): string {
+export function bookStateLine(book: Pick<Book, "chapters" | "duration" | "finished">, position: number, resuming: boolean): string {
   const count = `${book.chapters.length} ch`;
+  if (book.finished) return `${count} · finished`;
   if (!(position > 0)) return `${count} · not started`;
   if (position >= book.duration - END_SLACK) return `${count} · finished`;
   if (resuming) {

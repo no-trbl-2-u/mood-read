@@ -236,3 +236,18 @@ test("06.3: a book never mixed opens on the default soundscape setting; a book's
   assert.equal(store.getMix("mine", tide).soundscapeId, "rain");
   assert.equal(store.getMix("mine", defaultBedFor("off")).layer, "soundscape");
 });
+
+test("a book is marked finished or not, keeping its place", () => {
+  const kv = memoryKv();
+  const store = createLibraryStore(kv, tick);
+  store.addBook(book("a", "Walden"));
+  store.savePosition("a", 40);
+  store.setFinished("a", true);
+  assert.equal(store.getBook("a")?.finished, true);
+  assert.equal(store.getPosition("a"), 40);
+  assert.equal(createLibraryStore(kv, tick).getBook("a")?.finished, true);
+  store.setFinished("a", false);
+  assert.equal(store.getBook("a")?.finished, false);
+  store.setFinished("missing", true);
+  assert.equal(store.books().length, 1);
+});
