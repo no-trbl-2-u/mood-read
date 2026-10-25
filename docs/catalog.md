@@ -118,3 +118,13 @@ environment and are never printed.
 
 One writer at a time: the script reads, then writes `catalog.json` without a conditional write, so two adds at once
 could lose one.
+
+## The committed sources and the snapshot
+
+`catalog/` in the repo (05.2) keeps what went into every add: `catalog/pieces/<id>.json` (the `--piece` input) and
+`catalog/verdicts/<id>.json` (the `--verdict` input), plus `catalog/catalog.json`, a copy of the live manifest
+fetched back from the bucket after the last add. The bucket stays the source of truth; the snapshot is refreshed
+after every add and committed with the piece's sources. `src/lib/catalog-coverage.test.ts` holds it to the
+contract with no entry ignored, to A2 (every emotion at low and high intensity, at least three pieces each;
+`src/lib/catalog-coverage.ts`), and to its sources, which must match their entries one for one. Audio is never
+committed. How to add a piece end to end: `catalog/README.md`.
