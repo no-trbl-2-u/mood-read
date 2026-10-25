@@ -11,6 +11,7 @@ import { librivoxTransfer } from "./librivox-download";
 import { pieceTransfer } from "./piece-download";
 import { settings } from "./settings";
 import { booksStorageBytes } from "./storage-size";
+import { network } from "./network";
 import { musicBytesFrom, type StorageMeter } from "./storage";
 import type { Download } from "./types";
 
@@ -31,13 +32,15 @@ export const downloadQueue = createDownloadQueue({
   store: downloadStore,
   transfer,
   wifiOnly: () => settings.get().wifiOnly,
+  onWifi: network.onWifi,
 });
 
 // Kicks off anything left queued (including what recoverRunning just requeued). Wi-Fi-only turning off, or
-// Wi-Fi itself returning once a later chunk wires that check in, should let a held-back download start on its
-// own too, without the listener having to touch it again.
+// Wi-Fi itself returning (./network.ts), lets a held-back download start on its own too, without the listener
+// having to touch it again.
 downloadQueue.wake();
 settings.subscribe(() => downloadQueue.wake());
+network.subscribe(() => downloadQueue.wake());
 
 export function useDownloads(): Download[] {
   return useSyncExternalStore(downloadStore.subscribe, downloadStore.list, downloadStore.list);

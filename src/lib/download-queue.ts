@@ -40,9 +40,8 @@ export function createDownloadQueue(deps: {
   /** Whether downloads wait for Wi-Fi (settings.wifiOnly, 06.3; on by default). */
   wifiOnly: () => boolean;
   /**
-   * Whether the device is on Wi-Fi right now. No network-status primitive exists in the app yet (`expo-network`
-   * is not a dependency, agents.md rule 6 scope); this always says yes until one is added, so today Wi-Fi-only
-   * gates on the setting alone. Tests inject `false` to exercise the gate itself.
+   * Whether the device is on Wi-Fi right now. The app binds this to the network watch (./network.ts); left out,
+   * it always says yes, so Wi-Fi-only gates on the setting alone. Tests inject `false` to exercise the gate itself.
    */
   onWifi?: () => boolean;
   now?: () => number;

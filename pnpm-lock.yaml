@@ -193,6 +193,9 @@ importers:
       expo-linking:
         specifier: ~58.0.14
         version: 58.0.14(expo@58.0.17)(react-native@0.88.0(@babel/core@7.29.7(supports-color@8.1.1))(@react-native/metro-config@0.88.0(@babel/core@7.29.7(supports-color@8.1.1))(supports-color@8.1.1))(@types/react@19.3.0)(react@19.3.0)(supports-color@8.1.1))(react@19.3.0)(supports-color@8.1.1)(typescript@6.0.3)
+      expo-network:
+        specifier: ~58.0.4
+        version: 58.0.4(expo@58.0.17)(react@19.3.0)
       expo-router:
         specifier: ~58.0.25
         version: 58.0.25(f4abf24ec0c76761cf13a9b14dfe5b32)
@@ -3139,6 +3142,12 @@ packages:
 
   expo-modules-macros@0.22.0:
     resolution: {integrity: sha512-IHY+FkILfG19qsyf9G/z7dcWVgsyqdkWsvvob3n5nWKa2meCCAGeEjp42N68fG8Ta6dn/bsceuma7uh2i6ho9g==}
+
+  expo-network@58.0.4:
+    resolution: {integrity: sha512-E3dYtnku+LDal+4OtKdxGotX7DLjaq+GOvrtN0RiYDTNum8lhMB7dK4GqGgBqHjwsC0awEds5DhTkm+w7O1TtQ==}
+    peerDependencies:
+      expo: '*'
+      react: '*'
 
   expo-router@58.0.25:
     resolution: {integrity: sha512-sFumF6yUbxcSfiYcd+5vJjjIbVN0wo5X0F9SEnoNlmmvzoI9jD6k9dcSMnoe5ywquWonUEAdcHcpfsa087/8sQ==}
@@ -9024,6 +9033,11 @@ snapshots:
       '@expo/modules-macros-linux-x64': 0.22.0
       '@expo/modules-macros-win32-arm64': 0.22.0
       '@expo/modules-macros-win32-x64': 0.22.0
+
+  expo-network@58.0.4(expo@58.0.17)(react@19.3.0):
+    dependencies:
+      expo: 58.0.17(@babel/core@7.29.7(supports-color@8.1.1))(@expo/metro-runtime@58.0.15)(expo-router@58.0.25)(react-dom@19.3.0(react@19.3.0))(react-native-web@0.21.4(react-dom@19.3.0(react@19.3.0))(react@19.3.0))(react-native-worklets@0.13.0(@babel/core@7.29.7(supports-color@8.1.1))(@react-native/metro-config@0.88.0(@babel/core@7.29.7(supports-color@8.1.1))(supports-color@8.1.1))(react-native@0.88.0(@babel/core@7.29.7(supports-color@8.1.1))(@react-native/metro-config@0.88.0(@babel/core@7.29.7(supports-color@8.1.1))(supports-color@8.1.1))(@types/react@19.3.0)(react@19.3.0)(supports-color@8.1.1))(react@19.3.0)(supports-color@8.1.1))(react-native@0.88.0(@babel/core@7.29.7(supports-color@8.1.1))(@react-native/metro-config@0.88.0(@babel/core@7.29.7(supports-color@8.1.1))(supports-color@8.1.1))(@types/react@19.3.0)(react@19.3.0)(supports-color@8.1.1))(react@19.3.0)(supports-color@8.1.1)(typescript@6.0.3)
+      react: 19.3.0
 
   expo-router@58.0.25(f4abf24ec0c76761cf13a9b14dfe5b32):
     dependencies:

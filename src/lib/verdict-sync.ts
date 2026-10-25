@@ -7,8 +7,7 @@
 // Rules, each tested in ./verdict-sync.test.ts:
 //   - nothing is sent while "Share what fits" (Settings.shareVerdicts) is off; verdicts stay on the device either way;
 //   - Wi-Fi-only (Settings.wifiOnly) holds the post back off Wi-Fi. As with downloads (05.6, ./download-queue.ts),
-//     the app has no network-status primitive yet (`expo-network` is not a dependency), so `onWifi` says yes until
-//     one is added and today the gate is the setting alone;
+//     the app binds `onWifi` to the network watch (./network.ts); left out it says yes and the gate is the setting alone;
 //   - only a researched chapter's verdict is sent: a chapter whose stored mood is not `scored` (a listener's own seed,
 //     07.6, or one with too little written) sends nothing, and the seeds are never read here at all;
 //   - a verdict is skipped when its chapter's title no longer matches the stored score (the chapter list was edited

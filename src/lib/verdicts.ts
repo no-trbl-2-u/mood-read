@@ -6,6 +6,7 @@ import { useSyncExternalStore } from "react";
 
 import { getItem, removeItem, setItem } from "./kv";
 import { library } from "./library";
+import { network } from "./network";
 import { scoringApi, scoringStore } from "./scoring";
 import { settings } from "./settings";
 import type { PieceVerdict } from "./types";
@@ -20,12 +21,14 @@ export const verdictSync = createVerdictSync({
   verdicts: (bookId) => verdicts.verdicts(bookId),
   scores: (bookId) => scoringStore.scores(bookId),
   settings: () => settings.get(),
+  onWifi: network.onWifi,
   send: (rows) => scoringApi.sendVerdicts(rows),
 });
 
 const sync = () => void verdictSync.run();
 verdicts.subscribe(sync);
 settings.subscribe(sync);
+network.subscribe(sync);
 sync();
 
 /** Every verdict kept for the book, by chapter then piece. */

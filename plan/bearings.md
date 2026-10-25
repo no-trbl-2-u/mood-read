@@ -48,6 +48,7 @@ and log a `[needs-user-call]`.
 | Audio | `expo-audio` (background playback on) | Expo's supported player; one engine, two layers (spec 01, Contracts) |
 | Styling | React Native `StyleSheet` with tokens in `src/ui/theme.ts`; no CSS framework | Works on native and web alike |
 | Content | none | The listener's own books; soundscape loops bundled in `assets/` (01.7) |
+| Network state | `expo-network` behind `src/lib/network.ts` (`network-watch.ts` holds the rules) | Wi-Fi-only (06.3) needs to know the link: downloads (05.6) and verdict posts (07.5) hold back off Wi-Fi |
 | Structured data | none | On-device only: `expo-sqlite` (native) and a web key-value store; no shared database. The proxy's cache is the proxy's (01.2) |
 | Schemas | TypeScript types in `src/lib/types.ts` | Spec 01's Contracts name the shapes |
 | Test (unit) | Node's own runner on `*.test.ts` in `src/lib/` (`node --test`, type stripping) | No Jest; pure logic tested where it lives |

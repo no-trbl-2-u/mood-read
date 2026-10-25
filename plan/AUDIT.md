@@ -130,14 +130,16 @@
 - seen: 2026-10-25 (05.7 builder, heads-down arcturus)
 - next: /iterate
 
-### [4.5] Wi-Fi only gates on the setting alone: the queue never reads the network
+### [4.5] Wi-Fi only gates on the setting alone: the queue never reads the network [x]
 - category: correctness
 - impact: 4 (with Wi-Fi only on, a phone on mobile data still downloads books and playlist pieces, since
   `onWifi` is never passed to the app's queue and defaults to true)
 - ease: 5 (pass an `onWifi` from a network-status module, e.g. expo-network, in `src/lib/downloads.ts`, and
   re-run the queue when the network changes)
 - seen: 2026-10-25 (05.4 builder, heads-down arcturus)
-- next: /iterate
+- issue: #5
+- fixed: 2026-10-25 (/march, /iterate) — `src/lib/network.ts` binds expo-network; the download queue and the verdict
+  sender both read `onWifi` from it and re-run when the network changes (`src/lib/network-watch.ts` holds the rules).
 
 ### [4.2] A chapter is reached (and its pieces logged) only while the book's screen is open
 - category: correctness
@@ -167,6 +169,6 @@
 - impact: 5 (a parallel session's e2e holds 127.0.0.1:4173, so another session's `git commit` hook fails red with "is already used"; seen three times in one evening)
 - ease: 6 (`playwright.config.ts` takes `E2E_PORT` and the hook or `scripts/` picks a free port per worktree)
 - issue: #4
-- fixed: 2026-10-25 (/iterate, cloud march tick) — `playwright.config.ts` picks a free port automatically
+- fixed: 2026-10-25 (/iterate, cloud march tick) — `playwright.config.ts` picks a free port automatically (commit 601102b)
   (`scripts/e2e-port.mjs`: a seed derived from the worktree path, probed upward for one that's actually free)
   when `E2E_PORT` is unset, so two worktrees' gates no longer need to coordinate a port by hand.
