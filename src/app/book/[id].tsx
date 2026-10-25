@@ -25,6 +25,7 @@ import { ChapterRiver } from "@/player/ChapterRiver";
 import { CompanionBand } from "@/player/CompanionBand";
 import { LayerPicker } from "@/player/LayerPicker";
 import { MiniPlayer } from "@/player/MiniPlayer";
+import { OffDeviceBand } from "@/player/OffDeviceBand";
 import { RescoreConfirm, RESCORE_MENU, ScoringBand } from "@/player/ScoringBand";
 import { Mixer } from "@/player/Mixer";
 import { PlaylistBand } from "@/player/PlaylistBand";
@@ -92,8 +93,9 @@ export default function BookScreen() {
     if (book) scoring.resume(book);
   }, [book]);
 
+  // A book whose download was removed (05.7) has nothing to play until its file is back.
   useEffect(() => {
-    if (id && book) open(id);
+    if (id && book?.onDevice) open(id);
   }, [id, book, open]);
 
   // Playback has entered this chapter: it is reached from now on, and stays reached (src/lib/reached.ts, A21).
@@ -129,7 +131,7 @@ export default function BookScreen() {
     );
   }
 
-  const active = p.book?.id === book.id;
+  const active = p.book?.id === book.id && book.onDevice;
   const position = active ? p.position : 0;
   const chapter = active ? p.chapter : book.chapters[0];
   const chapterIndex = chapter?.index ?? null;
@@ -155,18 +157,22 @@ export default function BookScreen() {
         back={{ label: COPY.back, iconOnly: true, onPress: backToLibrary }}
         trailing={
           <>
-            <TopBarButton
-              testID="open-speed-sleep"
-              label={speedButton}
-              a11yLabel={`${COPY.speedSleep}, ${speedButton}`}
-              onPress={() => setSheet(sheet === "speed" ? null : "speed")}
-            />
-            <TopBarButton
-              testID="open-bookmarks"
-              label={COPY.bookmarks}
-              icon="bookmark"
-              onPress={() => setSheet(sheet === "bookmarks" ? null : "bookmarks")}
-            />
+            {book.onDevice && (
+              <>
+                <TopBarButton
+                  testID="open-speed-sleep"
+                  label={speedButton}
+                  a11yLabel={`${COPY.speedSleep}, ${speedButton}`}
+                  onPress={() => setSheet(sheet === "speed" ? null : "speed")}
+                />
+                <TopBarButton
+                  testID="open-bookmarks"
+                  label={COPY.bookmarks}
+                  icon="bookmark"
+                  onPress={() => setSheet(sheet === "bookmarks" ? null : "bookmarks")}
+                />
+              </>
+            )}
             {scores && job?.state !== "running" && (
               <OverflowMenu
                 testID="open-river-menu"
@@ -197,7 +203,8 @@ export default function BookScreen() {
         onRescore={() => void scoring.start(book, true)}
         onSetMood={unscoredBook && chapter ? () => setSheet({ mood: chapter.index }) : undefined}
       />
-      {playlist && !confirmRescore && (
+      {!book.onDevice && <OffDeviceBand book={book} />}
+      {playlist && !confirmRescore && book.onDevice && (
         <PlaylistBand
           status={playlist}
           wifiOnly={wifiOnly}
@@ -280,17 +287,19 @@ export default function BookScreen() {
         )}
       </View>
       {sharedToast && <Toast testID="verdicts-shared" text={COPY.verdictsShared} dismissLabel={COPY.dismissShared} onDismiss={() => setSharedToast(false)} />}
-      <MiniPlayer
-        book={book}
-        chapter={chapter}
-        position={position}
-        sleep={active ? p.sleep : null}
-        playing={active && p.playing}
-        loading={!active || p.loading}
-        onToggle={() => active && p.toggle()}
-        onSkip={(d) => active && p.skip(d)}
-        onSeek={(s) => active && p.seek(s)}
-      />
+      {book.onDevice && (
+        <MiniPlayer
+          book={book}
+          chapter={chapter}
+          position={position}
+          sleep={active ? p.sleep : null}
+          playing={active && p.playing}
+          loading={!active || p.loading}
+          onToggle={() => active && p.toggle()}
+          onSkip={(d) => active && p.skip(d)}
+          onSeek={(s) => active && p.seek(s)}
+        />
+      )}
     </View>
   );
 }

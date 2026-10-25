@@ -47,5 +47,6 @@ export function useDownloads(): Download[] {
 export function useStorageMeter(): StorageMeter {
   const books = useBooks();
   const downloads = useDownloads();
-  return { booksBytes: booksStorageBytes(books), musicBytes: musicBytesFrom(downloads) };
+  // A book whose download was removed (05.7) keeps no file on the device.
+  return { booksBytes: booksStorageBytes(books.filter((b) => b.onDevice)), musicBytes: musicBytesFrom(downloads) };
 }

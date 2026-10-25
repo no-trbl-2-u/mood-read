@@ -205,6 +205,9 @@ export function PlayerProvider({ children }: { children: ReactNode }) {
   const [loadPlay, setLoadPlay] = useState<boolean | null>(null);
   const handoff = useMemo(() => createHandoff(setLoadPlay), []);
   const companionRef = useRef<CompanionClock | null>(null);
+  // The open book whose download was removed (05.7): its place is saved and its file let go, so nothing saves over the
+  // place and opening it again, once its file is back, loads the file afresh.
+  const releasedRef = useRef<string | null>(null);
   const timerRef = useRef(companionTimer);
   const setTransport = useCallback((next: CompanionClock | null) => {
     companionRef.current = next;
@@ -244,7 +247,7 @@ export function PlayerProvider({ children }: { children: ReactNode }) {
   // While a file loads, the place is the one goTo saved: a pause then must not save the old file's time over it.
   const persist = useCallback(() => {
     const b = bookRef.current;
-    if (b && !handoff.loading() && !companionRef.current) library.savePosition(b.id, livePosition());
+    if (b && releasedRef.current !== b.id && !handoff.loading() && !companionRef.current) library.savePosition(b.id, livePosition());
     lastSave.current = Date.now();
   }, [livePosition, handoff]);
 
@@ -452,16 +455,23 @@ export function PlayerProvider({ children }: { children: ReactNode }) {
     };
   }, [persist]);
 
-  // If the open book leaves the library, stop playing it.
-  const removed = !!bookId && !book;
+  // If the open book leaves the library, or its download is removed (05.7), stop playing it.
+  const removed = !!bookId && (!book || !book.onDevice);
+  // A removed download keeps its place (A7) and lets go of its file, which loads afresh once it is back.
+  const keepsPlace = removed && !!book;
   useEffect(() => {
     if (!removed) return;
+    if (keepsPlace) persist();
     handoff.cancel();
     targetRef.current = null;
     halt();
     player.pause();
     player.clearLockScreenControls();
-  }, [removed, player, halt, handoff]);
+    if (keepsPlace) {
+      releasedRef.current = bookId;
+      fileRef.current = -1;
+    }
+  }, [removed, keepsPlace, bookId, player, halt, handoff, persist]);
 
   // A book opens in the mode the listener's setting says; opening it again in the other mode switches over.
   const open = useCallback(
@@ -469,8 +479,11 @@ export function PlayerProvider({ children }: { children: ReactNode }) {
       const b = library.getBook(id);
       const toCompanion = settings.get().companionMode;
       const inCompanion = companionRef.current !== null;
-      if (!b || (bookRef.current?.id === id && inCompanion === toCompanion)) return;
+      // A book whose download was removed (05.7) has no file to open; once it is back, it opens afresh.
+      const released = releasedRef.current === id;
+      if (!b || !b.onDevice || (!released && bookRef.current?.id === id && inCompanion === toCompanion)) return;
       if (bookRef.current) persist();
+      releasedRef.current = null;
       if (toCompanion && !inCompanion) {
         // The narration stops and lets go of the lock screen and Media Session before the bed plays alone.
         handoff.cancel();

@@ -165,6 +165,18 @@ export async function resolveFile(ref: string): Promise<string> {
   return ref;
 }
 
+/** Deletes these stored files (a book's audio, 05.7 "Remove download"), leaving the rest of its folder (its cover). */
+export async function deleteStoredFiles(refs: string[]): Promise<void> {
+  for (const ref of refs) {
+    try {
+      const file = new File(ref);
+      if (file.exists) file.delete();
+    } catch {
+      // Already gone.
+    }
+  }
+}
+
 export async function deleteBookFiles(bookId: string): Promise<void> {
   const dir = bookDir(bookId);
   if (dir.exists) dir.delete();

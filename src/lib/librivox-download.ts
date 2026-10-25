@@ -11,6 +11,7 @@ import { library } from "./library";
 import { chapterFiles, chapterTitle, coverFile, downloadUrl, gutenbergIdFor, parseLength, readerNames, type LibriVoxItem } from "./librivox-api";
 import { downloadFileInto, probeDuration, resolveFile } from "./media";
 import { extension } from "./meta/read";
+import { redownloaded } from "./reattach";
 import type { Transfer } from "./download-queue";
 import type { Book, BookFile, Chapter } from "./types";
 
@@ -68,8 +69,11 @@ export function stashLibriVoxBook(bookId: string, book: PendingLibriVoxBook): vo
   writeRegistry({ ...readRegistry(), [bookId]: book });
 }
 
-function forgetLibriVoxBook(bookId: string): void {
-  const { [bookId]: _removed, ...rest } = readRegistry();
+/** Forgets what a download id meant: once its book lands, or when the book is deleted mid-download (05.7). */
+export function forgetLibriVoxBook(bookId: string): void {
+  const registry = readRegistry();
+  if (!(bookId in registry)) return;
+  const { [bookId]: _removed, ...rest } = registry;
   if (Object.keys(rest).length === 0) removeItem(REGISTRY_KEY);
   else writeRegistry(rest);
 }
@@ -155,7 +159,8 @@ export const librivoxTransfer: Transfer = async (download, onProgress, signal) =
     source: librivoxSource(pending, await textNumber(pending)),
     onDevice: true,
   };
-  library.addBook(book);
+  // A book downloaded again after "Remove download" (05.7, A7) keeps its chapters, position and all it had.
+  library.addBook(redownloaded(library.getBook(bookId), book));
   forgetLibriVoxBook(bookId);
 };
 

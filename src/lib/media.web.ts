@@ -204,6 +204,17 @@ export async function warmPieces(): Promise<boolean> {
   }
 }
 
+/** Deletes these stored files (a book's audio, 05.7 "Remove download"), leaving the book's cover. */
+export async function deleteStoredFiles(refs: string[]): Promise<void> {
+  for (const ref of refs) {
+    if (!ref.startsWith('idb:')) continue;
+    await tx('readwrite', (s) => s.delete(ref));
+    const url = urls.get(ref);
+    if (url) URL.revokeObjectURL(url);
+    urls.delete(ref);
+  }
+}
+
 export async function deleteBookFiles(bookId: string): Promise<void> {
   const range = IDBKeyRange.bound(`idb:${bookId}/`, `idb:${bookId}/￿`);
   await tx('readwrite', (s) => s.delete(range));

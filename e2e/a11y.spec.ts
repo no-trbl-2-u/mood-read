@@ -1,6 +1,7 @@
 // The accessibility bar (06.5, spec 06 A5) on the web build, on every route and the key states: the empty shelf,
 // its overflow menu, Import, Settings (with the default soundscape open, and with Share what fits off, 07.5), the privacy policy, Downloads (05.6,
-// empty on the web build), the licenses, Credits (05.5), Your soundtrack empty and filled (07.8), a book that is not on the device, and a real book's river
+// empty on the web build), the licenses, Credits (05.5), Your soundtrack empty and filled (07.8), a book that is not on the device, a book's
+// options and delete confirm, and a removed download's row and page (05.7), and a real book's river
 // with the playing row expanded (the mixer inline), its Speed & Sleep sheet and its Bookmarks sheet, and a scored book
 // (01.4; its playlist band paused and done, 05.4): the playing row's mood card (emotion stickers, the named piece, alternates and the pick chips), a
 // reached row's stickers and a locked row; the shelf with a scored book's fingerprint and a mood lit (07.7); 07.4's verdict targets with "Fits" lit (and 07.5's one-time "what is shared" notice), and with "Doesn't fit" lit and the
@@ -226,6 +227,29 @@ const STATES: State[] = [
       await importBook(page);
       await page.getByTestId("top-back").click();
       await expect(page.getByRole("link", { name: "Access Book" })).toBeVisible();
+    },
+  },
+  {
+    name: "the shelf with a book's options open, then its delete confirm (05.7)",
+    open: async (page) => {
+      await importBook(page);
+      await page.getByTestId("top-back").click();
+      await page.getByRole("button", { name: "Options for Access Book" }).click();
+      await expect(page.getByRole("menuitem", { name: "Remove download" })).toBeVisible();
+      await page.getByRole("menuitem", { name: "Delete book" }).click();
+      await expect(page.getByText("Delete Access Book?")).toBeVisible();
+    },
+  },
+  {
+    name: "a book whose download was removed: its row, then its page (05.7)",
+    open: async (page) => {
+      await importBook(page);
+      await page.getByTestId("top-back").click();
+      await page.getByRole("button", { name: "Options for Access Book" }).click();
+      await page.getByRole("menuitem", { name: "Remove download" }).click();
+      await expect(page.getByText("Not on device", { exact: true })).toBeVisible();
+      await page.getByRole("link", { name: "Access Book" }).click();
+      await expect(page.getByRole("button", { name: "Find the file" })).toBeVisible();
     },
   },
   {

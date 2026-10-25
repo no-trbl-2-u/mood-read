@@ -56,7 +56,9 @@ export function createLibraryStore(kv: Kv, now: () => number = Date.now, makeId:
     }
   }
 
-  let state: LibraryState = { books: sortBooks(read<Book[]>(BOOKS, [])), bookmarks: {} };
+  // A book saved before spec 05's contract (05.8) has no `onDevice` or `source`: it is an import, on the device.
+  const loaded = read<Book[]>(BOOKS, []).map((b) => ({ ...b, source: b.source ?? { kind: "import" as const }, onDevice: b.onDevice !== false }));
+  let state: LibraryState = { books: sortBooks(loaded), bookmarks: {} };
   const listeners = new Set<() => void>();
 
   function set(next: Partial<LibraryState>) {
@@ -113,6 +115,14 @@ export function createLibraryStore(kv: Kv, now: () => number = Date.now, makeId:
       const { [id]: _removed, ...bookmarks } = state.bookmarks;
       state = { ...state, bookmarks };
       saveBooks(state.books.filter((b) => b.id !== id));
+    },
+    /**
+     * Marks a book on or off the device (05.7, A7): "Remove download" turns it off and keeps everything else, its
+     * position, bookmarks, speed, mix and every other per-book key untouched.
+     */
+    setOnDevice(id: string, onDevice: boolean): void {
+      if (!state.books.some((b) => b.id === id && b.onDevice !== onDevice)) return;
+      saveBooks(state.books.map((b) => (b.id === id ? { ...b, onDevice } : b)));
     },
     /**
      * Replaces a book's chapters after the listener renames, merges or splits them (spec 01 A6). The list must

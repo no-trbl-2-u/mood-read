@@ -5,6 +5,7 @@ import { FlatList, Pressable, StyleSheet, Text, View } from "react-native";
 import { filterEmotions, fingerprint, moodFilter } from "@/lib/fingerprint";
 import { bookStateLine } from "@/lib/labels";
 import { library, reached, useBooks } from "@/lib/library";
+import { deleteBook, downloadAgain, removeDownload } from "@/lib/library-manage";
 import { EMOTION_NAMES } from "@/lib/mood-card";
 import { scoringStore } from "@/lib/scoring";
 import type { Book, EmotionScore } from "@/lib/types";
@@ -39,6 +40,18 @@ const COPY = {
   moodChip: (emotion: string) => `Mood: ${emotion}`,
   fingerprint: (emotions: string) => `Mood so far: ${emotions}`,
   noMatch: (emotion: string) => `No book feels like ${emotion} in the chapters you've reached.`,
+  // Library management (05.7, spec 05 A7, A8).
+  bookMore: (title: string) => `Options for ${title}`,
+  removeDownload: "Remove download",
+  removeCaption: "Keeps your place, bookmarks and moods",
+  deleteBook: "Delete book",
+  downloadAgain: "Download again",
+  findFile: "Find the file",
+  notOnDevice: "Not on device",
+  deleteAsk: (title: string) => `Delete ${title}?`,
+  deleteBody: "Its place, bookmarks, moods and picks go with it. Music another book on this device plays stays.",
+  cancel: "Cancel",
+  downloadFailed: "Couldn't reach LibriVox. Check your connection and try again.",
 };
 
 /** The empty shelf's stickers: decorative, hidden from screen readers, no percentages. */
@@ -184,25 +197,84 @@ function Fingerprint({ bookId, print }: { bookId: string; print: EmotionScore[] 
   );
 }
 
+/**
+ * A book's own menu (05.7): on the device, "Remove download" (the file goes, the book stays, A7) and "Delete book";
+ * not on the device, the way its file comes back ("Download again" for a LibriVox book, "Find the file" for an
+ * imported one, on its page) and "Delete book".
+ */
+function bookMenu(book: Book, on: { delete: () => void; error: (message: string | null) => void }): MenuItem[] {
+  const back: MenuItem[] = book.onDevice
+    ? [{ key: "remove-download", label: COPY.removeDownload, icon: "hard-drive", caption: COPY.removeCaption, onPress: () => void removeDownload(book.id) }]
+    : book.source.kind === "librivox"
+      ? [
+          {
+            key: "download-again",
+            label: COPY.downloadAgain,
+            icon: "download",
+            onPress: () => {
+              on.error(null);
+              downloadAgain(book).catch(() => on.error(COPY.downloadFailed));
+            },
+          },
+        ]
+      : [{ key: "find-file", label: COPY.findFile, icon: "search", onPress: () => router.push(`/book/${book.id}`) }];
+  return [...back, { key: "delete-book", label: COPY.deleteBook, icon: "x", ruleBefore: true, onPress: on.delete }];
+}
+
 function BookRow({ book, resuming, print }: { book: Book; resuming: boolean; print: EmotionScore[] }) {
   const position = library.getPosition(book.id);
+  const [confirming, setConfirming] = useState(false);
+  const [error, setError] = useState<string | null>(null);
   return (
-    <Pressable
-      testID={`book-${book.id}`}
-      role="link"
-      style={styles.row}
-      onPress={() => router.push(`/book/${book.id}`)}
-    >
-      <Cover book={book} width={sizes.coverWidth} height={sizes.coverHeight} marked={resuming && position > 0} />
-      <View style={styles.rowText}>
-        <Text style={styles.rowTitle}>{book.title}</Text>
-        <Text style={styles.author} testID="book-author">
-          {book.author}
-        </Text>
-        <Fingerprint bookId={book.id} print={print} />
-        <Text style={styles.meta}>{bookStateLine(book, position, resuming)}</Text>
+    <View style={styles.rowWrap}>
+      <View style={styles.row}>
+        <Pressable testID={`book-${book.id}`} role="link" style={styles.rowLink} onPress={() => router.push(`/book/${book.id}`)}>
+          <Cover book={book} width={sizes.coverWidth} height={sizes.coverHeight} marked={resuming && position > 0} />
+          <View style={styles.rowText}>
+            <Text style={styles.rowTitle}>{book.title}</Text>
+            <Text style={styles.author} testID="book-author">
+              {book.author}
+            </Text>
+            <Fingerprint bookId={book.id} print={print} />
+            <Text style={styles.meta}>{bookStateLine(book, position, resuming)}</Text>
+            {!book.onDevice && (
+              <Text style={styles.offDevice} testID={`not-on-device-${book.id}`}>
+                {COPY.notOnDevice}
+              </Text>
+            )}
+          </View>
+        </Pressable>
+        <OverflowMenu
+          testID={`book-more-${book.id}`}
+          label={COPY.bookMore(book.title)}
+          items={bookMenu(book, { delete: () => setConfirming(true), error: setError })}
+        />
       </View>
-    </Pressable>
+      {error && (
+        <Text style={styles.rowError} role="alert">
+          {error}
+        </Text>
+      )}
+      {confirming && (
+        <View style={styles.confirm} testID={`delete-confirm-${book.id}`} role="alert">
+          <Text style={styles.rowTitle}>{COPY.deleteAsk(book.title)}</Text>
+          <Text style={styles.meta}>{COPY.deleteBody}</Text>
+          <View style={styles.confirmActions}>
+            <Button
+              small
+              kind="danger"
+              testID="delete-confirm-yes"
+              label={COPY.deleteBook}
+              onPress={() => {
+                setConfirming(false);
+                void deleteBook(book.id);
+              }}
+            />
+            <Button small kind="secondary" testID="delete-confirm-cancel" label={COPY.cancel} onPress={() => setConfirming(false)} />
+          </View>
+        </View>
+      )}
+    </View>
   );
 }
 
@@ -216,15 +288,20 @@ const styles = StyleSheet.create({
   stickers: { flexDirection: "row", flexWrap: "wrap", gap: spacing.sm, marginBottom: spacing.sm },
   emptyActions: { gap: spacing.sm },
   emptyFootnote: { ...typography.caption, textAlign: "center" },
-  row: {
+  rowWrap: { borderBottomWidth: strokes.hairline, borderBottomColor: colors.border },
+  row: { flexDirection: "row", alignItems: "center", paddingRight: spacing.xs },
+  rowLink: {
+    flex: 1,
     flexDirection: "row",
     alignItems: "center",
     gap: spacing.md,
-    paddingHorizontal: spacing.md,
+    paddingLeft: spacing.md,
     paddingVertical: spacing.sm,
-    borderBottomWidth: strokes.hairline,
-    borderBottomColor: colors.border,
   },
+  offDevice: { ...typography.caption, color: colors.text },
+  rowError: { ...typography.caption, color: colors.danger, paddingHorizontal: spacing.md, paddingBottom: spacing.sm },
+  confirm: { gap: spacing.xs, paddingHorizontal: spacing.md, paddingBottom: spacing.sm },
+  confirmActions: { flexDirection: "row", flexWrap: "wrap", gap: spacing.sm },
   rowText: { flex: 1, gap: spacing.xxs },
   rowTitle: { ...typography.body, fontWeight: typography.label.fontWeight },
   author: { ...typography.caption, color: colors.text },
