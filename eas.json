@@ -8,6 +8,9 @@
       "distribution": "internal",
       "android": {
         "buildType": "apk"
+      },
+      "env": {
+        "MOOD_READ_OWNER_TOOLS": "1"
       }
     }
   }
