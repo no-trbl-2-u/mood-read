@@ -123,7 +123,7 @@ test("the app's path cannot pre-score: no flag rides on /v1/score, and no browse
   assert.equal((await worker.fetch(post("/v1/score", { ...book, prescore: true }), env)).status, 400);
   const preflight = await worker.fetch(new Request(`${BASE}/v1/prescore`, { method: "OPTIONS" }), env);
   assert.doesNotMatch(preflight.headers.get("access-control-allow-headers") ?? "", /authorization/i);
-  assert.equal((await worker.fetch(post("/v1/prescore", { ...book, librivoxId: undefined }, owner), env)).status, 400, "a pre-scored book needs its LibriVox number");
+  assert.equal((await worker.fetch(post("/v1/prescore", { ...book, extra: "x" }, owner), env)).status, 400, "the owner's body is checked like a listener's");
 });
 
 test("the owner pre-scores a book: billed to pre-scoring, cached for every listener, and Browse reads its overall emotions only", async () => {
@@ -159,6 +159,37 @@ test("the owner pre-scores a book: billed to pre-scoring, cached for every liste
   const again = (await (await worker.fetch(post("/v1/score", { ...book, librivoxId: undefined }), env)).json()) as { state: string };
   assert.equal(again.state, "done");
   assert.equal(outbound.length, calls);
+});
+
+test("the owner pre-scores a book with no LibriVox number (05.22, A24): cached, no limiter, billed to pre-scoring, never in Browse", async () => {
+  const env = makeEnv({ RUNS_PER_CLIENT_PER_HOUR: "0", RUNS_PER_HOUR: "0" });
+  const own = { title: "My Own Audiobook", author: "Some Author", chapters: ["Secret Chapter One", "Secret Chapter Two"] };
+  const res = await worker.fetch(post("/v1/prescore", own, { ...owner, "cf-connecting-ip": "203.0.113.7" }), env);
+  assert.equal(res.status, 200);
+  const started = (await res.json()) as { jobId: string; state: string };
+  assert.equal(started.state, "running", "past the hourly limits");
+  assert.equal(env.RATE_LIMITER.objects.size, 0, "the limiter is never asked");
+  await runAlarms(env, started.jobId);
+
+  const month = new Date().toISOString().slice(0, 7);
+  const meter = env.SPEND_METER.objects.get("spend-meter")!.storage;
+  const pre = (await meter.get<number>(`spend:${PRESCORE_BUCKET}:${month}`)) ?? 0;
+  assert.ok(pre > 0, "billed to pre-scoring's half");
+  assert.equal(pre, await meter.get<number>(`spend:${month}`));
+
+  const listed = (await (await worker.fetch(get("/v1/prescored"), env)).json()) as { books: unknown[] };
+  assert.deepEqual(listed.books, [], "not in Browse's index");
+  const index = env.PRESCORED.objects.get("prescored")?.storage as unknown as { keys(): string[] } | undefined;
+  assert.equal(index?.keys().length ?? 0, 0, "nothing was put in PrescoreIndex");
+
+  // Already scored: the owner's rerun and a listener's ask both get the cache, with no new run and no cost.
+  const calls = outbound.length;
+  const rerun = (await (await worker.fetch(post("/v1/prescore", own, owner), env)).json()) as { jobId: string; state: string };
+  assert.deepEqual([rerun.jobId, rerun.state], [started.jobId, "done"]);
+  const listener = (await (await worker.fetch(post("/v1/score", own), env)).json()) as { state: string };
+  assert.equal(listener.state, "done");
+  assert.equal(outbound.length, calls);
+  assert.equal(await meter.get<number>(`spend:${PRESCORE_BUCKET}:${month}`), pre);
 });
 
 test("a listener's own LibriVox book is never listed in Browse", async () => {

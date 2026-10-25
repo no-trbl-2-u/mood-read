@@ -1,8 +1,11 @@
 // Pre-scoring's HTTP surface (05.10, A11), beside the scoring routes in http.ts:
 //
-//   POST /v1/prescore        owner only (Authorization: Bearer <PRESCORE_TOKEN>); the same body as /v1/score, with
-//                            its LibriVox number required: starts the book's pre-score run, or returns it cached
-//                            -> { jobId, state, progress, budget }, or 429 { error, budget } once the half is spent
+//   POST /v1/prescore        owner only (Authorization: Bearer <PRESCORE_TOKEN>); the same body as /v1/score:
+//                            starts the book's pre-score run, or returns it cached
+//                            -> { jobId, state, progress, budget }, or 429 { error, budget } once the half is spent.
+//                            A book with its LibriVox number also lands in PrescoreIndex for Browse; one without (the
+//                            owner's own files, 05.22) runs the same way, no limiter and the pre-score half of the
+//                            cap, and lands only in the shared cache (index.ts's onFinish indexes a LibriVox book only)
 //   GET  /v1/overall?ids=1,2 public, read only: each pre-scored book's overall emotions by LibriVox number
 //                            -> { books: { "<id>": { emotions } } }; never starts a run
 //   GET  /v1/prescored?limit=20  public, read only (05.20, A22): the pre-scored books for Browse's default list, most
@@ -49,7 +52,6 @@ async function prescore(request: Request, deps: PrescoreDeps): Promise<Response>
   }
   const parsed = parseBookRequest(body);
   if (!parsed.ok) return json(400, { error: parsed.error });
-  if (!parsed.book.librivoxId) return json(400, { error: "a pre-scored book needs its librivoxId" });
   const budget = await deps.budget();
   // A spent half starts nothing and touches no book's job: the owner's script stops here.
   if (!budget.open) return json(429, { error: "the pre-score half of this month's cap is spent", budget });
