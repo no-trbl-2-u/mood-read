@@ -58,7 +58,7 @@ test("A23: only title, author, chapter titles and the catalog numbers when known
   assert.deepEqual(copied, [
     { title: "Alice's Adventures in Wonderland", author: "Lewis Carroll", chapters: ["Down the Rabbit-Hole", "The Pool of Tears"], librivoxId: "200", gutenbergId: "11" },
     { title: "My Own Recording", author: "", chapters: ["Part 1"] },
-    { title: "A LibriVox Book Without Its Text", author: "Someone", chapters: ["One", "Two"] },
+    { title: "A LibriVox Book Without Its Text", author: "Someone", chapters: ["One", "Two"], librivoxId: "300" },
   ]);
   const text = prescoreList(LIBRARY);
   for (const leak of ["file:///", "cover:", "A Reader", "alice_librivox", "lastPlayedAt", "duration"]) assert.ok(!text.includes(leak), leak);

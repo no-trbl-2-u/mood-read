@@ -9,8 +9,16 @@ import type { Book } from "./types.ts";
 /** On only when the app config says so in so many words (app.config.ts: local dev and the preview profile). */
 export const ownerToolsOn = (extra: Record<string, unknown> | null | undefined): boolean => extra?.ownerTools === true;
 
-/** Every library book's scoring request, in shelf order. */
-export const prescoreRequests = (books: readonly Book[]): ScoringRequest[] => books.map(scoringRequest);
+/**
+ * Every library book's scoring request, in shelf order. A LibriVox book with no Gutenberg number keeps its LibriVox
+ * number here (the app's own request drops it), so `pnpm prescore --from` indexes it for Browse (A23, A24).
+ */
+export const prescoreRequests = (books: readonly Book[]): ScoringRequest[] =>
+  books.map((book) => {
+    const req = scoringRequest(book);
+    if (book.source?.kind === "librivox" && book.source.catalogId && !req.librivoxId) req.librivoxId = book.source.catalogId;
+    return req;
+  });
 
 /** The clipboard text: the requests as a JSON array, indented so a person can read and paste it. */
 export const prescoreList = (books: readonly Book[]): string => JSON.stringify(prescoreRequests(books), null, 2);
