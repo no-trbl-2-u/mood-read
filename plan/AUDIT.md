@@ -7,17 +7,6 @@
 
 ## Pending — [needs-user-call]
 
-### [needs-user-call] Redeploy the scoring proxy: own-book pre-scoring (05.22) and catalog-only pieces (05.3)
-- category: production
-- logged: 2026-10-25 (05.22, /heads-down capella)
-- what: `pnpm prescore --from dev-audiobooks.json` is on main, and so is the proxy change that lets
-  POST /v1/prescore take a book with no LibriVox number. The deployed Worker predates it, so it still answers
-  such a book with 400 until `wrangler deploy --config proxy/wrangler.jsonc` runs again.
-  05.3's scorer (catalog pieces only, the famous piece kept as "In the spirit of") likewise reaches listeners
-  only after that deploy; until then the app re-matches each book against the live catalog on the device.
-- default taken: no deploy from the loop (a production action nobody okayed for this chunk); LibriVox books
-  pre-score as before. Say "deploy" to have the next loop redeploy it with 01.26's steps.
-
 ### [needs-user-call] Spotify chapter playlists and the stores stay held (05.13, 05.14, 05.15, 05.18)
 - category: product
 - logged: 2026-10-25 (/heads-down capella, the owner's relayed instruction to claim spec 05)
