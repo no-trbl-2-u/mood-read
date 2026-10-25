@@ -317,8 +317,9 @@ test.describe("the player", () => {
     await expect.poll(async () => (await narration(page)).paused, { timeout: 10_000 }).toBe(true);
     await expect(page.getByTestId("mini-play-pause")).toHaveAttribute("aria-label", "Play");
     await expectTime(page, 0, 0.3);
-    // The speed carries over to the next file.
-    expect((await narration(page)).playbackRate).toBe(3);
+    // The speed carries over to the next file; its rate is applied asynchronously, same as every other
+    // playbackRate check above, so a bare read here raced it and flaked under load.
+    await expect.poll(async () => (await narration(page)).playbackRate).toBe(3);
   });
 
   test("A2: an End of chapter timer follows a chapter jump instead of stopping at the old chapter's end", async ({
