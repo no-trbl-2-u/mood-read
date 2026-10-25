@@ -1,7 +1,7 @@
 {
   "schema": 1,
-  "version": 46,
-  "updatedAt": "2026-10-25T04:14:28.559Z",
+  "version": 47,
+  "updatedAt": "2026-10-25T04:38:56.444Z",
   "pieces": [
     {
       "id": "clean-soul",
@@ -1517,8 +1517,7 @@
       "kind": "score",
       "vocals": "none",
       "moodTags": [
-        "sorrow",
-        "triumph"
+        "sorrow"
       ],
       "intensity": "low",
       "source": "https://incompetech.com/music/royalty-free/index.html?isrc=USUAN1100876",
@@ -3167,8 +3166,7 @@
       "kind": "instrumental",
       "vocals": "none",
       "moodTags": [
-        "tension",
-        "romance"
+        "tension"
       ],
       "intensity": "low",
       "source": "https://incompetech.com/music/royalty-free/index.html?isrc=USUAN1100795",
