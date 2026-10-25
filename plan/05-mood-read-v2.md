@@ -129,8 +129,6 @@ Decisions made upfront (do not ask):
 
 ## Acceptance
 
-- **A2** The catalog covers every emotion in the scorer's fixed set at low and high intensity, with at least three
-  pieces each.
 - **A3** Every piece the scorer names, as the main piece or an alternate, is a catalog piece; a book scored before
   v2 is re-matched without a new research run.
 - **A4** One "Build playlist" press downloads every chapter's piece with progress; afterwards the book plays offline
@@ -172,12 +170,10 @@ Decisions made upfront (do not ask):
   GitHub workflow later).
 
 ## Chunks
-Measure: 13 open · 11 closed · next A25
+Measure: 12 open · 12 closed · next A25
 
-- [ ] **05.2** Seed the catalog across every emotion and intensity · L · closes A2 · needs —
-  - Sources the 01.13 study ranks, and D7's hand-picked CC-BY / CC-BY-SA tracks; every one through `catalog:add`.
 - [ ] **05.3** The scorer names catalog pieces only, and re-matches books scored before v2 · M · closes A3 ·
-  needs 05.2
+  needs —
 - [ ] **05.4** One button builds and pre-downloads a book's playlist · M · closes A4, A5 · needs 01.10, 05.3
 - [ ] **05.7** Library management: remove a download, keep the book; shared pieces survive deletion · M ·
   closes A7, A8 · needs 05.4
