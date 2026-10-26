@@ -137,6 +137,7 @@ Decisions made upfront (do not ask):
 - **A17** Mood Read is on TestFlight and published on the App Store.
 - **A20** Mood Read appears in Android Auto (and in CarPlay once iOS ships) with its library, chapters and
   transport.
+- **A27** The web build removes a previous book's downloaded files before a new one finishes downloading, so it keeps at most one book offline as 05.6/05.8 already promise (#7).
 
 ## Open questions
 
@@ -157,7 +158,7 @@ Decisions made upfront (do not ask):
   GitHub workflow later).
 
 ## Chunks
-Measure: 5 open · 21 closed · next A27
+Measure: 6 open · 21 closed · next A28
 
 - [ ] **05.11** Split a one-file book into chapter files on the device · M · closes A13 · needs 04.1
 - [ ] **05.13** Spotify chapter playlists, sized to each chapter · M · closes A15 · needs 01.11
@@ -169,3 +170,5 @@ Measure: 5 open · 21 closed · next A27
   - Needs the owner in the Apple Developer Program (D6, `plan/AUDIT.md`).
 - [ ] **05.18** Android Auto, then CarPlay · M · closes A20 · needs 05.14
   - Android Auto lists only apps from Google Play, so this waits on 05.14 (held); CarPlay waits on 05.15.
+- [ ] **05.25** Web build caps offline books at one via removeDownload (#7) · S · closes A27 · needs —
+  - Apply 05.4's one-at-a-time rule to book files on web: before a new book's download starts, call 05.7's `removeDownload` on any other book already on device.
