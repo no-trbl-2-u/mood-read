@@ -201,6 +201,7 @@ export default function BookScreen() {
         onDismissNote={() => notes.dismiss("scoring-sent")}
         onStart={() => void scoring.start(book)}
         onRescore={() => void scoring.start(book, true)}
+        onDismissError={() => scoring.dismiss(book.id)}
         onSetMood={unscoredBook && chapter ? () => setSheet({ mood: chapter.index }) : undefined}
       />
       {!book.onDevice && <OffDeviceBand book={book} />}

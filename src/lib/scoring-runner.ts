@@ -143,6 +143,17 @@ export function createScoringRunner(deps: { api: Pick<ScoringApi, "start" | "sta
     resumeAll(books: Book[]): void {
       for (const b of books) this.resume(b);
     },
+    /**
+     * "Not now" on a failure line (A26): forgets a failed or unreachable job, so the book returns to its start state
+     * and nothing keeps polling it. A running, capped or waiting job is left alone.
+     */
+    dismiss(bookId: string): void {
+      const state = store.job(bookId)?.state;
+      if (state !== "failed" && state !== "unreachable") return;
+      stopPolling(bookId);
+      failures.delete(bookId);
+      store.saveJob(bookId, null);
+    },
     stop: stopPolling,
     isPolling: (bookId: string) => polls.has(bookId),
   };

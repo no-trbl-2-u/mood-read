@@ -332,3 +332,33 @@ test("A38: a book waiting on an earlier run keeps that run's id and progress", a
   assert.equal(a.store.job(book.id)?.state, "waiting");
   assert.equal(a.store.job(book.id)?.jobId, id);
 });
+
+test("A26: dismissing an unreachable error clears the stored job, also after a restart, and a later start works", async () => {
+  const p = proxy();
+  const a = app(p);
+  p.setDown(true);
+  await a.runner.start(book);
+  assert.equal(a.store.job(book.id)?.state, "unreachable");
+  a.runner.dismiss(book.id);
+  assert.equal(a.store.job(book.id), null);
+  // A restart over the same storage finds nothing to show or resume.
+  const b = app(p, a.kv);
+  assert.equal(b.store.job(book.id), null);
+  p.setDown(false);
+  await b.runner.start(book);
+  assert.equal(b.store.job(book.id)?.state, "running");
+});
+
+test("A26: dismissing a failed job stops its polling; a running, capped or waiting job is not dismissable", async () => {
+  const p = proxy();
+  const a = app(p);
+  await a.runner.start(book);
+  assert.equal(a.store.job(book.id)?.state, "running");
+  a.runner.dismiss(book.id);
+  assert.equal(a.store.job(book.id)?.state, "running", "a running job is left alone");
+  const running = a.store.job(book.id)!;
+  a.store.saveJob(book.id, { ...running, state: "failed" });
+  a.runner.dismiss(book.id);
+  assert.equal(a.store.job(book.id), null);
+  assert.equal(a.runner.isPolling(book.id), false);
+});

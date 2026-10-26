@@ -16,6 +16,7 @@ under the narration.
 
 
 
+
 **Held** (waits on a person's word; never picked until the line goes):
 
 - **05.14** · blocked: Mood Read stays the owner's own preview APK for now; no Play Store developer account

@@ -8,6 +8,7 @@
 import { useEffect, useState } from "react";
 import { Pressable, StyleSheet, Text, View } from "react-native";
 
+import { errorBand } from "@/lib/scoring-band";
 import { clockTimeLabel, dayLabel, sameDay } from "@/lib/labels";
 import type { BookScores, BusyReason, ScoringJob } from "@/lib/types";
 import { Button as UIButton } from "@/ui/Button";
@@ -25,6 +26,7 @@ const COPY = {
   failed: "Scoring stopped before it finished. Try again.",
   unreachable: "Couldn't reach the scoring service. Check your connection and try again.",
   retry: "Try again",
+  notNow: "Not now",
   busy: (time: string) => `Scoring is busy. Try again after ${time}.`,
   tooSoon: (when: string) => `Rescored recently. Try again ${when}.`,
   after: (time: string) => `after ${time}`,
@@ -73,6 +75,8 @@ export function ScoringBand(props: {
   onDismissNote: () => void;
   onStart: () => void;
   onRescore: () => void;
+  /** "Not now" on a failure line: forgets the stored error (A26). */
+  onDismissError: () => void;
   /** "Set the mood" (07.6, A7): offered while no chapter of the book is scored, so the listener can seed it. */
   onSetMood?: () => void;
 }) {
@@ -142,12 +146,24 @@ export function ScoringBand(props: {
   }
 
   if (job?.state === "failed" || job?.state === "unreachable") {
+    // The error sits beside the band's other controls, never in place of them (A26).
+    const view = errorBand(job.state, { scored: !!scores, canSetMood: !!props.onSetMood && !scores });
+    const scored = scores ? scores.chapters.filter((c) => c.mood.coverage === "scored").length : 0;
     return (
       <View style={styles.band} testID="scoring-band">
         <Text style={styles.error} role="alert">
-          {job.state === "failed" ? COPY.failed : COPY.unreachable}
+          {view.error === "failed" ? COPY.failed : COPY.unreachable}
         </Text>
-        <Button testID="scoring-retry" label={COPY.retry} onPress={job.rescore ? props.onRescore : props.onStart} />
+        <View style={styles.row}>
+          <Button testID="scoring-retry" label={COPY.retry} onPress={job.rescore ? props.onRescore : props.onStart} />
+          <Button testID="scoring-dismiss" label={COPY.notNow} onPress={props.onDismissError} />
+        </View>
+        {view.scoredLine && (
+          <Text style={styles.text} testID="scoring-done">
+            {COPY.scored(scored, props.chapters)}
+          </Text>
+        )}
+        {view.setMood && setMood}
       </View>
     );
   }
