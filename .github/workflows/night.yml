@@ -1,0 +1,32 @@
+name: night
+
+# The kit's own script tests (scripts/__tests__), moved off the per-commit
+# gate: they spawn git and take minutes. They also run in the pre-push hook
+# (node scripts/install-hooks.mjs). No secrets, no writes.
+
+on:
+  schedule:
+    - cron: '30 3 * * *'
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  script-tests:
+    runs-on: ubuntu-latest
+    timeout-minutes: 30
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Set up toolchain
+        uses: ./.github/actions/setup
+
+      - name: Configure git identity for the tests
+        run: |
+          git config --global user.name "night"
+          git config --global user.email "night@example.com"
+
+      - name: Script tests
+        run: pnpm test:scripts

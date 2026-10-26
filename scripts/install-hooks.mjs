@@ -13,7 +13,9 @@
 //               (land through a pull request; a fork's main is its
 //               contributor's); see nexus/playbooks/owner-mode.md. The
 //               step is skipped when the script is missing, so the
-//               hook never breaks a checkout that pruned it.
+//               hook never breaks a checkout that pruned it. It then runs
+//               `pnpm test:scripts` (the kit's own script tests, off the
+//               per-commit gate; nightly CI runs them too).
 //
 // Opt-in only: clone-and-read contributors are unaffected until they
 // run this themselves.
@@ -47,6 +49,12 @@ const HOOKS = {
 refs=$(cat)
 if [ -f scripts/git/push-policy.mjs ]; then
   refs=$(printf '%s\n' "$refs" | node scripts/git/push-policy.mjs "$@") || exit 1
+fi
+# The kit's own script tests (scripts/__tests__) run here, not per commit: they
+# spawn git and take minutes. A push of only the claims ref has nothing to check;
+# a checkout without the tests skips the step. Nightly CI runs them too.
+if [ -n "$refs" ] && [ -d scripts/__tests__ ]; then
+  pnpm test:scripts || exit 1
 fi
 exit 0
 `,

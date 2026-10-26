@@ -334,10 +334,14 @@ Every commit's first line is `<verb>: <subject>` (or `<verb>(<scope>): <subject>
 In order (the pre-commit hook runs it):
 
 ```
-plan:check → secrets:scan → typecheck → lint → test:run → test:scripts → build (expo export -p web) → e2e
+plan:check → secrets:scan → typecheck → lint → test:run → test:proxy → build (expo export -p web) → e2e
 ```
 
 Each leg is a hard gate. The e2e leg boots the web build on port 4173 and walks every route above with no network.
+
+`test:proxy` is `proxy/src/*.test.ts`. The kit's own script tests (`pnpm test:scripts`, `scripts/__tests__/*.test.mjs`;
+about 7 minutes on Windows because they spawn git) are off the per-commit gate: they run in the pre-push hook (armed by
+`node scripts/install-hooks.mjs`) and in the nightly workflow `.github/workflows/night.yml`.
 
 ### Post-push: `pnpm deploy:check`
 
