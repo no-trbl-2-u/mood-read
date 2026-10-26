@@ -1,4 +1,5 @@
-import { router, useLocalSearchParams } from "expo-router";
+import { router, Stack, useLocalSearchParams } from "expo-router";
+import Head from "expo-router/head";
 import { useEffect, useMemo, useState } from "react";
 import { StyleSheet, Text, View } from "react-native";
 
@@ -134,6 +135,10 @@ export default function BookScreen() {
 
   return (
     <View style={styles.screen}>
+      <Stack.Screen options={{ title: book.title }} />
+      <Head>
+        <title>{book.title}</title>
+      </Head>
       <TopBar
         title={book.title}
         back={{ label: COPY.back, iconOnly: true, onPress: backToLibrary }}

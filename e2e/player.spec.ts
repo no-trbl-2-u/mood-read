@@ -417,6 +417,11 @@ test.describe("the player", () => {
     await expect.poll(async () => (await narration(page)).paused).toBe(true);
   });
 
+  test("the book screen's tab title names the open book, not the app's static default", async ({ page }) => {
+    await importBook(page);
+    await expect.poll(() => page.title()).toBe("Test Book");
+  });
+
   test("A31: a pause pressed while the next chapter's file is still loading holds", async ({ page }) => {
     await importBook(page);
     const button = page.getByTestId("mini-play-pause");
