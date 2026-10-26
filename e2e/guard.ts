@@ -63,6 +63,10 @@ export async function guard(page: Page): Promise<string[]> {
     const mediaStop = req.resourceType() === "media" && req.url().startsWith("blob:") && error === "net::ERR_ABORTED";
     if (isLocal(req.url()) && !mediaStop) problems.push(`failed request: ${req.url()} (${error})`);
   });
+  // Pages never uploads a node_modules path, so no request may name one (scripts/web-export-paths.mjs moves them).
+  page.on("request", (req) => {
+    if (isLocal(req.url()) && req.url().includes("node_modules")) problems.push(`request under node_modules: ${req.url()}`);
+  });
   page.on("response", (res) => {
     if (res.status() >= 400) problems.push(`HTTP ${res.status()}: ${res.url()}`);
   });

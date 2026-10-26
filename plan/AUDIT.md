@@ -157,12 +157,14 @@
 - seen: 2026-10-24 (07.4 builder, heads-down rigel)
 - next: /iterate, before or with 07.5
 
-### [4.5] The web export puts package assets under dist/assets/node_modules/, which Pages never uploads
+### [4.5] The web export puts package assets under dist/assets/node_modules/, which Pages never uploads [x]
 - category: tooling
 - impact: 4 (any asset a package ships, such as expo-router's own images or a font loaded from its package, 404s on mood-read.pages.dev while it works locally and in e2e)
 - ease: 5 (copy such assets into `assets/` as 06.4 did for Bricolage Grotesque, with a byte-equality test, or rename the folder after `expo export`)
 - seen: 2026-10-23 (06.4: the display face, moved to assets/fonts; expo-router's assets still sit there, unrequested today)
-- next: /iterate, with an e2e check that no requested asset path contains node_modules
+- issue: #6
+- fixed: 2026-10-25 (/march, /iterate) — `scripts/web-export-paths.mjs` runs after `expo export` (in `pnpm build` and `e2e:owner`): the 18 expo-router assets move to
+  `assets/vendor/<package>/` and every reference in the bundle follows, and it fails if a node_modules path is left; `e2e/web-export.spec.ts` and the e2e guard check that none is exported or requested.
 
 ### [5.4] Two sessions' gates collide on e2e port 4173 [x]
 - category: tooling

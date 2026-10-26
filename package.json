@@ -50,7 +50,7 @@
     "plan:check": "node scripts/plan-check.mjs --since HEAD",
     "secrets:scan": "node scripts/secrets.mjs scan --staged",
     "test:scripts": "node --test \"scripts/__tests__/*.test.mjs\" \"proxy/src/*.test.ts\"",
-    "build": "expo export -p web",
+    "build": "expo export -p web && node scripts/web-export-paths.mjs dist",
     "build:android:preview": "eas build --platform android --profile preview --non-interactive --wait",
     "e2e": "playwright test",
     "e2e:owner": "node scripts/e2e-owner.mjs",

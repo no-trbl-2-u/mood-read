@@ -11,4 +11,5 @@ const run = (args, env) => {
 };
 
 run(['expo', 'export', '-p', 'web', '--output-dir', 'dist-owner'], { MOOD_READ_OWNER_TOOLS: '1' });
+run(['node', 'scripts/web-export-paths.mjs', 'dist-owner']);
 run(['playwright', 'test', 'e2e/owner-tools.spec.ts'], { E2E_DIST: 'dist-owner', E2E_OWNER_TOOLS: '1' });
