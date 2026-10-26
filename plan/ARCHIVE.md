@@ -75,3 +75,4 @@ identity · deleted in <sha>`; recover its text with
 - 2026-10-25 · 05.17 · Settings exports the library, no audio, and imports it back · ec48a8aa..ec48a8aa
 - 2026-10-25 · 05.23 · Running downloads read Downloading; stalled ones fail and retry · plan only
 - 2026-10-25 · 05.24 · A scoring error can be dismissed and keeps the band's other controls · plan only
+- 2026-10-26 · 05.25 · Already shipped: 1b32f53 capped web downloads at one book · f4fdff6f..f4fdff6f
