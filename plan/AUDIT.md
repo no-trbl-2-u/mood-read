@@ -145,13 +145,16 @@
 - fixed: 2026-10-25 (/march, /iterate) — `src/lib/network.ts` binds expo-network; the download queue and the verdict
   sender both read `onWifi` from it and re-run when the network changes (`src/lib/network-watch.ts` holds the rules).
 
-### [4.2] A chapter is reached (and its pieces logged) only while the book's screen is open
+### [4.2] A chapter is reached (and its pieces logged) only while the book's screen is open [x]
 - category: correctness
 - impact: 4 (playback that runs into the next chapter while the listener is on another screen leaves that chapter
   unreached, so its emotions, its fingerprint share and its soundtrack entry wait until the book is opened again)
 - ease: 6 (move `reached.reach` and the soundtrack log from `src/app/book/[id].tsx` into `PlayerProvider`)
 - seen: 2026-10-24 (07.8 builder, heads-down rigel)
-- next: /iterate
+- issue: #8
+- fixed: 2026-10-25 (/march, /iterate) - playback now reaches a chapter, moves its place and logs its pieces in
+  `PlayerProvider`, decided by `recordPlayback` in `src/lib/chapter-reach.ts` (the book screen no longer does it);
+  each store step is idempotent, so nothing logs twice. `e2e/soundtrack.spec.ts` rolls a chapter over from the shelf.
 
 ### [4.0] Verdicts keyed by chapter index can light on the wrong chapter after a chapter edit
 - category: correctness

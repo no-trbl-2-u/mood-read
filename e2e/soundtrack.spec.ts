@@ -87,4 +87,24 @@ test.describe("your soundtrack", () => {
     await page.reload();
     await expect(page.getByTestId("soundtrack-empty")).toBeVisible();
   });
+
+  test("4.2: a chapter playback rolls into is reached while the listener is on the shelf, not only once the book is reopened", async ({ page }) => {
+    const id = await scoredBook(page);
+    const furthest = () =>
+      page.evaluate((id) => {
+        const raw = localStorage.getItem(`reached:${id}`);
+        return raw ? ((JSON.parse(raw) as { start: number | null }).start ?? null) : null;
+      }, id);
+    // Play chapter 1 (it starts at 0), leave the book for the shelf, and let the 4 s file run out into chapter 2.
+    await expect.poll(furthest).toBe(0);
+    await page.getByTestId("mini-play-pause").click();
+    await expect(page.getByTestId("mini-play-pause")).toHaveAttribute("aria-label", "Pause");
+    await page.getByTestId("top-back").click();
+    await expect(page).toHaveURL(/\/$/);
+    await expect.poll(furthest, { timeout: 15_000 }).toBeGreaterThan(0);
+    // Back in the book, chapter 2 is already reached: its emotions show (they wait behind a lock until it is).
+    await page.goto(`/book/${id}`);
+    await expect(page.getByTestId("chapter-row-1").getByTestId("mood-emotions")).toContainText("Sorrow 90%");
+    await expect(page.getByTestId("locked-1")).toHaveCount(0);
+  });
 });

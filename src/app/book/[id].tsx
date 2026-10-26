@@ -6,7 +6,7 @@ import { chapterBed, MUSIC_PICK, pickFor, pickLayer } from "@/lib/bed";
 import { useCatalog } from "@/lib/catalog-config";
 import { licenseName } from "@/lib/credits";
 import { speedLabel } from "@/lib/labels";
-import { chapterEdits, reached, useBook, useFurthestIn, useFurthestReached } from "@/lib/library";
+import { chapterEdits, useBook, useFurthestIn, useFurthestReached } from "@/lib/library";
 import { moodCardView, sceneBand } from "@/lib/mood-card";
 import { draftFrom } from "@/lib/mood-match";
 import { isReached } from "@/lib/reached";
@@ -16,8 +16,6 @@ import { buildPlaylist, usePlaylist } from "@/lib/playlists";
 import { settings, useSettings } from "@/lib/settings";
 import { seedable } from "@/lib/scoring-store";
 import { setMood, useChapterScores } from "@/lib/seeding";
-import { soundtrack } from "@/lib/soundtrack";
-import { piecesPlayed } from "@/lib/soundtrack-store";
 import { nextVerdict } from "@/lib/verdict-store";
 import { useBookVerdicts, verdicts } from "@/lib/verdicts";
 import { BookmarksSheet } from "@/player/BookmarksSheet";
@@ -98,26 +96,9 @@ export default function BookScreen() {
     if (id && book?.onDevice) open(id);
   }, [id, book, open]);
 
-  // Playback has entered this chapter: it is reached from now on, and stays reached (src/lib/reached.ts, A21).
+  // Playback reaches a chapter and logs its pieces in the player (audit 4.2), not here, so it holds on any screen.
   const playingChapter = p.book?.id === id ? p.chapter : undefined;
-  useEffect(() => {
-    if (id && playingChapter) reached.reach(id, playingChapter);
-  }, [id, playingChapter]);
-  // And the furthest place within it (07.2, A2): a scene shows only once the clock has reached its start.
-  const playingPosition = p.book?.id === id ? p.position : null;
   const furthestIn = useFurthestIn(id ?? "", playingChapter?.start ?? null);
-  useEffect(() => {
-    if (id && playingChapter && playingPosition !== null) reached.reachAt(id, playingChapter, playingPosition);
-  }, [id, playingChapter, playingPosition]);
-
-  // The reached chapter's piece plays for it: "Your soundtrack" logs it, and the pieces of its scenes reached so far
-  // (src/lib/soundtrack-store.ts, 07.8, A9; 07.2, A2). A pick made while it plays is logged too, since it plays from
-  // then on.
-  useEffect(() => {
-    if (!id || !playingChapter) return;
-    const score = chapterScores.find((s) => s.mood.chapterIndex === playingChapter.index && s.mood.chapterTitle === playingChapter.title);
-    if (score) soundtrack.log(id, piecesPlayed(score, { chapter: playingChapter, position: playingPosition, furthestIn }));
-  }, [id, playingChapter, chapterScores, playingPosition, furthestIn]);
 
   if (!book) {
     return (

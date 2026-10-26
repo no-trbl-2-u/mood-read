@@ -62,10 +62,13 @@ import {
 } from "@/lib/companion";
 import { createHandoff } from "@/lib/handoff";
 import { createDucker, DEFAULT_MIX, mixLevels, normalizeMix, type Mix } from "@/lib/mix";
-import { library, useBooks } from "@/lib/library";
+import { recordPlayback } from "@/lib/chapter-reach";
+import { library, reached, useBooks } from "@/lib/library";
 import { music } from "@/lib/music";
 import { scoringStore } from "@/lib/scoring";
+import { useChapterScores } from "@/lib/seeding";
 import { settings, useSettings } from "@/lib/settings";
+import { soundtrack } from "@/lib/soundtrack";
 import { resolveFile } from "@/lib/media";
 import {
   bookPosition,
@@ -223,6 +226,16 @@ export function PlayerProvider({ children }: { children: ReactNode }) {
       : bookPosition(book.files, fileIndex, target ? target.offset : status.currentTime);
   const chapter = book ? chapterAt(book.chapters, position) : undefined;
   const error = loadError ?? (companion ? null : status.error) ?? null;
+
+  // Playback entering a chapter reaches it and logs its pieces (audit 4.2), wherever the listener is in the app: the
+  // decision is src/lib/chapter-reach.ts, and it is run here, with the player, not by the book's screen.
+  const chapterScores = useChapterScores(bookId ?? "");
+  useEffect(() => {
+    recordPlayback(
+      { bookId: book?.id, chapter, position: book ? position : null, scores: chapterScores },
+      { reach: reached.reach, reachAt: reached.reachAt, furthestIn: reached.furthestIn, log: soundtrack.log },
+    );
+  }, [book, chapter, position, chapterScores]);
 
   useEffect(() => {
     bookRef.current = book;
