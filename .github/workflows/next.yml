@@ -68,6 +68,19 @@ jobs:
             echo "skip=false" >> "$GITHUB_OUTPUT"
           fi
 
+      # The chunk is chosen here, not by the agent: the first ready chunk in /next's
+      # pick order with no live claim from any session (a local /heads-down loop or
+      # another cloud run), claimed for this run (a contributor named nexus-cloud).
+      # Empty when nothing is free; the agent then settles pending files or exits.
+      - name: Pick and claim one chunk (skips every live claim)
+        id: pick
+        if: steps.ceiling.outputs.skip != 'true' && (inputs.verb == '' || inputs.verb == 'next')
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          NEXUS_SESSION: cloud-${{ github.run_id }}
+          NEXUS_MAIN_BRANCH: ${{ github.event.repository.default_branch }}
+        run: node scripts/cloud/tick.mjs pick --direct
+
       - name: Run /next (cloud mode)
         id: run_next
         if: steps.ceiling.outputs.skip != 'true'
@@ -91,8 +104,8 @@ jobs:
             - settle: apply every file in plan/pending/ to the spec and plan/README.md as each file says, delete the applied files, commit, push. Then exit.
             - next (default):
               1. If plan/pending/ has files, settle them first (as above) in their own commit.
-              2. Pick the next chunk whose needs are done: the Asap lane first, then numbered priorities, then table order. Read its spec section, its acceptance IDs and its Contracts.
-              3. Build that one chunk on main. Size L is one session at most; if it cannot be finished cleanly, ship nothing for it.
+              2. The workflow has already picked and claimed this run's chunk, skipping every chunk another session holds: `${{ steps.pick.outputs.id }}`. If that is empty, no chunk is free: ship nothing for it, print why, and exit. Do not choose another chunk yourself, and do not run scripts/claims.mjs. Read the chunk's spec section, its acceptance IDs and its Contracts.
+              3. Build exactly that chunk on main. Size L is one session at most; if it cannot be finished cleanly, ship nothing for it.
               4. Run the gate in the foreground (never run_in_background) and wait: if package.json exists, `npm run typecheck`, `npm run lint` and `npm test` must all pass. Never --no-verify.
               5. Remove the chunk from the spec's `## Chunks`, record which acceptance IDs it closed (or why one stays open), update the plan/README.md row and its "N left" count, and commit the code and plan together.
               6. Push to main.
@@ -120,6 +133,15 @@ jobs:
           # GIT_AUTHOR_EMAIL:    '<id>+<login>@users.noreply.github.com'
           # GIT_COMMITTER_NAME:  '<login>'
           # GIT_COMMITTER_EMAIL: '<id>+<login>@users.noreply.github.com'
+
+      # The claim goes back whether or not the tick shipped: a shipped chunk has left
+      # the plan, and a failed one is free for the next pick.
+      - name: Release the claim
+        if: always() && steps.pick.outputs.id != ''
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          NEXUS_SESSION: cloud-${{ github.run_id }}
+        run: node scripts/cloud/tick.mjs release "${{ steps.pick.outputs.id }}"
 
       - name: Open an issue if the tick crashed
         if: failure() && steps.ceiling.outputs.skip != 'true'

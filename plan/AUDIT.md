@@ -7,18 +7,6 @@
 
 ## Pending — [needs-user-call]
 
-### [needs-user-call] A scheduled cloud run landed 05.16 while a local loop held its claim
-- category: tooling
-- logged: 2026-10-25 (/heads-down arcturus)
-- what: arcturus claimed 05.16 at 11:01Z and renewed it; the scheduled `next` run 40200827570 (14:08Z) still
-  built and pushed its own 05.16 to main (2c70c6a, 732ed59) while arcturus's build sat in its commit gate. The
-  local build was dropped (kept on the local branch `arcturus/05.16-duplicate`) and main's 05.16 stands. Two
-  builds of one chunk is an hour of work lost each time it happens.
-- default taken: main's 05.16 kept as is; nothing reverted. Alternative: have the cloud tick's `pick` refuse a
-  chunk with a live claim from any session, or pause the schedule while a local heads-down loop runs.
-- seen with it: two worktrees running `pnpm verify` at once ran this machine out of memory and both commit hooks
-  were killed mid-gate; the loop now runs gates one worktree at a time (no footgun list is adopted yet).
-
 ## Pending — findings
 
 ### [5.4] The book screen's tab title never names the open book [x]

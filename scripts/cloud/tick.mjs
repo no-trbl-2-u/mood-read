@@ -8,9 +8,11 @@
 // claim when the PR closes. Learned from a mature adopter's credential split: the agent edits, a script fences what
 // it edited, and only then is a token minted to push it.
 //
-//   node scripts/cloud/tick.mjs pick [--chunk <id>] [--limit <n>]
-//       The first ready, unclaimed chunk in /next's pick order on origin (scripts/plan/order.mjs), claimed for this
-//       session; `id=<chunk>` on $GITHUB_OUTPUT (empty: nothing to build, or `--limit` loop PRs already open).
+//   node scripts/cloud/tick.mjs pick [--chunk <id>] [--limit <n>] [--direct]
+//       The first ready chunk in /next's pick order on origin (scripts/plan/order.mjs) with no live claim from any
+//       session (a local loop's or another cloud run's), claimed for this session; `id=<chunk>` on $GITHUB_OUTPUT
+//       (empty: nothing to build, or `--limit` loop PRs already open). --direct is a tick that lands on main (next.yml),
+//       not as a pull request: it skips the open-PR limit and still claims, so a local loop never sees the chunk free.
 //   node scripts/cloud/tick.mjs fence <base> <head> [--allow <path,…>] [--only <path,…>]
 //       Exit 1 naming each change a loop PR may not make: a shared plan or identity file edited or deleted (pending
 //       files and new spec files are fine; --allow adds exact paths), anything under .github/workflows/ or
@@ -132,7 +134,8 @@ async function pick(cwd, argv, env) {
   const raw = Number(val('--limit') || env.NEXUS_PR_LIMIT || 3);
   const limit = Number.isInteger(raw) && raw >= 0 ? raw : 3;
   let open = 0;
-  try {
+  const direct = argv.includes('--direct');
+  if (!direct) try {
     open = loopPrCount(JSON.parse(execFileSync('gh', ['pr', 'list', '--state', 'open', '--limit', '100', '--json', 'headRefName'], { cwd, encoding: 'utf8' })));
   } catch (e) {
     console.error(`tick: could not count open loop PRs (${e instanceof Error ? e.message.split('\n')[0] : e}); going on`);
