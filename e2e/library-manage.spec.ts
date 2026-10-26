@@ -113,6 +113,36 @@ test.describe("library management", () => {
     await expect(page.getByTestId(`not-on-device-${id}`)).toHaveCount(0);
   });
 
+  test("05 Design: the web build keeps one book; importing another takes the first off the device and keeps it on the shelf", async ({ page }) => {
+    const first = await scoredBook(page);
+    await listenTo(page, first);
+    await page.reload();
+    const kept = await bookKeys(page, first);
+    expect((await stored(page)).filter((k) => k.startsWith(`idb:${first}/`))).toHaveLength(3);
+
+    // A second book, imported from the shelf.
+    await page.goto("/");
+    await page.getByTestId("import").click();
+    const chooser = page.waitForEvent("filechooser");
+    await page.getByTestId("import-files").click();
+    await (await chooser).setFiles(files(4).map((f) => ({ ...f, name: f.name.replace("Mood Book", "Quiet Book") })));
+    await expect(page).toHaveURL(/\/book\/[a-z0-9]+$/);
+    const second = new URL(page.url()).pathname.split("/").pop()!;
+    await page.goto("/");
+    // The first is on the shelf, "Not on device", with all it had; only the second has files in the browser.
+    await expect(page.getByTestId(`not-on-device-${first}`)).toHaveText("Not on device");
+    await expect(page.getByTestId(`not-on-device-${second}`)).toHaveCount(0);
+    await expect.poll(async () => (await stored(page)).filter((k) => k.startsWith(`idb:${first}/`))).toEqual([]);
+    expect((await stored(page)).filter((k) => k.startsWith(`idb:${second}/`))).toHaveLength(3);
+    expect(await bookKeys(page, first)).toEqual(kept);
+    expect((await shelfBook(page, first))?.onDevice).toBe(false);
+    expect((await shelfBook(page, second))?.onDevice).toBe(true);
+
+    // Downloads says so.
+    await page.goto("/downloads");
+    await expect(page.getByTestId("downloads-web-note")).toContainText("Adding another takes the first off this browser, and it stays on your shelf.");
+  });
+
   test("A7: removing the download of the book in the player stops it where it was; with its file back, it plays again", async ({ page }) => {
     const id = await scoredBook(page);
     const play = page.getByTestId("mini-play-pause");

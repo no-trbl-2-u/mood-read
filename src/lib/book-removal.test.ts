@@ -1,7 +1,7 @@
 import assert from "node:assert/strict";
 import { test } from "node:test";
 
-import { createBookRemoval, piecesFreedBy } from "./book-removal.ts";
+import { booksToEvict, createBookRemoval, newlyOnDevice, piecesFreedBy } from "./book-removal.ts";
 import { createLibraryStore, type Kv } from "./library-store.ts";
 import { DEFAULT_MIX } from "./mix.ts";
 import type { PlaylistRecord } from "./playlist.ts";
@@ -227,4 +227,62 @@ test("setOnDevice turns a book back on, and ignores an unknown one", () => {
   assert.equal(createLibraryStore(kv).getBook("a")?.onDevice, true);
   library.setOnDevice("nope", false);
   assert.equal(library.books().length, 1);
+});
+
+// The web build keeps at most one book offline (spec 05 Design, "The web build streams; phones keep"): when a book
+// lands on the device, the others leave it through Remove download, and stay on the shelf.
+
+const withTimes = (id: string, addedAt: number, lastPlayedAt: number | null, onDevice = true): Book => ({ ...book(id, onDevice), addedAt, lastPlayedAt });
+
+test("web cap: a book that landed pushes every other book off the device when one is allowed", () => {
+  const books = [book("a"), book("b"), book("c", false)];
+  assert.deepEqual(booksToEvict(books, ["b"], 1), ["a"]);
+  assert.deepEqual(booksToEvict(books, ["a"], 1), ["b"]);
+});
+
+test("web cap: a phone, with no cap, evicts nothing", () => {
+  assert.deepEqual(booksToEvict([book("a"), book("b"), book("c")], ["c"], Infinity), []);
+});
+
+test("web cap: with room for more, the most recently played others stay", () => {
+  const books = [withTimes("a", 1, 10), withTimes("b", 2, null), withTimes("c", 3, 20), withTimes("d", 4, null)];
+  assert.deepEqual(booksToEvict(books, ["d"], 3), ["b"], "b was never played and was added first of the unplayed");
+  assert.deepEqual(booksToEvict(books, ["d"], 2).sort(), ["a", "b"]);
+});
+
+test("web cap: nothing is evicted when nothing landed, or the book is within the cap", () => {
+  assert.deepEqual(booksToEvict([book("a"), book("b")], [], 1), []);
+  assert.deepEqual(booksToEvict([book("a")], ["a"], 1), []);
+});
+
+test("web cap: newlyOnDevice finds books that turned up on the device since the last look", () => {
+  const seen = new Set(["a"]);
+  assert.deepEqual(newlyOnDevice(seen, [book("a"), book("b"), book("c", false)]), ["b"]);
+  assert.deepEqual([...seen].sort(), ["a", "b"], "the set is brought up to date");
+  assert.deepEqual(newlyOnDevice(seen, [book("a"), book("b")]), []);
+  // A book removed and then found again is new again.
+  assert.deepEqual(newlyOnDevice(seen, [book("a"), book("b", false)]), []);
+  assert.deepEqual(newlyOnDevice(seen, [book("a"), book("b")]), ["b"]);
+});
+
+test("web cap: enforceLimit removes the downloads of the other books and keeps them on the shelf", async () => {
+  const { library, removal, deleted, playlists } = setup([book("a"), book("b"), book("c")], [rec("a", "p1")]);
+  library.savePosition("a", 12);
+  const gone = await removal.enforceLimit(["c"], 1);
+  assert.deepEqual(gone.sort(), ["a", "b"]);
+  assert.equal(library.getBook("a")?.onDevice, false);
+  assert.equal(library.getBook("b")?.onDevice, false);
+  assert.equal(library.getBook("c")?.onDevice, true);
+  assert.equal(library.books().length, 3, "all three stay on the shelf");
+  assert.equal(library.getPosition("a"), 12);
+  assert.deepEqual(deleted.audio.sort(), ["idb:a/0", "idb:a/1", "idb:b/0", "idb:b/1"]);
+  assert.deepEqual(deleted.pieces, ["pieces/p1.aac"]);
+  assert.equal(playlists.get("a"), null);
+});
+
+test("web cap: enforceLimit with no cap does nothing", async () => {
+  const { library, removal, deleted } = setup([book("a"), book("b")], []);
+  assert.deepEqual(await removal.enforceLimit(["b"], Infinity), []);
+  assert.equal(library.getBook("a")?.onDevice, true);
+  assert.deepEqual(deleted.audio, []);
 });

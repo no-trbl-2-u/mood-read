@@ -117,7 +117,10 @@ test.describe("fingerprints on the shelf and the Mood filter", () => {
     await expect(rows(page)).toHaveCount(2);
 
     // Reaching chapter 2 of each book brings their sorrow in: strongest match first, whatever the shelf's order.
-    await reach(page, moodId, 1);
+    // The web build keeps one book on the device (spec 05), so importing the second took the first off it: its chapter
+    // 2 is marked reached as playback would (the start, in seconds, of the second 4 s file) rather than played.
+    await page.evaluate((id) => localStorage.setItem(`reached:${id}`, "4"), moodId);
+    await page.reload();
     await expect(stickers(page, moodId)).toHaveText(["Sorrow", "Tension", "Wonder"]);
     await reach(page, quietId, 1);
     await expect(stickers(page, quietId)).toHaveText(["Sorrow", "Calm"]);

@@ -28,7 +28,7 @@ const COPY = {
   queueTitle: "In the queue",
   emptyTitle: "All caught up.",
   emptyBody: "Nothing is downloading right now.",
-  webNote: "On the web, Mood Read keeps one book and its music offline. The phone app keeps your whole shelf.",
+  webNote: "On the web, Mood Read keeps one book and its music offline. Adding another takes the first off this browser, and it stays on your shelf. The phone app keeps your whole shelf.",
   pause: "Pause",
   resume: "Resume",
   retry: "Retry",

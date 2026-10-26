@@ -3,7 +3,9 @@
 // bringing a removed book's file back: a LibriVox book downloads again in one tap through the download queue; an
 // imported one asks for its file and matches it by title, author and duration (src/lib/reattach.ts). Storage is
 // reached only through src/lib/ (agents.md rule 7).
-import { createBookRemoval } from "./book-removal";
+import { Platform } from "react-native";
+
+import { createBookRemoval, newlyOnDevice } from "./book-removal";
 import { downloadQueue, downloadStore } from "./downloads";
 import { bookTags, checkImport, inspectFiles } from "./import-plan";
 import { library } from "./library";
@@ -25,6 +27,26 @@ const removal = createBookRemoval({
 
 export const removeDownload = removal.removeDownload;
 export const deleteBook = removal.deleteBook;
+
+/**
+ * How many books stay on the device: one in a browser, which caps what a site may store and may evict it unannounced
+ * (spec 05 Design, "The web build streams; phones keep"), every book on a phone. The Downloads screen says so.
+ */
+export const MAX_DEVICE_BOOKS = Platform.OS === "web" ? 1 : Infinity;
+
+// A book that lands on the web build (an import, a LibriVox download, a found file) takes the place of the book that
+// was there: that one goes through "Remove download" (A7), so it stays on the shelf, "Not on device", with its position,
+// bookmarks, moods, picks and mix, and a LibriVox book downloads again in one tap. Watching the library's own changes
+// covers every path that adds a book. Books already over the cap when the app opens are left as they are: nothing is
+// removed that the listener did not just replace. Native builds have no cap and never watch.
+if (Number.isFinite(MAX_DEVICE_BOOKS)) {
+  const seen = new Set<string>();
+  newlyOnDevice(seen, library.books());
+  library.subscribe(() => {
+    const landed = newlyOnDevice(seen, library.books());
+    if (landed.length > 0) void removal.enforceLimit(landed, MAX_DEVICE_BOOKS).catch(() => {});
+  });
+}
 
 /**
  * "Download again" (A7): a removed LibriVox book's chapter files, queued under the book's own id, so it lands back on

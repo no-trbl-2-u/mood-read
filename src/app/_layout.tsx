@@ -5,6 +5,8 @@ import { useEffect } from "react";
 import { StyleSheet, View } from "react-native";
 
 import "@/lib/downloads";
+// The web build keeps one book on the device (spec 05): a book that lands replaces the one there (src/lib/library-manage.ts).
+import "@/lib/library-manage";
 // The verdict sender (07.5): on start it posts the day's batch, if any is due (src/lib/verdict-sync.ts).
 import "@/lib/verdicts";
 

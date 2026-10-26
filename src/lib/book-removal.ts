@@ -11,7 +11,7 @@
 import type { LibraryStore } from "./library-store.ts";
 import { unreferenced, type PlaylistPiece, type PlaylistRecord } from "./playlist.ts";
 import type { PlaylistStore } from "./playlist-store.ts";
-import type { Download } from "./types.ts";
+import type { Book, Download } from "./types.ts";
 
 /** A book's pieces that may go when it leaves (A8): those no other book still on the device has in its playlist. */
 export function piecesFreedBy(bookId: string, records: readonly PlaylistRecord[], onDevice: (bookId: string) => boolean): PlaylistPiece[] {
@@ -23,8 +23,35 @@ export function piecesFreedBy(bookId: string, records: readonly PlaylistRecord[]
   );
 }
 
+/**
+ * The books that leave the device when `justKept` landed on it, so at most `max` stay (the web build: 1, spec 05
+ * Design, "The web build streams; phones keep"). The books that just landed stay; room beyond them goes to the
+ * other books most recently played (else most recently added). Nothing leaves when nothing landed.
+ */
+export function booksToEvict(books: readonly Book[], justKept: readonly string[], max: number): string[] {
+  if (justKept.length === 0) return [];
+  const kept = new Set(justKept);
+  const others = books
+    .filter((b) => b.onDevice && !kept.has(b.id))
+    .sort((a, b) => (b.lastPlayedAt ?? b.addedAt) - (a.lastPlayedAt ?? a.addedAt));
+  const room = Math.max(0, max - justKept.length);
+  return others.slice(room).map((b) => b.id);
+}
+
+/**
+ * The books on the device now that `seen` did not know, which is how a landing is noticed without every path that
+ * adds a book (import, LibriVox download, "Find the file") having to say so. Brings `seen` up to date.
+ */
+export function newlyOnDevice(seen: Set<string>, books: readonly Book[]): string[] {
+  const now = books.filter((b) => b.onDevice).map((b) => b.id);
+  const fresh = now.filter((id) => !seen.has(id));
+  seen.clear();
+  for (const id of now) seen.add(id);
+  return fresh;
+}
+
 export type RemovalDeps = {
-  library: Pick<LibraryStore, "getBook" | "removeBook" | "setOnDevice">;
+  library: Pick<LibraryStore, "books" | "getBook" | "removeBook" | "setOnDevice">;
   playlists: Pick<PlaylistStore, "list" | "remove">;
   downloads: { list(): Download[]; remove(id: string): void };
   files: {
@@ -64,6 +91,15 @@ export function createBookRemoval(deps: RemovalDeps) {
       await release(bookId);
       await files.deleteAudio(book.files.map((f) => f.ref)).catch(() => {});
       return true;
+    },
+    /**
+     * Keeps at most `max` books on the device once `justKept` landed: the others go through "Remove download", so
+     * each stays on the shelf with its position, bookmarks, moods, picks and mix. Returns the ids removed.
+     */
+    async enforceLimit(justKept: readonly string[], max: number): Promise<string[]> {
+      const out: string[] = [];
+      for (const id of booksToEvict(library.books(), justKept, max)) if (await this.removeDownload(id)) out.push(id);
+      return out;
     },
     /** "Delete book": the book and all it kept. False when it is unknown. */
     async deleteBook(bookId: string): Promise<boolean> {
