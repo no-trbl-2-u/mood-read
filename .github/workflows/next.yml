@@ -111,6 +111,9 @@ jobs:
             End every run, shipped or not, by printing the audit status into this log.
         env:
           GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          # The deploy gate (`pnpm deploy:check`) reads the Pages deploy for the pushed commit.
+          CLOUDFLARE_API_TOKEN:  ${{ secrets.CLOUDFLARE_API_TOKEN }}
+          CLOUDFLARE_ACCOUNT_ID: ${{ secrets.CLOUDFLARE_ACCOUNT_ID }}
           # User-author mode: uncomment and set your login + noreply email
           # (id from https://api.github.com/users/<login>).
           # GIT_AUTHOR_NAME:     '<login>'

@@ -207,7 +207,9 @@ jobs:
           # Add any secrets your verify/deploy gates need. Examples:
           # NETLIFY_AUTH_TOKEN: ${{ secrets.NETLIFY_AUTH_TOKEN }}
           # VERCEL_TOKEN:       ${{ secrets.VERCEL_TOKEN }}
-          # CLOUDFLARE_API_TOKEN: ${{ secrets.CLOUDFLARE_API_TOKEN }}
+          # The deploy gate (`pnpm deploy:check`) reads the Pages deploy for the pushed commit.
+          CLOUDFLARE_API_TOKEN:  ${{ secrets.CLOUDFLARE_API_TOKEN }}
+          CLOUDFLARE_ACCOUNT_ID: ${{ secrets.CLOUDFLARE_ACCOUNT_ID }}
           #
           # Pager (playbooks/hands-off.md Step 2) — lets cloud
           # stops page your phone like local ones:
