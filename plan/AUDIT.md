@@ -121,6 +121,15 @@
 
 ## Pending — findings
 
+### [5.4] The book screen's tab title never names the open book [x]
+- category: a11y
+- impact: 6 (the web build's tab/bookmark/shared-link title read "Mood Read" for every open book, a literal
+  WCAG 2.4.2 "Page Titled" miss on the app's one genuinely dynamic, most-visited route)
+- ease: 9 (book.title is already in scope at the screen's return; the fix is two JSX lines)
+- seen: 2026-10-26 (/iterate, cloud march tick)
+- issue: #10
+- fixed: 2026-10-26 (/march, /iterate) — `src/app/book/[id].tsx` now sets `<Stack.Screen options={{ title: book.title }} />` for the native header and `<Head><title>{book.title}</title></Head>` (expo-router's Head) for the web document title, once the book loads; `e2e/player.spec.ts` asserts `page.title()` names the open book instead of the app's static default.
+
 ### [4.4] The web build keeps any number of books offline; spec 05 caps it at one [x]
 - category: correctness
 - impact: 4 (spec 05 Design, "The web build streams; phones keep": a browser keeps at most one book and its
