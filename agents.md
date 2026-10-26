@@ -114,7 +114,10 @@ stop and report. Tests alongside code, never "add tests later".
 The name is "Mood Read" (two words, title case) in every UI
 string. A listener's books never leave the device and are never
 transcribed; the scoring proxy receives a book's title, author
-and chapter titles, nothing more. Mood Read decrypts nothing
+and chapter titles; for a LibriVox book, its public LibriVox and
+Gutenberg numbers; and only while "Share what fits" is on, daily
+rows of `{piece, emotions, verdict}` carrying no book, chapter,
+device or time. Nothing more. Mood Read decrypts nothing
 (no AAX/AAXC). Nothing plays without a license that allows it
 (A18), and no piece with vocals is ever named (A20): ask the
 `rights-checker` sub-agent, and treat `unclear` as no. No AI or

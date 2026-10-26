@@ -505,3 +505,10 @@ Pages that would not load, or loaded without their terms:
 - https://www.amazon.com/gp/help/customer/display.html?nodeId=508088 (503).
 - Downpour (429 / 404). Hoopla's terms.
 - Suno's pricing page was not read. No primary page was found for 7digital / Songtradr.
+
+## Note: Android background playback in companion mode (2026-10-26)
+
+expo-audio may stop Android background playback after about 3 minutes when the lock-screen controls are off, which
+companion mode turns off. The owner checked companion mode on the preview APK (a24589f, 2026-10-25) and did not
+see it, so nothing is built for it. If it shows up, the options are a foreground service with no media session, or
+accepting the limit.

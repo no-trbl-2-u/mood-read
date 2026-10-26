@@ -159,12 +159,12 @@ Decisions made upfront (do not ask):
 ## Chunks
 Measure: 5 open · 22 closed · next A28
 
-- [ ] **05.11** Split a one-file book into chapter files on the device · M · closes A13 · needs 04.1
+- [ ] **05.11** Split a one-file book into chapter files on the device · M · closes A13 · needs —
 - [ ] **05.13** Spotify chapter playlists, sized to each chapter · M · closes A15 · needs 01.11
   - Rewrite the privacy policy's Spotify section (`src/app/privacy.tsx`) to say what a connected account shares.
   - Replace Settings' disabled "Spotify, Not available yet" row (06.3, `src/app/settings.tsx`) with connect and
     disconnect.
-- [ ] **05.14** Google Play release · M · closes A16 · needs 04.1 · secrets EXPO_TOKEN
+- [ ] **05.14** Google Play release · M · closes A16 · needs — · secrets EXPO_TOKEN
 - [ ] **05.15** TestFlight and the App Store · M · closes A17 · needs 05.14 · secrets EXPO_TOKEN
   - Needs the owner in the Apple Developer Program (D6, `plan/AUDIT.md`).
 - [ ] **05.18** Android Auto, then CarPlay · M · closes A20 · needs 05.14

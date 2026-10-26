@@ -93,20 +93,16 @@ just name the pieces/scores/songs/instrumentals (It's important that there's no 
 
 ## Acceptance
 
-- **A2** Speed runs 0.5× to 3× without pitch change (0.5× to 2× on Android and iOS, where the audio engine caps it);
-  a sleep timer stops playback after N minutes or at chapter end.
-- **A4** Playback continues in the background and answers lock-screen / media-key controls.
 - **A24** Each chapter's mood card links out to its reference piece ("In the spirit of") on Spotify, YouTube /
   YouTube Music and Apple Music, and Mood Read plays none of it; a listener can save a book's reference pieces as
   a playlist in their own YouTube or Apple Music account.
 - **A33** Scoring a real book on mood-read.pages.dev returns researched chapter moods and named pieces
   from the deployed proxy, with spend metered at OpenAI's and Brave's current prices.
-- **A36** Companion mode is checked with Audible on a real iOS and Android phone: both play
-  together whichever starts first, through a pause, a call and Bluetooth, the bed keeps playing with the screen
-  off, and the narration's lock-screen controls are unchanged when companion mode is off.
 - **A39** The deployed proxy pre-scores through a GitHub Actions job: `prescore.yml` runs
   `pnpm prescore` daily and on demand with `PRESCORE_TOKEN` as a repository secret, keeps its ledger across runs,
   and one test run scores real LibriVox books that Browse then reads as Scored.
+- **A41** On Android the duck-under-voice switch really dips the bed while the narration speaks, by a path that
+  needs no microphone permission, checked on a phone.
 - **A40** The average cost of one scoring run is known from the meter's own spend over real runs, the
   meter's prices match OpenAI's and Brave's current rates, and whether Brave is needed is decided by scoring the
   same books with and without it.
@@ -200,7 +196,7 @@ Every question below is answered; none is open. Elsewhere in the plan, "Open que
    no emotions on its card (A21).
 
 ## Chunks
-Measure: 7 open · 33 closed · next A41
+Measure: 5 open · 36 closed · next A42
 
 Build order follows the owner's two-part v1, and the lines below are in that order. **Part 1, the player:** 01.1,
 01.6, 01.3, 01.5, 01.7: the player, then real books in it, then the second layer, its mixer and the soundscapes it
@@ -214,25 +210,6 @@ pieces). Ids keep the order they were written in. The app itself (Expo at the re
     Developer Policy III.5, until the owner revisits it after v1); YouTube playlists through the Data API within
     its daily quota; Apple Music playlists only once the Apple Developer Program is joined (after v1); SoundCloud
     gets a plain soundcloud.com link, no API.
-- [ ] **01.15** Device pass for the player: background, lock screen and native speed on a real phone · S ·
-  closes A2, A4 · needs 04.1
-  - The owner's check on 04.1's preview APK (screen off, lock-screen and media-key play, pause and 30 s skips)
-    closes A4, and its 0.5x to 2x speed with pitch kept closes A2 (native caps at 2x, D11).
-  - Native lock-screen seeks run inside expo-audio and skip the player's sleep retarget; 01.6 brought in-file
-    chapters, so retarget an End of chapter timer on those seeks too.
-  - 01.6's native-only paths were typechecked, never run on a phone: the folder picker
-    (`Directory.pickDirectoryAsync`), cover writing beside the audio, and silence detection, which runs only on WAV
-    files on native (other formats keep one chapter until the listener splits it). Import a file and a folder on
-    the APK and check each.
-  - Listen to 01.3's bed on the phone: loop seams, the crossfade's volume ramp, and two bed players sharing the
-    audio session with the narration.
-  - 01.10's Music layer streams a catalog .m4a from R2 into a bed deck, never tried on a phone: check it loads
-    within the engine's 10 s timeout over mobile data and loops cleanly.
-  - 01.5's duck under voice: on iOS it samples the narration through expo-audio's tap (untried on a device); on
-    Android it is a no-op, since expo-audio samples only with RECORD_AUDIO and Mood Read asks for no microphone.
-    Check iOS, and decide whether Android needs another path.
-  - Listen to 01.7's six synthesized soundscapes under narration (nobody has heard them yet): the wrap of each
-    loop, and whether Low Café reads as a distant room rather than a crowd. Swap any that sound wrong.
 - [ ] **01.20** Turn scoring on: set the app's proxy URL · S ·
   closes A33 · needs 01.27
   - The owner chose (2026-10-24, D33) to go live on OpenAI and Brave as 01.2 built the proxy; the move to Claude
@@ -240,15 +217,6 @@ pieces). Ids keep the order they were written in. The app itself (Expo at the re
   - The proxy is already deployed and pre-scoring tested (the prescore-job chunk) and the run cost known (the
     run-cost chunk); this step points the app at it: `expo.extra.scoringProxyUrl` in `app.json` set to the
     Worker's URL (the placeholder resolves nowhere), then score one real book end to end on mood-read.pages.dev.
-- [ ] **01.23** Companion mode beside Audible on a real phone · S · closes A36 ·
-  needs 05.15
-  - The owner's check on 04.1's preview APK (and an iPhone when iOS builds exist); 01.14 built and tested the rest
-    of A27 on web.
-  - Android checked by the owner (2026-10-25, APK a24589f): companion mode works beside Audible. Left: the
-    iPhone check, once 05.15 gives an iOS build.
-  - Main risk: expo-audio stops Android background playback after about 3 minutes without lock-screen controls,
-    which companion mode turns off. If the bed stops, decide between a foreground service with no media session
-    and accepting the limit; note the limit in `docs/workarounds.md`.
 - [ ] **01.26** Pre-scoring as a GitHub Actions job, tested on the deployed proxy · S ·
   closes A39 · needs —
   - The owner chose (2026-10-25) to test pre-scoring through the GitHub job first, before the app points at the
@@ -269,3 +237,10 @@ pieces). Ids keep the order they were written in. The app itself (Expo at the re
   - Score the same few books with OpenAI's own web search in place of Brave (a proxy setting, not a second
     deploy) and compare the moods, the named pieces and the cost; record the choice as a decision, and if Brave
     goes, drop `BRAVE_SEARCH_API_KEY` from the secrets list.
+- [ ] **01.28** Duck under voice on Android, with no microphone permission · M · closes A41 · needs —
+  - Low priority (the owner, 2026-10-26): not worth building until better soundscapes and music exist; the loop
+    picks it last.
+  - Today expo-audio samples the narration for ducking only with RECORD_AUDIO, and Mood Read asks for no
+    microphone, so Android's duck is a no-op (iOS samples through expo-audio's tap, untested on a device). Find a
+    path with no microphone prompt (for example a ducking cue from the narration's own position or loudness data,
+    or the audio focus APIs), then check it on the preview APK.

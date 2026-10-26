@@ -131,7 +131,7 @@ Scripts (package.json):
   pnpm plan:check | settle | claims | progress | order | pulse | secrets ...   the nexus scripts
 
 Scoring proxy (01.2; proxy/src/http.ts): it receives only a book's title, author and chapter titles, and for a
-LibriVox book its public LibriVox and Project Gutenberg numbers (05.9).
+LibriVox book its public LibriVox and Project Gutenberg numbers (05.9), and the daily verdict rows only while "Share what fits" is on.
   GET  /health             200 "ok"
   POST /v1/score           {title, author, chapters, librivoxId?, gutenbergId?}: start the book's job, or its
                            cached result                                                          -> JobView
@@ -268,14 +268,25 @@ The design system (06.1, option A "acid sticker", owner direction "full gen z ch
 - **Skip intervals:** 30 s back and forward; speeds 0.5× to 3× in 0.1 steps with presets 1×, 1.25×, 1.5×, 2×.
 - **Accounts, sync, comments, payments:** out of scope in every v1 spec.
 - **Audible:** DRM-free files only; never decrypt, never ask for an Audible password (spec 01, Open questions 2).
-- **The listener's audio never leaves the device** and is never transcribed; the proxy gets title, author and
-  chapter titles only.
+- **The listener's audio never leaves the device** and is never transcribed; the proxy gets a book's title, author
+  and chapter titles, a LibriVox book's public LibriVox and Gutenberg numbers, and only while "Share what fits" is
+  on, daily `{piece, emotions, verdict}` rows with no book, chapter, device or time. Nothing more.
 - **Spoilers:** show a chapter's emotions only once the listener reaches it; never show events (A21).
 - **Nothing plays without a license that allows it** (A18); a piece is never named if it has vocals (A20). Ask
   `rights-checker`; an `unclear` verdict means don't ship it, log it.
 - **No AI or search key ships in the app** (A22).
 - **Secrets by name only:** a chunk names the secrets it needs on its line; values come through
   `node scripts/secrets.mjs run`, never a terminal.
+- **Android first, no iOS for now (owner, 2026-10-26):** Mood Read ships as the owner's Android preview APK, built
+  on demand from main through EAS (`pnpm build:android:preview`, `android-preview.yml`; spec 04, complete). No
+  Play Store, App Store or iOS build until the owner joins those programs (05.14, 05.15, 05.18 stay held); the owner
+  has no Apple Developer Program membership.
+- **Spotify stays plain links only (owner, 2026-10-26):** no Spotify playback, playlists or accounts; Developer
+  Policy III.5 is not revisited. 05.13 stays held.
+- **LibriVox lookup stays in the app (owner, 2026-10-26):** a LibriVox download asks librivox.org's API for a
+  book's Gutenberg number (05.9). Checked 2026-10-26: that API sends no Access-Control-Allow-Origin header, so the
+  web build's lookup is blocked by the browser; a LibriVox book on the web stays web-scored (no Gutenberg text),
+  native works.
 - **Mood depth (spec 07, complete 2026-10-24; decisions D18, D19, D22-D32):**
   - A chapter may have 1 to 4 ordered scenes, each emotions and a span (spans sum to 1, rounded to 0.05, under 0.1
     merged into a neighbour), never text; absent scenes read as one scene (`src/lib/scenes.ts`). Each scene has a

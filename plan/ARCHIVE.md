@@ -76,3 +76,7 @@ identity · deleted in <sha>`; recover its text with
 - 2026-10-25 · 05.23 · Running downloads read Downloading; stalled ones fail and retry · plan only
 - 2026-10-25 · 05.24 · A scoring error can be dismissed and keeps the band's other controls · plan only
 - 2026-10-26 · 05.25 · Already shipped: 1b32f53 capped web downloads at one book · f4fdff6f..f4fdff6f
+- 2026-10-26 · 04.1 · Owner checked the preview APK: plays, background, lock screen, speed 0.5x-2x · (this commit)
+- 2026-10-26 · 04 · spec complete: Android preview APKs · absorbed into plan/bearings.md Decisions standing for the autonomous loop · deleted in (this commit)
+- 2026-10-26 · 01.15 · Owner's phone pass: background, lock screen, speed, folder picker, loops, Music layer work (duck-under-voice split to 01.28) · (this commit)
+- 2026-10-26 · 01.23 · Companion mode works beside Audible on Android (iPhone check deferred with iOS) · (this commit)
