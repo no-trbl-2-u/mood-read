@@ -4,9 +4,10 @@ import { StyleSheet, Text, View } from "react-native";
 
 import { chapterBed, MUSIC_PICK, pickFor, pickLayer } from "@/lib/bed";
 import { useCatalog } from "@/lib/catalog-config";
+import { chapterEdits } from "@/lib/chapter-edits";
 import { licenseName } from "@/lib/credits";
 import { speedLabel } from "@/lib/labels";
-import { chapterEdits, useBook, useFurthestIn, useFurthestReached } from "@/lib/library";
+import { useBook, useFurthestIn, useFurthestReached } from "@/lib/library";
 import { moodCardView, sceneBand } from "@/lib/mood-card";
 import { draftFrom } from "@/lib/mood-match";
 import { isReached } from "@/lib/reached";

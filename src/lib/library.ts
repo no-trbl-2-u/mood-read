@@ -3,8 +3,7 @@
 // listener's chapter edits. Storage is reached only through src/lib/ (agents.md rule 7).
 import { useEffect, useState, useSyncExternalStore } from "react";
 
-import { bedsAfterMerge, bedsAfterSplit } from "./bed";
-import { canMergeWithNext, canSplitAt, deriveChapters, mergeWithNext, renameChapter, splitChapter } from "./chapters";
+import { deriveChapters } from "./chapters";
 import { bookTags, checkImport, inspectFiles } from "./import-plan";
 import { getItem, removeItem, setItem } from "./kv";
 import { createLibraryStore } from "./library-store";
@@ -157,19 +156,3 @@ export async function importFiles(picked: PickedAudio[] | null, onStep?: (s: Imp
     for (const f of picked) f.source.close?.();
   }
 }
-
-/** The listener's chapter edits (spec 01 A6), saved for the book; a chapter's own bed moves with it (A32). */
-export const chapterEdits = {
-  rename(book: Book, index: number, title: string): void {
-    library.setChapters(book.id, renameChapter(book.chapters, index, title));
-  },
-  mergeWithNext(book: Book, index: number): void {
-    if (!canMergeWithNext(book.chapters, index)) return;
-    library.setChapters(book.id, mergeWithNext(book.chapters, book.files, index), (beds) => bedsAfterMerge(beds, index));
-  },
-  splitAt(book: Book, position: number): void {
-    if (!canSplitAt(book.chapters, position)) return;
-    const index = book.chapters.findIndex((c) => position >= c.start && position < c.end);
-    library.setChapters(book.id, splitChapter(book.chapters, book.files, position), (beds) => bedsAfterSplit(beds, index));
-  },
-};

@@ -28,6 +28,22 @@ export function isVerdict(v: unknown): v is PieceVerdict {
   );
 }
 
+/**
+ * The verdicts after chapter `index` merges with the next (src/lib/chapters.ts mergeWithNext): the merged chapter keeps
+ * the first's verdicts, the second's go (it no longer plays on its own) and every later chapter's move down one.
+ */
+export function verdictsAfterMerge(list: readonly PieceVerdict[], index: number): PieceVerdict[] {
+  return list.filter((v) => v.chapterIndex !== index + 1).map((v) => (v.chapterIndex > index + 1 ? { ...v, chapterIndex: v.chapterIndex - 1 } : { ...v }));
+}
+
+/**
+ * The verdicts after chapter `index` splits in two (src/lib/chapters.ts splitChapter): the first half keeps the
+ * chapter's title and verdicts, the second half starts with none, and every later chapter's move up one.
+ */
+export function verdictsAfterSplit(list: readonly PieceVerdict[], index: number): PieceVerdict[] {
+  return list.map((v) => (v.chapterIndex > index ? { ...v, chapterIndex: v.chapterIndex + 1 } : { ...v }));
+}
+
 const EMPTY: readonly PieceVerdict[] = Object.freeze([]);
 
 export function createVerdictStore(kv: Kv, now: () => number = Date.now) {
@@ -79,6 +95,18 @@ export function createVerdictStore(kv: Kv, now: () => number = Date.now) {
       if (verdictFor(bookId, chapterIndex, pieceId) === verdict) return;
       const rest = verdicts(bookId).filter((v) => !(v.chapterIndex === chapterIndex && v.pieceId === pieceId));
       save(bookId, verdict === null ? rest : [...rest, { chapterIndex, pieceId, verdict, at: now() }]);
+    },
+    /** Moves the book's verdicts with its chapters after chapter `index` merged with the next (audit 4.0). */
+    afterMerge(bookId: string, index: number): void {
+      const list = verdicts(bookId);
+      if (!list.some((v) => v.chapterIndex > index)) return;
+      save(bookId, verdictsAfterMerge(list, index));
+    },
+    /** Moves the book's verdicts with its chapters after chapter `index` split in two (audit 4.0). */
+    afterSplit(bookId: string, index: number): void {
+      const list = verdicts(bookId);
+      if (!list.some((v) => v.chapterIndex > index)) return;
+      save(bookId, verdictsAfterSplit(list, index));
     },
     /** Reads the book's key from the store again, after it was written from outside (05.17's import). */
     refresh(bookId: string): void {

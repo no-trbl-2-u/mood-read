@@ -156,13 +156,14 @@
   `PlayerProvider`, decided by `recordPlayback` in `src/lib/chapter-reach.ts` (the book screen no longer does it);
   each store step is idempotent, so nothing logs twice. `e2e/soundtrack.spec.ts` rolls a chapter over from the shelf.
 
-### [4.0] Verdicts keyed by chapter index can light on the wrong chapter after a chapter edit
+### [4.0] Verdicts keyed by chapter index can light on the wrong chapter after a chapter edit [x]
 - category: correctness
 - impact: 4 (a merge or split shifts indices, so a kept "Fits" or "Doesn't fit" can show on another chapter that
   plays the same piece; 07.5 would then send it with the wrong chapter's emotions)
 - ease: 7 (clear a book's `verdicts:` in the chapter-edit path, or match the chapter title as scores do)
 - seen: 2026-10-24 (07.4 builder, heads-down rigel)
-- next: /iterate, before or with 07.5
+- issue: #9
+- fixed: 2026-10-25 (/march, /iterate) - a merge or split now moves the book's verdicts with its chapters, as it does their beds: a merge keeps the first chapter's verdicts and drops the second's, a split keeps them on the first half, and later chapters' shift with them (`verdictsAfterMerge`, `verdictsAfterSplit` in `src/lib/verdict-store.ts`, wired by `src/lib/chapter-edits.ts`). A verdict that still applies is kept, none is wiped.
 
 ### [4.5] The web export puts package assets under dist/assets/node_modules/, which Pages never uploads [x]
 - category: tooling

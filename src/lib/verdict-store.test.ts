@@ -116,3 +116,59 @@ test("A5: forgetting a book drops its verdicts", () => {
   assert.deepEqual(store.verdicts("b1"), []);
   assert.equal(kv.data.has(verdictsKey("b1")), false);
 });
+
+// A chapter edit moves chapters' places, so the verdicts, kept by chapter index, move with them (audit 4.0).
+function withVerdicts() {
+  const kv = memoryKv();
+  const store = createVerdictStore(kv, now);
+  store.setVerdict("b1", 0, "p0", "fits");
+  store.setVerdict("b1", 1, "p1", "misfit");
+  store.setVerdict("b1", 2, "p2", "fits");
+  store.setVerdict("b1", 3, "p3", "misfit");
+  return { kv, store };
+}
+const view = (store: ReturnType<typeof createVerdictStore>, id = "b1") =>
+  store.verdicts(id).map(({ chapterIndex, pieceId, verdict }) => `${chapterIndex}:${pieceId}:${verdict}`);
+
+test("4.0: merging chapter 1 with the next keeps its verdict, drops the second's and moves later ones down", () => {
+  const { store } = withVerdicts();
+  let told = 0;
+  store.subscribe(() => told++);
+  store.afterMerge("b1", 1);
+  assert.deepEqual(view(store), ["0:p0:fits", "1:p1:misfit", "2:p3:misfit"]);
+  assert.equal(store.verdictFor("b1", 3, "p3"), null);
+  assert.equal(told, 1);
+});
+
+test("4.0: splitting chapter 1 keeps its verdict on the first half and moves later ones up", () => {
+  const { store, kv } = withVerdicts();
+  store.afterSplit("b1", 1);
+  assert.deepEqual(view(store), ["0:p0:fits", "1:p1:misfit", "3:p2:fits", "4:p3:misfit"]);
+  assert.deepEqual(
+    createVerdictStore(kv, now).verdicts("b1").map((v) => v.chapterIndex),
+    [0, 1, 3, 4],
+  );
+});
+
+test("4.0: an edit leaves other books and an unmarked book alone and tells no one", () => {
+  const { store, kv } = withVerdicts();
+  store.setVerdict("b2", 2, "q", "fits");
+  let told = 0;
+  store.subscribe(() => told++);
+  store.afterMerge("b3", 0);
+  store.afterSplit("b3", 0);
+  assert.equal(told, 0);
+  assert.equal(kv.data.has(verdictsKey("b3")), false);
+  store.afterMerge("b1", 3);
+  assert.deepEqual(view(store, "b2"), ["2:q:fits"]);
+  assert.deepEqual(view(store), ["0:p0:fits", "1:p1:misfit", "2:p2:fits", "3:p3:misfit"]);
+});
+
+test("4.0: a merge that drops the only verdict clears the book's key", () => {
+  const kv = memoryKv();
+  const store = createVerdictStore(kv, now);
+  store.setVerdict("b1", 1, "p", "fits");
+  store.afterMerge("b1", 0);
+  assert.equal(store.verdicts("b1").length, 0);
+  assert.equal(kv.data.has(verdictsKey("b1")), false);
+});
