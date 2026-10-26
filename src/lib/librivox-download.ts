@@ -9,6 +9,7 @@
 import { getItem, removeItem, setItem } from "./kv";
 import { library } from "./library";
 import { chapterFiles, chapterTitle, coverFile, downloadUrl, gutenbergIdFor, parseLength, readerNames, type LibriVoxItem } from "./librivox-api";
+import { createProgressSum } from "./download-progress";
 import { downloadFileInto, probeDuration, resolveFile } from "./media";
 import { extension } from "./meta/read";
 import { redownloaded } from "./reattach";
@@ -97,17 +98,9 @@ export const librivoxTransfer: Transfer = async (download, onProgress, signal) =
   if (!pending) throw new Error("This download no longer knows what to fetch");
 
   const slots = pending.files.length + (pending.cover ? 1 : 0);
-  const bytes = new Array<number>(slots).fill(0);
-  const totals = new Array<number | null>(slots).fill(null);
-  const report = () => {
-    const total = totals.every((t) => t != null) ? totals.reduce<number>((s, t) => s + (t as number), 0) : null;
-    onProgress(bytes.reduce((s, b) => s + b, 0), total);
-  };
-  const progressFor = (i: number) => (b: number, t: number | null) => {
-    bytes[i] = b;
-    totals[i] = t;
-    report();
-  };
+  // Bytes are reported as they arrive; the total only once every file's size is known (A25, src/lib/download-progress.ts).
+  const sum = createProgressSum(slots, onProgress);
+  const progressFor = sum.at;
 
   const refs: string[] = [];
   for (let i = 0; i < pending.files.length; i++) {
@@ -136,6 +129,7 @@ export const librivoxTransfer: Transfer = async (download, onProgress, signal) =
       duration = meta.length ?? 0;
     }
     files.push({ ref: refs[i]!, name: meta.title, duration });
+    sum.tick(); // probing moves no bytes; tell the queue's stall guard this download is still alive (A25)
   }
 
   let at = 0;
@@ -156,7 +150,7 @@ export const librivoxTransfer: Transfer = async (download, onProgress, signal) =
     duration: at,
     addedAt: Date.now(),
     lastPlayedAt: null,
-    source: librivoxSource(pending, await textNumber(pending)),
+    source: librivoxSource(pending, (sum.tick(), await textNumber(pending))),
     onDevice: true,
   };
   // A book downloaded again after "Remove download" (05.7, A7) keeps its chapters, position and all it had.

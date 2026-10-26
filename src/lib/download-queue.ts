@@ -29,6 +29,14 @@ const realTimers: Timers = {
  */
 export const RETRY_BACKOFF_MS = [1_000, 5_000, 15_000, 60_000];
 
+/**
+ * How long a running transfer may go without a single progress report before the queue gives up on it (A25). A
+ * hung native transfer never fails by itself and would sit "running" forever; past this it is aborted and failed,
+ * and the backoff above retries it. A default (one minute): long enough for a slow archive.org redirect, short
+ * enough that a dead connection does not look alive.
+ */
+export const STALL_MS = 60_000;
+
 export function backoffMs(attempts: number): number {
   const i = Math.min(Math.max(attempts, 1), RETRY_BACKOFF_MS.length) - 1;
   return RETRY_BACKOFF_MS[i];
@@ -46,12 +54,15 @@ export function createDownloadQueue(deps: {
   onWifi?: () => boolean;
   now?: () => number;
   timers?: Timers;
+  /** The stall window (A25); tests shorten it. */
+  stallMs?: number;
   makeId?: () => string;
 }) {
   const now = deps.now ?? Date.now;
   const timers = deps.timers ?? realTimers;
   const onWifi = deps.onWifi ?? (() => true);
   const makeId = deps.makeId ?? newId;
+  const stallMs = deps.stallMs ?? STALL_MS;
   const { store, transfer, wifiOnly } = deps;
 
   const controllers = new Map<string, AbortController>();
@@ -87,26 +98,55 @@ export function createDownloadQueue(deps: {
     void run(id);
   }
 
+  function failed(id: string, message: string): void {
+    const after = store.get(id);
+    if (!after) return;
+    const attempts = after.attempts + 1;
+    store.patch(id, { state: "failed", attempts, error: message, updatedAt: now() });
+    scheduleRetry(id, attempts);
+  }
+
   async function run(id: string): Promise<void> {
     const controller = new AbortController();
     controllers.set(id, controller);
     store.patch(id, { state: "running", error: null, updatedAt: now() });
+    // The stall guard (A25): any progress report re-arms it; silence for `stallMs` aborts the transfer and fails it.
+    let watchdog: unknown;
+    const disarm = () => {
+      if (watchdog !== undefined) timers.clear(watchdog);
+      watchdog = undefined;
+    };
+    const arm = () => {
+      disarm();
+      watchdog = timers.set(() => {
+        watchdog = undefined;
+        if (controller.signal.aborted) return;
+        controller.abort();
+        if (controllers.get(id) === controller) controllers.delete(id);
+        failed(id, `No progress for ${Math.round(stallMs / 1000)} seconds, so this download was stopped. It will try again.`);
+      }, stallMs);
+    };
     try {
       const current = store.get(id);
       if (!current) return;
-      await transfer(current, (bytes, totalBytes) => store.patch(id, { bytes, totalBytes, updatedAt: now() }), controller.signal);
-      if (controller.signal.aborted) return; // paused or removed mid-transfer: that call already settled its state
+      arm();
+      await transfer(
+        current,
+        (bytes, totalBytes) => {
+          if (controller.signal.aborted) return; // a late report from a run that was stopped
+          store.patch(id, { bytes, totalBytes, updatedAt: now() });
+          arm();
+        },
+        controller.signal,
+      );
+      if (controller.signal.aborted) return; // paused, removed or stalled mid-transfer: that call already settled its state
       store.patch(id, { state: "done", updatedAt: now() });
     } catch (e) {
       if (controller.signal.aborted) return;
-      const after = store.get(id);
-      if (!after) return;
-      const attempts = after.attempts + 1;
-      const message = e instanceof Error ? e.message : String(e);
-      store.patch(id, { state: "failed", attempts, error: message, updatedAt: now() });
-      scheduleRetry(id, attempts);
+      failed(id, e instanceof Error ? e.message : String(e));
     } finally {
-      controllers.delete(id);
+      disarm();
+      if (controllers.get(id) === controller) controllers.delete(id);
     }
   }
 

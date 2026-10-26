@@ -25,7 +25,7 @@ export function downloadCaption(d: Pick<Download, "target" | "state" | "bytes" |
     case "failed":
       return d.error ? `${kind} · failed: ${d.error}` : `${kind} · failed`;
     case "running":
-      if (!d.totalBytes) return `${kind} · downloading`;
+      if (!d.totalBytes) return d.bytes > 0 ? `${kind} · downloading · ${formatBytes(d.bytes)} so far` : `${kind} · downloading`;
       return `${kind} · ${Math.min(100, Math.round((d.bytes / d.totalBytes) * 100))}% · ${formatBytes(d.bytes)} of ${formatBytes(d.totalBytes)}`;
   }
 }
@@ -49,5 +49,41 @@ export function playlistLine(s: Pick<PlaylistStatus, "state" | "done" | "total" 
       return `${pieces(s.failed)} didn't download: ${of} on this device`;
     case "done":
       return `Playlist on this device: ${pieces(s.total)} · ${formatBytes(s.totalBytes)}`;
+  }
+}
+
+/** What a download card draws (A25): a title, an optional byte line, and its bar. */
+export type ProgressView = {
+  title: string;
+  detail: string | null;
+  /** 0..1 when the bar is proportional; null while it is indeterminate. */
+  fraction: number | null;
+  /** True while bytes move but the total is not known yet: the bar slides instead of sitting full or empty. */
+  indeterminate: boolean;
+};
+
+/**
+ * The Browse card's progress (A25). "Queued" is only for a queued download; a running one with no total yet says
+ * it is downloading, with the bytes so far and an indeterminate bar (never a full one).
+ */
+export function downloadProgressView(d: Pick<Download, "state" | "bytes" | "totalBytes">): ProgressView {
+  const known = d.totalBytes != null && d.totalBytes > 0;
+  const fraction = known ? Math.min(1, d.bytes / (d.totalBytes as number)) : null;
+  const detail = known
+    ? `${formatBytes(d.bytes)} of ${formatBytes(d.totalBytes as number)}`
+    : d.bytes > 0
+      ? `${formatBytes(d.bytes)} so far`
+      : null;
+  switch (d.state) {
+    case "queued":
+      return { title: "Queued to download…", detail: null, fraction: 0, indeterminate: false };
+    case "paused":
+      return { title: "Paused", detail, fraction: fraction ?? 0, indeterminate: false };
+    case "running":
+      return known
+        ? { title: `Downloading ${Math.round((fraction as number) * 100)}%`, detail, fraction, indeterminate: false }
+        : { title: "Downloading", detail, fraction: null, indeterminate: true };
+    default:
+      return { title: "", detail: null, fraction: 0, indeterminate: false };
   }
 }

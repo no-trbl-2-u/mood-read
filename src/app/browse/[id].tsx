@@ -12,10 +12,11 @@ import { SCORING_PROXY_URL } from "@/lib/scoring";
 import type { EmotionScore } from "@/lib/types";
 import { pendingBookFrom, pendingBookIdFor, stashLibriVoxBook } from "@/lib/librivox-download";
 import { useSettings } from "@/lib/settings";
-import { formatBytes } from "@/lib/storage";
+import { downloadProgressView } from "@/lib/download-labels";
 import { newId } from "@/lib/timeline";
 import { Button } from "@/ui/Button";
 import { Cover } from "@/ui/Cover";
+import { IndeterminateFill } from "@/ui/IndeterminateFill";
 import { ScoredChip } from "@/ui/ScoredChip";
 import { Sticker } from "@/ui/Sticker";
 import { colors, radii, sizes, spacing, strokes, typography } from "@/ui/theme";
@@ -46,7 +47,6 @@ const COPY = {
   resume: "Resume",
   retry: "Retry",
   seeDownloads: "See all downloads",
-  queued: "Queued to download…",
 };
 
 export default function BrowseBookScreen() {
@@ -238,7 +238,7 @@ function formatClock(totalSeconds: number): string {
 }
 
 function DownloadCard({ download }: { download: ReturnType<typeof useDownloads>[number] }) {
-  const pct = download.totalBytes ? Math.min(100, Math.round((download.bytes / download.totalBytes) * 100)) : null;
+  const view = downloadProgressView(download);
   return (
     <View style={styles.downloadCard} testID="browse-book-downloading">
       {download.state === "failed" ? (
@@ -250,16 +250,10 @@ function DownloadCard({ download }: { download: ReturnType<typeof useDownloads>[
         </>
       ) : (
         <>
-          <Text style={styles.downloadingTitle}>
-            {pct != null ? `Downloading ${pct}%` : download.state === "paused" ? "Paused" : COPY.queued}
-          </Text>
-          {download.totalBytes != null && (
-            <Text style={styles.caption}>
-              {formatBytes(download.bytes)} of {formatBytes(download.totalBytes)}
-            </Text>
-          )}
+          <Text style={styles.downloadingTitle}>{view.title}</Text>
+          {view.detail != null && <Text style={styles.caption}>{view.detail}</Text>}
           <View style={styles.track}>
-            <View style={[styles.trackFill, pct != null && { width: `${pct}%` }]} />
+            {view.indeterminate ? <IndeterminateFill /> : <View style={[styles.trackFill, { width: `${(view.fraction ?? 0) * 100}%` }]} />}
           </View>
           {download.state === "running" && <Button testID="browse-book-pause" kind="secondary" label={COPY.pause} onPress={() => downloadQueue.pause(download.id)} />}
           {download.state === "paused" && <Button testID="browse-book-resume" label={COPY.resume} onPress={() => downloadQueue.resume(download.id)} />}

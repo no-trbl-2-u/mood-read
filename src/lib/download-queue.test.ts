@@ -1,7 +1,7 @@
 import assert from "node:assert/strict";
 import { test } from "node:test";
 
-import { backoffMs, createDownloadQueue, recoverRunning, RETRY_BACKOFF_MS, type Transfer } from "./download-queue.ts";
+import { backoffMs, createDownloadQueue, recoverRunning, RETRY_BACKOFF_MS, STALL_MS, type Transfer } from "./download-queue.ts";
 import { createDownloadStore } from "./download-store.ts";
 import type { Kv } from "./library-store.ts";
 
@@ -229,4 +229,88 @@ test("pause, resume and retry do nothing to a download that is not in the matchi
   queue.retry(d.id);
   await flush();
   assert.equal(store.get(d.id)?.state, "done");
+});
+
+// A25: a running transfer that makes no progress for the stall window is stopped and failed, then retried.
+function stalledSetup() {
+  const store = createDownloadStore(memoryKv());
+  const timers = manualTimers();
+  let aborted = 0;
+  let calls = 0;
+  let report: (b: number, t: number | null) => void = () => {};
+  const transfer: Transfer = (_d, onProgress, signal) => {
+    calls++;
+    report = onProgress;
+    return new Promise<void>((_resolve, reject) => {
+      signal.addEventListener("abort", () => {
+        aborted++;
+        reject(new Error("aborted"));
+      });
+    });
+  };
+  const queue = createDownloadQueue({ store, transfer, wifiOnly: () => false, timers, makeId: () => "d1" });
+  return { store, timers, queue, calls: () => calls, aborted: () => aborted, report: (b: number, t: number | null) => report(b, t) };
+}
+
+test("A25: STALL_MS is one minute", () => {
+  assert.equal(STALL_MS, 60_000);
+});
+
+test("A25: a transfer with no progress for the stall window is aborted and failed with a reason", async () => {
+  const s = stalledSetup();
+  s.queue.enqueue(BOOK);
+  await flush();
+  assert.equal(s.store.get("d1")?.state, "running");
+  assert.ok([...s.timers.queue.values()].some((t) => t.ms === STALL_MS), "a stall timer is armed while the transfer runs");
+  await s.timers.fire();
+  const d = s.store.get("d1")!;
+  assert.equal(d.state, "failed");
+  assert.match(d.error ?? "", /no progress for 60 seconds/i);
+  assert.equal(d.attempts, 1);
+  assert.equal(s.aborted(), 1);
+});
+
+test("A25: progress re-arms the stall timer, so a slow but moving transfer is left alone", async () => {
+  const s = stalledSetup();
+  s.queue.enqueue(BOOK);
+  await flush();
+  const before = [...s.timers.queue.keys()];
+  s.report(10, null);
+  const after = [...s.timers.queue.keys()];
+  assert.equal(after.length, 1);
+  assert.notDeepEqual(after, before, "the old timer was cleared and a new one set");
+  assert.equal(s.store.get("d1")?.state, "running");
+  assert.equal(s.store.get("d1")?.bytes, 10);
+});
+
+test("A25: a stalled download is retried by the queue's backoff and runs again", async () => {
+  const s = stalledSetup();
+  s.queue.enqueue(BOOK);
+  await flush();
+  await s.timers.fire(); // stall -> failed, retry scheduled
+  assert.equal(s.store.get("d1")?.state, "failed");
+  assert.ok([...s.timers.queue.values()].some((t) => t.ms === backoffMs(1)));
+  await s.timers.fire(); // backoff -> queued -> running again
+  assert.equal(s.calls(), 2);
+  assert.equal(s.store.get("d1")?.state, "running");
+});
+
+test("A25: pausing a transfer disarms its stall timer", async () => {
+  const s = stalledSetup();
+  s.queue.enqueue(BOOK);
+  await flush();
+  s.queue.pause("d1");
+  await flush();
+  await s.timers.fire();
+  assert.equal(s.store.get("d1")?.state, "paused");
+});
+
+test("A25: a late progress report from a stopped run does not overwrite the download", async () => {
+  const s = stalledSetup();
+  s.queue.enqueue(BOOK);
+  await flush();
+  await s.timers.fire();
+  s.report(999, 1000);
+  assert.equal(s.store.get("d1")?.bytes, 0);
+  assert.equal(s.store.get("d1")?.state, "failed");
 });

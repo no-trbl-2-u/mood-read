@@ -211,6 +211,8 @@ export const motion = {
   /** A chip or button press: scale to `pressScale` and back. */
   press: 90,
   pressScale: 0.94,
+  /** One sweep of an indeterminate progress bar (a download whose size is not known yet). */
+  indeterminateSweep: 1400,
   /** A chip popping in when scoring lands. */
   chipPop: 220,
   /** A bottom sheet rising. */
