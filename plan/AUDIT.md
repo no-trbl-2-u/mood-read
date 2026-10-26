@@ -7,17 +7,6 @@
 
 ## Pending — [needs-user-call]
 
-### [needs-user-call] GitHub App token can't push a fix to .github/workflows/heartbeat.yml (#3)
-- category: tooling
-- logged: 2026-10-25 (/iterate, cloud march tick)
-- what: finding [5.6] (heartbeat.yml's job-level `env:` hands `GH_TOKEN`/`GH_REPO` to every step) has a
-  verified fix (workflow-lint.mjs goes from 1 problem to 0), but pushing it is rejected: "refusing to allow a
-  GitHub App to create or update workflow `.github/workflows/heartbeat.yml` without `workflows` permission".
-  No token with workflow scope is configured (`nexus.secrets.json` has none).
-- default taken: the local commit was undone (never pushed) and the fix's diff posted on issue #3 instead.
-  Needs the owner to either grant the GitHub App's installation the `workflows` permission, or apply the
-  diff from issue #3 by hand and push it themselves.
-
 ### [needs-user-call] A scheduled cloud run landed 05.16 while a local loop held its claim
 - category: tooling
 - logged: 2026-10-25 (/heads-down arcturus)

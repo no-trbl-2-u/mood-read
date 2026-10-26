@@ -16,11 +16,11 @@ jobs:
   heartbeat:
     runs-on: ubuntu-latest
     timeout-minutes: 5
-    env:
-      GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-      GH_REPO: ${{ github.repository }}
     steps:
       - name: Cancel wedged runs (in_progress > 3h)
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          GH_REPO: ${{ github.repository }}
         run: |
           now=$(date -u +%s)
           gh run list --workflow next --status in_progress \
@@ -35,6 +35,9 @@ jobs:
           done
 
       - name: Alarm if next has not succeeded in 26h
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          GH_REPO: ${{ github.repository }}
         run: |
           # success, not completed: a loop failing every tick must still alarm.
           last=$(gh run list --workflow next --status success -L 1 \
