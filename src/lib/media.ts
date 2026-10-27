@@ -41,6 +41,23 @@ function picked(file: File, name = file.name): PickedAudio {
   return { name, size: file.size ?? 0, uri: file.uri, source: fileSource(file) };
 }
 
+/** A byte source over a file already on the device by its stored ref (a `BookFile.ref`), for reading it back —
+ *  src/lib/split-files.ts (05.11) reads a book's one file this way before cutting it into its chapters' own. */
+export function storedSource(ref: string): ByteSource {
+  return fileSource(new File(ref));
+}
+
+/** A fresh, empty file in a book's folder, ready to be written: any file already at that name is replaced
+ *  (src/lib/split-files.ts writes each chapter's own file this way, a block at a time). */
+export function createBookFile(bookId: string, name: string): File {
+  const dir = bookDir(bookId);
+  dir.create({ idempotent: true, intermediates: true });
+  const file = new File(dir, name);
+  if (file.exists) file.delete();
+  file.create();
+  return file;
+}
+
 /**
  * Opens the system picker for one or more files. Any type is offered (phones label M4B, Opus and AAX
  * inconsistently); the import reads each file's bytes to decide. Null if the listener cancelled.
