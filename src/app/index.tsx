@@ -1,6 +1,6 @@
 import { router, useFocusEffect } from "expo-router";
 import { useCallback, useEffect, useState } from "react";
-import { FlatList, Pressable, StyleSheet, Text, TextInput, View } from "react-native";
+import { FlatList, Platform, Pressable, StyleSheet, Text, TextInput, View } from "react-native";
 
 import { filterEmotions, fingerprint, moodFilter } from "@/lib/fingerprint";
 import { bookStateLine } from "@/lib/labels";
@@ -9,6 +9,8 @@ import { deleteBook, downloadAgain, removeDownload } from "@/lib/library-manage"
 import { EMOTION_NAMES } from "@/lib/mood-card";
 import { scoringStore } from "@/lib/scoring";
 import { filterShelf, searchShelf, showSearch, sortShelf, type ShelfFilter, type ShelfSort } from "@/lib/shelf";
+import { splitIntoChapterFiles } from "@/lib/split-files";
+import { canOfferSplit } from "@/lib/split-plan";
 import type { Book, EmotionScore } from "@/lib/types";
 import { usePlayer } from "@/player/PlayerProvider";
 import { Button } from "@/ui/Button";
@@ -73,6 +75,10 @@ const COPY = {
   deleteBody: "Its place, bookmarks, moods and picks go with it. Music another book on this device plays stays.",
   cancel: "Cancel",
   downloadFailed: "Couldn't reach LibriVox. Check your connection and try again.",
+  // Splitting a one-file book into chapter files (05.11, spec 05 A13).
+  splitFiles: "Split into chapter files",
+  splitCaption: "Keeps your place, bookmarks and moods",
+  splitFailed: "Couldn't split this book into chapter files.",
 };
 
 /** The empty shelf's stickers: decorative, hidden from screen readers, no percentages. */
@@ -309,7 +315,32 @@ function bookMenu(book: Book, on: { delete: () => void; error: (message: string 
   const finish: MenuItem = book.finished
     ? { key: "mark-unfinished", label: COPY.markNotFinished, icon: "x", onPress: () => library.setFinished(book.id, false) }
     : { key: "mark-finished", label: COPY.markFinished, icon: "check", onPress: () => library.setFinished(book.id, true) };
-  return [finish, ...back, { key: "delete-book", label: COPY.deleteBook, icon: "x", ruleBefore: true, onPress: on.delete }];
+  // A LibriVox "unabridged" single file holding the whole book, native only (05.11, A13): nothing to split on
+  // the web build, which streams rather than keeps a file to cut (spec 05 Design).
+  const split: MenuItem[] =
+    Platform.OS !== "web" && book.onDevice && canOfferSplit(book.files, book.chapters)
+      ? [
+          {
+            key: "split-files",
+            label: COPY.splitFiles,
+            icon: "scissors",
+            caption: COPY.splitCaption,
+            onPress: () => {
+              on.error(null);
+              splitIntoChapterFiles(book).then(
+                (outcome) => outcome !== "done" && on.error(COPY.splitFailed),
+                () => on.error(COPY.splitFailed),
+              );
+            },
+          },
+        ]
+      : [];
+  return [
+    finish,
+    ...back,
+    ...split,
+    { key: "delete-book", label: COPY.deleteBook, icon: "x", ruleBefore: true, onPress: on.delete },
+  ];
 }
 
 function BookRow({ book, resuming, print }: { book: Book; resuming: boolean; print: EmotionScore[] }) {
