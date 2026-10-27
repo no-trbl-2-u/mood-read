@@ -32,7 +32,7 @@ under the narration.
 | # | Initiative | Spec | Status | Progress |
 |---|---|---|---|---|
 | 5 | Mood Read v2: browse and download free LibriVox books, manage the library (remove a download, keep the book), a royalty-free music catalog, one button that builds and pre-downloads a book's chapter playlist, credits, Spotify chapter playlists, and the Play Store and App Store | [05-mood-read-v2.md](05-mood-read-v2.md) | planned | 5 left |
-| 1 | Mood Read v1 in two parts. Part 1, the player: your own audiobooks with an ambient soundscape under the narration and a mixer. Part 2: each chapter's moods researched by AI, with one named no-vocals piece per chapter, named but not played in v1. After v1: a streaming study, then playing the pieces | [01-audiobook-player-app-similar-to-audible.md](01-audiobook-player-app-similar-to-audible.md) | planned · priority 2 | 5 left |
+| 1 | Mood Read v1 in two parts. Part 1, the player: your own audiobooks with an ambient soundscape under the narration and a mixer. Part 2: each chapter's moods researched by AI, with one named no-vocals piece per chapter, named but not played in v1. After v1: a streaming study, then playing the pieces | [01-audiobook-player-app-similar-to-audible.md](01-audiobook-player-app-similar-to-audible.md) | planned · priority 2 | 6 left |
 
 ## How the loop reads this folder
 
