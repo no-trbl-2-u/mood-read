@@ -129,8 +129,6 @@ Decisions made upfront (do not ask):
 
 ## Acceptance
 
-- **A13** A book in one long file can be split on the device into one file per chapter, keeping its chapters,
-  position and bookmarks.
 - **A15** With a `yes` verdict, a connected Spotify account gets one playlist per chapter of instrumental tracks
   matching its emotions, at least as long as the chapter; Mood Read plays none of it.
 - **A16** Mood Read is published on Google Play.
@@ -157,9 +155,8 @@ Decisions made upfront (do not ask):
   GitHub workflow later).
 
 ## Chunks
-Measure: 5 open · 22 closed · next A28
+Measure: 4 open · 23 closed · next A28
 
-- [ ] **05.11** Split a one-file book into chapter files on the device · M · closes A13 · needs —
 - [ ] **05.13** Spotify chapter playlists, sized to each chapter · M · closes A15 · needs 01.11
   - Rewrite the privacy policy's Spotify section (`src/app/privacy.tsx`) to say what a connected account shares.
   - Replace Settings' disabled "Spotify, Not available yet" row (06.3, `src/app/settings.tsx`) with connect and

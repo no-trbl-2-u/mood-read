@@ -80,3 +80,4 @@ identity · deleted in <sha>`; recover its text with
 - 2026-10-26 · 04 · spec complete: Android preview APKs · absorbed into plan/bearings.md Decisions standing for the autonomous loop · deleted in (this commit)
 - 2026-10-26 · 01.15 · Owner's phone pass: background, lock screen, speed, folder picker, loops, Music layer work (duck-under-voice split to 01.28) · (this commit)
 - 2026-10-26 · 01.23 · Companion mode works beside Audible on Android (iPhone check deferred with iOS) · (this commit)
+- 2026-10-27 · 05.11 · A one-file book splits losslessly into per-chapter MP3/WAV files · 1902dfcd..90d2456d
