@@ -200,6 +200,32 @@ test("A6 edited chapters are saved for the book and kept across a reopen; a list
   assert.deepEqual(store.getBook("b1")?.chapters, split);
 });
 
+test("A13: setFiles replaces files and chapters together, only when the new files still cover the book", () => {
+  const kv = memoryKv();
+  const store = createLibraryStore(kv);
+  store.addBook(book("b1", "Dune")); // one 100s file, one chapter spanning it
+  const split = [
+    { bookId: "b1", index: 0, title: "Arrival", fileIndex: 0, start: 0, end: 40 },
+    { bookId: "b1", index: 1, title: "Desert", fileIndex: 0, start: 40, end: 100 },
+  ];
+  store.setChapters("b1", split);
+  const files = [
+    { ref: "file:///b1/chapter-000.mp3", name: "Arrival", duration: 40 },
+    { ref: "file:///b1/chapter-001.mp3", name: "Desert", duration: 60 },
+  ];
+  const withFileIndex = [{ ...split[0], fileIndex: 0 }, { ...split[1], fileIndex: 1 }];
+  store.setFiles("b1", files, withFileIndex);
+  assert.deepEqual(createLibraryStore(kv).getBook("b1")?.files, files);
+  assert.deepEqual(store.getBook("b1")?.chapters, withFileIndex);
+  // A short total, or chapters that no longer cover the book, are refused: the book keeps its old shape.
+  store.setFiles("b1", [{ ...files[0], duration: 39 }, files[1]], withFileIndex);
+  store.setFiles("b1", files, [withFileIndex[0]]);
+  assert.deepEqual(store.getBook("b1")?.files, files);
+  assert.deepEqual(store.getBook("b1")?.chapters, withFileIndex);
+  // A book that is not on the shelf at all is left alone, not thrown on.
+  store.setFiles("missing", files, withFileIndex);
+});
+
 test("A32: a chapter edit moves the chapters' own beds in the same save; a refused edit or an unmixed book keeps its mix", () => {
   const kv = memoryKv();
   const store = createLibraryStore(kv);

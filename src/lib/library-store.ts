@@ -7,7 +7,7 @@ import { reachedKey } from "./reached.ts";
 import { jobKey, scoresKey, seedsKey } from "./scoring-store.ts";
 import { dropSoundtrackBook } from "./soundtrack-store.ts";
 import { clamp, MAX_SPEED, MIN_SPEED, newId } from "./timeline.ts";
-import type { Book, Bookmark, Chapter } from "./types.ts";
+import type { Book, BookFile, Bookmark, Chapter } from "./types.ts";
 import { verdictsKey } from "./verdict-store.ts";
 
 export type Kv = {
@@ -150,6 +150,20 @@ export function createLibraryStore(kv: Kv, now: () => number = Date.now, makeId:
         kv.setItem(mixKey(id), JSON.stringify({ ...(stored as object), chapterBeds: moveBeds(beds) }));
       }
       saveBooks(state.books.map((x) => (x.id === id ? { ...x, chapters } : x)));
+    },
+    /**
+     * Replaces a book's files and chapters together (05.11, A13): splitting a one-file book into one file per
+     * chapter (src/lib/split-files.ts) changes which physical file backs each chapter without moving the book's
+     * timeline, so this only takes when the new files still sum to the book's own duration and the chapters
+     * still cover it end to end (`coversBook`), same spirit as `setChapters`. A mismatch is ignored, so a bad
+     * split never loses audio, a position or a bookmark (all kept in seconds of the whole book, untouched here).
+     */
+    setFiles(id: string, files: BookFile[], chapters: Chapter[]): void {
+      const b = state.books.find((x) => x.id === id);
+      if (!b) return;
+      const total = files.reduce((sum, f) => sum + f.duration, 0);
+      if (Math.abs(total - b.duration) > 0.01 || !coversBook(chapters, b.duration)) return;
+      saveBooks(state.books.map((x) => (x.id === id ? { ...x, files, chapters } : x)));
     },
     /** Marks a book finished or not (05.16, A18); position, bookmarks and everything else stay as they are. */
     setFinished(id: string, finished: boolean): void {
