@@ -7,6 +7,24 @@
 
 ## Pending — [needs-user-call]
 
+### [needs-user-call] 01.11's playlist-save half needs infra nobody has set up (A24)
+- category: product
+- logged: 2026-10-27 (march, cloud tick)
+- what: A24 bundles two different things. The link-out half (search links to the reference piece on Spotify,
+  YouTube, YouTube Music and Apple Music, never played) needs no account and no key — buildable now. The
+  playlist-save half ("a listener can save a book's reference pieces as a playlist in their own YouTube or Apple
+  Music account") needs real API integration per docs/streaming-sources.md's own cost table: YouTube Data API
+  playlists.insert/playlistItems.insert behind a listener OAuth sign-in, which needs a Google Cloud OAuth client
+  (not secret, but a dashboard registration nobody has made yet); and Apple Music's MusicKit, which needs a
+  developer token signed by a private key tied to Apple Developer Program membership — the same membership
+  05.14/05.15/05.18 are already held on because the owner doesn't have one. No screen in `plan/bearings.md`
+  Layout names where "save as playlist" would even live yet.
+- open: whether to scope 01.11 down to the link-out half now (closing a reworded A24, and opening a new chunk +
+  A-ID for YouTube's playlist-save once a Google Cloud OAuth client exists, the same placeholder pattern 01.20
+  used for `scoringProxyUrl`), with Apple Music's save path held on the same gate as 05.14/05.15/05.18; or to wait
+  for the owner to set up the Google Cloud OAuth client first and build the whole chunk against it.
+- default taken: 01.11 stays unclaimed and off the pick list in practice; this tick picks 01.29 instead.
+
 ## Pending — findings
 
 ### [5.4] The book screen's tab title never names the open book [x]
