@@ -25,6 +25,24 @@
   for the owner to set up the Google Cloud OAuth client first and build the whole chunk against it.
 - default taken: 01.11 stays unclaimed and off the pick list in practice; this tick picks 01.29 instead.
 
+### [needs-user-call] 01.26 can't deploy the proxy or run prescore: no OPENAI/BRAVE/S3/PRESCORE secret values anywhere this loop can reach (A39)
+- category: infra
+- logged: 2026-10-27 (march, cloud tick)
+- what: 01.26's own text calls for `pnpm secrets:sync` then `wrangler deploy --config proxy/wrangler.jsonc`, then a
+  `prescore.yml` workflow run with `PRESCORE_TOKEN`. `node scripts/secrets.mjs status` here shows 0 of 14 declared
+  secrets set (no local vault; github-actions unknown since `gh secret list` needs a PAT this job's GH_TOKEN
+  doesn't have). `pnpm secrets:sync --dry-run` confirms the 6 Worker-bound names (`BRAVE_SEARCH_API_KEY`,
+  `CLOUDFLARE_S3_ACCESS_KEY_ID`, `CLOUDFLARE_S3_SECRET_ACCESS_KEY`, `S3_API_ENDPOINT`, `OPENAI_API_KEY`,
+  `PRESCORE_TOKEN`) are all unset in the vault. `CLOUDFLARE_API_TOKEN` and `CLOUDFLARE_ACCOUNT_ID` (wrangler's own
+  deploy credentials, not the Worker's) do reach this job directly, since `pnpm deploy:check` runs clean against
+  them; the Worker's own secrets never have.
+- open: whether the owner sets these in the vault and pushes them (`node scripts/secrets.mjs set NAME`, then
+  `push NAME --to cloudflare` or `--to github-actions`), or 01.26's chunk line should carry an explicit `secrets`
+  tag so `/next`'s picker and `secrets.mjs request` can see the gate instead of a builder discovering it mid-chunk.
+- default taken: 01.26 (and its dependents 01.20, 01.27) stay unclaimed and off the pick list; spec 01's only
+  other candidates today are 01.29 (claimed live elsewhere) and 01.28 (owner-deprioritized, gated on a phone
+  check) -- this tick falls through to /expand.
+
 ## Pending — findings
 
 ### [5.4] The book screen's tab title never names the open book [x]
