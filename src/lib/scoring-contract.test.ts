@@ -170,7 +170,9 @@ test("no AI or search key, and no OpenAI or Brave address, ships in the app (A22
     ["the OpenAI API host", /api\.openai\.com/i],
     ["the Brave Search API host", /api\.search\.brave\.com/i],
     ["a key's env name", /OPENAI_API_KEY|BRAVE_SEARCH_API_KEY|EXPO_PUBLIC_[A-Z_]*(KEY|TOKEN|SECRET)/],
-    ["a bearer token", /authorization['"]?\s*:\s*['"`]Bearer/i],
+    // An inline literal credential used as a bearer value (not a listener's own runtime OAuth token: 01.11's
+    // `Bearer ${token}` interpolates a value the listener's own sign-in produced, never a shipped secret).
+    ["an inline bearer token", /\bBearer\s+[\w.+=-]{16,}\b/],
   ];
   for (const f of shipped) {
     const text = fs.readFileSync(f, "utf8");
