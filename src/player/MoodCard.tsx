@@ -18,15 +18,17 @@
 // the research's famous piece shows as one muted line, "In the spirit of <title> by <artist>": shown, never played,
 // never a pick.
 import type { ReactNode } from "react";
-import { StyleSheet, Text, View } from "react-native";
+import { Linking, Pressable, StyleSheet, Text, View } from "react-native";
 
-import { alternatesLine, EMOTION_NAMES, misfitOffers, pieceLine, referenceLine, strongest, type MoodCardView } from "@/lib/mood-card";
+import { alternatesLine, EMOTION_NAMES, misfitOffers, pieceLine, referenceLine, referenceLinks, strongest, type MoodCardView } from "@/lib/mood-card";
+import type { StreamingLink } from "@/lib/streaming-links";
 import type { EmotionScore, Piece } from "@/lib/types";
 import type { Verdict } from "@/lib/verdict-store";
 import { Button } from "@/ui/Button";
 import { Chip } from "@/ui/Chip";
+import { Icon } from "@/ui/Icon";
 import { Sticker } from "@/ui/Sticker";
-import { colors, spacing, strokes, typography } from "@/ui/theme";
+import { colors, sizes, spacing, strokes, typography } from "@/ui/theme";
 
 const COPY = {
   emotions: "Emotions in this chapter",
@@ -56,6 +58,8 @@ const COPY = {
   setMoodA11y: "Set the mood for this chapter yourself",
   changeMood: "Change your mood",
   changeMoodA11y: "Change your mood for this chapter",
+  // Link-outs to the reference piece (01.11, A24): a plain search on each service; Mood Read plays none of it.
+  referenceLinkA11y: (label: string, title: string, artist: string) => `${label}: search for ${title} by ${artist}`,
 };
 
 /**
@@ -182,13 +186,40 @@ export function MoodCard(props: {
         <Text style={styles.muted}>{COPY.noPiece}</Text>
       )}
       {v.reference && !yours && (
-        <Text style={styles.muted} testID="mood-reference">
-          {referenceLine(v.reference)}
-        </Text>
+        <View style={styles.block}>
+          <Text style={styles.muted} testID="mood-reference">
+            {referenceLine(v.reference)}
+          </Text>
+          <View style={styles.chips} testID="mood-reference-links">
+            {referenceLinks(v).map((link) => (
+              <ReferenceLink key={link.service} link={link} piece={v.reference!} />
+            ))}
+          </View>
+        </View>
       )}
       {yours && props.onSetMood && <SetMoodButton label={COPY.changeMood} a11yLabel={COPY.changeMoodA11y} onPress={props.onSetMood} />}
       <View style={styles.rule} />
     </View>
+  );
+}
+
+/**
+ * One of the reference piece's link-outs (01.11, A24): a plain search on the named service, opened in the
+ * listener's own app or browser. No brand icon (Lucide only) — the service's plain name is the label.
+ */
+function ReferenceLink(props: { link: StreamingLink; piece: Piece }) {
+  const { link, piece } = props;
+  return (
+    <Pressable
+      testID={`reference-link-${link.service}`}
+      role="link"
+      aria-label={COPY.referenceLinkA11y(link.label, piece.title, piece.artist)}
+      onPress={() => Linking.openURL(link.url)}
+      style={styles.referenceLink}
+    >
+      <Text style={styles.referenceLinkText}>{link.label}</Text>
+      <Icon name="external-link" size="small" color={colors.accent} />
+    </Pressable>
   );
 }
 
@@ -266,6 +297,8 @@ const styles = StyleSheet.create({
     borderLeftWidth: strokes.outline,
     borderLeftColor: colors.border,
   },
+  referenceLink: { minHeight: sizes.touch, flexDirection: "row", alignItems: "center", gap: spacing.xs },
+  referenceLinkText: { ...typography.caption, color: colors.accent },
   heading: { ...typography.caption, fontWeight: typography.label.fontWeight },
   pieceTitle: { ...typography.body, fontWeight: typography.label.fontWeight },
   muted: typography.caption,

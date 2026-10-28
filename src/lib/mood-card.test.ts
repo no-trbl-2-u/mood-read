@@ -12,6 +12,7 @@ import {
   moodCardView,
   pieceLine,
   referenceLine,
+  referenceLinks,
   sceneBand,
   strongest,
   togglePeek,
@@ -262,4 +263,36 @@ test("with no catalog to read, or no reference stored, the card shows neither", 
   assert.equal(v.license, null);
   assert.equal(v.reference, null);
   assert.equal(pieceLine(v.piece!, v.license), "Composer 1 · Score");
+});
+
+// ---- 01.11 (spec 01 A24): link-outs to the reference piece ----
+
+test("A24: a chapter with a reference offers all five services' link-outs; MoodCard renders one `reference-link-<service>` per entry", () => {
+  const ref: Piece = { id: "famous--theme", title: "Famous Theme", artist: "Famous Composer", kind: "score", vocals: "none", moodTags: ["tension"] };
+  const v = moodCardView(true, { ...score(), reference: ref });
+  assert.equal(v.kind, "scored");
+  if (v.kind !== "scored") return;
+  const links = referenceLinks(v);
+  assert.deepEqual(links.map((l) => l.service), ["spotify", "youtube", "youtube-music", "apple-music", "soundcloud"]);
+  assert.deepEqual(links.map((l) => `reference-link-${l.service}`), [
+    "reference-link-spotify",
+    "reference-link-youtube",
+    "reference-link-youtube-music",
+    "reference-link-apple-music",
+    "reference-link-soundcloud",
+  ]);
+  for (const l of links) assert.ok(l.url.includes(encodeURIComponent(ref.title)), l.url);
+});
+
+test("A24: no reference, or the listener's own seed, offers no link-outs at all", () => {
+  assert.deepEqual(referenceLinks(moodCardView(true, score())), [], "no reference stored");
+  assert.deepEqual(referenceLinks({ kind: "none" }), []);
+  assert.deepEqual(referenceLinks({ kind: "unscored" }), []);
+  assert.deepEqual(referenceLinks({ kind: "locked" }), []);
+
+  const ref: Piece = { id: "famous--theme", title: "Famous Theme", artist: "Famous Composer", kind: "score", vocals: "none", moodTags: ["tension"] };
+  const seed = score({ coverage: "listener", sources: [], emotions: [{ emotion: "calm", intensity: 0.4 }] });
+  const yours = moodCardView(true, { ...seed, reference: ref });
+  assert.equal(yours.kind === "scored" && yours.listener, true);
+  assert.deepEqual(referenceLinks(yours), [], "the listener's own mood never gets a reference link, matching referenceLine's own gating");
 });

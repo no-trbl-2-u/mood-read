@@ -30,6 +30,11 @@ test.describe("a book scored before v2, re-matched against the catalog", () => {
 
     const card = page.getByTestId("chapter-row-0").getByTestId("mood-card");
     await expect(card.getByTestId("mood-reference")).toHaveText("In the spirit of Theme 1 by Composer 1");
+    // 01.11 (A24): a link-out to the reference on each of the five services, inert (never clicked, never a network
+    // call) — Mood Read links out, it never plays any of this.
+    for (const service of ["spotify", "youtube", "youtube-music", "apple-music", "soundcloud"]) {
+      await expect(card.getByTestId(`reference-link-${service}`)).toBeVisible();
+    }
     const stored = await page.evaluate((id) => JSON.parse(localStorage.getItem(`scores:${id}`)!).chapters as { playlist: { piece: string; alternates: string[]; pick: string }; pieces: { id: string }[]; reference?: { id: string } }[], id);
     for (const c of stored) {
       for (const pid of [c.playlist.piece, ...c.playlist.alternates]) expect(byId.has(pid), `${pid} is a catalog piece`).toBe(true);

@@ -5,6 +5,7 @@
 import { sceneAt, sceneStarts } from "./bed.ts";
 import { isSceneReached } from "./reached.ts";
 import { scenesOf } from "./scenes.ts";
+import { streamingLinks, type StreamingLink } from "./streaming-links.ts";
 import type { Chapter, ChapterScore, Emotion, EmotionScore, Piece } from "./types.ts";
 
 export const EMOTION_NAMES: Record<Emotion, string> = {
@@ -47,6 +48,17 @@ export function pieceLine(p: Pick<Piece, "artist" | "kind">, license?: string | 
 /** The reference (05.3, D13): "In the spirit of Title by Artist". Shown only; it never plays. */
 export function referenceLine(p: Pick<Piece, "title" | "artist">): string {
   return `In the spirit of ${p.title} by ${p.artist}`;
+}
+
+/**
+ * The reference piece's link-outs (01.11, spec 01 A24): gated exactly like `referenceLine` — a reached, scored
+ * chapter's own researched reference, never the listener's own seed (07.6, whose coverage is never a spoiler but
+ * also never carries a reference). Each link is a plain search on the service, never an exact-track lookup; Mood
+ * Read plays none of it.
+ */
+export function referenceLinks(v: MoodCardView): StreamingLink[] {
+  if (v.kind !== "scored" || !v.reference || v.listener) return [];
+  return streamingLinks(v.reference);
 }
 
 /** The muted line of alternates: "Theme 2 (Composer 2) · Theme 3 (Composer 3)". */
