@@ -37,10 +37,12 @@
         }
       ],
       "expo-sqlite",
-      "expo-font"
+      "expo-font",
+      "expo-web-browser"
     ],
     "extra": {
       "scoringProxyUrl": "https://mood-read-proxy.invalid",
+      "youtubeOAuthClientId": "youtube-oauth-client.invalid",
       "catalogBaseUrl": "https://pub-4a8a6c86fad24ced839c7dc3d3f4dc66.r2.dev",
       "eas": {
         "projectId": "90c02664-ad75-4ddd-9195-4d385e34be8f"

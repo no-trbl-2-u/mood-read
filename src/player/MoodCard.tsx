@@ -297,7 +297,7 @@ const styles = StyleSheet.create({
     borderLeftWidth: strokes.outline,
     borderLeftColor: colors.border,
   },
-  referenceLink: { minHeight: sizes.touch, flexDirection: "row", alignItems: "center", gap: spacing.xs },
+  referenceLink: { minHeight: sizes.touch, minWidth: sizes.touch, flexDirection: "row", alignItems: "center", gap: spacing.xs },
   referenceLinkText: { ...typography.caption, color: colors.accent },
   heading: { ...typography.caption, fontWeight: typography.label.fontWeight },
   pieceTitle: { ...typography.body, fontWeight: typography.label.fontWeight },

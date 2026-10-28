@@ -5,3 +5,6 @@ allowBuilds:
   # eas-cli's transitive install scripts: not needed to run the CLI.
   dtrace-provider: false
   protobufjs: false
+minimumReleaseAgeExclude:
+  - expo-auth-session@58.0.15
+  - expo-web-browser@58.0.7

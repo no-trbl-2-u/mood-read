@@ -20,6 +20,8 @@ import { seedable } from "@/lib/scoring-store";
 import { setMood, useChapterScores } from "@/lib/seeding";
 import { nextVerdict } from "@/lib/verdict-store";
 import { useBookVerdicts, verdicts } from "@/lib/verdicts";
+import { googleSignIn, youtubeConfigured } from "@/lib/youtube-auth";
+import { referencePiecesOf, saveAsYoutubePlaylist, type PlaylistResult } from "@/lib/youtube-playlist";
 import { BookmarksSheet } from "@/player/BookmarksSheet";
 import { ChapterRiver } from "@/player/ChapterRiver";
 import { CompanionBand } from "@/player/CompanionBand";
@@ -33,6 +35,7 @@ import { usePlayer } from "@/player/PlayerProvider";
 import { SOUNDSCAPE_IDS } from "@/player/soundscapes";
 import { SetMoodSheet } from "@/player/SetMoodSheet";
 import { SpeedSleepSheet } from "@/player/SpeedSleepSheet";
+import { YOUTUBE_PLAYLIST_MENU, YoutubePlaylistBand } from "@/player/YoutubePlaylistBand";
 import { Button } from "@/ui/Button";
 import { OverflowMenu } from "@/ui/OverflowMenu";
 import { Toast } from "@/ui/Toast";
@@ -66,6 +69,9 @@ export default function BookScreen() {
   // "Set the mood" (07.6, A7) opens for one chapter, by index.
   const [sheet, setSheet] = useState<"speed" | "bookmarks" | { mood: number } | null>(null);
   const [confirmRescore, setConfirmRescore] = useState(false);
+  // "Save YouTube playlist" (01.11, A24's playlist half): null before it is offered, "running" while the sign-in
+  // and the Data API calls are in flight, then the typed result the band shows in place.
+  const [ytPlaylist, setYtPlaylist] = useState<"running" | PlaylistResult | null>(null);
   // The one-time "what is shared" notice after the first "Fits" (07.5): shown on that tap, then never again.
   const [sharedToast, setSharedToast] = useState(false);
   const noteDismissed = useNoteDismissed("scoring-sent");
@@ -132,6 +138,12 @@ export default function BookScreen() {
   const unscoredBook = seedable(book.chapters, scores).length === book.chapters.length;
   const moodSheet = sheet !== null && typeof sheet === "object" ? book.chapters[sheet.mood] : undefined;
   const speedButton = p.sleep ? `${speedLabel(p.speed)} · Sleep` : speedLabel(p.speed);
+  // "Save YouTube playlist" (01.11, A24): only offered once some chapter has named a reference piece to save.
+  const referencePieces = referencePiecesOf(chapterScores);
+  const startYoutubePlaylist = async () => {
+    setYtPlaylist("running");
+    setYtPlaylist(await saveAsYoutubePlaylist(book.title, referencePieces, { signIn: googleSignIn, configured: youtubeConfigured }));
+  };
 
   return (
     <View style={styles.screen}>
@@ -163,7 +175,20 @@ export default function BookScreen() {
             {scores && job?.state !== "running" && (
               <OverflowMenu
                 testID="open-river-menu"
-                items={[{ key: "rescore", label: RESCORE_MENU.label, icon: "sparkles", caption: RESCORE_MENU.caption, onPress: () => setConfirmRescore(true) }]}
+                items={[
+                  { key: "rescore", label: RESCORE_MENU.label, icon: "sparkles", caption: RESCORE_MENU.caption, onPress: () => setConfirmRescore(true) },
+                  ...(referencePieces.length > 0
+                    ? [
+                        {
+                          key: "youtube-playlist",
+                          label: YOUTUBE_PLAYLIST_MENU.label,
+                          icon: "music" as const,
+                          caption: YOUTUBE_PLAYLIST_MENU.caption,
+                          onPress: () => void startYoutubePlaylist(),
+                        },
+                      ]
+                    : []),
+                ]}
               />
             )}
           </>
@@ -180,6 +205,7 @@ export default function BookScreen() {
           onCancel={() => setConfirmRescore(false)}
         />
       )}
+      {ytPlaylist !== null && <YoutubePlaylistBand state={ytPlaylist} onDismiss={() => setYtPlaylist(null)} />}
       <ScoringBand
         chapters={book.chapters.length}
         job={job}
