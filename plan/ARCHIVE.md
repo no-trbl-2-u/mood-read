@@ -81,3 +81,4 @@ identity · deleted in <sha>`; recover its text with
 - 2026-10-26 · 01.15 · Owner's phone pass: background, lock screen, speed, folder picker, loops, Music layer work (duck-under-voice split to 01.28) · (this commit)
 - 2026-10-26 · 01.23 · Companion mode works beside Audible on Android (iPhone check deferred with iOS) · (this commit)
 - 2026-10-27 · 05.11 · A one-file book splits losslessly into per-chapter MP3/WAV files · 1902dfcd..90d2456d
+- 2026-10-28 · 01.29 · An End of chapter sleep timer follows a native lock-screen seek too · 2442c6bc..2442c6bc

@@ -103,8 +103,6 @@ just name the pieces/scores/songs/instrumentals (It's important that there's no 
   and one test run scores real LibriVox books that Browse then reads as Scored.
 - **A41** On Android the duck-under-voice switch really dips the bed while the narration speaks, by a path that
   needs no microphone permission, checked on a phone.
-- **A42** An End of chapter sleep timer stops at the end of the chapter the listener is in after any seek,
-  including a native lock-screen or media-key seek that crosses a chapter boundary.
 - **A40** The average cost of one scoring run is known from the meter's own spend over real runs, the
   meter's prices match OpenAI's and Brave's current rates, and whether Brave is needed is decided by scoring the
   same books with and without it.
@@ -198,7 +196,7 @@ Every question below is answered; none is open. Elsewhere in the plan, "Open que
    no emotions on its card (A21).
 
 ## Chunks
-Measure: 6 open · 36 closed · next A43
+Measure: 5 open · 37 closed · next A43
 
 Build order follows the owner's two-part v1, and the lines below are in that order. **Part 1, the player:** 01.1,
 01.6, 01.3, 01.5, 01.7: the player, then real books in it, then the second layer, its mixer and the soundscapes it
@@ -239,13 +237,6 @@ pieces). Ids keep the order they were written in. The app itself (Expo at the re
   - Score the same few books with OpenAI's own web search in place of Brave (a proxy setting, not a second
     deploy) and compare the moods, the named pieces and the cost; record the choice as a decision, and if Brave
     goes, drop `BRAVE_SEARCH_API_KEY` from the secrets list.
-- [ ] **01.29** Retarget an End of chapter sleep timer on native lock-screen seeks · S · closes A42 · needs —
-  - Carried over from 01.15 (the owner, 2026-10-26). Native lock-screen and media-key seeks run inside expo-audio
-    and skip the player's sleep retarget (`setSleepEndOfChapter` in `src/player/PlayerProvider.tsx`); since 01.6's
-    in-file chapters, such a seek can cross a chapter, and the timer still ends at the old one.
-  - Retarget from the playback position the player observes rather than from its own seek calls, so every seek
-    path is covered; keep the decision pure with a red-first test, then check one lock-screen skip across a
-    chapter on the next preview APK.
 - [ ] **01.28** Duck under voice on Android, with no microphone permission · M · closes A41 · needs —
   - Low priority (the owner, 2026-10-26): not worth building until better soundscapes and music exist; the loop
     picks it last.
