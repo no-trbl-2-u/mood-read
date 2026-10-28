@@ -157,7 +157,7 @@ Decisions made upfront (do not ask):
 ## Chunks
 Measure: 4 open · 23 closed · next A28
 
-- [ ] **05.13** Spotify chapter playlists, sized to each chapter · M · closes A15 · needs 01.11
+- [ ] **05.13** Spotify chapter playlists, sized to each chapter · M · closes A15 · needs —
   - Rewrite the privacy policy's Spotify section (`src/app/privacy.tsx`) to say what a connected account shares.
   - Replace Settings' disabled "Spotify, Not available yet" row (06.3, `src/app/settings.tsx`) with connect and
     disconnect.

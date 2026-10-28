@@ -93,9 +93,6 @@ just name the pieces/scores/songs/instrumentals (It's important that there's no 
 
 ## Acceptance
 
-- **A24** Each chapter's mood card links out to its reference piece ("In the spirit of") on Spotify, YouTube /
-  YouTube Music and Apple Music, and Mood Read plays none of it; a listener can save a book's reference pieces as
-  a playlist in their own YouTube or Apple Music account.
 - **A33** Scoring a real book on mood-read.pages.dev returns researched chapter moods and named pieces
   from the deployed proxy, with spend metered at OpenAI's and Brave's current prices.
 - **A39** The deployed proxy pre-scores through a GitHub Actions job: `prescore.yml` runs
@@ -196,20 +193,13 @@ Every question below is answered; none is open. Elsewhere in the plan, "Open que
    no emotions on its card (A21).
 
 ## Chunks
-Measure: 5 open · 37 closed · next A43
+Measure: 4 open · 38 closed · next A43
 
 Build order follows the owner's two-part v1, and the lines below are in that order. **Part 1, the player:** 01.1,
 01.6, 01.3, 01.5, 01.7: the player, then real books in it, then the second layer, its mixer and the soundscapes it
 plays. **Part 2, moods and named pieces:** 01.2, then 01.4. **After v1:** 01.9 (a study), then 01.10 (play the
 pieces). Ids keep the order they were written in. The app itself (Expo at the repo root, the gates) is spec 02.
 
-- [ ] **01.11** Mood-card link-outs and playlist saving · M · closes A24 · needs —
-  - The links go to the chapter's reference piece: the famous no-vocals piece shown only as "In the spirit of"
-    beside the catalog pick (D13). Mood Read never plays it.
-  - As `docs/streaming-sources.md` sets them: each service's branding rules; Spotify gets plain links only (its
-    Developer Policy III.5, until the owner revisits it after v1); YouTube playlists through the Data API within
-    its daily quota; Apple Music playlists only once the Apple Developer Program is joined (after v1); SoundCloud
-    gets a plain soundcloud.com link, no API.
 - [ ] **01.20** Turn scoring on: set the app's proxy URL · S ·
   closes A33 · needs 01.27
   - The owner chose (2026-10-24, D33) to go live on OpenAI and Brave as 01.2 built the proxy; the move to Claude
