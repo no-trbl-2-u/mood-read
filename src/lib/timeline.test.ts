@@ -11,6 +11,7 @@ import {
   skipTarget,
   sleepAfterMove,
   sleepDue,
+  sleepFollowPosition,
   speedPresets,
   stepSpeed,
   totalDuration,
@@ -122,6 +123,32 @@ test("an End of chapter timer follows a seek or jump to the chapter now playing"
   const m = { kind: "minutes" as const, minutes: 15, endsAt: 100 };
   assert.equal(sleepAfterMove(m, chapters, 25), m);
   assert.equal(sleepAfterMove(null, chapters, 25), null);
+});
+
+test("sleepFollowPosition retargets an End of chapter timer from the position the player itself observes", () => {
+  const chapters = [
+    { index: 0, start: 0, end: 10 },
+    { index: 1, start: 10, end: 20 },
+    { index: 2, start: 20, end: 30 },
+  ];
+  const t = { kind: "chapterEnd" as const, chapterIndex: 0, end: 10 };
+  // A native lock-screen or media-key seek moves `position` without ever calling the app's own seek/skip/jump:
+  // the timer still has to follow it, because nothing else retargeted it.
+  const crossed = sleepFollowPosition(t, chapters, 0, 15);
+  assert.deepEqual(crossed.timer, { kind: "chapterEnd", chapterIndex: 1, end: 20 });
+  assert.equal(crossed.due, false);
+  // Once retargeted, it is due at the new chapter's end, not the old one (already passed).
+  const atEnd = sleepFollowPosition(crossed.timer, chapters, 0, 20);
+  assert.deepEqual(atEnd.timer, { kind: "chapterEnd", chapterIndex: 2, end: 30 });
+  assert.equal(atEnd.due, false);
+  // A seek that lands past the newly-retargeted chapter's end is due immediately, in the same call.
+  const overshoot = sleepFollowPosition(t, chapters, 0, 30);
+  assert.deepEqual(overshoot.timer, { kind: "chapterEnd", chapterIndex: 2, end: 30 });
+  assert.equal(overshoot.due, true);
+  // A move inside the same chapter leaves the timer's identity untouched (so the effect can skip a state update).
+  const same = sleepFollowPosition(t, chapters, 0, 4);
+  assert.equal(same.timer, t);
+  assert.equal(same.due, false);
 });
 
 test("speed presets run 0.5x to 3x and cap at the platform maximum", () => {

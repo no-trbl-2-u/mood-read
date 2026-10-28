@@ -120,6 +120,21 @@ export function sleepAfterMove<T extends { kind: "minutes" } | { kind: "chapterE
   return { ...timer, chapterIndex: c.index, end: c.end };
 }
 
+/**
+ * An End of chapter sleep timer, decided from the position the player itself observes rather than from an
+ * app-level seek call — so a native lock-screen or media-key seek, which moves the player without ever going
+ * through the app's own seek/skip/jump, retargets the timer just the same as an in-app one does.
+ */
+export function sleepFollowPosition(
+  timer: { kind: "chapterEnd"; chapterIndex: number; end: number },
+  chapters: ChapterLike[],
+  now: number,
+  position: number,
+): { timer: { kind: "chapterEnd"; chapterIndex: number; end: number }; due: boolean } {
+  const retargeted = sleepAfterMove(timer, chapters, position)!;
+  return { timer: retargeted, due: sleepDue(retargeted, now, position) };
+}
+
 /** The speed chips this platform can play. */
 export function speedPresets(platformMax: number): number[] {
   return SPEED_PRESETS.filter((s) => s <= platformMax);

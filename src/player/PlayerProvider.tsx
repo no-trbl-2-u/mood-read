@@ -83,6 +83,7 @@ import {
   skipTarget,
   sleepAfterMove,
   sleepDue,
+  sleepFollowPosition,
 } from "@/lib/timeline";
 import type { Book, Chapter, SleepTimer } from "@/lib/types";
 
@@ -437,15 +438,22 @@ export function PlayerProvider({ children }: { children: ReactNode }) {
     halt();
   }, [position, halt, stopForSleep]);
 
-  // Sleep timer at chapter end, inside a file (chapters from markers, 01.6): stop and park at the chapter's end,
-  // so the next listen starts the next chapter. A chapter that ends its file stops in the end-of-file effect.
+  // Sleep timer at chapter end, inside a file (chapters from markers, 01.6): retarget from the position the
+  // player itself observes, not only from the app's own seek/skip/jump, so a native lock-screen or media-key
+  // seek that crosses a chapter boundary is covered too (A42). Then stop and park at the chapter's end, so the
+  // next listen starts the next chapter. A chapter that ends its file stops in the end-of-file effect.
   useEffect(() => {
     const b = bookRef.current;
     const t = sleepRef.current;
     if (!b || t?.kind !== "chapterEnd" || targetRef.current) return;
-    if (sleepDue(t, Date.now(), position)) {
+    const { timer, due } = sleepFollowPosition(t, b.chapters, Date.now(), position);
+    if (timer !== t) {
+      sleepRef.current = timer;
+      setSleep(timer);
+    }
+    if (due) {
       stopForSleep();
-      goTo(b, t.end, false);
+      goTo(b, timer.end, false);
     }
   }, [position, goTo, stopForSleep]);
 
