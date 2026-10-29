@@ -9,26 +9,6 @@
 
 ## Pending
 
-### [LOW] / — every route's static HTML shares one generic title and no description
-- pass: 1 (commit 715cc14)
-- viewport: n/a (static HTML, pre-hydration)
-- category: seo
-- observation: the web export (`app.json` `web.output: "single"`) serves an
-  identical static shell for every route: `<title>Mood Read</title>` and no
-  `<meta name="description">`, before any client JS runs. `/`, `/import`,
-  `/settings`, `/credits` and `/soundtrack` are indistinguishable at this
-  layer — a share link, browser tab, or any client that doesn't execute JS
-  sees the same generic title and no summary.
-- evidence: `curl https://mood-read.pages.dev/` head: `<meta charset="utf-8" />`,
-  `<meta name="viewport" .../>`, `<title>Mood Read</title>`, favicon link —
-  no description meta; identical head across the five routes checked.
-- suggested fix: add a static `<meta name="description">` to the web
-  template (or `app.json` `web.meta`) summarizing Mood Read, for link
-  previews and no-JS clients. Low priority — the web build is the
-  development/secondary surface (phone app is primary, `plan/bearings.md`
-  Stack row), not product-blocking.
-- source: web-fetch
-
 ### [LOW] /book/<unknown-id>, /<unknown-route> — SPA catch-all returns 200 with no distinguishing content pre-hydration
 - pass: 4 (commit 174cbe8)
 - viewport: n/a (static HTML, pre-hydration)
@@ -54,6 +34,8 @@
 - source: web-fetch
 
 ## Done
+
+### [x] [LOW] / — every route's static HTML shares one generic title and no description (pass 1; issue #15; addressed at 0f10efc)
 
 ### [x] [LOW] /robots.txt, /sitemap.xml — SPA catch-all serves the app shell instead of real files (pass 3; addressed at b670e89)
 
