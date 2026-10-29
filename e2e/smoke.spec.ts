@@ -41,6 +41,17 @@ test("/licenses.txt is served with the web build and carries the notices", async
   expect(body).toContain("SIL OPEN FONT LICENSE Version 1.1");
 });
 
+// The web build ships a real robots.txt beside the app, so a crawler reads actual directives instead of the
+// SPA shell every unmatched path otherwise falls back to (plan/CRITIQUE.md, the robots.txt/sitemap.xml finding).
+test("/robots.txt is served with the web build and carries real directives", async ({ request }) => {
+  const res = await request.get("/robots.txt");
+  expect(res.status()).toBe(200);
+  expect(res.headers()["content-type"]).toMatch(/^text\/plain/);
+  const body = await res.text();
+  expect(body).toContain("User-agent: *");
+  expect(body).toContain("Allow: /");
+});
+
 // The privacy policy (A6) says what the scoring proxy receives, and the Import screen links to it (as Settings
 // does, e2e/settings.spec.ts).
 test("/privacy says what the proxy receives, and Import links to it", async ({ page }) => {
