@@ -24,7 +24,8 @@
     },
     "web": {
       "favicon": "./assets/favicon.png",
-      "output": "single"
+      "output": "single",
+      "description": "Mood Read plays your own audiobooks with an ambient soundscape under the narration, and researches each chapter's emotions to name a fitting score."
     },
     "plugins": [
       "expo-router",

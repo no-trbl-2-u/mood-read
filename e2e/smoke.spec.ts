@@ -65,6 +65,17 @@ test("every route carries the baseline security headers", async ({ request }) =>
   }
 });
 
+// Every route's static shell carries a real summary, not just the bare app name (plan/CRITIQUE.md pass 1, the
+// generic-title/no-description finding): a share link or a client that never runs JS still gets something to show.
+test("every route's static head carries a title and a description", async ({ request }) => {
+  for (const path of ["/", "/soundtrack"]) {
+    const res = await request.get(path);
+    const body = await res.text();
+    expect(body).toContain("<title>Mood Read</title>");
+    expect(body).toMatch(/<meta name="description" content="Mood Read plays your own audiobooks/);
+  }
+});
+
 // The privacy policy (A6) says what the scoring proxy receives, and the Import screen links to it (as Settings
 // does, e2e/settings.spec.ts).
 test("/privacy says what the proxy receives, and Import links to it", async ({ page }) => {
