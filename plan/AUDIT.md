@@ -45,6 +45,14 @@
 
 ## Pending — findings
 
+### [Z.1] /robots.txt, /sitemap.xml served the SPA shell instead of real files [x]
+- category: external-critique
+- impact: 3 (crawler-facing hygiene across the whole site; LOW severity per plan/CRITIQUE.md pass 3)
+- ease: 9 (one static file, the same public/ pass-through pattern as public/licenses.txt, 06.4)
+- seen: 2026-10-29 (march, cloud tick; plan/CRITIQUE.md pass 3)
+- issue: #13
+- fixed: 2026-10-29 (/march, /iterate) - public/robots.txt (User-agent: *, Allow: /) now ships through the web export public/ pass-through, so Cloudflare Pages serves it as a real text/plain file instead of falling back to the SPA shell; e2e/smoke.spec.ts asserts the real status, content-type and body (commit b670e89).
+
 ### [5.4] The book screen's tab title never names the open book [x]
 - category: a11y
 - impact: 6 (the web build's tab/bookmark/shared-link title read "Mood Read" for every open book, a literal
