@@ -45,6 +45,14 @@
 
 ## Pending — findings
 
+### [Z.2] No CSP, X-Frame-Options, HSTS or Permissions-Policy header on the web build [x]
+- category: external-critique
+- impact: 4 (clickjacking/HSTS/permissions hardening gap across the whole site; LOW severity per plan/CRITIQUE.md pass 4)
+- ease: 8 (one Cloudflare Pages `_headers` file, the same public/ pass-through pattern as [Z.1]'s robots.txt)
+- seen: 2026-10-29 (march, cloud tick; plan/CRITIQUE.md pass 4)
+- issue: #14
+- fixed: 2026-10-29 (/march, /iterate) — public/_headers now sets X-Frame-Options: DENY, Content-Security-Policy: frame-ancestors 'none', Strict-Transport-Security and a Permissions-Policy granting no microphone, camera or geolocation, on every route; e2e/serve.mjs parses and applies _headers so the hermetic e2e mirrors Cloudflare Pages' real behavior, and e2e/smoke.spec.ts asserts the header set (commit bfd249b).
+
 ### [Z.1] /robots.txt, /sitemap.xml served the SPA shell instead of real files [x]
 - category: external-critique
 - impact: 3 (crawler-facing hygiene across the whole site; LOW severity per plan/CRITIQUE.md pass 3)
@@ -70,7 +78,7 @@
 - ease: 5 (apply 05.4's one-at-a-time rule to book files on web, through 05.7's `removeDownload`)
 - seen: 2026-10-25 (05.7 builder, heads-down arcturus)
 - issue: #7
-- fixed: 2026-10-25 (/march, /iterate) � on web, a book that lands (import, LibriVox download, "Find the file") takes
+- fixed: 2026-10-25 (/march, /iterate) — on web, a book that lands (import, LibriVox download, "Find the file") takes
   the place of the one on the device: the other goes through `removeDownload`, so it stays on the shelf "Not on
   device" and keeps its position, bookmarks, moods, picks and mix (`booksToEvict`, `newlyOnDevice`, `enforceLimit`
   in `src/lib/book-removal.ts`, wired in `src/lib/library-manage.ts`); the Downloads web note says so. Phones: no cap.

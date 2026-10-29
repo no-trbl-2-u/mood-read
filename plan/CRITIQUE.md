@@ -29,27 +29,6 @@
   Stack row), not product-blocking.
 - source: web-fetch
 
-### [LOW] / — no CSP, X-Frame-Options, Strict-Transport-Security or Permissions-Policy header
-- pass: 4 (commit 174cbe8)
-- viewport: n/a (HTTP response headers)
-- category: security
-- observation: the Cloudflare Pages deploy sends `cache-control`, `referrer-policy`
-  and `x-content-type-options: nosniff`, but no `Content-Security-Policy`,
-  `X-Frame-Options`, `Strict-Transport-Security`, or `Permissions-Policy`. Every
-  route checked (`/`, `/soundtrack`) returns the same header set.
-- evidence: `curl -sI https://mood-read.pages.dev/` →
-  `cache-control: public, max-age=0, must-revalidate`, `referrer-policy:
-  strict-origin-when-cross-origin`, `x-content-type-options: nosniff` present;
-  no `content-security-policy`, `x-frame-options`, `strict-transport-security`
-  or `permissions-policy` line in the response.
-- suggested fix: add a Cloudflare Pages `_headers` file (or `app.json` web
-  output hook) setting a baseline CSP, `X-Frame-Options: DENY` (or
-  `frame-ancestors 'none'` in the CSP), and `Strict-Transport-Security`. Low
-  priority — the web build is the secondary surface (phone app is primary),
-  and the app stores nothing server-side to exfiltrate, but a clickjacking
-  frame or missing HSTS is a cheap, standard hardening gap to close.
-- source: web-fetch
-
 ### [LOW] /book/<unknown-id>, /<unknown-route> — SPA catch-all returns 200 with no distinguishing content pre-hydration
 - pass: 4 (commit 174cbe8)
 - viewport: n/a (static HTML, pre-hydration)
@@ -77,3 +56,5 @@
 ## Done
 
 ### [x] [LOW] /robots.txt, /sitemap.xml — SPA catch-all serves the app shell instead of real files (pass 3; addressed at b670e89)
+
+### [x] [LOW] no CSP, X-Frame-Options, Strict-Transport-Security or Permissions-Policy header (pass 4; addressed at bfd249b)
