@@ -208,7 +208,8 @@ pieces). Ids keep the order they were written in. The app itself (Expo at the re
     run-cost chunk); this step points the app at it: `expo.extra.scoringProxyUrl` in `app.json` set to the
     Worker's URL (the placeholder resolves nowhere), then score one real book end to end on mood-read.pages.dev.
 - [ ] **01.26** Pre-scoring as a GitHub Actions job, tested on the deployed proxy · S ·
-  closes A39 · needs —
+  closes A39 · needs — · secrets CLOUDFLARE_API_TOKEN, CLOUDFLARE_ACCOUNT_ID, OPENAI_API_KEY,
+  BRAVE_SEARCH_API_KEY, PRESCORE_TOKEN
   - The owner chose (2026-10-25) to test pre-scoring through the GitHub job first, before the app points at the
     proxy. The proxy deploy moves here from 01.20: `pnpm secrets:sync` through the vault, then
     `wrangler deploy --config proxy/wrangler.jsonc` (creates `BookJob`, `SpendMeter`, `PrescoreIndex` and
