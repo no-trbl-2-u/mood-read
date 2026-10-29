@@ -3,10 +3,13 @@
 // /book/abc) falls back to index.html, the single-page app; a missing asset is a 404, so the smoke walk sees it.
 // Usage: node e2e/serve.mjs [port]   (default 4173; root is dist/ beside this folder, or E2E_DIST: the owner-tools
 // build in dist-owner/, scripts/e2e-owner.mjs)
-import { createReadStream, statSync } from 'node:fs';
+import { createReadStream, existsSync, readFileSync, statSync } from 'node:fs';
 import { createServer } from 'node:http';
 import path from 'node:path';
 import { fileURLToPath } from 'node:url';
+
+// Reserved Cloudflare Pages config files: never served as content, only read for behavior (_headers below).
+const RESERVED = new Set(['/_headers', '/_redirects']);
 
 const TYPES = {
   '.html': 'text/html; charset=utf-8',
@@ -88,10 +91,63 @@ export function parseRange(header, size) {
   return { start, end };
 }
 
+// A Cloudflare Pages `_headers` file: blank/`#` lines ignored, an unindented line starts a path pattern, each
+// indented `Name: value` line under it is a header that pattern adds. `/*` (or `/foo/*`) matches a prefix; any
+// other pattern matches only that exact path. Later matching rules overwrite earlier ones for the same name,
+// same as Cloudflare's own rule merging.
+export function parseHeaders(text) {
+  const rules = [];
+  let current = null;
+  for (const raw of text.split('\n')) {
+    const line = raw.replace(/\r$/, '');
+    if (!line.trim() || line.trim().startsWith('#')) continue;
+    if (!/^\s/.test(line)) {
+      current = { pattern: line.trim(), headers: {} };
+      rules.push(current);
+      continue;
+    }
+    if (!current) continue;
+    const i = line.indexOf(':');
+    if (i === -1) continue;
+    const name = line.slice(0, i).trim();
+    const value = line.slice(i + 1).trim();
+    if (name) current.headers[name] = value;
+  }
+  return rules;
+}
+
+function matchesPattern(pattern, pathname) {
+  if (pattern === pathname) return true;
+  if (pattern.endsWith('/*')) {
+    const prefix = pattern.slice(0, -2);
+    return pathname === prefix || pathname.startsWith(prefix + '/');
+  }
+  return false;
+}
+
+export function headersFor(rules, pathname) {
+  const out = {};
+  for (const rule of rules) if (matchesPattern(rule.pattern, pathname)) Object.assign(out, rule.headers);
+  return out;
+}
+
 export function createStaticServer(root) {
+  const base = path.resolve(root);
+  const headersPath = path.join(base, '_headers');
+  const headerRules = existsSync(headersPath) ? parseHeaders(readFileSync(headersPath, 'utf8')) : [];
   return createServer((req, res) => {
     if (req.method !== 'GET' && req.method !== 'HEAD') {
       res.writeHead(405, { Allow: 'GET, HEAD' }).end();
+      return;
+    }
+    let pathname;
+    try {
+      pathname = decodeURIComponent(new URL(req.url ?? '/', 'http://localhost').pathname);
+    } catch {
+      pathname = '';
+    }
+    if (RESERVED.has(pathname)) {
+      res.writeHead(404, { 'Content-Type': 'text/plain; charset=utf-8' }).end('404\n');
       return;
     }
     const hit = resolveRequest(root, req.url ?? '/');
@@ -100,7 +156,12 @@ export function createStaticServer(root) {
       return;
     }
     const size = statSync(hit.file).size;
-    const headers = { 'Content-Type': contentType(hit.file), 'Cache-Control': 'no-store', 'Accept-Ranges': 'bytes' };
+    const headers = {
+      'Content-Type': contentType(hit.file),
+      'Cache-Control': 'no-store',
+      'Accept-Ranges': 'bytes',
+      ...headersFor(headerRules, pathname),
+    };
     const range = parseRange(req.headers.range, size);
     if (range === 'unsatisfiable') {
       res.writeHead(416, { ...headers, 'Content-Range': `bytes */${size}` }).end();

@@ -1,0 +1,5 @@
+/*
+  X-Frame-Options: DENY
+  Content-Security-Policy: frame-ancestors 'none'
+  Strict-Transport-Security: max-age=63072000; includeSubDomains; preload
+  Permissions-Policy: microphone=(), camera=(), geolocation=()

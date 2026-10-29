@@ -52,6 +52,19 @@ test("/robots.txt is served with the web build and carries real directives", asy
   expect(body).toContain("Allow: /");
 });
 
+// A baseline security header set ships on every route via public/_headers, Cloudflare Pages' own config file
+// (plan/CRITIQUE.md, the missing-security-headers finding): no clickjacking frame, HSTS on, no unused browser
+// feature granted.
+test("every route carries the baseline security headers", async ({ request }) => {
+  for (const path of ["/", "/soundtrack"]) {
+    const res = await request.get(path);
+    expect(res.headers()["x-frame-options"]).toBe("DENY");
+    expect(res.headers()["content-security-policy"]).toBe("frame-ancestors 'none'");
+    expect(res.headers()["strict-transport-security"]).toContain("max-age=");
+    expect(res.headers()["permissions-policy"]).toContain("microphone=()");
+  }
+});
+
 // The privacy policy (A6) says what the scoring proxy receives, and the Import screen links to it (as Settings
 // does, e2e/settings.spec.ts).
 test("/privacy says what the proxy receives, and Import links to it", async ({ page }) => {

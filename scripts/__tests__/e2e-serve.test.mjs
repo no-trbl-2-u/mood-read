@@ -7,7 +7,7 @@ import { mkdtempSync, mkdirSync, rmSync, writeFileSync } from 'node:fs';
 import os from 'node:os';
 import path from 'node:path';
 import { after, before, describe, it } from 'node:test';
-import { contentType, createStaticServer, parseRange, resolveRequest } from '../../e2e/serve.mjs';
+import { contentType, createStaticServer, headersFor, parseHeaders, parseRange, resolveRequest } from '../../e2e/serve.mjs';
 
 const root = path.resolve(os.tmpdir(), 'serve-root');
 const files = new Set([path.join(root, 'index.html'), path.join(root, '_expo', 'app.js'), path.join(root, 'favicon.ico')]);
@@ -74,6 +74,24 @@ describe('byte ranges', () => {
   });
 });
 
+describe('_headers (the Cloudflare Pages config file)', () => {
+  it('reads a path pattern and its indented headers, ignoring blanks and comments', () => {
+    const rules = parseHeaders('# a comment\n\n/*\n  X-Frame-Options: DENY\n  Content-Security-Policy: frame-ancestors \'none\'\n\n/one\n  X-Custom: yes\n');
+    assert.deepEqual(rules, [
+      { pattern: '/*', headers: { 'X-Frame-Options': 'DENY', 'Content-Security-Policy': "frame-ancestors 'none'" } },
+      { pattern: '/one', headers: { 'X-Custom': 'yes' } },
+    ]);
+  });
+
+  it('matches /* as a prefix and an exact pattern only exactly, later rules winning ties', () => {
+    const rules = parseHeaders('/*\n  X-A: 1\n  X-B: 1\n/one\n  X-B: 2\n');
+    assert.deepEqual(headersFor(rules, '/'), { 'X-A': '1', 'X-B': '1' });
+    assert.deepEqual(headersFor(rules, '/book/sample-1'), { 'X-A': '1', 'X-B': '1' });
+    assert.deepEqual(headersFor(rules, '/one'), { 'X-A': '1', 'X-B': '2' });
+    assert.deepEqual(headersFor(rules, '/two'), { 'X-A': '1', 'X-B': '1' });
+  });
+});
+
 describe('the server over a socket', () => {
   let dir;
   let server;
@@ -84,6 +102,7 @@ describe('the server over a socket', () => {
     mkdirSync(path.join(dir, '_expo'));
     writeFileSync(path.join(dir, 'index.html'), '<!doctype html><title>shell</title>');
     writeFileSync(path.join(dir, '_expo', 'app.js'), 'console.log(1);');
+    writeFileSync(path.join(dir, '_headers'), '/*\n  X-Frame-Options: DENY\n');
     server = createStaticServer(dir);
     await new Promise((done) => server.listen(0, '127.0.0.1', done));
     base = `http://127.0.0.1:${server.address().port}`;
@@ -111,6 +130,18 @@ describe('the server over a socket', () => {
     const post = await fetch(`${base}/`, { method: 'POST' });
     assert.equal(post.status, 405);
     await post.text();
+  });
+
+  it('applies _headers to every path and never serves the config file itself', async () => {
+    const root = await fetch(`${base}/`);
+    assert.equal(root.headers.get('x-frame-options'), 'DENY');
+    await root.text();
+    const asset = await fetch(`${base}/_expo/app.js`);
+    assert.equal(asset.headers.get('x-frame-options'), 'DENY');
+    await asset.text();
+    const reserved = await fetch(`${base}/_headers`);
+    assert.equal(reserved.status, 404);
+    await reserved.text();
   });
 
   it('answers a byte range with 206 and Content-Range, and a range outside the file with 416', async () => {
