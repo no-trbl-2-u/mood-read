@@ -1,7 +1,7 @@
 # Critique log
 
-> Last pass: 2026-10-28 at commit 4175217
-> Pass count: 2
+> Last pass: 2026-10-29 at commit 6cbc9d3
+> Pass count: 3
 
 > External-observer feedback for Mood Read. Populated by
 > `/critique`, drained by `/iterate`. See `skills/critique.md`
@@ -27,6 +27,22 @@
   previews and no-JS clients. Low priority — the web build is the
   development/secondary surface (phone app is primary, `plan/bearings.md`
   Stack row), not product-blocking.
+- source: web-fetch
+
+### [LOW] /robots.txt, /sitemap.xml — SPA catch-all serves the app shell instead of real files
+- pass: 3 (commit 6cbc9d3)
+- viewport: n/a (static HTML, pre-hydration)
+- category: seo
+- observation: `/robots.txt` and `/sitemap.xml` aren't real static files — Cloudflare
+  Pages' SPA fallback serves the identical `index.html` shell for both, same as any
+  app route, instead of crawler-readable content.
+- evidence: `curl -s -o /dev/null -w "%{http_code} %{content_type}" .../robots.txt`
+  → `200 text/html; charset=utf-8`; body is the app's `<html>` shell, not `User-agent`
+  directives. Same response shape for `/sitemap.xml`.
+- suggested fix: add `public/robots.txt` (e.g. `User-agent: *\nAllow: /`) to the Expo
+  web export's static input so it ships outside the SPA catch-all. A sitemap is
+  optional for a 6-route app and can be skipped. Low priority — same secondary-surface
+  reasoning as the finding above.
 - source: web-fetch
 
 ## Done
