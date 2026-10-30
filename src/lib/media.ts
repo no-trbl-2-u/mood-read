@@ -200,12 +200,26 @@ export async function deleteBookFiles(bookId: string): Promise<void> {
 }
 
 /**
+ * The amplitude envelope of a byte source, or null when the phone cannot decode it here. The phone has no
+ * general decoder in JS, so only PCM WAV is read (streamed); other formats are left undecoded.
+ */
+async function sourceEnvelope(source: ByteSource): Promise<Envelope | null> {
+  if (!(await isWav(source))) return null;
+  return wavEnvelope(source);
+}
+
+/**
  * The amplitude envelope of a picked file for silence detection, or null when the phone cannot decode it here.
  * The phone has no general decoder in JS, so only PCM WAV is read (streamed); other formats keep one chapter.
  */
 export async function silenceEnvelope(file: PickedAudio): Promise<Envelope | null> {
-  if (!(await isWav(file.source))) return null;
-  return wavEnvelope(file.source);
+  return sourceEnvelope(file.source);
+}
+
+/** A book file already on the device, read as an envelope for Android's duck cue (01.28) — same WAV-only limit
+ *  as `silenceEnvelope`, just read from a stored `ref` instead of a freshly picked file. */
+export function storedEnvelope(ref: string): Promise<Envelope | null> {
+  return sourceEnvelope(storedSource(ref));
 }
 
 /** Reads a file's duration by loading it in a muted, throwaway player. */
