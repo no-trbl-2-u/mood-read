@@ -1,7 +1,7 @@
 # Critique log
 
-> Last pass: 2026-10-29 at commit 174cbe8
-> Pass count: 4
+> Last pass: 2026-10-30 at commit 359fe55
+> Pass count: 5
 
 > External-observer feedback for Mood Read. Populated by
 > `/critique`, drained by `/iterate`. See `skills/critique.md`
@@ -9,28 +9,38 @@
 
 ## Pending
 
-### [LOW] /book/<unknown-id>, /<unknown-route> — SPA catch-all returns 200 with no distinguishing content pre-hydration
-- pass: 4 (commit 174cbe8)
+### [MED] every route (valid or not) — pre-hydration body is empty on every page, not just the catch-all
+- pass: 5 (commit 359fe55); supersedes pass-4 row scoped to the catch-all only
 - viewport: n/a (static HTML, pre-hydration)
 - category: seo
-- observation: a deep link to a book id that was never imported
-  (`/book/does-not-exist-12345`) and a path outside the route table entirely
-  (`/this-route-truly-does-not-exist`) both return HTTP 200 and the identical
-  generic shell as every valid route, before any client JS runs. Once
-  hydrated, the app does show proper copy for a missing book
-  (`src/app/book/[id].tsx` `COPY.notFound` / `notFoundBody`: "Book not found" /
-  "This book isn't on your shelf on this device."), so real users on a real
-  device are fine — this only affects a crawler, a link-preview bot, or a
-  stale/mistyped share link where JS never runs.
-- evidence: `curl -s -o /dev/null -w "%{http_code}"` on both URLs → `200`;
-  rendered body carries only the title "Mood Read", no error text, same as
-  every working route.
-- suggested fix: same static-shell gap as the two findings above it in this
-  file (generic title/meta, SPA-served robots.txt/sitemap.xml) — once that
-  work lands, extend it to give the catch-all shell a distinct
-  title/meta ("Page not found — Mood Read") for unmatched routes. Low
-  priority — same secondary-surface reasoning; real users already get a
-  correct message post-hydration.
+- observation: a WebFetch-only anonymous pass (no browser tools on this
+  runner) over `/`, `/import`, `/privacy`, `/settings`, `/credits` found
+  every one of them serves the identical empty shell before JS runs: title
+  "Mood Read", the shared meta description (pass 1's fix), an empty `<div
+  id="root"></div>`, and no H1/lede/nav/body copy of any kind. This isn't
+  limited to the unknown-route/unknown-book catch-all filed at pass 4 — it's
+  every named route in the app, confirmed directly against raw HTML
+  (`curl`), not just the reader's rendered-markdown view. `app.json`'s
+  `web.output` is `"single"` (pure CSR bundle); the boilerplate HTML comment
+  ("Use static rendering with Expo Router to support running without
+  JavaScript") is Expo's default scaffold text and does not reflect
+  reality here. Once hydrated, every route (including the not-found copy
+  in `src/app/book/[id].tsx`) reads fine — this is a no-JS-client problem
+  only: crawlers, link-unfurlers (Slack/iMessage/Discord previews), and
+  stale/no-JS share links all see a blank "Mood Read" card for every page,
+  not just a mistyped one.
+- evidence: `curl -s https://mood-read.pages.dev/<path>` for all five URLs
+  → identical `<body><div id="root"></div>...</body>`, no visible text
+  besides the `<title>` and the shared `<meta name="description">`.
+- suggested fix: Expo Router supports `web.output: "static"` (SSG — each
+  route pre-rendered to its own HTML at export time), which is a config
+  flip in `app.json` + `expo export` output path, not a stack change or an
+  SSR server to run. That would give every route real per-page HTML
+  (and could carry a per-route title/description, closing part of the
+  pass-1/pass-4 gap too) without adding a server. Confirm the static
+  export still satisfies `expo-router`'s dynamic `[id]` segments
+  (`/book/[id]`) before flipping — may need a fallback/catch-all export
+  mode for ids not known at build time.
 - source: web-fetch
 
 ## Done
