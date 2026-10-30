@@ -134,3 +134,52 @@ export async function isWav(source: ByteSource): Promise<boolean> {
   const h = await source.read(0, 12);
   return ascii(h, 0) === "RIFF" && ascii(h, 8) === "WAVE";
 }
+
+// ---- Reading an envelope back by position (Android's duck cue, 01.28) ------------------------------------
+
+/** The envelope's level (0 to 1, an RMS value) at a file-local time in seconds; 0 for no envelope, a negative
+ *  time, or past the envelope's own length (never guessed past what was decoded). */
+export function levelAt(env: Envelope | null, seconds: number): number {
+  if (!env || env.levels.length === 0 || env.window <= 0 || !(seconds >= 0)) return 0;
+  const i = Math.min(env.levels.length - 1, Math.floor(seconds / env.window));
+  return env.levels[i];
+}
+
+export type EnvelopeLoader = (ref: string) => Promise<Envelope | null>;
+
+/**
+ * One file's envelope at a time, loaded once and cached, for Android's duck cue (01.28): there is no live,
+ * permission-free mic tap on Android, so the level comes from this file's own pre-decoded envelope instead,
+ * read at the playing position. A file this phone can't decode (anything but WAV today) caches `null` and
+ * reads as silence forever — the duck just stays off for it, the same as before this existed.
+ */
+export function createEnvelopeCache(load: EnvelopeLoader) {
+  const cache = new Map<string, Envelope | null | Promise<Envelope | null>>();
+  function entry(ref: string): Envelope | null | Promise<Envelope | null> {
+    const got = cache.get(ref);
+    if (got !== undefined) return got;
+    const pending = load(ref).then((env) => {
+      cache.set(ref, env);
+      return env;
+    });
+    cache.set(ref, pending);
+    return pending;
+  }
+  return {
+    /** The level at this file's offset (seconds); 0 while its envelope is still loading or can't be decoded. */
+    level(ref: string, offsetSeconds: number): number {
+      const got = entry(ref);
+      return got instanceof Promise ? 0 : levelAt(got, offsetSeconds);
+    },
+    /** True once this file's envelope has loaded and decoded (false while pending, absent, or undecodable). */
+    ready(ref: string): boolean {
+      const got = cache.get(ref);
+      return got !== undefined && !(got instanceof Promise) && got !== null;
+    },
+    /** True once this file's envelope has loaded but could NOT be decoded (so the duck honestly stays off). */
+    unavailable(ref: string): boolean {
+      const got = cache.get(ref);
+      return got !== undefined && !(got instanceof Promise) && got === null;
+    },
+  };
+}
