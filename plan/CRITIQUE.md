@@ -41,6 +41,27 @@
   export still satisfies `expo-router`'s dynamic `[id]` segments
   (`/book/[id]`) before flipping — may need a fallback/catch-all export
   mode for ids not known at build time.
+- tried (2026-10-30, /iterate, cloud march tick, reverted — no commit): flipping
+  `app.json`'s `web.output` to `"static"` and running `expo export -p web`
+  does not just need the config flip. The static export renders every
+  route once in a Node (no-DOM) context, and the root layout's providers
+  assume a browser unconditionally: `src/lib/network.ts`'s top-level
+  `export const network = createNetworkWatch({...})` calls
+  `expo-network`'s `addNetworkStateListener` eagerly at module load
+  (`window is not defined`; guarding it with a `typeof window !==
+  "undefined"` check fixed this one) — then every route still fails
+  because `PlayerProvider` (mounted in the root layout, so every page
+  gets it) calls `expo-audio`'s `useAudioPlayer` unconditionally at
+  render time, which reaches for the DOM's `Audio` global
+  (`ReferenceError: Audio is not defined`) even on routes with no player
+  UI at all (`/browse` was the one caught; the rest of the tree likely
+  shares the same root cause). Making the player SSR-safe (skip or defer
+  `useAudioPlayer` until mount, client-side) is a real change to
+  `src/player/`'s core provider, not a config flip, and may uncover
+  further browser-only assumptions once that one clears (storage,
+  sqlite). Ease on this row should read low (not a cheap win) until
+  someone scopes the provider-tree audit as its own chunk — recommend
+  `/plan-a-spec` over another blind `/iterate` attempt.
 - source: web-fetch
 
 ## Done

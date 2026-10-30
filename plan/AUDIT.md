@@ -5,6 +5,27 @@
 > stays until the owner answers it, and the loop continues on the
 > default it names.
 
+# Site audit — 2026-10-30
+
+## Top 5 findings (scored)
+
+### [1.2] every route's pre-hydration body is empty (plan/CRITIQUE.md pass 5)
+- category: external-critique
+- impact: 6
+- ease: 2 (tried the suggested fix live this tick — see plan/CRITIQUE.md's
+  "tried" note: it cascades through at least two SSR-unsafe providers,
+  not a config flip)
+- next: `/plan-a-spec` to scope a provider-tree SSR-safety pass before
+  flipping `web.output`; not a single `/iterate` tick
+
+No other category (content, data, links, a11y, tests, perf) turned up
+a finding scoring ≥ 3 this pass: a quick sweep found no missing `alt`
+text, no dead internal links, and no untested pure-logic module beyond
+thin platform-binding shims already covered by their sibling's tests
+(the `network.ts`/`network-watch.test.ts` pattern). Nothing shipped
+this tick; posture is bold, so this tick hands to `/expand` per
+`skills/iterate.md` §6 failure mode 6.
+
 ## Pending — [needs-user-call]
 
 ### [needs-user-call] 01.28 shipped its mechanism; A41's phone check still needs a real device (A41)
