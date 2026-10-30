@@ -69,7 +69,8 @@ import { scoringStore } from "@/lib/scoring";
 import { useChapterScores } from "@/lib/seeding";
 import { settings, useSettings } from "@/lib/settings";
 import { soundtrack } from "@/lib/soundtrack";
-import { resolveFile } from "@/lib/media";
+import { resolveFile, storedEnvelope } from "@/lib/media";
+import { createEnvelopeCache } from "@/lib/silence";
 import {
   bookPosition,
   chapterAt,
@@ -90,7 +91,7 @@ import type { Book, Chapter, SleepTimer } from "@/lib/types";
 import { createBedEngine, type BedEngine } from "./bed-engine";
 import { bindMediaSession } from "./media-session";
 import { soundscape, SOUNDSCAPE_IDS } from "./soundscapes";
-import { listenToVoice, stopVoice } from "./voice-level";
+import { listenToVoice, stopVoice, VOICE_LEVEL_SUPPORTED } from "./voice-level";
 
 /**
  * The fastest speed this platform plays. expo-audio clamps the rate to 2.0 natively (Android
@@ -120,6 +121,9 @@ export type PlayerApi = {
   bed: BedSetting;
   /** The open book's mixer setting (01.5, A10): balance, master and duck under voice. */
   mix: Mix;
+  /** Duck under voice is on but can't hear anything right now: no live tap on this platform (Android), and
+   *  (01.28) the playing file's own envelope either hasn't decoded yet or this phone can't decode it. */
+  duckBlocked: boolean;
   open: (bookId: string) => Promise<void>;
   play: () => void;
   pause: () => void;
@@ -184,6 +188,8 @@ export function PlayerProvider({ children }: { children: ReactNode }) {
   // The companion clock while the open book plays in companion mode, else null (src/lib/companion.ts).
   const [companion, setCompanion] = useState<CompanionClock | null>(null);
   const [now, setNow] = useState(() => Date.now());
+  // Android's envelope duck (01.28) found the playing file undecodable, so it is honestly not ducking it.
+  const [androidDuckBlocked, setAndroidDuckBlocked] = useState(false);
 
   // Mirrors of state for callbacks and event handlers, which must not read stale renders.
   const bookRef = useRef<Book | undefined>(undefined);
@@ -201,6 +207,9 @@ export function PlayerProvider({ children }: { children: ReactNode }) {
   // Re-plans the bed against the clock as it stands, after a layer pick (set by the bed's effect).
   const replanBed = useRef<() => void>(() => {});
   const ducker = useMemo(() => createDucker(), []);
+  // Android's duck cue (01.28): no live, permission-free mic tap there, so the level comes from each file's own
+  // pre-decoded envelope instead (src/lib/silence.ts, src/lib/media.ts), read at the playing position.
+  const androidDuck = useMemo(() => (Platform.OS === "android" ? createEnvelopeCache(storedEnvelope) : null), []);
   const lastSave = useRef(0);
   const pendingEvent = useRef<ClockEvent | null>(null);
   // The listener's play or pause while a file loads (A31), from the load's first moment, not once its URI is found.
@@ -694,6 +703,30 @@ export function PlayerProvider({ children }: { children: ReactNode }) {
     if (!mix.duck) stopVoice(player);
   }, [mix.duck, player]);
 
+  // Android's duck cue (01.28): no live tap there, so instead poll the playing file's own pre-decoded envelope at
+  // the current offset. Polled rather than event-driven (nothing fires per-sample here); 100ms is well under
+  // DUCK_ATTACK_MS (120) so the envelope still reads as a smooth dip, not a step.
+  useEffect(() => {
+    if (!duckListening || !androidDuck) {
+      setAndroidDuckBlocked(false);
+      return;
+    }
+    const id = setInterval(() => {
+      const b = bookRef.current;
+      if (!b) return;
+      const { fileIndex: fi, offset } = locate(b.files, livePosition());
+      const ref = b.files[fi]?.ref;
+      if (!ref) return;
+      const gain = ducker.hear([androidDuck.level(ref, offset)], Date.now(), true);
+      engineRef.current?.setLevel(bedLevel.current, gain);
+      setAndroidDuckBlocked((prev) => (prev === androidDuck.unavailable(ref) ? prev : androidDuck.unavailable(ref)));
+    }, 100);
+    return () => {
+      clearInterval(id);
+      setAndroidDuckBlocked(false);
+    };
+  }, [duckListening, androidDuck, ducker, livePosition]);
+
   const api = useMemo<PlayerApi>(() => {
     const pause = () => {
       handoff.pause();
@@ -787,6 +820,7 @@ export function PlayerProvider({ children }: { children: ReactNode }) {
       },
       cancelSleep: () => setSleep(null),
       mix,
+      duckBlocked: VOICE_LEVEL_SUPPORTED ? false : androidDuckBlocked,
       setMix: (patch) => {
         const b = bookRef.current;
         setMixState((prev) => {
@@ -819,6 +853,7 @@ export function PlayerProvider({ children }: { children: ReactNode }) {
     sleep,
     clock,
     mix,
+    androidDuckBlocked,
     open,
     goTo,
     persist,

@@ -6,8 +6,10 @@
 //   on every animation frame while it plays (a hidden tab pauses the frames, so the duck holds where it was).
 // - iOS: expo-audio installs an audio tap on the player; no permission is involved.
 // - Android: expo-audio samples through the Visualizer, which needs the RECORD_AUDIO permission. Mood Read does not
-//   ask for the microphone (app.json sets recordAudioAndroid false), so here duck under voice is a no-op: the bed
-//   stays at the mix's level, un-ducked.
+//   ask for the microphone (app.json sets recordAudioAndroid false), so this live tap is a no-op there. Instead
+//   (01.28), PlayerProvider reads the narration file's own loudness from a pre-decoded envelope (src/lib/silence.ts,
+//   src/lib/media.ts) at the playing position — no capture API, so no permission. A file this phone can't decode
+//   (anything but WAV today) just leaves that envelope path off too, the same honest "stays level" as before.
 import type { AudioPlayer } from "expo-audio";
 import { Platform } from "react-native";
 

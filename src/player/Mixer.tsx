@@ -10,7 +10,7 @@ import { Chip } from "@/ui/Chip";
 import { Slider } from "@/ui/Slider";
 import { spacing, typography } from "@/ui/theme";
 
-import { VOICE_LEVEL_SUPPORTED } from "./voice-level";
+import { usePlayer } from "./PlayerProvider";
 
 const COPY = {
   heading: "Mixer",
@@ -23,10 +23,11 @@ const COPY = {
   off: "Off",
   quiet: "Quiet opening",
   quietNote: "The layer waits 20 s into each chapter, so the chapter title lands clean.",
-  duckUnsupported: "This device can't hear the narrator yet, so the layer stays level.",
+  duckUnsupported: "This chapter's file can't be read for duck yet, so the layer stays level.",
 };
 
 export function Mixer({ mix, onChange, layer }: { mix: Mix; onChange: (patch: Partial<Mix>) => void; layer?: ReactNode }) {
+  const { duckBlocked } = usePlayer();
   return (
     <View style={styles.mixer} testID="mixer">
       <Text style={styles.heading}>{COPY.heading}</Text>
@@ -81,7 +82,7 @@ export function Mixer({ mix, onChange, layer }: { mix: Mix; onChange: (patch: Pa
           <Chip testID="mix-duck-off" label={COPY.off} a11yLabel={`${COPY.duck}: ${COPY.off}`} on={!mix.duck} onPress={() => onChange({ duck: false })} />
         </View>
       </View>
-      {mix.duck && !VOICE_LEVEL_SUPPORTED && <Text style={styles.note}>{COPY.duckUnsupported}</Text>}
+      {mix.duck && duckBlocked && <Text style={styles.note}>{COPY.duckUnsupported}</Text>}
 
       <View style={styles.toggleRow} role="group" aria-label={COPY.quiet}>
         <Text style={styles.label}>{COPY.quiet}</Text>
