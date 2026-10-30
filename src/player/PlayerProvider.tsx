@@ -707,10 +707,7 @@ export function PlayerProvider({ children }: { children: ReactNode }) {
   // the current offset. Polled rather than event-driven (nothing fires per-sample here); 100ms is well under
   // DUCK_ATTACK_MS (120) so the envelope still reads as a smooth dip, not a step.
   useEffect(() => {
-    if (!duckListening || !androidDuck) {
-      setAndroidDuckBlocked(false);
-      return;
-    }
+    if (!duckListening || !androidDuck) return;
     const id = setInterval(() => {
       const b = bookRef.current;
       if (!b) return;
