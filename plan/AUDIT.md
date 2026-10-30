@@ -7,6 +7,30 @@
 
 ## Pending — [needs-user-call]
 
+### [needs-user-call] 01.28 shipped its mechanism; A41's phone check still needs a real device (A41)
+- category: infra
+- logged: 2026-10-30 (march, cloud tick)
+- what: A41 asks for a path that ducks the bed under the narration on Android with no microphone permission,
+  "checked on a phone." The mechanism shipped (commit 24068f1, on main): Android no longer tries the live,
+  RECORD_AUDIO-gated tap (`expo-audio`'s `Visualizer` path; confirmed against its own Android source and the
+  platform's `Visualizer` docs — there is no public, permission-free live-capture API for this in Expo SDK 58,
+  and the real workaround, a custom Media3 `AudioProcessor` forked into ExoPlayer's pipeline, needs native
+  Android code and on-device testing, out of scope here). Instead it reads the narration file's own loudness
+  from a pre-decoded envelope (`src/lib/silence.ts`'s `levelAt`/`createEnvelopeCache`, fed by
+  `src/lib/media.ts`'s `storedEnvelope`), looked up by playback position (`src/lib/timeline.ts`'s `locate`) —
+  no capture API, so no permission. Same honest limit as the app's existing silence-break detection: only WAV
+  decodes locally today, so a WAV-sourced book ducks for real and anything else (MP3, M4B, AAC — most real
+  audiobooks) stays level, same as before, with the Mixer's note now saying so per file rather than claiming the
+  whole device can't hear the narrator. 170 unit tests (`src/lib/silence.test.ts` covers the new pure logic) and
+  the full e2e suite (web's own live-tap duck test, A11, still passes) are green; none of that proves the
+  Android *path* actually dips a real phone's bed, since no Android device exists in this cloud checkout.
+- open: whether the owner's next phone session (the same kind 01.15 and 04.1 already did for other features)
+  confirms a WAV-sourced book really ducks on Android, and separately whether the WAV-only scope here is enough
+  to call A41 closed or whether it should widen (the only way to widen is native code, per the dead end above).
+- default taken: 01.28 is NOT closed (A41 still names a phone check this tick cannot do); its claim is released
+  so a future `/next 01.28` (or the owner, directly) only needs to confirm on a device and write the close. This
+  tick falls through to march's next step instead of picking another chunk.
+
 ### [needs-user-call] 01.11's playlist-save half needs infra nobody has set up (A24)
 - category: product
 - logged: 2026-10-27 (march, cloud tick)
