@@ -20,19 +20,18 @@
   `/oversight` promotion)
 - next: no new `/iterate` action; the candidate already covers it
 
-No source file changed since the 2026-10-30 pass (the three commits
-since then are plan-metadata-only: expand passes 7-8 and critique
-pass 6, each "no findings"/"no candidates"), so this pass re-confirms
-rather than re-discovers: no missing `alt` text, no dead internal
-links, `pnpm deploy:check` is green, no `TODO`/`FIXME` markers, and
-`importFiles` (src/lib/library.ts, the one sizeable orchestration
-function without a colocated unit test) is covered by
-`e2e/import.spec.ts`, matching the project's established pattern of
-integration coverage for orchestration and unit coverage for the
-pure logic it calls. No other category (content, data, links, a11y,
-tests, perf) turned up a finding scoring ≥ 3. Nothing shipped this
-tick; posture is bold, so this tick hands to `/expand` per
-`skills/iterate.md` §6 failure mode 6.
+No source file changed since the 2026-10-31 pass at commit 693bb2d
+(the one commit since then, bb13999, is plan-metadata-only: expand
+pass 9, "no candidates"), so this pass re-confirms rather than
+re-discovers: `pnpm deploy:check` is green against HEAD (bb13999),
+no `TODO`/`FIXME` markers, no missing accessible labels (`Cover`'s
+bare `<Image>` sits inside a `Pressable` whose sibling `Text` already
+carries the book title, so screen readers read the row as one unit —
+not a bug), and the single open GitHub issue (#11) is already
+`triage:needs-user`, parked. No other category (content, data,
+links, a11y, tests, perf) turned up a finding scoring ≥ 3. Nothing
+shipped this tick; posture is bold, so this tick hands to `/expand`
+per `skills/iterate.md` §6 failure mode 6.
 
 ## Pending — [needs-user-call]
 
