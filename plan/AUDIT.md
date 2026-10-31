@@ -5,25 +5,33 @@
 > stays until the owner answers it, and the loop continues on the
 > default it names.
 
-# Site audit — 2026-10-30
+# Site audit — 2026-10-31
 
 ## Top 5 findings (scored)
 
 ### [1.2] every route's pre-hydration body is empty (plan/CRITIQUE.md pass 5)
 - category: external-critique
 - impact: 6
-- ease: 2 (tried the suggested fix live this tick — see plan/CRITIQUE.md's
-  "tried" note: it cascades through at least two SSR-unsafe providers,
-  not a config flip)
-- next: `/plan-a-spec` to scope a provider-tree SSR-safety pass before
-  flipping `web.output`; not a single `/iterate` tick
+- ease: 2 (unchanged from the 2026-10-30 pass: still needs a
+  provider-tree SSR-safety pass before `web.output` can flip,
+  per plan/CRITIQUE.md's "tried" note; the 2026-10-30 expand pass
+  already filed this as a candidate — plan/CANDIDATES.md
+  "[score 4.0] Make the root layout's providers SSR-safe" — awaiting
+  `/oversight` promotion)
+- next: no new `/iterate` action; the candidate already covers it
 
-No other category (content, data, links, a11y, tests, perf) turned up
-a finding scoring ≥ 3 this pass: a quick sweep found no missing `alt`
-text, no dead internal links, and no untested pure-logic module beyond
-thin platform-binding shims already covered by their sibling's tests
-(the `network.ts`/`network-watch.test.ts` pattern). Nothing shipped
-this tick; posture is bold, so this tick hands to `/expand` per
+No source file changed since the 2026-10-30 pass (the three commits
+since then are plan-metadata-only: expand passes 7-8 and critique
+pass 6, each "no findings"/"no candidates"), so this pass re-confirms
+rather than re-discovers: no missing `alt` text, no dead internal
+links, `pnpm deploy:check` is green, no `TODO`/`FIXME` markers, and
+`importFiles` (src/lib/library.ts, the one sizeable orchestration
+function without a colocated unit test) is covered by
+`e2e/import.spec.ts`, matching the project's established pattern of
+integration coverage for orchestration and unit coverage for the
+pure logic it calls. No other category (content, data, links, a11y,
+tests, perf) turned up a finding scoring ≥ 3. Nothing shipped this
+tick; posture is bold, so this tick hands to `/expand` per
 `skills/iterate.md` §6 failure mode 6.
 
 ## Pending — [needs-user-call]
