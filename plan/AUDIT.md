@@ -21,10 +21,11 @@
 - next: no new `/iterate` action; the candidate already covers it
 
 No source file changed since the 2026-10-31 pass at commit 693bb2d
-(the five commits since then — bb13999, 19cfa11, f8c8841, 37ad588,
-c10ad93 — are plan-metadata-only: expand passes 9, 10 and 11, all
-"no candidates"), so this pass re-confirms rather than re-discovers:
-`pnpm deploy:check` is green against HEAD (c10ad93), no
+(the eight commits since then — bb13999, 19cfa11, f8c8841, 37ad588,
+c10ad93, b8f4006, c994f71, and this tick's own re-confirm — are
+plan-metadata-only: expand passes 9 through 12, all "no
+candidates"), so this pass re-confirms rather than re-discovers:
+`pnpm deploy:check` is green against HEAD (c994f71), no
 `TODO`/`FIXME` markers, the single open GitHub issue (#11) is
 already `triage:needs-user`, parked, and spec 01's remaining
 chunks are all blocked (01.26/01.20/01.27 on the still-unset
