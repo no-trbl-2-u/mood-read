@@ -21,17 +21,17 @@
 - next: no new `/iterate` action; the candidate already covers it
 
 No source file changed since the 2026-10-31 pass at commit 693bb2d
-(the one commit since then, bb13999, is plan-metadata-only: expand
-pass 9, "no candidates"), so this pass re-confirms rather than
-re-discovers: `pnpm deploy:check` is green against HEAD (bb13999),
-no `TODO`/`FIXME` markers, no missing accessible labels (`Cover`'s
-bare `<Image>` sits inside a `Pressable` whose sibling `Text` already
-carries the book title, so screen readers read the row as one unit —
-not a bug), and the single open GitHub issue (#11) is already
-`triage:needs-user`, parked. No other category (content, data,
-links, a11y, tests, perf) turned up a finding scoring ≥ 3. Nothing
-shipped this tick; posture is bold, so this tick hands to `/expand`
-per `skills/iterate.md` §6 failure mode 6.
+(the two commits since then, bb13999 and f8c8841, are plan-metadata-
+only: expand passes 9 and 10, both "no candidates"), so this pass
+re-confirms rather than re-discovers: `pnpm deploy:check` is green
+against HEAD (f8c8841), no `TODO`/`FIXME` markers, no missing
+accessible labels (`Cover`'s bare `<Image>` sits inside a `Pressable`
+whose sibling `Text` already carries the book title, so screen
+readers read the row as one unit — not a bug), and the single open
+GitHub issue (#11) is already `triage:needs-user`, parked. No other
+category (content, data, links, a11y, tests, perf) turned up a
+finding scoring ≥ 3. Nothing shipped this tick; posture is bold, so
+this tick hands to `/expand` per `skills/iterate.md` §6 failure mode 6.
 
 ## Pending — [needs-user-call]
 
