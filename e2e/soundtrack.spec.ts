@@ -74,13 +74,21 @@ test.describe("your soundtrack", () => {
       { bookId: id, pieceId: "composer-3--theme-3" },
     ]);
 
-    // A reload keeps it; one row clears it, and it stays cleared.
+    // A reload keeps it; one row asks once before it clears, Cancel backs out and changes nothing, and
+    // confirming clears it for good.
     await page.reload();
     await expect(pieces).toHaveCount(2);
     const clear = page.getByTestId("soundtrack-clear");
     await expect(clear).toHaveAttribute("role", "button");
     await expect(clear).toHaveAttribute("aria-label", "Clear your soundtrack");
     await clear.click();
+    const confirm = page.getByTestId("soundtrack-clear-confirm");
+    await expect(confirm).toBeVisible();
+    await confirm.getByTestId("soundtrack-clear-confirm-cancel").click();
+    await expect(confirm).toHaveCount(0);
+    await expect(pieces).toHaveCount(2);
+    await clear.click();
+    await confirm.getByTestId("soundtrack-clear-confirm-yes").click();
     await expect(page.getByTestId("soundtrack-empty")).toBeVisible();
     await expect(page.getByTestId(`soundtrack-book-${id}`)).toHaveCount(0);
     expect(await stored(page)).toBeNull();

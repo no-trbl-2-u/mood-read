@@ -1,8 +1,10 @@
 import { router } from "expo-router";
+import { useState } from "react";
 import { Pressable, ScrollView, StyleSheet, Text, View } from "react-native";
 
 import { soundtrack, useSoundtrack } from "@/lib/soundtrack";
 import type { SoundtrackGroup } from "@/lib/soundtrack-store";
+import { Button } from "@/ui/Button";
 import { Icon } from "@/ui/Icon";
 import { InfoRow, SettingsSection } from "@/ui/SettingsList";
 import { colors, radii, sizes, spacing, strokes, typography } from "@/ui/theme";
@@ -10,8 +12,9 @@ import { TopBar } from "@/ui/TopBar";
 
 // Your soundtrack (07.8, spec 07 A9), from the library's overflow menu: every piece that has played for a chapter the
 // listener reached, grouped by book in the shelf's order, each with its title and artist (src/lib/soundtrack-store.ts).
-// It plays nothing by itself, and one row clears it. Link-outs join each piece when 01.11 lands. All its copy lives
-// here.
+// It plays nothing by itself, and one row clears it (asked once first, since it erases every book's history, the
+// same inline-confirm shape as ScoringBand's RescoreConfirm). Link-outs join each piece when 01.11 lands. All its
+// copy lives here.
 const COPY = {
   title: "Your soundtrack",
   back: "Your shelf",
@@ -21,6 +24,9 @@ const COPY = {
   intro: "The music that has played for the chapters you reached, by book. Nothing plays from here.",
   empty: "Nothing has played yet: each piece shows here, under its book, the first time its chapter plays.",
   clear: "Clear your soundtrack",
+  clearAsk: "Clear your whole soundtrack?",
+  clearBody: "This removes every piece logged for every book. It can't be undone.",
+  cancel: "Cancel",
 };
 
 const goBack = () => (router.canGoBack() ? router.back() : router.replace("/"));
@@ -39,6 +45,7 @@ function BookGroup({ group }: { group: SoundtrackGroup }) {
 
 export default function SoundtrackScreen() {
   const groups = useSoundtrack();
+  const [confirmClear, setConfirmClear] = useState(false);
 
   return (
     <View style={styles.screen}>
@@ -59,16 +66,30 @@ export default function SoundtrackScreen() {
             {groups.map((g) => (
               <BookGroup key={g.bookId} group={g} />
             ))}
-            <Pressable
-              testID="soundtrack-clear"
-              role="button"
-              aria-label={COPY.clear}
-              onPress={() => soundtrack.clear()}
-              style={styles.clear}
-            >
-              <Icon name="x" size="small" color={colors.danger} />
-              <Text style={styles.clearTitle}>{COPY.clear}</Text>
-            </Pressable>
+            {confirmClear ? (
+              <View testID="soundtrack-clear-confirm" role="alert" style={styles.confirm}>
+                <Text style={styles.confirmTitle}>{COPY.clearAsk}</Text>
+                <Text style={styles.confirmBody}>{COPY.clearBody}</Text>
+                <View style={styles.confirmRow}>
+                  <Button
+                    testID="soundtrack-clear-confirm-yes"
+                    label={COPY.clear}
+                    kind="danger"
+                    small
+                    onPress={() => {
+                      soundtrack.clear();
+                      setConfirmClear(false);
+                    }}
+                  />
+                  <Button testID="soundtrack-clear-confirm-cancel" label={COPY.cancel} kind="secondary" small onPress={() => setConfirmClear(false)} />
+                </View>
+              </View>
+            ) : (
+              <Pressable testID="soundtrack-clear" role="button" aria-label={COPY.clear} onPress={() => setConfirmClear(true)} style={styles.clear}>
+                <Icon name="x" size="small" color={colors.danger} />
+                <Text style={styles.clearTitle}>{COPY.clear}</Text>
+              </Pressable>
+            )}
           </>
         )}
       </ScrollView>
@@ -97,4 +118,17 @@ const styles = StyleSheet.create({
     borderRadius: radii.lg,
   },
   clearTitle: { flex: 1, minWidth: 0, ...typography.label, fontSize: typography.body.fontSize, color: colors.danger },
+  confirm: {
+    gap: spacing.xs,
+    marginTop: spacing.lg,
+    paddingHorizontal: spacing.md,
+    paddingVertical: spacing.sm,
+    backgroundColor: colors.surface,
+    borderWidth: strokes.hairline,
+    borderColor: colors.border,
+    borderRadius: radii.lg,
+  },
+  confirmTitle: typography.label,
+  confirmBody: typography.caption,
+  confirmRow: { flexDirection: "row", flexWrap: "wrap", gap: spacing.sm, marginTop: spacing.xs },
 });
