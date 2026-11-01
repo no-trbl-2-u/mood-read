@@ -5,36 +5,9 @@
 > stays until the owner answers it, and the loop continues on the
 > default it names.
 
-# Site audit — 2026-11-01
+# Site audit — 2026-11-01 (re-confirmed, later tick)
 
 ## Top 5 findings (scored)
-
-### [5.6] /soundtrack — "Clear" deletes the whole played-pieces history with no confirmation (plan/CRITIQUE.md pass 7) [x]
-- category: external-critique
-- impact: 7 (MED severity; one tap, no confirm, no undo, erases every
-  book's played-pieces history, despite the row being styled in the
-  danger color)
-- ease: 8 (reused `RescoreConfirm`'s inline-confirm shape, already in
-  the app for a different destructive action)
-- issue: #16
-- fixed: 2026-11-01 (/march, /iterate) — commit 0c5aad1: a Clear press
-  now asks once (Clear or Cancel) before `soundtrack.clear()` runs;
-  `e2e/soundtrack.spec.ts` covers both the Cancel (nothing clears) and
-  Clear (clears for good) paths.
-
-### [4.2] /downloads vs /browse/[id] — the one-book-offline-limit warning is surfaced where it can't help (plan/CRITIQUE.md pass 7) [x]
-- category: external-critique
-- impact: 6 (MED severity; downloading a second book silently evicts
-  the first's offline files, and the only explanation lives inside
-  Downloads' empty-queue state, which a first-time listener has no
-  reason to open before tapping Download)
-- ease: 7 (surface the note inline on Browse's download CTA, next to
-  the existing Wi-Fi-only caption, or as a brief confirm)
-- issue: #17
-- fixed: 2026-11-01 (/march, /iterate) — commit 8d38ba1: the Browse
-  detail screen's download button now shows the same one-book-offline
-  limit note next to the Wi-Fi-only caption, before the listener taps
-  Download; `e2e/browse.spec.ts` covers its visibility.
 
 ### [2.7] /book/[id] — the not-found screen never sets a page title (plan/CRITIQUE.md pass 7)
 - category: external-critique
@@ -42,7 +15,8 @@
   whatever tab title was already showing instead of a not-found title)
 - ease: 9 (two JSX lines, the same pattern [5.4] already used for the
   found-book branch)
-- next: after [4.2]
+- next: below the 3.0 actionable threshold; re-evaluate once a
+  higher-scored finding lands alongside it
 
 ### [1.2] every route's pre-hydration body is empty (plan/CRITIQUE.md pass 5)
 - category: external-critique
@@ -53,16 +27,20 @@
   SSR-safe" awaits `/oversight` promotion)
 - next: no new `/iterate` action; the candidate already covers it
 
-This pass drained plan/CRITIQUE.md pass 7 (3 new findings: 0 high, 2
-medium, 1 low) and picked the top-scored one, [5.6], shipping it this
-tick (commit 0c5aad1, issue #16, `pnpm verify` green: typecheck, lint,
-573 unit + 170 proxy tests, build, 120 e2e; `pnpm deploy:check` to
-confirm next). The next two findings, [4.2] and [2.7], are unshipped
-and queued for the next `/iterate` tick. Spec 01's remaining chunks
-stay blocked (01.26/01.20/01.27 on the still-unset
-`OPENAI_API_KEY`/`BRAVE_SEARCH_API_KEY`/`PRESCORE_TOKEN`; 01.28 on
-a real-device phone check this checkout cannot run — both already
-logged below).
+This tick's `/march` found no ready chunk (01.28's mechanism already
+shipped at 24068f1; only A41's real-device phone check remains, and
+that stays an owner-only action per the `[needs-user-call]` row below;
+01.20/01.26/01.27 stay blocked on unset secrets) and no pending data
+work, so it landed in `/iterate`. The prior tick's two MED findings
+([5.6], [4.2]) are both already shipped (commits 0c5aad1, 8d38ba1;
+moved to `## Pending — findings` below). A fresh cross-category sweep
+(data gaps: no data layer; SEO: single-URL app, negligible; link
+integrity: all internal routes resolve; a11y: the `aria-label`/`role`
+convention holds, guarded by `a11y-guard.test.ts`; tests: no gap on
+recently-touched files; perf: no bloat signal) found nothing new.
+Top score across every open finding is 2.7, below the 3.0 actionable
+floor, so per `skills/iterate.md` §6 failure mode 6 (bold posture)
+this tick hands to `/expand` instead of stopping.
 
 ## Pending — [needs-user-call]
 
@@ -126,6 +104,14 @@ logged below).
   other candidate today is 01.28 (claimed live elsewhere) -- this tick falls through to /iterate.
 
 ## Pending — findings
+
+### [4.2] /downloads vs /browse/[id] — the one-book-offline-limit warning is surfaced where it can't help [x]
+- category: external-critique
+- impact: 6 (MED severity; downloading a second book silently evicts the first's offline files, and the only explanation lives inside Downloads' empty-queue state, which a first-time listener has no reason to open before tapping Download; plan/CRITIQUE.md pass 7)
+- ease: 7 (surface the note inline on Browse's download CTA, next to the existing Wi-Fi-only caption)
+- seen: 2026-11-01 (march, cloud tick; plan/CRITIQUE.md pass 7)
+- issue: #17
+- fixed: 2026-11-01 (/march, /iterate) — commit 8d38ba1: the Browse detail screen's download button now shows the same one-book-offline limit note next to the Wi-Fi-only caption, before the listener taps Download; `e2e/browse.spec.ts` covers its visibility.
 
 ### [5.6] /soundtrack — "Clear" deletes the whole played-pieces history with no confirmation [x]
 - category: external-critique
