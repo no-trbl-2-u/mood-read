@@ -5,7 +5,7 @@
 > stays until the owner answers it, and the loop continues on the
 > default it names.
 
-# Site audit — 2026-11-01 (re-confirmed, 9th consecutive no-op tick)
+# Site audit — 2026-11-01 (re-confirmed, 10th consecutive no-op tick)
 
 ## Top 5 findings (scored)
 
@@ -30,33 +30,35 @@
   SSR-safe" awaits `/oversight` promotion)
 - next: no new `/iterate` action; the candidate already covers it
 
-This tick's `/march` found: one open issue (#11, already labeled
-`triage:needs-user` — a 2026-10-29 cloud-tick push-token crash, routed
+This tick's `/march` found: one open issue (#11, still labeled
+`triage:needs-user` — the 2026-10-29 cloud-tick push-token crash, routed
 to `/oversight` for a `.github/workflows/next.yml` credential-refresh
-call; unchanged, no new unlabeled/urgent issues, `gh issue list` 0/0);
-critique not due (9 commits / ~22h since pass 7's base da0cb62 —
-short of the 12-commit/24h gate); no ready chunk (01.28 stays parked
-below on A41's real-device phone check; 01.20/01.26/01.27 stay
-blocked on unset secrets, confirmed via `node scripts/secrets.mjs
-status`, still 0 of 14 set); no `data/` directory. It landed in
-`/iterate`. A fresh cross-category sweep (data gaps: no data layer;
-SEO: single-URL app, negligible; link integrity: all internal routes
-resolve; a11y: the `aria-label`/`role` convention holds, guarded by
-`a11y-guard.test.ts`; tests: the two most recent fixes (8d38ba1,
-0c5aad1) already carry their own e2e coverage; perf: no bloat signal)
-found nothing new — identical conclusion to the last eight ticks
-(passes 8-15, commits bb6ed53 through c4e606e), since nothing has
-touched `src/`, `spec.md`, `design/` or the issue tracker since the
-critique queue drained at commit d69f6fa. Top score across every open
-finding is 2.7, below the 3.0 actionable floor, so per
-`skills/iterate.md` §6 failure mode 6 (bold posture) this tick hands
-to `/expand` instead of stopping — the repeating no-signal pairing
-flagged two ticks ago to `/oversight` is still unresolved and still
-the cheapest real lever: the critique gate's 24h clock
-(~2026-11-01T18:26Z, about 2h from this tick) or a human landing new
-work (clearing the vault secrets, answering issue #11's workflow call,
-or doing 01.28's phone check) is what actually unblocks the next real
-tick, not another audit/expand pair.
+call; unchanged, confirmed via `gh issue view 11`; no new unlabeled/urgent
+issues, `gh issue list` 0/0); critique not due (11 commits / ~19.6h since
+pass 7's base da0cb62 — short of the 12-commit/24h gate); no ready chunk
+(01.28 stays parked below on A41's real-device phone check; 01.20/01.26/
+01.27 stay blocked on unset secrets, confirmed via `node
+scripts/secrets.mjs status`, still 0 of 14 set); no `data/` directory. It
+landed in `/iterate`. A fresh cross-category sweep (data gaps: no data
+layer; SEO: single-URL app, negligible; link integrity: all internal
+routes resolve; a11y: the `aria-label`/`role` convention holds, guarded by
+`a11y-guard.test.ts`; tests: the two most recent fixes (8d38ba1, 0c5aad1)
+already carry their own e2e coverage; perf: no bloat signal) found
+nothing new — identical conclusion to the last nine ticks (passes 8-16,
+commits bb6ed53 through e2312e2), since nothing has touched `src/`,
+`spec.md`, `design/` or the issue tracker since the critique queue drained
+at commit d69f6fa (confirmed: `git log ceaefdd..HEAD -- src/ spec.md
+design/` is empty). Top score across every open finding is 2.7, below the
+3.0 actionable floor, so per `skills/iterate.md` §6 failure mode 6 (bold
+posture) this tick hands to `/expand` instead of stopping — the repeating
+no-signal pairing flagged several ticks ago to `/oversight` is still
+unresolved and still the cheapest real lever: the critique gate's 24h
+clock (pass 7 ran 2026-11-01T00:30:21Z, so due ~2026-11-02T00:30Z, about
+4h from this tick) or one more commit past the 12-commit mark (11 sit
+after da0cb62 now), or a human landing new work (clearing the vault
+secrets, answering issue #11's workflow call, or doing 01.28's phone
+check), is what actually unblocks the next real tick, not another
+audit/expand pair.
 
 ## Pending — [needs-user-call]
 
