@@ -1,13 +1,64 @@
 # Critique log
 
-> Last pass: 2026-10-30 at commit 8fe3f53
-> Pass count: 6
+> Last pass: 2026-11-01 at commit da0cb62
+> Pass count: 7
 
 > External-observer feedback for Mood Read. Populated by
 > `/critique`, drained by `/iterate`. See `skills/critique.md`
 > for the contract.
 
 ## Pending
+
+### [MED] /soundtrack — "Clear" deletes the whole played-pieces history with no confirmation
+- pass: 7 (commit da0cb62)
+- viewport: n/a (web-fetch engine, no browser tools on this runner)
+- category: comprehension
+- observation: the soundtrack screen's clear action is a single `Pressable` that calls
+  `soundtrack.clear()` directly on press — no confirm dialog, no undo, no secondary
+  step — despite being styled in the danger color and permanently erasing the
+  listener's whole played-pieces history across every book.
+- evidence: `src/app/soundtrack.tsx` lines 62-71 — `<Pressable testID="soundtrack-clear"
+  role="button" aria-label={COPY.clear} onPress={() => soundtrack.clear()}
+  style={styles.clear}>` with no intervening confirm state.
+- suggested fix: add a confirmation step before `soundtrack.clear()` runs, matching
+  the `RescoreConfirm` pattern already used elsewhere in the app for destructive
+  actions (`src/player/ScoringBand.tsx`, wired into `src/app/book/[id].tsx`).
+- source: web-fetch
+
+### [MED] /downloads vs /browse/[id] — the one-book-offline-limit warning is surfaced where it can't help
+- pass: 7 (commit da0cb62)
+- viewport: n/a (web-fetch engine, no browser tools on this runner)
+- category: comprehension
+- observation: on the web, downloading a second book silently evicts the first book's
+  offline files (it stays on the shelf, just no longer available offline). That
+  behavior is explained in `downloads.tsx`'s copy, but only inside the empty-queue
+  state, which a first-time listener has no reason to open before tapping Download.
+  The actual Download button, on the book's Browse detail screen, carries no such
+  warning — only a Wi-Fi-only caption.
+- evidence: `src/app/downloads.tsx` lines 95-107 (`EmptyQueue`, `COPY.webNote` only
+  rendered when `downloads.length === 0`) vs `src/app/browse/[id].tsx` lines 196-201
+  (the download CTA shows only `COPY.wifiCaption`, no eviction note).
+- suggested fix: surface the one-book-offline-limit note inline on the Browse detail
+  screen's download button (or as a brief confirm) before a second download evicts
+  the first, not only buried in Downloads' empty state.
+- source: web-fetch
+
+### [LOW] /book/[id] — the not-found screen never sets a page title
+- pass: 7 (commit da0cb62)
+- viewport: n/a (web-fetch engine, no browser tools on this runner)
+- category: seo
+- observation: `src/app/book/[id].tsx`'s `<Stack.Screen options={{ title: book.title
+  }} />` and `<Head><title>{book.title}</title></Head>` only render in the branch
+  where `book` is truthy. The early-return `!book` branch (the dead-link / unknown-id
+  case) sets no title at all, so the browser tab keeps whatever title was already
+  showing instead of reflecting the not-found state. This is a hydrated-state gap,
+  distinct from the already-filed pre-hydration-empty-shell row below, which only
+  covers the pre-JS body.
+- evidence: `src/app/book/[id].tsx` lines 111-121 (the `!book` branch has no `<Head>`
+  or `Stack.Screen` title override) vs lines 150-153 (title set only for a found book).
+- suggested fix: set a distinct `<Head><title>Book not found — Mood Read</title></Head>`
+  (and matching `Stack.Screen` title) in the `!book` branch.
+- source: web-fetch
 
 ### [MED] every route (valid or not) — pre-hydration body is empty on every page, not just the catch-all
 - pass: 5 (commit 359fe55); supersedes pass-4 row scoped to the catch-all only
