@@ -9,22 +9,6 @@
 
 ## Pending
 
-### [MED] /soundtrack — "Clear" deletes the whole played-pieces history with no confirmation
-- pass: 7 (commit da0cb62)
-- viewport: n/a (web-fetch engine, no browser tools on this runner)
-- category: comprehension
-- observation: the soundtrack screen's clear action is a single `Pressable` that calls
-  `soundtrack.clear()` directly on press — no confirm dialog, no undo, no secondary
-  step — despite being styled in the danger color and permanently erasing the
-  listener's whole played-pieces history across every book.
-- evidence: `src/app/soundtrack.tsx` lines 62-71 — `<Pressable testID="soundtrack-clear"
-  role="button" aria-label={COPY.clear} onPress={() => soundtrack.clear()}
-  style={styles.clear}>` with no intervening confirm state.
-- suggested fix: add a confirmation step before `soundtrack.clear()` runs, matching
-  the `RescoreConfirm` pattern already used elsewhere in the app for destructive
-  actions (`src/player/ScoringBand.tsx`, wired into `src/app/book/[id].tsx`).
-- source: web-fetch
-
 ### [MED] /downloads vs /browse/[id] — the one-book-offline-limit warning is surfaced where it can't help
 - pass: 7 (commit da0cb62)
 - viewport: n/a (web-fetch engine, no browser tools on this runner)
@@ -116,6 +100,8 @@
 - source: web-fetch
 
 ## Done
+
+### [x] [MED] /soundtrack — "Clear" deletes the whole played-pieces history with no confirmation (pass 7; issue #16; addressed at 0c5aad1)
 
 ### [x] [LOW] / — every route's static HTML shares one generic title and no description (pass 1; issue #15; addressed at 0f10efc)
 

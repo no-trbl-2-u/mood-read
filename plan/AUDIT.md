@@ -5,36 +5,60 @@
 > stays until the owner answers it, and the loop continues on the
 > default it names.
 
-# Site audit — 2026-10-31
+# Site audit — 2026-11-01
 
 ## Top 5 findings (scored)
+
+### [5.6] /soundtrack — "Clear" deletes the whole played-pieces history with no confirmation (plan/CRITIQUE.md pass 7) [x]
+- category: external-critique
+- impact: 7 (MED severity; one tap, no confirm, no undo, erases every
+  book's played-pieces history, despite the row being styled in the
+  danger color)
+- ease: 8 (reused `RescoreConfirm`'s inline-confirm shape, already in
+  the app for a different destructive action)
+- issue: #16
+- fixed: 2026-11-01 (/march, /iterate) — commit 0c5aad1: a Clear press
+  now asks once (Clear or Cancel) before `soundtrack.clear()` runs;
+  `e2e/soundtrack.spec.ts` covers both the Cancel (nothing clears) and
+  Clear (clears for good) paths.
+
+### [4.2] /downloads vs /browse/[id] — the one-book-offline-limit warning is surfaced where it can't help (plan/CRITIQUE.md pass 7)
+- category: external-critique
+- impact: 6 (MED severity; downloading a second book silently evicts
+  the first's offline files, and the only explanation lives inside
+  Downloads' empty-queue state, which a first-time listener has no
+  reason to open before tapping Download)
+- ease: 7 (surface the note inline on Browse's download CTA, next to
+  the existing Wi-Fi-only caption, or as a brief confirm)
+- next: top-scored, unshipped; next `/iterate` tick's pick
+
+### [2.7] /book/[id] — the not-found screen never sets a page title (plan/CRITIQUE.md pass 7)
+- category: external-critique
+- impact: 3 (LOW severity; a dead or mistyped book link keeps
+  whatever tab title was already showing instead of a not-found title)
+- ease: 9 (two JSX lines, the same pattern [5.4] already used for the
+  found-book branch)
+- next: after [4.2]
 
 ### [1.2] every route's pre-hydration body is empty (plan/CRITIQUE.md pass 5)
 - category: external-critique
 - impact: 6
-- ease: 2 (unchanged from the 2026-10-30 pass: still needs a
-  provider-tree SSR-safety pass before `web.output` can flip,
-  per plan/CRITIQUE.md's "tried" note; the 2026-10-30 expand pass
-  already filed this as a candidate — plan/CANDIDATES.md
-  "[score 4.0] Make the root layout's providers SSR-safe" — awaiting
-  `/oversight` promotion)
+- ease: 2 (unchanged: still needs a provider-tree SSR-safety pass
+  before `web.output` can flip, per plan/CRITIQUE.md's "tried" note;
+  plan/CANDIDATES.md "[score 4.0] Make the root layout's providers
+  SSR-safe" awaits `/oversight` promotion)
 - next: no new `/iterate` action; the candidate already covers it
 
-No source file changed since the 2026-10-31 pass at commit 693bb2d
-(the eight commits since then — bb13999, 19cfa11, f8c8841, 37ad588,
-c10ad93, b8f4006, c994f71, and this tick's own re-confirm — are
-plan-metadata-only: expand passes 9 through 12, all "no
-candidates"), so this pass re-confirms rather than re-discovers:
-`pnpm deploy:check` is green against HEAD (c994f71), no
-`TODO`/`FIXME` markers, the single open GitHub issue (#11) is
-already `triage:needs-user`, parked, and spec 01's remaining
-chunks are all blocked (01.26/01.20/01.27 on the still-unset
+This pass drained plan/CRITIQUE.md pass 7 (3 new findings: 0 high, 2
+medium, 1 low) and picked the top-scored one, [5.6], shipping it this
+tick (commit 0c5aad1, issue #16, `pnpm verify` green: typecheck, lint,
+573 unit + 170 proxy tests, build, 120 e2e; `pnpm deploy:check` to
+confirm next). The next two findings, [4.2] and [2.7], are unshipped
+and queued for the next `/iterate` tick. Spec 01's remaining chunks
+stay blocked (01.26/01.20/01.27 on the still-unset
 `OPENAI_API_KEY`/`BRAVE_SEARCH_API_KEY`/`PRESCORE_TOKEN`; 01.28 on
 a real-device phone check this checkout cannot run — both already
-logged below). No category (content, data, links, a11y, tests,
-perf) turned up a finding scoring ≥ 3. Nothing shipped this tick;
-posture is bold, so this tick hands to `/expand` per
-`skills/iterate.md` §6 failure mode 6.
+logged below).
 
 ## Pending — [needs-user-call]
 
@@ -98,6 +122,14 @@ posture is bold, so this tick hands to `/expand` per
   other candidate today is 01.28 (claimed live elsewhere) -- this tick falls through to /iterate.
 
 ## Pending — findings
+
+### [5.6] /soundtrack — "Clear" deletes the whole played-pieces history with no confirmation [x]
+- category: external-critique
+- impact: 7 (MED severity; one tap, no confirm, no undo, erases every book's played-pieces history, despite the row being styled in the danger color; plan/CRITIQUE.md pass 7)
+- ease: 8 (reused `RescoreConfirm`'s inline-confirm shape, already in the app for a different destructive action)
+- seen: 2026-11-01 (march, cloud tick; plan/CRITIQUE.md pass 7)
+- issue: #16
+- fixed: 2026-11-01 (/march, /iterate) — a Clear press now asks once (Clear or Cancel) before `soundtrack.clear()` runs, in a `soundtrack-clear-confirm` band matching `RescoreConfirm`'s shape (`src/app/soundtrack.tsx`); `e2e/soundtrack.spec.ts` covers both the Cancel (nothing clears) and Clear (clears for good) paths (commit 0c5aad1).
 
 ### [Z.2] No CSP, X-Frame-Options, HSTS or Permissions-Policy header on the web build [x]
 - category: external-critique
