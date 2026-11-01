@@ -5,7 +5,7 @@
 > stays until the owner answers it, and the loop continues on the
 > default it names.
 
-# Site audit — 2026-11-01 (re-confirmed, later tick)
+# Site audit — 2026-11-01 (re-confirmed, 8th consecutive no-op tick)
 
 ## Top 5 findings (scored)
 
@@ -16,7 +16,10 @@
 - ease: 9 (two JSX lines, the same pattern [5.4] already used for the
   found-book branch)
 - next: below the 3.0 actionable threshold; re-evaluate once a
-  higher-scored finding lands alongside it
+  higher-scored finding lands alongside it; re-verified this tick
+  (`src/app/book/[id].tsx`'s `!book` branch still carries no `<Head>`
+  or `Stack.Screen` title override) — still real, still too cheap to
+  beat the floor alone
 
 ### [1.2] every route's pre-hydration body is empty (plan/CRITIQUE.md pass 5)
 - category: external-critique
@@ -27,20 +30,28 @@
   SSR-safe" awaits `/oversight` promotion)
 - next: no new `/iterate` action; the candidate already covers it
 
-This tick's `/march` found no ready chunk (01.28's mechanism already
-shipped at 24068f1; only A41's real-device phone check remains, and
-that stays an owner-only action per the `[needs-user-call]` row below;
-01.20/01.26/01.27 stay blocked on unset secrets) and no pending data
-work, so it landed in `/iterate`. The prior tick's two MED findings
-([5.6], [4.2]) are both already shipped (commits 0c5aad1, 8d38ba1;
-moved to `## Pending — findings` below). A fresh cross-category sweep
-(data gaps: no data layer; SEO: single-URL app, negligible; link
-integrity: all internal routes resolve; a11y: the `aria-label`/`role`
-convention holds, guarded by `a11y-guard.test.ts`; tests: no gap on
-recently-touched files; perf: no bloat signal) found nothing new.
-Top score across every open finding is 2.7, below the 3.0 actionable
-floor, so per `skills/iterate.md` §6 failure mode 6 (bold posture)
-this tick hands to `/expand` instead of stopping.
+This tick's `/march` found: no unlabeled/urgent issues (`gh issue
+list` both 0); critique not due (7 commits / ~16h since pass 7's base
+da0cb62 — short of the 12-commit/24h gate); no ready chunk (01.28's
+mechanism shipped at c145ee8/24068f1, confirmed still wired in
+`src/player/PlayerProvider.tsx`'s `androidDuck` path — only A41's
+real-device phone check remains, parked below; 01.20/01.26/01.27 stay
+blocked on unset secrets, confirmed via `node scripts/secrets.mjs
+status`, 0 of 14 set); no `data/` directory. It landed in `/iterate`.
+A fresh cross-category sweep (data gaps: no data layer; SEO:
+single-URL app, negligible; link integrity: all internal routes
+resolve; a11y: the `aria-label`/`role` convention holds, guarded by
+`a11y-guard.test.ts`; tests: no gap on recently-touched files; perf:
+no bloat signal) found nothing new — identical conclusion to the last
+seven ticks (passes 8-14, commits bb6ed53 through 7e53591), since
+nothing has touched `src/`, `spec.md`, `design/` or the issue tracker
+since the critique queue drained at commit d69f6fa. Top score across
+every open finding is 2.7, below the 3.0 actionable floor, so per
+`skills/iterate.md` §6 failure mode 6 (bold posture) this tick hands
+to `/expand` instead of stopping — flagged to `/oversight` below as a
+repeating pattern worth a look, since each pair pays a full `pnpm
+verify` for zero new signal and the real unlock is the critique
+gate's 24h clock (~2026-11-01T18:26Z) or a human landing new work.
 
 ## Pending — [needs-user-call]
 
