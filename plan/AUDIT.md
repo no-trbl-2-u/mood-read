@@ -22,7 +22,7 @@
   `e2e/soundtrack.spec.ts` covers both the Cancel (nothing clears) and
   Clear (clears for good) paths.
 
-### [4.2] /downloads vs /browse/[id] — the one-book-offline-limit warning is surfaced where it can't help (plan/CRITIQUE.md pass 7)
+### [4.2] /downloads vs /browse/[id] — the one-book-offline-limit warning is surfaced where it can't help (plan/CRITIQUE.md pass 7) [x]
 - category: external-critique
 - impact: 6 (MED severity; downloading a second book silently evicts
   the first's offline files, and the only explanation lives inside
@@ -30,7 +30,11 @@
   reason to open before tapping Download)
 - ease: 7 (surface the note inline on Browse's download CTA, next to
   the existing Wi-Fi-only caption, or as a brief confirm)
-- next: top-scored, unshipped; next `/iterate` tick's pick
+- issue: #17
+- fixed: 2026-11-01 (/march, /iterate) — commit 8d38ba1: the Browse
+  detail screen's download button now shows the same one-book-offline
+  limit note next to the Wi-Fi-only caption, before the listener taps
+  Download; `e2e/browse.spec.ts` covers its visibility.
 
 ### [2.7] /book/[id] — the not-found screen never sets a page title (plan/CRITIQUE.md pass 7)
 - category: external-critique

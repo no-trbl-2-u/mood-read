@@ -9,24 +9,6 @@
 
 ## Pending
 
-### [MED] /downloads vs /browse/[id] — the one-book-offline-limit warning is surfaced where it can't help
-- pass: 7 (commit da0cb62)
-- viewport: n/a (web-fetch engine, no browser tools on this runner)
-- category: comprehension
-- observation: on the web, downloading a second book silently evicts the first book's
-  offline files (it stays on the shelf, just no longer available offline). That
-  behavior is explained in `downloads.tsx`'s copy, but only inside the empty-queue
-  state, which a first-time listener has no reason to open before tapping Download.
-  The actual Download button, on the book's Browse detail screen, carries no such
-  warning — only a Wi-Fi-only caption.
-- evidence: `src/app/downloads.tsx` lines 95-107 (`EmptyQueue`, `COPY.webNote` only
-  rendered when `downloads.length === 0`) vs `src/app/browse/[id].tsx` lines 196-201
-  (the download CTA shows only `COPY.wifiCaption`, no eviction note).
-- suggested fix: surface the one-book-offline-limit note inline on the Browse detail
-  screen's download button (or as a brief confirm) before a second download evicts
-  the first, not only buried in Downloads' empty state.
-- source: web-fetch
-
 ### [LOW] /book/[id] — the not-found screen never sets a page title
 - pass: 7 (commit da0cb62)
 - viewport: n/a (web-fetch engine, no browser tools on this runner)
@@ -100,6 +82,8 @@
 - source: web-fetch
 
 ## Done
+
+### [x] [MED] /downloads vs /browse/[id] — the one-book-offline-limit warning is surfaced where it can't help (pass 7; issue #17; addressed at 8d38ba1)
 
 ### [x] [MED] /soundtrack — "Clear" deletes the whole played-pieces history with no confirmation (pass 7; issue #16; addressed at 0c5aad1)
 
