@@ -156,6 +156,12 @@ test.describe("browse", () => {
     await page.waitForLoadState("networkidle");
   });
 
+  test("the Browse download CTA warns up front that the web keeps only one book offline", async ({ page }) => {
+    await page.goto(`/browse/${IDENTIFIER}`);
+    await expect(page.getByTestId("browse-book-download")).toBeVisible();
+    await expect(page.getByTestId("browse-book-web-note")).toContainText("Downloading this one takes any other off this browser");
+  });
+
   test("A9: Download builds the book with its chapters, cover, title and author", async ({ page }) => {
     await page.goto(`/browse/${IDENTIFIER}`);
     await expect(page.getByTestId("browse-book-download")).toBeVisible();

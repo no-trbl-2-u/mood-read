@@ -1,6 +1,6 @@
 import { router, useLocalSearchParams } from "expo-router";
 import { useEffect, useState } from "react";
-import { ScrollView, StyleSheet, Text, View } from "react-native";
+import { Platform, ScrollView, StyleSheet, Text, View } from "react-native";
 
 import { downloadQueue, useDownloads } from "@/lib/downloads";
 import { useLibriVoxBook } from "@/lib/library";
@@ -41,6 +41,7 @@ const COPY = {
   surprise: "Chapters stay a surprise until you reach them.",
   download: "Download",
   wifiCaption: "Downloads on Wi-Fi only. Change it in Settings.",
+  webNote: "On the web, Mood Read keeps one book and its music offline. Downloading this one takes any other off this browser, and it stays on your shelf. The phone app keeps your whole shelf.",
   chaptersTitle: "Chapters",
   openShelf: "Open on your shelf",
   pause: "Pause",
@@ -198,6 +199,11 @@ export default function BrowseBookScreen() {
           <View style={styles.downloadBlock}>
             <Button testID="browse-book-download" label={COPY.download} icon="download" onPress={onDownload} />
             {wifiOnly && <Text style={styles.caption}>{COPY.wifiCaption}</Text>}
+            {Platform.OS === "web" && (
+              <Text testID="browse-book-web-note" style={styles.caption}>
+                {COPY.webNote}
+              </Text>
+            )}
           </View>
         )}
 
