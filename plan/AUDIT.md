@@ -5,7 +5,7 @@
 > stays until the owner answers it, and the loop continues on the
 > default it names.
 
-# Site audit — 2026-11-02 (re-confirmed, 13th consecutive no-op tick)
+# Site audit — 2026-11-02 (re-confirmed, 14th consecutive no-op tick)
 
 ## Top 5 findings (scored)
 
@@ -34,20 +34,27 @@ This tick's `/march` found: one open issue (#11, still labeled
 `triage:needs-user` — the 2026-10-29 cloud-tick push-token crash, routed
 to `/oversight` for a `.github/workflows/next.yml` credential-refresh
 call; unchanged, confirmed via `gh issue view 11`; no new unlabeled/urgent
-issues, `gh issue list` 0/0); critique not due (5 commits past pass 8's
-own base `c4cea49`, ~6h, under both the 12-commit and 24h floor); no
-ready chunk (01.28 stays parked below on A41's real-device phone check;
-01.20/01.26/01.27 stay blocked on unset secrets, confirmed via `node
-scripts/secrets.mjs status`, still 0 of 14 set); no `data/` directory.
-`/march`'s own expand gate (step 3c) also falls short — 1 commit / ~1h56m
-since pass 19's base `e9671e7`, under the 20-commit/48h floor — so this
-landed in `/iterate` again. A fresh cross-category sweep (data gaps: no
-data layer; SEO: single-URL app, negligible; link integrity: all internal
-routes resolve; a11y: the `aria-label`/`role` convention holds, guarded
-by `a11y-guard.test.ts`; tests: the two most recent fixes (8d38ba1,
-0c5aad1) already carry their own e2e coverage; perf: no bloat signal)
-found nothing new — identical conclusion to the last twelve ticks (passes
-8-19, commits bb6ed53 through a98a451), since nothing has touched `src/`,
+issues, `gh issue list` 0/0); critique not due (7 commits past pass 8's
+own base `c4cea49`, ~6h, under both the 12-commit and 24h floor). `/next
+top` picked up 01.28 this tick (the only chunk `node scripts/plan/order.mjs`
+calls reachable), claimed it, cut a worktree and installed deps — then,
+before briefing a builder, re-confirmed against this file's own
+`[needs-user-call]` row below that its mechanism already shipped
+(commits 2c57c8f, c145ee8, 2026-10-30) and the only thing standing
+between it and closed is A41's real-device phone check, which a cloud
+checkout cannot perform; released the claim and closed the worktree
+unbuilt rather than re-do already-shipped work. 01.20/01.26/01.27 stay
+blocked on unset secrets (confirmed via `node scripts/secrets.mjs
+status`, still 0 of 14 set); no `data/` directory. `/march`'s own expand
+gate (step 3c) also falls short — 1 commit / ~6m since pass 20's own base
+`b645ff3`, under the 20-commit/48h floor — so this landed in `/iterate`
+again. A fresh cross-category sweep (data gaps: no data layer; SEO:
+single-URL app, negligible; link integrity: all internal routes resolve;
+a11y: the `aria-label`/`role` convention holds, guarded by
+`a11y-guard.test.ts`; tests: the two most recent fixes (8d38ba1, 0c5aad1)
+already carry their own e2e coverage; perf: no bloat signal) found
+nothing new — identical conclusion to the last thirteen ticks (passes
+8-20, commits bb6ed53 through c2c42e3), since nothing has touched `src/`,
 `spec.md`, `design/` or the issue tracker since the critique queue
 drained at commit d69f6fa (confirmed: `git log d69f6fa..HEAD -- src/
 spec.md design/` is empty). Top score across every open finding is 2.7,
