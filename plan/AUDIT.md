@@ -5,7 +5,7 @@
 > stays until the owner answers it, and the loop continues on the
 > default it names.
 
-# Site audit — 2026-11-02 (re-confirmed, 11th consecutive no-op tick)
+# Site audit — 2026-11-02 (re-confirmed, 12th consecutive no-op tick)
 
 ## Top 5 findings (scored)
 
@@ -34,31 +34,30 @@ This tick's `/march` found: one open issue (#11, still labeled
 `triage:needs-user` — the 2026-10-29 cloud-tick push-token crash, routed
 to `/oversight` for a `.github/workflows/next.yml` credential-refresh
 call; unchanged, confirmed via `gh issue view 11`; no new unlabeled/urgent
-issues, `gh issue list` 0/0); critique not due (0 commits past pass 8's
-own base `ab0079f` — pass 8 itself is HEAD's parent, so neither the
-12-commit nor the 24h leg has even started); no ready chunk (01.28 stays
-parked below on A41's real-device phone check; 01.20/01.26/01.27 stay
-blocked on unset secrets, confirmed via `node scripts/secrets.mjs
-status`, still 0 of 14 set); no `data/` directory. `/march`'s own expand
-gate (step 3c) also falls short — 2 commits / ~10h since pass 17's base
-`267c859`, under the 20-commit/48h floor — so this landed in `/iterate`.
-A fresh cross-category sweep (data gaps: no data layer; SEO: single-URL
-app, negligible; link integrity: all internal routes resolve; a11y: the
-`aria-label`/`role` convention holds, guarded by `a11y-guard.test.ts`;
-tests: the two most recent fixes (8d38ba1, 0c5aad1) already carry their
-own e2e coverage; perf: no bloat signal) found nothing new — identical
-conclusion to the last ten ticks (passes 8-17, commits bb6ed53 through
-ab0079f), since nothing has touched `src/`, `spec.md`, `design/` or the
-issue tracker since the critique queue drained at commit d69f6fa
-(confirmed: `git log d69f6fa..HEAD -- src/ spec.md design/` is empty).
-Top score across every open finding is 2.7, below the 3.0 actionable
-floor, so per `skills/iterate.md` §6 failure mode 6 (bold posture) this
-tick hands to `/expand` instead of stopping — the repeating no-signal
-pairing flagged several ticks ago to `/oversight` is still unresolved and
-still the cheapest real lever: a human landing new work (clearing the
-vault secrets, answering issue #11's workflow call, or doing 01.28's
-phone check) is what actually unblocks the next real tick, not another
-audit/expand pair.
+issues, `gh issue list` 0/0); critique not due (3 commits past pass 8's
+own base `ab0079f`, ~12h, under both the 12-commit and 24h floor); no
+ready chunk (01.28 stays parked below on A41's real-device phone check;
+01.20/01.26/01.27 stay blocked on unset secrets, confirmed via `node
+scripts/secrets.mjs status`, still 0 of 14 set); no `data/` directory.
+`/march`'s own expand gate (step 3c) also falls short — 1 commit / ~1h45m
+since pass 18's base `afa0a61`, under the 20-commit/48h floor — so this
+landed in `/iterate` again. A fresh cross-category sweep (data gaps: no
+data layer; SEO: single-URL app, negligible; link integrity: all internal
+routes resolve; a11y: the `aria-label`/`role` convention holds, guarded
+by `a11y-guard.test.ts`; tests: the two most recent fixes (8d38ba1,
+0c5aad1) already carry their own e2e coverage; perf: no bloat signal)
+found nothing new — identical conclusion to the last eleven ticks (passes
+8-18, commits bb6ed53 through 80e42c8), since nothing has touched `src/`,
+`spec.md`, `design/` or the issue tracker since the critique queue
+drained at commit d69f6fa (confirmed: `git log d69f6fa..HEAD -- src/
+spec.md design/` is empty). Top score across every open finding is 2.7,
+below the 3.0 actionable floor, so per `skills/iterate.md` §6 failure
+mode 6 (bold posture) this tick hands to `/expand` instead of stopping —
+the repeating no-signal pairing flagged several ticks ago to `/oversight`
+is still unresolved and still the cheapest real lever: a human landing
+new work (clearing the vault secrets, answering issue #11's workflow
+call, or doing 01.28's phone check) is what actually unblocks the next
+real tick, not another audit/expand pair.
 
 ## Pending — [needs-user-call]
 
