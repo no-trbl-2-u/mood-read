@@ -1,13 +1,32 @@
 # Critique log
 
-> Last pass: 2026-11-02 at commit ab0079f
-> Pass count: 8
+> Last pass: 2026-11-02 at commit 91caaea
+> Pass count: 9
 
 > External-observer feedback for Mood Read. Populated by
 > `/critique`, drained by `/iterate`. See `skills/critique.md`
 > for the contract.
 
 ## Pending
+
+### [LOW] /sitemap.xml — still falls back to the SPA shell despite being marked fixed alongside robots.txt
+- pass: 9 (commit 91caaea)
+- viewport: n/a (web-fetch engine, no browser tools on this runner)
+- category: seo
+- observation: the [Z.1] fix (plan/AUDIT.md, CRITIQUE.md pass 3, addressed at b670e89) closed out
+  "/robots.txt, /sitemap.xml — SPA catch-all serves the app shell instead of real files" as done for
+  both files, but only `public/robots.txt` was actually added. `public/` contains `_headers`,
+  `licenses.txt` and `robots.txt` only — no `sitemap.xml`. `e2e/smoke.spec.ts` only asserts
+  `/robots.txt`'s status/content-type/body; there is no equivalent assertion for `/sitemap.xml`. Live
+  `/sitemap.xml` still returns the generic SPA shell (title "Mood Read", no XML) instead of a real
+  sitemap, so the half of the original finding that named `/sitemap.xml` was never actually closed.
+- evidence: WebFetch on `https://mood-read.pages.dev/sitemap.xml` returns the same empty shell every
+  unmatched path serves (title "Mood Read", no XML declaration or markup). `public/` (via Glob) has
+  no `sitemap.xml`. `e2e/smoke.spec.ts` lines 44-53 test `/robots.txt` only.
+- suggested fix: add a real `public/sitemap.xml` (same static pass-through pattern as
+  `public/robots.txt` / `public/licenses.txt`) listing the site's real routes, and add an e2e
+  assertion for it so this doesn't read as fixed again without actually being fixed.
+- source: web-fetch
 
 ### [LOW] /book/[id] — the not-found screen never sets a page title
 - pass: 7 (commit da0cb62)
