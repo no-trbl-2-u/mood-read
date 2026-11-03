@@ -5,7 +5,7 @@
 > stays until the owner answers it, and the loop continues on the
 > default it names.
 
-# Site audit — 2026-11-03 (iterate: no actionable work ≥ 3.0, handed to /expand)
+# Site audit — 2026-11-03 (iterate: no actionable work ≥ 3.0, handed to /expand; second tick, commit 250f963 base)
 
 ## Top 5 findings (scored)
 
@@ -17,9 +17,9 @@
   found-book branch)
 - next: below the 3.0 actionable threshold; re-evaluate once a
   higher-scored finding lands alongside it; re-verified this tick
-  (`src/app/book/[id].tsx`'s `!book` branch still carries no `<Head>`
-  or `Stack.Screen` title override, vs. the found-book branch) — still
-  real, still too cheap to beat the floor alone
+  (`src/app/book/[id].tsx`'s `!book` branch, line 111, still returns
+  before the `<Stack.Screen>`/`<Head>` title block at lines 150-153) —
+  still real, still too cheap to beat the floor alone
 
 ### [1.2] every route's pre-hydration body is empty (plan/CRITIQUE.md pass 5)
 - category: external-critique
@@ -30,32 +30,29 @@
   SSR-safe" awaits `/oversight` promotion)
 - next: no new `/iterate` action; the candidate already covers it
 
-This tick's `/march`: triage gate cheap (0 unlabeled, 0 urgent; the
-one open issue, #11, stays `triage:needs-user`, confirmed unchanged via
-`gh issue view 11`); critique gate not due (3 commits / ~14h past pass
+This tick's `/march`: triage gate cheap (0 unlabeled, 0 urgent via
+`gh issue list`). Critique gate not due (5 commits / ~15.7h past pass
 9's base `91caaea`, under both the 12-commit and 24h floor). `/next
 top`'s picker (`node scripts/plan/order.mjs`) again names 01.28 as the
 only reachable chunk, but its `[needs-user-call]` row below is unchanged:
-the mechanism shipped on 2026-10-30 (commits 2c57c8f, c145ee8) and the
+the mechanism shipped 2026-10-30 (commits 2c57c8f, c145ee8) and the
 only thing left is A41's real-device phone check, which this cloud
 checkout cannot perform — not re-claimed or re-built this tick.
 01.20/01.26/01.27 stay blocked on unset secrets (`node scripts/secrets.mjs
-status`: still 0 of 14 set). `/march`'s own expand gate (step 3c) also
-falls short (4 commits / ~14h since pass 22's base `0f7fb91`, under the
-20-commit/48h floor), so this tick fell to `/iterate`. A fresh sweep
-(data: no data layer; SEO: single-page-app, negligible; links: every
-internal route resolves; a11y: `a11y-guard.test.ts` still holds the
-line; tests: the sitemap fix (7dde976) already carries its own e2e
-assertion; perf: no bloat signal) found nothing new — `git log
-7dde976..HEAD -- src/ spec.md design/` is empty, and the critique
-queue's only pending rows are the two above, unchanged since pass 5/7.
-Top score across every open finding is 2.7, below the 3.0 actionable
-floor, so per `skills/iterate.md` §6 failure mode 6 (bold posture) this
-tick hands to `/expand` instead of stopping. The three `[needs-user-call]`
-rows below (01.28's phone check, 01.26's secrets, 01.11's streaming
-infra) remain the cheapest real lever — a human landing any one of them
-unblocks more than another audit/expand pair — and stay queued for
-`/oversight`.
+status`: still 0 of 14 set). No `data/` layer, so step 3b doesn't apply.
+`/march`'s own expand gate (step 3c) also falls short (0-1 commits /
+under an hour since pass 23's base `bdc776b`, the previous tick's own
+expand pass), so this tick fell to `/iterate`. A fresh sweep found
+nothing new — `git log bdc776b..HEAD -- src/ spec.md design/` is empty,
+so the code, spec and design surfaces are byte-identical to the
+previous tick's audit; the critique queue's only pending rows are the
+two above, unchanged since pass 5/7. Top score across every open
+finding is 2.7, below the 3.0 actionable floor, so per
+`skills/iterate.md` §6 failure mode 6 (bold posture) this tick hands to
+`/expand` instead of stopping. The three `[needs-user-call]` rows below
+(01.28's phone check, 01.26's secrets, 01.11's streaming infra) remain
+the cheapest real lever — a human landing any one of them unblocks more
+than another audit/expand pair — and stay queued for `/oversight`.
 
 ## Pending — [needs-user-call]
 
