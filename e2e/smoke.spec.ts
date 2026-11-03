@@ -52,6 +52,18 @@ test("/robots.txt is served with the web build and carries real directives", asy
   expect(body).toContain("Allow: /");
 });
 
+// The web build ships a real sitemap.xml beside the app (plan/CRITIQUE.md pass 9: the pass-3 fix added
+// robots.txt but never actually added this file, so /sitemap.xml kept falling back to the SPA shell).
+test("/sitemap.xml is served with the web build and lists the real routes", async ({ request }) => {
+  const res = await request.get("/sitemap.xml");
+  expect(res.status()).toBe(200);
+  expect(res.headers()["content-type"]).toMatch(/^application\/xml/);
+  const body = await res.text();
+  expect(body).toContain("<urlset");
+  expect(body).toContain("<loc>https://mood-read.pages.dev/</loc>");
+  expect(body).toContain("<loc>https://mood-read.pages.dev/soundtrack</loc>");
+});
+
 // A baseline security header set ships on every route via public/_headers, Cloudflare Pages' own config file
 // (plan/CRITIQUE.md, the missing-security-headers finding): no clickjacking frame, HSTS on, no unused browser
 // feature granted.

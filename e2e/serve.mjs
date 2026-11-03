@@ -34,6 +34,7 @@ const TYPES = {
   '.ogg': 'audio/ogg',
   '.wav': 'audio/wav',
   '.txt': 'text/plain; charset=utf-8',
+  '.xml': 'application/xml; charset=utf-8',
 };
 
 export const contentType = (file) => TYPES[path.extname(file).toLowerCase()] ?? 'application/octet-stream';
