@@ -1,13 +1,69 @@
 # Critique log
 
-> Last pass: 2026-11-02 at commit 91caaea
-> Pass count: 9
+> Last pass: 2026-11-03 at commit bb95dfb
+> Pass count: 10
 
 > External-observer feedback for Mood Read. Populated by
 > `/critique`, drained by `/iterate`. See `skills/critique.md`
 > for the contract.
 
 ## Pending
+
+### [MED] /browse — the whole catalog has no crawlable path, from any entry point
+- pass: 10 (commit bb95dfb)
+- viewport: n/a (web-fetch engine, no browser tools on this runner)
+- category: seo
+- observation: `/browse`'s book list (the default "popular on LibriVox" list and every search
+  result) is populated entirely client-side from a direct archive.org fetch inside
+  `src/app/browse.tsx`'s effect. Neither the server-rendered HTML nor `public/sitemap.xml`
+  contains a single `/browse/<id>` link — `sitemap.xml` is a 9-entry static file covering only
+  the fixed routes (`/`, `/browse`, `/import`, `/downloads`, `/soundtrack`, `/settings`,
+  `/credits`, `/privacy`, `/licenses`). A crawler or no-JS client has no path at all into the
+  catalog Browse exists to showcase. This is distinct from the already-filed, already-attempted
+  "every route's pre-hydration body is empty" row: that one is about CSR leaving each page blank
+  before JS runs; this one is about the sitemap (a static file, unaffected by CSR) never listing
+  the dynamic ids in the first place, so even a fix to the CSR problem wouldn't surface the
+  catalog without a separate change.
+- evidence: WebFetch of `/browse` returns no links; `public/sitemap.xml` lists 9 static routes,
+  no `/browse/<id>` entries.
+- suggested fix: have a build-time step enumerate the pre-scored/popular book ids (the proxy's
+  `GET /v1/prescored`, 05.20) and emit `/browse/<id>` entries into the sitemap, giving the
+  catalog a crawlable surface independent of the CSR fix. Likely a new small build script, not a
+  one-line change — scope before picking up.
+- source: web-fetch
+
+### [MED] /browse/[id] — every book's page title stays the generic "Browse"
+- pass: 10 (commit bb95dfb)
+- viewport: n/a (web-fetch engine, no browser tools on this runner)
+- category: seo
+- observation: `src/app/_layout.tsx`'s `<Stack.Screen name="browse/[id]" options={{ title:
+  "Browse" }} />` sets one static title for every book's detail page; `src/app/browse/[id].tsx`
+  renders the book's title as on-page text but never calls `expo-router/head`'s `<Head>` to set
+  `document.title`, unlike `src/app/book/[id].tsx` (`<Head><title>{book.title}</title></Head>`,
+  lines 151-153). Every `/browse/<id>` page a reader opens shows the same "Browse" tab title, so
+  several open book pages are indistinguishable in tabs/history, and a shared or bookmarked link
+  carries no book-specific title. This is a different gap from the already-filed `/book/[id]`
+  not-found-title row (that one covers only the error branch of a different route).
+- evidence: `src/app/_layout.tsx` line 52; `src/app/browse/[id].tsx` has no `Head` import at all.
+- suggested fix: add `<Head><title>{title} — Browse — Mood Read</title></Head>` once the book's
+  title resolves, the same pattern `book/[id].tsx` already uses.
+- source: web-fetch
+
+### [LOW] TopBar — the shared heading has no explicit level, so some screens have no h1
+- pass: 10 (commit bb95dfb)
+- viewport: n/a (web-fetch engine, no browser tools on this runner)
+- category: a11y
+- observation: `src/ui/TopBar.tsx`'s title renders `<Text role="heading">` with no `aria-level`
+  set, which defaults to ARIA level 2. `/browse`, `/downloads` and `/soundtrack` render their page
+  title through `TopBar` alone, so each gets an implicit h2 and no h1 at all. `/browse/<id>` and
+  `/book/<id>` both set their own title text with an explicit `aria-level={1}`, so only those two
+  routes have a real top-level heading. A screen-reader user navigating by heading level gets an
+  inconsistent landmark structure across the site's own secondary screens.
+- evidence: `src/ui/TopBar.tsx` line 40 — `role="heading"`, no `aria-level` prop anywhere in the
+  component; contrast with `src/app/browse/[id].tsx` line 160's explicit `aria-level={1}`.
+- suggested fix: give `TopBar`'s title an `aria-level` prop, defaulting to 1, so every screen using
+  it alone gets a consistent top-level heading.
+- source: web-fetch
 
 ### [LOW] /book/[id] — the not-found screen never sets a page title
 - pass: 7 (commit da0cb62)
