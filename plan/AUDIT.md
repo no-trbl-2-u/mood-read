@@ -5,7 +5,7 @@
 > stays until the owner answers it, and the loop continues on the
 > default it names.
 
-# Site audit — 2026-11-03 (shipped: [3.6] /sitemap.xml, issue #18, commit 7dde976)
+# Site audit — 2026-11-03 (iterate: no actionable work ≥ 3.0, handed to /expand)
 
 ## Top 5 findings (scored)
 
@@ -17,9 +17,9 @@
   found-book branch)
 - next: below the 3.0 actionable threshold; re-evaluate once a
   higher-scored finding lands alongside it; re-verified this tick
-  (`src/app/book/[id].tsx` line 111's `!book` branch still carries no
-  `<Head>` or `Stack.Screen` title override, vs. the found-book branch's
-  lines 150-153) — still real, still too cheap to beat the floor alone
+  (`src/app/book/[id].tsx`'s `!book` branch still carries no `<Head>`
+  or `Stack.Screen` title override, vs. the found-book branch) — still
+  real, still too cheap to beat the floor alone
 
 ### [1.2] every route's pre-hydration body is empty (plan/CRITIQUE.md pass 5)
 - category: external-critique
@@ -30,61 +30,32 @@
   SSR-safe" awaits `/oversight` promotion)
 - next: no new `/iterate` action; the candidate already covers it
 
-This tick's `/march` found: one open issue (#11, still labeled
-`triage:needs-user` — the 2026-10-29 cloud-tick push-token crash, routed
-to `/oversight` for a `.github/workflows/next.yml` credential-refresh
-call; unchanged, confirmed via `gh issue view 11`; no new unlabeled/urgent
-issues, `gh issue list` 0/0); critique not due (1 commit past pass 9's own
-base `91caaea`, ~12h, under both the 12-commit and 24h floor). `/next
-top`'s own picker (`node scripts/plan/order.mjs`) again names 01.28 as the
-only reachable chunk, and this file's `[needs-user-call]` row below is
-unchanged since the prior tick: its mechanism already shipped (commits
-2c57c8f, c145ee8, 2026-10-30) and the only thing standing between it and
-closed is A41's real-device phone check, which a cloud checkout cannot
-perform — not re-claimed or re-built this tick. 01.20/01.26/01.27 stay
-blocked on unset secrets; `/march`'s own expand gate (step 3c) also falls
-short (2 commits / ~12h since pass 22's own base `0f7fb91`, under the
-20-commit/48h floor), so this tick fell to `/iterate` per the standard
-dispatch order. Unlike the last 15 consecutive ticks, this one had fresh
-signal: `/critique` pass 9 (commit 3957319, landed just before this tick)
-filed a new row — the pass-3 [Z.1] fix only ever added `public/robots.txt`
-and never actually added `public/sitemap.xml`, despite being marked done
-for both files. Scored [3.6] (impact 4 — a prior fix that silently
-half-shipped is worse than a cosmetic gap, LOW severity external-critique
-band is impact 2-4; ease 9 — identical static-file + e2e-assertion pattern
-already proven for robots.txt), clearing the 3.0 actionable floor that the
-last 15 ticks' findings (topping out at 2.7) could not. Shipped this tick:
-`public/sitemap.xml` (the same `public/` pass-through pattern as
-robots.txt/licenses.txt, listing the 9 real static routes), a new
-`e2e/smoke.spec.ts` assertion mirroring the robots.txt test, and an
-`.xml` → `application/xml` content-type mapping in `e2e/serve.mjs` (it had
-none before, so the hermetic e2e would have served it as
-`application/octet-stream`). `pnpm verify` green end to end (plan:check,
-secrets:scan, typecheck, lint, 573 unit tests, 170 proxy tests, build, 122
-e2e specs); mirrored as issue #18, closed by commit 7dde976. One fix per
-tick (hard rule 7.1): no further work picked up this tick.
-01.20/01.26/01.27 stay blocked on unset secrets (confirmed via `node
-scripts/secrets.mjs status`, still 0 of 14 set); no `data/` directory.
-`/march`'s own expand gate (step 3c) also falls short — 1 commit / ~6h
-since pass 21's own base `a2918ab`, under the 20-commit/48h floor — so
-this landed in `/iterate` again. A fresh cross-category sweep (data
-gaps: no data layer; SEO: single-URL app, negligible; link integrity:
-all internal routes resolve; a11y: the `aria-label`/`role` convention
-holds, guarded by `a11y-guard.test.ts`; tests: the two most recent fixes
-(8d38ba1, 0c5aad1) already carry their own e2e coverage; perf: no bloat
-signal) found nothing new — identical conclusion to the last fourteen
-ticks (passes 8-21, commits bb6ed53 through 3c493a6), since nothing has
-touched `src/`, `spec.md` or `design/` or the issue tracker since the
-critique queue drained at commit d69f6fa (confirmed: `git log
-d69f6fa..HEAD -- src/ spec.md design/` is empty). Top score across every
-open finding is 2.7, below the 3.0 actionable floor, so per
-`skills/iterate.md` §6 failure mode 6 (bold posture) this tick hands to
-`/expand` instead of stopping — the repeating no-signal pairing flagged
-several ticks ago to `/oversight` is still unresolved and still the
-cheapest real lever: a human landing new work (clearing the vault
-secrets, answering issue #11's workflow call, or doing 01.28's phone
-check) is what actually unblocks the next real tick, not another
-audit/expand pair.
+This tick's `/march`: triage gate cheap (0 unlabeled, 0 urgent; the
+one open issue, #11, stays `triage:needs-user`, confirmed unchanged via
+`gh issue view 11`); critique gate not due (3 commits / ~14h past pass
+9's base `91caaea`, under both the 12-commit and 24h floor). `/next
+top`'s picker (`node scripts/plan/order.mjs`) again names 01.28 as the
+only reachable chunk, but its `[needs-user-call]` row below is unchanged:
+the mechanism shipped on 2026-10-30 (commits 2c57c8f, c145ee8) and the
+only thing left is A41's real-device phone check, which this cloud
+checkout cannot perform — not re-claimed or re-built this tick.
+01.20/01.26/01.27 stay blocked on unset secrets (`node scripts/secrets.mjs
+status`: still 0 of 14 set). `/march`'s own expand gate (step 3c) also
+falls short (4 commits / ~14h since pass 22's base `0f7fb91`, under the
+20-commit/48h floor), so this tick fell to `/iterate`. A fresh sweep
+(data: no data layer; SEO: single-page-app, negligible; links: every
+internal route resolves; a11y: `a11y-guard.test.ts` still holds the
+line; tests: the sitemap fix (7dde976) already carries its own e2e
+assertion; perf: no bloat signal) found nothing new — `git log
+7dde976..HEAD -- src/ spec.md design/` is empty, and the critique
+queue's only pending rows are the two above, unchanged since pass 5/7.
+Top score across every open finding is 2.7, below the 3.0 actionable
+floor, so per `skills/iterate.md` §6 failure mode 6 (bold posture) this
+tick hands to `/expand` instead of stopping. The three `[needs-user-call]`
+rows below (01.28's phone check, 01.26's secrets, 01.11's streaming
+infra) remain the cheapest real lever — a human landing any one of them
+unblocks more than another audit/expand pair — and stay queued for
+`/oversight`.
 
 ## Pending — [needs-user-call]
 
