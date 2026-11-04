@@ -69,6 +69,21 @@ and moved to `plan/CRITIQUE.md`'s Done section by the prior tick, [3.2]
 (TopBar's missing heading level) is now the top-scored pending row,
 clearing the 3.0 floor; shipped it this tick (commit da9919f).
 
+A second `/march` tick the same day: triage still 0/0. Critique gate still
+not due (7 commits / ~23h46m past pass 10's base `bb95dfb` — under both
+floors by minutes). `node scripts/plan/order.mjs` names 01.28 again; its
+`[needs-user-call]` row is unchanged, claimed and released unbuilt, same
+as every prior tick since 2026-10-30. Secrets status unchanged (0/14).
+`/march`'s expand gate isn't due either (1 commit / ~4h since pass 28's
+base `1ee872f`, far under the 20-commit/48h floor), so fell to `/iterate`.
+The three pending rows below ([2.7], [~2], [1.2]) are unchanged and none
+clears 3.0 alone; a fresh spot-check (grep for `TODO`/`FIXME`, a census of
+`src/` files with no colocated test) found nothing new above the bar
+either — the untested-file list is long but every file on it is either
+exercised indirectly through integration/e2e coverage or too small a
+surface to score honestly as its own finding. Per `skills/iterate.md` §6
+failure mode 6 (bold posture): handing to `/expand` instead of stopping.
+
 ## Pending — [needs-user-call]
 
 ### [needs-user-call] 01.28 shipped its mechanism; A41's phone check still needs a real device (A41)
