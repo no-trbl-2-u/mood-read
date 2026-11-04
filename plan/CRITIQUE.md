@@ -32,23 +32,6 @@
   one-line change — scope before picking up.
 - source: web-fetch
 
-### [MED] /browse/[id] — every book's page title stays the generic "Browse"
-- pass: 10 (commit bb95dfb)
-- viewport: n/a (web-fetch engine, no browser tools on this runner)
-- category: seo
-- observation: `src/app/_layout.tsx`'s `<Stack.Screen name="browse/[id]" options={{ title:
-  "Browse" }} />` sets one static title for every book's detail page; `src/app/browse/[id].tsx`
-  renders the book's title as on-page text but never calls `expo-router/head`'s `<Head>` to set
-  `document.title`, unlike `src/app/book/[id].tsx` (`<Head><title>{book.title}</title></Head>`,
-  lines 151-153). Every `/browse/<id>` page a reader opens shows the same "Browse" tab title, so
-  several open book pages are indistinguishable in tabs/history, and a shared or bookmarked link
-  carries no book-specific title. This is a different gap from the already-filed `/book/[id]`
-  not-found-title row (that one covers only the error branch of a different route).
-- evidence: `src/app/_layout.tsx` line 52; `src/app/browse/[id].tsx` has no `Head` import at all.
-- suggested fix: add `<Head><title>{title} — Browse — Mood Read</title></Head>` once the book's
-  title resolves, the same pattern `book/[id].tsx` already uses.
-- source: web-fetch
-
 ### [LOW] TopBar — the shared heading has no explicit level, so some screens have no h1
 - pass: 10 (commit bb95dfb)
 - viewport: n/a (web-fetch engine, no browser tools on this runner)
@@ -138,6 +121,8 @@
 - source: web-fetch
 
 ## Done
+
+### [x] [MED] /browse/[id] — every book's page title stays the generic "Browse" (pass 10; issue #19; addressed at 808069a)
 
 ### [x] [LOW] /sitemap.xml — still falls back to the SPA shell despite being marked fixed alongside robots.txt (pass 9; issue #18; addressed at 7dde976)
 

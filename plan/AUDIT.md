@@ -5,22 +5,54 @@
 > stays until the owner answers it, and the loop continues on the
 > default it names.
 
-# Site audit — 2026-11-03 (iterate: no actionable work ≥ 3.0, handed to /expand; fourth tick, commit 4e81228 base)
+# Site audit — 2026-11-04 (iterate: shipped [5.4] — issue #19, commit 493b08b base)
 
 ## Top 5 findings (scored)
+
+### [5.4] /browse/[id] — every book's page title stays the generic "Browse" (plan/CRITIQUE.md pass 10) [x]
+- category: external-critique
+- impact: 6 (MED severity; every LibriVox book's detail page is
+  indistinguishable in tabs/history, and a shared or bookmarked link
+  carries no book-specific title)
+- ease: 9 (two JSX lines plus a `Stack.Screen` title override, the same
+  `Head`/title pattern `book/[id].tsx` already uses)
+- issue: #19
+- fixed: 2026-11-04 (/march, /iterate) — commit 808069a: `src/app/browse/[id].tsx`
+  now sets `<Stack.Screen options={{ title }} />` and
+  `<Head><title>{title}</title></Head>` once the book's title resolves (shelf
+  book or archive.org item), mirroring `book/[id].tsx`; `e2e/browse.spec.ts`'s
+  A9 test asserts `page.title()` names the open book instead of the layout's
+  static "Browse" default.
+
+### [3.2] TopBar — the shared heading has no explicit level, so some screens have no h1 (plan/CRITIQUE.md pass 10)
+- category: external-critique
+- impact: 4 (LOW severity; `/browse`, `/downloads` and `/soundtrack` render
+  their title through `TopBar` alone, getting an implicit h2 and no h1 at
+  all, an inconsistent landmark structure for screen-reader navigation)
+- ease: 8 (one `aria-level` prop on `TopBar`, defaulting to 1)
+- next: below this tick's pick; next candidate once picked up
 
 ### [2.7] /book/[id] — the not-found screen never sets a page title (plan/CRITIQUE.md pass 7)
 - category: external-critique
 - impact: 3 (LOW severity; a dead or mistyped book link keeps
   whatever tab title was already showing instead of a not-found title)
-- ease: 9 (two JSX lines, the same pattern [5.4] already used for the
+- ease: 9 (two JSX lines, the same pattern [5.4] above now uses for the
   found-book branch)
-- next: below the 3.0 actionable threshold; re-evaluate once a
-  higher-scored finding lands alongside it; re-verified this tick —
-  `git log 250f963..HEAD -- src/` is empty (the two commits since, passes
-  24 and 25's expand, touched only `plan/CANDIDATES.md`), so the `!book`
-  branch at line 111 is unchanged — still real, still too cheap to
-  beat the floor alone
+- next: below the 3.0 actionable threshold alone; re-evaluate once a
+  higher-scored finding lands alongside it
+
+### [~2] /browse — the whole catalog has no crawlable path, from any entry point (plan/CRITIQUE.md pass 10)
+- category: external-critique
+- impact: 6 (MED severity; no sitemap entry or server-rendered link reaches
+  the catalog Browse exists to showcase)
+- ease: ~3 (archive.org's own `advancedsearch.php` call is public and
+  needs no secret, so a script *could* fetch the popular-books list, but
+  enumerating ids at commit-build time is exactly the O(content) breadth
+  agents.md §3 keeps off the per-commit path — this wants a scheduled job
+  writing a cached list, the same shape as 01.26's prescore job, not a
+  one-line build step)
+- next: too large for one `/iterate` tick as scoped; a candidate for
+  `/plan-a-spec` or `/expand` rather than a quick win
 
 ### [1.2] every route's pre-hydration body is empty (plan/CRITIQUE.md pass 5)
 - category: external-critique
@@ -32,32 +64,23 @@
 - next: no new `/iterate` action; the candidate already covers it
 
 This tick's `/march`: triage gate cheap (0 unlabeled, 0 urgent via
-`gh issue list`). Critique gate not due (9 commits / ~18h past pass
-9's base `91caaea`, under both the 12-commit and 24h floor). `/next
-top`'s picker (`node scripts/plan/order.mjs`) again names 01.28 as the
-only reachable chunk, but its `[needs-user-call]` row below is unchanged:
-the mechanism shipped 2026-10-30 (commits 2c57c8f, c145ee8) and the
-only thing left is A41's real-device phone check, which this cloud
-checkout cannot perform — not re-claimed or re-built this tick.
-01.20/01.26/01.27 stay blocked on unset secrets (`node scripts/secrets.mjs
-status`: still 0 of 14 set). No `data/` layer, so step 3b doesn't apply.
-`/march`'s own expand gate (step 3c) also falls short (1 commit / ~2h
-since pass 25's base `9fb531a`, the previous tick's own expand pass,
-under the 20-commit/48h floor), so this tick fell to `/iterate`. A
-fresh sweep found nothing new — `git log 250f963..HEAD -- src/ spec.md
-design/` is empty (the only commits in that range are passes 24 and
-25's own metadata-only expand commits), so the code, spec and design
-surfaces are byte-identical to the previous ticks' audits; the critique
-queue's only pending rows are the two above, unchanged since pass 5/7.
-Top score across every open finding is 2.7, below the 3.0 actionable
-floor, so per `skills/iterate.md` §6 failure mode 6 (bold posture)
-this tick hands to `/expand` instead of stopping. The three
-`[needs-user-call]` rows below (01.28's phone check, 01.26's secrets,
-01.11's streaming infra) remain the cheapest real lever — a human
-landing any one of them unblocks more than another audit/expand pair
-— and stay queued for `/oversight`. This is now the fourth consecutive
-no-code-change tick since the sitemap fix (7dde976); none of the three
-blockers moves without the owner.
+`gh issue list`). Critique gate not due (1 commit / ~6h past pass 10's
+base `bb95dfb`, under both the 12-commit and 24h floor). `/next top`'s
+picker (`node scripts/plan/order.mjs`) again names 01.28 as the only
+reachable chunk, but its `[needs-user-call]` row below is unchanged — the
+mechanism shipped 2026-10-30 and the only thing left is A41's real-device
+phone check, which this cloud checkout cannot perform — not re-claimed or
+re-built this tick. 01.20/01.26/01.27 stay blocked on unset secrets
+(`node scripts/secrets.mjs status`: still 0 of 14 set). No `data/` layer,
+so step 3b doesn't apply. `/march`'s own expand gate (step 3c) falls
+short too (2 commits / ~6h since pass 26's base `f67336b`, under the
+20-commit/48h floor), so this tick fell to `/iterate`. Critique pass 10
+(commit 493b08b, landed just before this tick) added three new pending
+rows since the last audit; re-scoring all five pending rows together put
+[5.4] (the `/browse/[id]` title gap) at the top, clearing the 3.0 floor
+for the first time in five ticks. Shipped it this tick (commit history
+below); ended the no-code-change streak that started at the sitemap fix
+(7dde976).
 
 ## Pending — [needs-user-call]
 
