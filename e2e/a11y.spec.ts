@@ -412,6 +412,15 @@ const STATES: State[] = [
   },
 ];
 
+/** The page's own top-level headings: `role=heading` elements at `aria-level=1`, visible ones only. */
+async function topHeadings(page: Page): Promise<number> {
+  return page.evaluate(
+    () =>
+      [...document.querySelectorAll('[role="heading"][aria-level="1"]')].filter((el) => !el.closest("[aria-hidden=true]"))
+        .length,
+  );
+}
+
 /** axe's serious and critical violations, each as "id [impact]: help at target: html summary". */
 async function axeProblems(page: Page): Promise<string[]> {
   const { violations } = await new AxeBuilder({ page }).withTags(TAGS).analyze();
@@ -533,6 +542,7 @@ test.describe("accessibility", () => {
       await state.open(page);
       await page.waitForLoadState("networkidle");
       expect.soft(await axeProblems(page), "axe: serious or critical").toEqual([]);
+      expect.soft(await topHeadings(page), "exactly one top-level (h1) heading").toBe(1);
       expect.soft(await smallTargets(page), "touch targets under 44 x 44 px").toEqual([]);
       await scaleText(page, TEXT_SCALE);
       expect.soft(await clippedText(page), "text clipped at 200%").toEqual([]);

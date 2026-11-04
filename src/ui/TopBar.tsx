@@ -37,7 +37,7 @@ export function TopBar(props: {
           </Pressable>
         )}
         {props.title ? (
-          <Text style={[styles.title, props.large && styles.titleLarge]} role="heading">
+          <Text style={[styles.title, props.large && styles.titleLarge]} role="heading" aria-level={1}>
             {props.title}
           </Text>
         ) : (
