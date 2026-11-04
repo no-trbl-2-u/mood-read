@@ -5,32 +5,22 @@
 > stays until the owner answers it, and the loop continues on the
 > default it names.
 
-# Site audit — 2026-11-04 (iterate: shipped [5.4] — issue #19, commit 493b08b base)
+# Site audit — 2026-11-04 (iterate: shipped [3.2] — issue #20, commit da9919f base)
 
 ## Top 5 findings (scored)
 
-### [5.4] /browse/[id] — every book's page title stays the generic "Browse" (plan/CRITIQUE.md pass 10) [x]
-- category: external-critique
-- impact: 6 (MED severity; every LibriVox book's detail page is
-  indistinguishable in tabs/history, and a shared or bookmarked link
-  carries no book-specific title)
-- ease: 9 (two JSX lines plus a `Stack.Screen` title override, the same
-  `Head`/title pattern `book/[id].tsx` already uses)
-- issue: #19
-- fixed: 2026-11-04 (/march, /iterate) — commit 808069a: `src/app/browse/[id].tsx`
-  now sets `<Stack.Screen options={{ title }} />` and
-  `<Head><title>{title}</title></Head>` once the book's title resolves (shelf
-  book or archive.org item), mirroring `book/[id].tsx`; `e2e/browse.spec.ts`'s
-  A9 test asserts `page.title()` names the open book instead of the layout's
-  static "Browse" default.
-
-### [3.2] TopBar — the shared heading has no explicit level, so some screens have no h1 (plan/CRITIQUE.md pass 10)
+### [3.2] TopBar — the shared heading has no explicit level, so some screens have no h1 (plan/CRITIQUE.md pass 10) [x]
 - category: external-critique
 - impact: 4 (LOW severity; `/browse`, `/downloads` and `/soundtrack` render
   their title through `TopBar` alone, getting an implicit h2 and no h1 at
   all, an inconsistent landmark structure for screen-reader navigation)
 - ease: 8 (one `aria-level` prop on `TopBar`, defaulting to 1)
-- next: below this tick's pick; next candidate once picked up
+- issue: #20
+- fixed: 2026-11-04 (/march, /iterate) — commit da9919f: `src/ui/TopBar.tsx`'s
+  title `Text` now sets `aria-level={1}` explicitly, matching the rest of the
+  app's convention of always declaring a heading's level; `e2e/a11y.spec.ts`
+  gained a `topHeadings()` check asserting exactly one
+  `role=heading[aria-level=1]` element across all 28 a11y states.
 
 ### [2.7] /book/[id] — the not-found screen never sets a page title (plan/CRITIQUE.md pass 7)
 - category: external-critique
@@ -64,7 +54,7 @@
 - next: no new `/iterate` action; the candidate already covers it
 
 This tick's `/march`: triage gate cheap (0 unlabeled, 0 urgent via
-`gh issue list`). Critique gate not due (1 commit / ~6h past pass 10's
+`gh issue list`). Critique gate not due (3 commits / ~18h past pass 10's
 base `bb95dfb`, under both the 12-commit and 24h floor). `/next top`'s
 picker (`node scripts/plan/order.mjs`) again names 01.28 as the only
 reachable chunk, but its `[needs-user-call]` row below is unchanged — the
@@ -73,14 +63,11 @@ phone check, which this cloud checkout cannot perform — not re-claimed or
 re-built this tick. 01.20/01.26/01.27 stay blocked on unset secrets
 (`node scripts/secrets.mjs status`: still 0 of 14 set). No `data/` layer,
 so step 3b doesn't apply. `/march`'s own expand gate (step 3c) falls
-short too (2 commits / ~6h since pass 26's base `f67336b`, under the
-20-commit/48h floor), so this tick fell to `/iterate`. Critique pass 10
-(commit 493b08b, landed just before this tick) added three new pending
-rows since the last audit; re-scoring all five pending rows together put
-[5.4] (the `/browse/[id]` title gap) at the top, clearing the 3.0 floor
-for the first time in five ticks. Shipped it this tick (commit history
-below); ended the no-code-change streak that started at the sitemap fix
-(7dde976).
+short too (4 commits / ~18h since pass 26's base `f67336b`, under the
+20-commit/48h floor), so this tick fell to `/iterate`. With [5.4] shipped
+and moved to `plan/CRITIQUE.md`'s Done section by the prior tick, [3.2]
+(TopBar's missing heading level) is now the top-scored pending row,
+clearing the 3.0 floor; shipped it this tick (commit da9919f).
 
 ## Pending — [needs-user-call]
 

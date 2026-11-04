@@ -32,22 +32,6 @@
   one-line change — scope before picking up.
 - source: web-fetch
 
-### [LOW] TopBar — the shared heading has no explicit level, so some screens have no h1
-- pass: 10 (commit bb95dfb)
-- viewport: n/a (web-fetch engine, no browser tools on this runner)
-- category: a11y
-- observation: `src/ui/TopBar.tsx`'s title renders `<Text role="heading">` with no `aria-level`
-  set, which defaults to ARIA level 2. `/browse`, `/downloads` and `/soundtrack` render their page
-  title through `TopBar` alone, so each gets an implicit h2 and no h1 at all. `/browse/<id>` and
-  `/book/<id>` both set their own title text with an explicit `aria-level={1}`, so only those two
-  routes have a real top-level heading. A screen-reader user navigating by heading level gets an
-  inconsistent landmark structure across the site's own secondary screens.
-- evidence: `src/ui/TopBar.tsx` line 40 — `role="heading"`, no `aria-level` prop anywhere in the
-  component; contrast with `src/app/browse/[id].tsx` line 160's explicit `aria-level={1}`.
-- suggested fix: give `TopBar`'s title an `aria-level` prop, defaulting to 1, so every screen using
-  it alone gets a consistent top-level heading.
-- source: web-fetch
-
 ### [LOW] /book/[id] — the not-found screen never sets a page title
 - pass: 7 (commit da0cb62)
 - viewport: n/a (web-fetch engine, no browser tools on this runner)
@@ -121,6 +105,8 @@
 - source: web-fetch
 
 ## Done
+
+### [x] [LOW] TopBar — the shared heading has no explicit level, so some screens have no h1 (pass 10; issue #20; addressed at da9919f)
 
 ### [x] [MED] /browse/[id] — every book's page title stays the generic "Browse" (pass 10; issue #19; addressed at 808069a)
 
