@@ -84,6 +84,32 @@ exercised indirectly through integration/e2e coverage or too small a
 surface to score honestly as its own finding. Per `skills/iterate.md` §6
 failure mode 6 (bold posture): handing to `/expand` instead of stopping.
 
+A third `/march` tick the same day: triage still 0/0 (`gh issue list`).
+Critique gate not due (1 commit / ~2h past pass 11's base `f7a7f9b` —
+`plan/CRITIQUE.md` itself recorded that pass against `f7a7f9b`, which is
+one commit before the critique-pass commit `d5eae9c`, so HEAD is 1 commit
+past it — under both the 12-commit and 24h floor). `node
+scripts/plan/order.mjs` still names 01.28 as the only reachable chunk;
+its `[needs-user-call]` row is unchanged — still only the owner's phone
+check (A41) stands between it and closed. 01.20/01.26/01.27 stay blocked
+on the same unset secrets (`node scripts/secrets.mjs status`: 0/14).
+No `data/` layer, so 3b doesn't apply. `/march`'s own expand gate (3c)
+falls short too (2 commits / ~4h since pass 29's base `ea75145`, under
+the 20-commit/48h floor), so fell to `/iterate`. Git history since the
+last audit (`git diff f7a7f9b~5..HEAD --stat`) touches only `plan/`
+files — no source changed, so the three pending rows below ([2.7], [~2],
+[1.2]) are unchanged and none clears 3.0 alone. A fresh grep for
+`TODO`/`FIXME`/`XXX` across `src/` found nothing actionable (the three
+hits are an ID3 `TXXX` frame tag, not a marker). A fresh colocated-test
+census turned up the same long tail as prior ticks (`src/ui/*`,
+`src/player/*`, `src/lib/media.ts`/`media.web.ts`, `scoring.ts`,
+`backup-file.ts`); spot-checked `media.ts` (a thin native
+expo-file-system/expo-document-picker wrapper) and `scoring.ts` (34
+lines) against this and each is either integration/e2e-covered or too
+thin a surface to score honestly alone — no new row filed. Per
+`skills/iterate.md` §6 failure mode 6 (bold posture): handing to
+`/expand` instead of stopping.
+
 ## Pending — [needs-user-call]
 
 ### [needs-user-call] 01.28 shipped its mechanism; A41's phone check still needs a real device (A41)
