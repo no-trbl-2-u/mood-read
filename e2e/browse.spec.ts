@@ -39,6 +39,7 @@ test.describe("browse", () => {
     await page.getByTestId(`browse-result-${IDENTIFIER}`).click();
     await expect(page).toHaveURL(new RegExp(`/browse/${IDENTIFIER}$`));
     await expect(page.getByRole("heading", { name: "The Wind in the Willows" })).toBeVisible();
+    await expect.poll(() => page.title()).toBe("The Wind in the Willows");
     await expect(page.getByText("Read by Pat Reader")).toBeVisible();
     await expect(page.getByText(/Not scored yet\./)).toBeVisible();
     await expect(page.getByTestId("browse-chapter-0")).toContainText("The River Bank");

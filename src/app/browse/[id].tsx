@@ -1,4 +1,5 @@
-import { router, useLocalSearchParams } from "expo-router";
+import { router, Stack, useLocalSearchParams } from "expo-router";
+import Head from "expo-router/head";
 import { useEffect, useState } from "react";
 import { Platform, ScrollView, StyleSheet, Text, View } from "react-native";
 
@@ -146,6 +147,10 @@ export default function BrowseBookScreen() {
 
   return (
     <View style={styles.screen}>
+      <Stack.Screen options={{ title }} />
+      <Head>
+        <title>{title}</title>
+      </Head>
       <TopBar title="" back={{ label: COPY.back, onPress: goBack }} />
       <ScrollView contentContainerStyle={styles.body}>
         <View style={styles.header}>
