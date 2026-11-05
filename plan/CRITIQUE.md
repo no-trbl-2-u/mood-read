@@ -9,30 +9,26 @@
 
 ## Pending
 
-### [MED] every route — no Open Graph/Twitter card tags, no canonical link, no web app manifest
-- pass: 12 (commit 1572637)
+### [LOW] every route — no `<link rel="canonical">`, no web app manifest
+- pass: 12 (commit 1572637); narrowed at 94a1159 (the same pass's og:/twitter: half shipped,
+  moved to Done below)
 - viewport: n/a (web-fetch engine, no browser tools on this runner)
 - category: seo
-- observation: `curl`ing the raw HTML of `/` (and, by construction, every route — they share
-  one root `<head>`) shows exactly four `<meta>` tags (`charset`, `X-UA-Compatible`, `viewport`,
-  `description`) and one `<link>` tag (`favicon.ico`). There is no `og:title` / `og:description`
-  / `og:image`, no `twitter:card`, no `<link rel="canonical">`, and no `<link rel="manifest">`
-  anywhere in the shipped HTML. This is distinct from the already-fixed per-route
-  title/description row (pass 1, Done): that row was about generic vs. real copy; this one is
-  about entire tag families that were never added. Concretely: a link pasted into Slack,
-  iMessage or Discord unfurls with no image and whatever OG fallback that platform invents, and
-  the site has no PWA install metadata (no theme-color, no icons manifest) despite being a
-  phone-app-first product with a web build.
-- evidence: `curl -s https://mood-read.pages.dev/ | grep -io "<meta[^>]*>"` → 4 tags, no `og:`/
-  `twitter:` prefix. `curl -s https://mood-read.pages.dev/ | grep -io "<link[^>]*>"` → 1 tag
-  (favicon only). `curl -s -o /dev/null -w "%{content_type}" https://mood-read.pages.dev/manifest.json`
-  → `text/html` (falls through to the SPA shell; no manifest file exists, no `<link
-  rel="manifest">` references one either).
-- suggested fix: add `og:title`, `og:description`, `og:image` (a static share image in
-  `assets/`) and `twitter:card` to the root `<head>` (Expo Router's `<Head>` in the root layout,
-  or `app.json`'s web config), plus a `<link rel="canonical">` per route once per-route heads
-  exist. A manifest is a separate, smaller follow-up (icons + theme-color + `display:
-  standalone`) if PWA install is in scope — scope that piece before picking it up.
+- observation: the shared root `<head>` still has no `<link rel="canonical">` and no `<link
+  rel="manifest">`. Canonical needs per-route heads first — today only `/book/[id]` and
+  `/browse/[id]` set their own `<Head>` at all, and even those only override `<title>` — so a
+  per-route canonical would be a second change layered on top of a per-route head rollout, not a
+  one-line addition to the shared template `og:`/`twitter:` landed in. A manifest (icons,
+  theme-color, `display: standalone`) is PWA-install scope nobody has asked for yet.
+- evidence: `curl -s https://mood-read.pages.dev/ | grep -io "<link[^>]*>"` → 1 tag (favicon
+  only, still true after 94a1159 added the `og:`/`twitter:` `<meta>` tags, which don't touch
+  `<link>`). `curl -s -o /dev/null -w "%{content_type}" https://mood-read.pages.dev/manifest.json`
+  → `text/html` (no manifest file).
+- suggested fix: canonical — once some chunk gives every route its own `<Head>` (or the
+  pre-hydration-empty-shell row below is fixed, which would need per-route heads anyway),
+  add `<link rel="canonical" href="https://mood-read.pages.dev<path>">` there. Manifest — scope
+  it as its own small follow-up (icons already exist in `assets/`) only if PWA install enters
+  scope.
 - source: web-fetch
 
 ### [LOW] /robots.txt — no Sitemap directive pointing at sitemap.xml
@@ -157,6 +153,12 @@
 - source: web-fetch
 
 ## Done
+
+### [x] [MED] every route — no Open Graph/Twitter card tags (pass 12; issue #21; addressed at 94a1159)
+
+Canonical link and the web app manifest, named in the same pass-12 row, are still open: canonical
+needs per-route heads first (most routes have none yet), and the manifest is PWA-install scope
+nobody has asked for — neither is a cheap-win fix, so they weren't bundled into this one.
 
 ### [x] [LOW] TopBar — the shared heading has no explicit level, so some screens have no h1 (pass 10; issue #20; addressed at da9919f)
 

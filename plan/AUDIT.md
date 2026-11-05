@@ -5,33 +5,57 @@
 > stays until the owner answers it, and the loop continues on the
 > default it names.
 
-# Site audit — 2026-11-04 (iterate: shipped [3.2] — issue #20, commit da9919f base)
+# Site audit — 2026-11-05 (iterate: shipped [4.2] — issue #21, commit 94a1159 base)
 
 ## Top 5 findings (scored)
 
-### [3.2] TopBar — the shared heading has no explicit level, so some screens have no h1 (plan/CRITIQUE.md pass 10) [x]
+### [4.2] every route — no Open Graph/Twitter card tags (plan/CRITIQUE.md pass 12) [x]
 - category: external-critique
-- impact: 4 (LOW severity; `/browse`, `/downloads` and `/soundtrack` render
-  their title through `TopBar` alone, getting an implicit h2 and no h1 at
-  all, an inconsistent landmark structure for screen-reader navigation)
-- ease: 8 (one `aria-level` prop on `TopBar`, defaulting to 1)
-- issue: #20
-- fixed: 2026-11-04 (/march, /iterate) — commit da9919f: `src/ui/TopBar.tsx`'s
-  title `Text` now sets `aria-level={1}` explicitly, matching the rest of the
-  app's convention of always declaring a heading's level; `e2e/a11y.spec.ts`
-  gained a `topHeadings()` check asserting exactly one
-  `role=heading[aria-level=1]` element across all 28 a11y states.
+- impact: 6 (MED severity; the shared root `<head>` had no `og:`/`twitter:`
+  metadata at all, so a link pasted into Slack, iMessage or Discord
+  unfurled with no image and whatever fallback the platform invents)
+- ease: 7 (the tags themselves are cheap; the real work was finding that
+  `expo export` reads a local `public/index.html` as its template in
+  place of its own default, since this build is pure CSR and a
+  React-rendered `<Head>` never reaches a non-JS crawler)
+- issue: #21
+- fixed: 2026-11-05 (/march, /iterate) — commit 94a1159: `public/index.html`
+  (a copy of Expo's default web template) now carries `og:type`,
+  `og:site_name`, `og:title`, `og:description`, `og:image`, `og:url` and
+  the matching `twitter:card`/`title`/`description`/`image`, baked into
+  the static export; `og:image`/`twitter:image` point at
+  `public/og-image.png` (a copy of the existing `assets/icon.png`, no new
+  design asset invented). `e2e/seo-meta.spec.ts` reads the exported
+  `dist/index.html` directly and asserts each tag appears exactly once.
+  Canonical link and the manifest, named in the same pass-12 row, stay
+  open (`plan/CRITIQUE.md`'s narrowed Pending row): canonical needs
+  per-route heads first, manifest is PWA scope nobody asked for.
+
+### [2.7] /robots.txt — no Sitemap directive pointing at sitemap.xml (plan/CRITIQUE.md pass 12)
+- category: external-critique
+- impact: 3 (LOW severity; crawlers that don't already know the sitemap
+  URL by convention have no robots.txt hint to find it)
+- ease: 9 (one line in the static `public/robots.txt`)
+- next: below the 3.0 actionable threshold alone; re-evaluate once a
+  higher-scored finding lands alongside it
 
 ### [2.7] /book/[id] — the not-found screen never sets a page title (plan/CRITIQUE.md pass 7)
 - category: external-critique
 - impact: 3 (LOW severity; a dead or mistyped book link keeps
   whatever tab title was already showing instead of a not-found title)
-- ease: 9 (two JSX lines, the same pattern [5.4] above now uses for the
+- ease: 9 (two JSX lines, the same pattern [5.4] below now uses for the
   found-book branch)
 - next: below the 3.0 actionable threshold alone; re-evaluate once a
   higher-scored finding lands alongside it
 
-### [~2] /browse — the whole catalog has no crawlable path, from any entry point (plan/CRITIQUE.md pass 10)
+### [2.4] /sitemap.xml — entries carry no `<lastmod>` (plan/CRITIQUE.md pass 12)
+- category: external-critique
+- impact: 3 (LOW severity; crawlers have no freshness signal for any of
+  the 9 static routes)
+- ease: 8 (one `<lastmod>` per entry, at minimum the deploy date)
+- next: below the 3.0 actionable threshold alone
+
+### [1.8] /browse — the whole catalog has no crawlable path, from any entry point (plan/CRITIQUE.md pass 10)
 - category: external-critique
 - impact: 6 (MED severity; no sitemap entry or server-rendered link reaches
   the catalog Browse exists to showcase)
@@ -44,107 +68,28 @@
 - next: too large for one `/iterate` tick as scoped; a candidate for
   `/plan-a-spec` or `/expand` rather than a quick win
 
-### [1.2] every route's pre-hydration body is empty (plan/CRITIQUE.md pass 5)
-- category: external-critique
-- impact: 6
-- ease: 2 (unchanged: still needs a provider-tree SSR-safety pass
-  before `web.output` can flip, per plan/CRITIQUE.md's "tried" note;
-  plan/CANDIDATES.md "[score 4.0] Make the root layout's providers
-  SSR-safe" awaits `/oversight` promotion)
-- next: no new `/iterate` action; the candidate already covers it
+Also pending, tied near the bottom: [1.2] every route's pre-hydration body
+is empty (plan/CRITIQUE.md pass 5, unchanged — still needs the provider-tree
+SSR-safety pass `plan/CANDIDATES.md`'s "[score 4.0]" candidate already
+covers) and [1.2] the narrowed canonical/manifest row (plan/CRITIQUE.md
+pass 12, split off [4.2] above).
 
 This tick's `/march`: triage gate cheap (0 unlabeled, 0 urgent via
-`gh issue list`). Critique gate not due (3 commits / ~18h past pass 10's
-base `bb95dfb`, under both the 12-commit and 24h floor). `/next top`'s
-picker (`node scripts/plan/order.mjs`) again names 01.28 as the only
-reachable chunk, but its `[needs-user-call]` row below is unchanged — the
-mechanism shipped 2026-10-30 and the only thing left is A41's real-device
-phone check, which this cloud checkout cannot perform — not re-claimed or
-re-built this tick. 01.20/01.26/01.27 stay blocked on unset secrets
-(`node scripts/secrets.mjs status`: still 0 of 14 set). No `data/` layer,
-so step 3b doesn't apply. `/march`'s own expand gate (step 3c) falls
-short too (4 commits / ~18h since pass 26's base `f67336b`, under the
-20-commit/48h floor), so this tick fell to `/iterate`. With [5.4] shipped
-and moved to `plan/CRITIQUE.md`'s Done section by the prior tick, [3.2]
-(TopBar's missing heading level) is now the top-scored pending row,
-clearing the 3.0 floor; shipped it this tick (commit da9919f).
-
-A second `/march` tick the same day: triage still 0/0. Critique gate still
-not due (7 commits / ~23h46m past pass 10's base `bb95dfb` — under both
-floors by minutes). `node scripts/plan/order.mjs` names 01.28 again; its
-`[needs-user-call]` row is unchanged, claimed and released unbuilt, same
-as every prior tick since 2026-10-30. Secrets status unchanged (0/14).
-`/march`'s expand gate isn't due either (1 commit / ~4h since pass 28's
-base `1ee872f`, far under the 20-commit/48h floor), so fell to `/iterate`.
-The three pending rows below ([2.7], [~2], [1.2]) are unchanged and none
-clears 3.0 alone; a fresh spot-check (grep for `TODO`/`FIXME`, a census of
-`src/` files with no colocated test) found nothing new above the bar
-either — the untested-file list is long but every file on it is either
-exercised indirectly through integration/e2e coverage or too small a
-surface to score honestly as its own finding. Per `skills/iterate.md` §6
-failure mode 6 (bold posture): handing to `/expand` instead of stopping.
-
-A third `/march` tick the same day: triage still 0/0 (`gh issue list`).
-Critique gate not due (1 commit / ~2h past pass 11's base `f7a7f9b` —
-`plan/CRITIQUE.md` itself recorded that pass against `f7a7f9b`, which is
-one commit before the critique-pass commit `d5eae9c`, so HEAD is 1 commit
-past it — under both the 12-commit and 24h floor). `node
-scripts/plan/order.mjs` still names 01.28 as the only reachable chunk;
-its `[needs-user-call]` row is unchanged — still only the owner's phone
-check (A41) stands between it and closed. 01.20/01.26/01.27 stay blocked
-on the same unset secrets (`node scripts/secrets.mjs status`: 0/14).
-No `data/` layer, so 3b doesn't apply. `/march`'s own expand gate (3c)
-falls short too (2 commits / ~4h since pass 29's base `ea75145`, under
-the 20-commit/48h floor), so fell to `/iterate`. Git history since the
-last audit (`git diff f7a7f9b~5..HEAD --stat`) touches only `plan/`
-files — no source changed, so the three pending rows below ([2.7], [~2],
-[1.2]) are unchanged and none clears 3.0 alone. A fresh grep for
-`TODO`/`FIXME`/`XXX` across `src/` found nothing actionable (the three
-hits are an ID3 `TXXX` frame tag, not a marker). A fresh colocated-test
-census turned up the same long tail as prior ticks (`src/ui/*`,
-`src/player/*`, `src/lib/media.ts`/`media.web.ts`, `scoring.ts`,
-`backup-file.ts`); spot-checked `media.ts` (a thin native
-expo-file-system/expo-document-picker wrapper) and `scoring.ts` (34
-lines) against this and each is either integration/e2e-covered or too
-thin a surface to score honestly alone — no new row filed. Per
-`skills/iterate.md` §6 failure mode 6 (bold posture): handing to
-`/expand` instead of stopping.
-
-A fourth `/march` tick the same day: triage still 0/0 (`gh issue list`,
-0 urgent `loop:do`). Critique gate not due (3 commits / ~7h42m past pass
-11's base `f7a7f9b` — under both the 12-commit and 24h floor). `node
-scripts/plan/order.mjs` still names 01.28 as the only reachable chunk;
-its `[needs-user-call]` row below is unchanged — still only the owner's
-phone check (A41) stands between it and closed, not re-claimed this
-tick. 01.20/01.26/01.27 stay blocked on the same unset secrets
-(`node scripts/secrets.mjs status`: 0/14). No `data/` layer, so 3b
-doesn't apply. `/march`'s own expand gate (3c) falls far short (1 commit
-/ ~5m since pass 30's base `646d41b`, under the 20-commit/48h floor), so
-fell to `/iterate`. `git diff da9919f..HEAD --stat` since the last real
-fix touches only `plan/` files — no source changed, so the three
-pending rows below ([2.7], [~2], [1.2]) are unchanged and none clears
-3.0 alone. A fresh grep for `TODO`/`FIXME`/`XXX`/`HACK` across `src/`
-found nothing (the earlier `TXXX` hit was an ID3 frame tag, not a
-marker). Per `skills/iterate.md` §6 failure mode 6 (bold posture):
-handing to `/expand` instead of stopping.
-
-A `/march` tick (2026-11-05): triage still 0/0 (`gh issue list`, 0
-urgent `loop:do`). Critique gate not due (5 commits / ~11h46m past pass
-11's base `f7a7f9b` — under both the 12-commit and 24h floor). `node
+`gh issue list`). Critique gate not due (2 commits / ~10h past pass 12's
+base `1572637`, under both the 12-commit and 24h floor). `node
 scripts/plan/order.mjs` still names 01.28 as the only reachable chunk;
 its `[needs-user-call]` row below is unchanged — still only the owner's
 phone check (A41) stands between it and closed; claimed and released
 unbuilt again this tick. 01.20/01.26/01.27 stay blocked on the same
 unset secrets (`node scripts/secrets.mjs status`: 0/14). No `data/`
 layer, so 3b doesn't apply. `/march`'s own expand gate (3c) falls short
-too (1 commit / ~4h since pass 31's base `ef8247a`, under the
-20-commit/48h floor), so fell to `/iterate`. `git diff da9919f..HEAD
---stat` since the last real fix touches only `plan/` files — no source
-changed, so the three pending rows below ([2.7], [~2], [1.2]) are
-unchanged and none clears 3.0 alone. A fresh grep for `TODO`/`FIXME`
-across `src/` and `proxy/src/` found nothing. Per `skills/iterate.md`
-§6 failure mode 6 (bold posture): handing to `/expand` instead of
-stopping.
+too (2 commits / ~10h since pass 32's base `9d9d4d5`, under the
+20-commit/48h floor), so fell to `/iterate`. Unlike the prior several
+ticks, this one wasn't a no-op: `plan/CRITIQUE.md`'s pass 12 (landed
+earlier the same day, commit c4ae4b3) had added three new rows this
+audit's stale Top 5 hadn't absorbed yet. Re-scoring them put the OG/
+Twitter row at 4.2 — the first finding to clear 3.0 since [3.2] four
+ticks ago — so it shipped this tick instead of handing to `/expand`.
 
 ## Pending — [needs-user-call]
 
