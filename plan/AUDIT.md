@@ -128,6 +128,24 @@ found nothing (the earlier `TXXX` hit was an ID3 frame tag, not a
 marker). Per `skills/iterate.md` §6 failure mode 6 (bold posture):
 handing to `/expand` instead of stopping.
 
+A `/march` tick (2026-11-05): triage still 0/0 (`gh issue list`, 0
+urgent `loop:do`). Critique gate not due (5 commits / ~11h46m past pass
+11's base `f7a7f9b` — under both the 12-commit and 24h floor). `node
+scripts/plan/order.mjs` still names 01.28 as the only reachable chunk;
+its `[needs-user-call]` row below is unchanged — still only the owner's
+phone check (A41) stands between it and closed; claimed and released
+unbuilt again this tick. 01.20/01.26/01.27 stay blocked on the same
+unset secrets (`node scripts/secrets.mjs status`: 0/14). No `data/`
+layer, so 3b doesn't apply. `/march`'s own expand gate (3c) falls short
+too (1 commit / ~4h since pass 31's base `ef8247a`, under the
+20-commit/48h floor), so fell to `/iterate`. `git diff da9919f..HEAD
+--stat` since the last real fix touches only `plan/` files — no source
+changed, so the three pending rows below ([2.7], [~2], [1.2]) are
+unchanged and none clears 3.0 alone. A fresh grep for `TODO`/`FIXME`
+across `src/` and `proxy/src/` found nothing. Per `skills/iterate.md`
+§6 failure mode 6 (bold posture): handing to `/expand` instead of
+stopping.
+
 ## Pending — [needs-user-call]
 
 ### [needs-user-call] 01.28 shipped its mechanism; A41's phone check still needs a real device (A41)
