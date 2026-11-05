@@ -5,7 +5,7 @@
 > stays until the owner answers it, and the loop continues on the
 > default it names.
 
-# Site audit — 2026-11-05 (iterate: shipped [4.2] — issue #21, commit 94a1159 base)
+# Site audit — 2026-11-05 (iterate: top score 2.7, below bar — handed to expand, commit cc1d887 base)
 
 ## Top 5 findings (scored)
 
@@ -90,6 +90,27 @@ earlier the same day, commit c4ae4b3) had added three new rows this
 audit's stale Top 5 hadn't absorbed yet. Re-scoring them put the OG/
 Twitter row at 4.2 — the first finding to clear 3.0 since [3.2] four
 ticks ago — so it shipped this tick instead of handing to `/expand`.
+
+This tick (cloud `/march`, 2026-11-05, base `cc1d887`): triage gate cheap
+(0 unlabeled, 0 urgent via `gh issue list`). Critique gate not due (3
+commits / ~14h past pass 12's base `1572637`, under both floors). `node
+scripts/plan/order.mjs` again names only 01.28 as reachable; claimed and
+released unbuilt once more — its mechanism already shipped (commit
+24068f1), only the owner's phone check (A41) remains, per the
+`[needs-user-call]` row below. No `data/` layer, so 3b doesn't apply.
+`/march`'s own expand gate (3c) falls short (4 commits / ~14h since pass
+32's base `9d9d4d5`, under the 20-commit/48h floor), so fell to
+`/iterate`. The Top 5 above are unchanged from this morning's pass — the
+critique pass 12 rows they already absorbed are still the freshest
+signal — and the top score (2.7) stays under the 3.0 bar, so per
+`skills/iterate.md` §6 failure mode 6 (posture bold) this tick handed
+straight to `/expand` instead of shipping a fix. `/expand`'s pass 33
+found no new candidate signal (no spec/design diff, no triage-queued
+issues, no `fix:` clustering since pass 32) but reconciled
+`plan/CANDIDATES.md`: the pending "OG/Twitter meta" candidate (score
+3.5) is removed, its exact outcome having shipped directly as this
+morning's `[4.2]` fix (commit 94a1159) rather than through `/oversight`
+promotion.
 
 ## Pending — [needs-user-call]
 
