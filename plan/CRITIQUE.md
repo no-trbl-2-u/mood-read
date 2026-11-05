@@ -1,13 +1,65 @@
 # Critique log
 
-> Last pass: 2026-11-04 at commit f7a7f9b
-> Pass count: 11
+> Last pass: 2026-11-05 at commit 1572637
+> Pass count: 12
 
 > External-observer feedback for Mood Read. Populated by
 > `/critique`, drained by `/iterate`. See `skills/critique.md`
 > for the contract.
 
 ## Pending
+
+### [MED] every route — no Open Graph/Twitter card tags, no canonical link, no web app manifest
+- pass: 12 (commit 1572637)
+- viewport: n/a (web-fetch engine, no browser tools on this runner)
+- category: seo
+- observation: `curl`ing the raw HTML of `/` (and, by construction, every route — they share
+  one root `<head>`) shows exactly four `<meta>` tags (`charset`, `X-UA-Compatible`, `viewport`,
+  `description`) and one `<link>` tag (`favicon.ico`). There is no `og:title` / `og:description`
+  / `og:image`, no `twitter:card`, no `<link rel="canonical">`, and no `<link rel="manifest">`
+  anywhere in the shipped HTML. This is distinct from the already-fixed per-route
+  title/description row (pass 1, Done): that row was about generic vs. real copy; this one is
+  about entire tag families that were never added. Concretely: a link pasted into Slack,
+  iMessage or Discord unfurls with no image and whatever OG fallback that platform invents, and
+  the site has no PWA install metadata (no theme-color, no icons manifest) despite being a
+  phone-app-first product with a web build.
+- evidence: `curl -s https://mood-read.pages.dev/ | grep -io "<meta[^>]*>"` → 4 tags, no `og:`/
+  `twitter:` prefix. `curl -s https://mood-read.pages.dev/ | grep -io "<link[^>]*>"` → 1 tag
+  (favicon only). `curl -s -o /dev/null -w "%{content_type}" https://mood-read.pages.dev/manifest.json`
+  → `text/html` (falls through to the SPA shell; no manifest file exists, no `<link
+  rel="manifest">` references one either).
+- suggested fix: add `og:title`, `og:description`, `og:image` (a static share image in
+  `assets/`) and `twitter:card` to the root `<head>` (Expo Router's `<Head>` in the root layout,
+  or `app.json`'s web config), plus a `<link rel="canonical">` per route once per-route heads
+  exist. A manifest is a separate, smaller follow-up (icons + theme-color + `display:
+  standalone`) if PWA install is in scope — scope that piece before picking it up.
+- source: web-fetch
+
+### [LOW] /robots.txt — no Sitemap directive pointing at sitemap.xml
+- pass: 12 (commit 1572637)
+- viewport: n/a (web-fetch engine, no browser tools on this runner)
+- category: seo
+- observation: `robots.txt` is exactly `User-agent: *` / `Allow: /` — two lines, no `Sitemap:`
+  line. Crawlers that don't already know the sitemap URL by convention have no robots.txt hint
+  to find it.
+- evidence: `curl -s https://mood-read.pages.dev/robots.txt` → `User-agent: *\nAllow: /` (no
+  third line).
+- suggested fix: add `Sitemap: https://mood-read.pages.dev/sitemap.xml` as a third line in the
+  static `robots.txt` (or whatever generates it).
+- source: web-fetch
+
+### [LOW] /sitemap.xml — entries carry no `<lastmod>`
+- pass: 12 (commit 1572637)
+- viewport: n/a (web-fetch engine, no browser tools on this runner)
+- category: seo
+- observation: all 9 `<url>` entries in `sitemap.xml` are bare `<loc>` tags with no sibling
+  `<lastmod>`, `<changefreq>`, or `<priority>`. Crawlers have no signal for how fresh each page
+  is or how often to re-fetch it.
+- evidence: `curl -s https://mood-read.pages.dev/sitemap.xml` → each entry is
+  `<url><loc>...</loc></url>`, no other child tags.
+- suggested fix: add `<lastmod>` (at minimum, the deploy date or last content-relevant commit
+  date) to each entry; `<changefreq>`/`<priority>` are optional polish on top.
+- source: web-fetch
 
 ### [MED] /browse — the whole catalog has no crawlable path, from any entry point
 - pass: 10 (commit bb95dfb)
