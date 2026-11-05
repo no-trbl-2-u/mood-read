@@ -112,6 +112,24 @@ issues, no `fix:` clustering since pass 32) but reconciled
 morning's `[4.2]` fix (commit 94a1159) rather than through `/oversight`
 promotion.
 
+This tick (cloud `/march`, 2026-11-05, base `a61e65c`): triage gate cheap
+(0 unlabeled, 0 urgent via `gh issue list`). Critique gate not due (4
+commits / ~16h past pass 12's base `1572637`, under both floors). `node
+scripts/plan/order.mjs` again names only 01.28 as reachable; its
+mechanism already shipped (commit 24068f1) and nothing new to build
+without native Android code (out of scope, per the `[needs-user-call]`
+row below), so it was skipped unclaimed rather than claimed and released
+again. No `data/` layer, so 3b doesn't apply. `/march`'s own expand gate
+(3c) falls short (1 commit / ~6h since pass 33's base `cc1d887`, under
+the 20-commit/48h floor), so fell to `/iterate`. A fresh audit found the
+same Top 5 as pass 33's — `git log -p cc1d887..HEAD -- spec.md design/`
+empty, no new triage-queued/reviewed issues, the three `[needs-user-call]`
+rows below unchanged — and the top score (2.7) stays under the 3.0 bar,
+so per `skills/iterate.md` §6 failure mode 6 (posture bold) this tick
+handed straight to `/expand` instead of shipping a fix. `/expand`'s
+pass 34 found no new candidate signal either; see
+`plan/CANDIDATES.md`'s "Considered" log for the trace.
+
 ## Pending — [needs-user-call]
 
 ### [needs-user-call] 01.28 shipped its mechanism; A41's phone check still needs a real device (A41)
