@@ -224,6 +224,19 @@ review before it reached main, and a second, more serious bug caught only by cur
 deploy right after (every dynamic route 404'd in production for a few minutes), corrected at
 commit `a16c61c` and now a standing decision in `plan/bearings.md`.
 
+This tick (cloud `/march`, 2026-11-06, base `907e8a5`): triage gate cheap (0 unlabeled, 0 urgent
+via `gh issue list`). Critique gate not due (6 commits / ~21.4h past pass 13's base `03762de`,
+under both the 12-commit and 24h floor). `node scripts/plan/order.mjs` again names only 01.28 as
+reachable, blocked on the owner's phone check (A41, per the `[needs-user-call]` row below) —
+claimed and released unbuilt once more. No `data/` layer, so 3b doesn't apply. `/march`'s own
+expand gate (3c) falls short (1 commit / ~9h since pass 38's base `c959bbe`, under the
+20-commit/48h floor), so fell to `/iterate`. A fresh audit found the same Top 5 as pass 38's —
+`git log -p c959bbe..HEAD -- spec.md design/` empty, `gh issue list` shows only the already-routed
+`#11` (`triage:needs-user`), no new `triage:loop-queued`/`triage:reviewed` rows, the three
+`[needs-user-call]` rows below unchanged — and the top score (2.7) stays under the 3.0 bar, so per
+`skills/iterate.md` §6 failure mode 6 (posture bold) this tick hands straight to `/expand` instead
+of shipping a fix.
+
 ## Pending — [needs-user-call]
 
 ### [needs-user-call] 01.28 shipped its mechanism; A41's phone check still needs a real device (A41)
