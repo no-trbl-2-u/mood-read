@@ -7,7 +7,16 @@ import { mkdtempSync, mkdirSync, rmSync, writeFileSync } from 'node:fs';
 import os from 'node:os';
 import path from 'node:path';
 import { after, before, describe, it } from 'node:test';
-import { contentType, createStaticServer, headersFor, parseHeaders, parseRange, resolveRequest } from '../../e2e/serve.mjs';
+import {
+  contentType,
+  createStaticServer,
+  headersFor,
+  parseHeaders,
+  parseRange,
+  parseRedirects,
+  redirectFor,
+  resolveRequest,
+} from '../../e2e/serve.mjs';
 
 const root = path.resolve(os.tmpdir(), 'serve-root');
 const files = new Set([path.join(root, 'index.html'), path.join(root, '_expo', 'app.js'), path.join(root, 'favicon.ico')]);
@@ -45,6 +54,24 @@ describe('resolving a request', () => {
 
   it('is a 404 when there is no index.html', () => {
     assert.deepEqual(resolveRequest(root, '/book/1', () => false), { status: 404 });
+  });
+
+  it('honors redirect rules once no real asset matches, catch-all last', () => {
+    const indexFiles = new Set([...files, path.join(root, '404.html')]);
+    const withRedirects = (url) =>
+      resolveRequest(root, url, (p) => indexFiles.has(p), [
+        { pattern: '/browse/*', to: '/index.html', status: 200 },
+        { pattern: '/*', to: '/404.html', status: 404 },
+      ]);
+    assert.deepEqual(withRedirects('/browse/sample-1'), { status: 200, file: path.join(root, 'index.html') });
+    assert.deepEqual(withRedirects('/nonexistent-page-xyz123'), { status: 404, file: path.join(root, '404.html') });
+    assert.deepEqual(withRedirects('/_expo/app.js'), { status: 200, file: path.join(root, '_expo', 'app.js') });
+  });
+
+  it('is a plain 404 (no file) when a matched redirect names a destination that does not exist', () => {
+    assert.deepEqual(resolveRequest(root, '/missing', exists, [{ pattern: '/*', to: '/404.html', status: 404 }]), {
+      status: 404,
+    });
   });
 
   it('names content types', () => {
@@ -92,6 +119,24 @@ describe('_headers (the Cloudflare Pages config file)', () => {
   });
 });
 
+describe('_redirects (the Cloudflare Pages config file)', () => {
+  it('reads <pattern> <to> [status], ignoring blanks and comments, defaulting status to 301', () => {
+    const rules = parseRedirects('# a comment\n\n/browse/*  /index.html  200\n/*  /404.html  404\n/old  /new\n');
+    assert.deepEqual(rules, [
+      { pattern: '/browse/*', to: '/index.html', status: 200 },
+      { pattern: '/*', to: '/404.html', status: 404 },
+      { pattern: '/old', to: '/new', status: 301 },
+    ]);
+  });
+
+  it('matches the first rule that applies, same pattern language as _headers', () => {
+    const rules = parseRedirects('/browse/*  /index.html  200\n/*  /404.html  404\n');
+    assert.deepEqual(redirectFor(rules, '/browse/sample-1'), { pattern: '/browse/*', to: '/index.html', status: 200 });
+    assert.deepEqual(redirectFor(rules, '/nope'), { pattern: '/*', to: '/404.html', status: 404 });
+    assert.equal(redirectFor([], '/nope'), null);
+  });
+});
+
 describe('the server over a socket', () => {
   let dir;
   let server;
@@ -103,6 +148,8 @@ describe('the server over a socket', () => {
     writeFileSync(path.join(dir, 'index.html'), '<!doctype html><title>shell</title>');
     writeFileSync(path.join(dir, '_expo', 'app.js'), 'console.log(1);');
     writeFileSync(path.join(dir, '_headers'), '/*\n  X-Frame-Options: DENY\n');
+    writeFileSync(path.join(dir, '404.html'), '<!doctype html><title>not found</title>');
+    writeFileSync(path.join(dir, '_redirects'), '/book/*  /index.html  200\n/*  /404.html  404\n');
     server = createStaticServer(dir);
     await new Promise((done) => server.listen(0, '127.0.0.1', done));
     base = `http://127.0.0.1:${server.address().port}`;
@@ -130,6 +177,18 @@ describe('the server over a socket', () => {
     const post = await fetch(`${base}/`, { method: 'POST' });
     assert.equal(post.status, 405);
     await post.text();
+  });
+
+  it('serves the real 404 page (status and body) for a path no redirect rule rewrites to index.html', async () => {
+    const res = await fetch(`${base}/nonexistent-page-xyz123`);
+    assert.equal(res.status, 404);
+    assert.match(await res.text(), /not found/);
+  });
+
+  it('never serves _redirects itself as content', async () => {
+    const res = await fetch(`${base}/_redirects`);
+    assert.equal(res.status, 404);
+    assert.equal(await res.text(), '404\n');
   });
 
   it('applies _headers to every path and never serves the config file itself', async () => {

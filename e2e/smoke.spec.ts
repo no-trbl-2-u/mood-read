@@ -41,6 +41,22 @@ test("/licenses.txt is served with the web build and carries the notices", async
   expect(body).toContain("SIL OPEN FONT LICENSE Version 1.1");
 });
 
+// A made-up path is a real 404, not the SPA shell at 200 (plan/CRITIQUE.md pass 13); a known pretty-URL
+// route still rewrites to the app shell at 200, via public/_redirects.
+test("an unmatched path gets a real 404, not the app shell", async ({ request }) => {
+  const res = await request.get("/nonexistent-page-xyz123");
+  expect(res.status()).toBe(404);
+  const body = await res.text();
+  expect(body).toContain("Page not found");
+});
+
+test("a known pretty-URL route still rewrites to the app shell", async ({ request }) => {
+  const res = await request.get("/soundtrack");
+  expect(res.status()).toBe(200);
+  const body = await res.text();
+  expect(body).toContain("Mood Read");
+});
+
 // The web build ships a real robots.txt beside the app, so a crawler reads actual directives instead of the
 // SPA shell every unmatched path otherwise falls back to (plan/CRITIQUE.md, the robots.txt/sitemap.xml finding).
 test("/robots.txt is served with the web build and carries real directives", async ({ request }) => {

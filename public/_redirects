@@ -1,0 +1,15 @@
+# Cloudflare Pages: static assets (JS bundles, robots.txt, sitemap.xml, og-image.png, ...) are matched
+# before these rules run. The app's own pretty-URL routes have no static file of their own (web.output:
+# "single", one index.html) so they need an explicit rewrite; a path that matches none of them is real
+# garbage, not a route this app knows, so it gets a real 404 instead of the SPA shell at 200
+# (plan/CRITIQUE.md pass 13).
+/browse/*    /index.html  200
+/book/*      /index.html  200
+/credits     /index.html  200
+/downloads   /index.html  200
+/import      /index.html  200
+/licenses    /index.html  200
+/privacy     /index.html  200
+/settings    /index.html  200
+/soundtrack  /index.html  200
+/*           /404.html    404

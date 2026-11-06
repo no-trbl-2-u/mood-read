@@ -1,6 +1,8 @@
 // A small static server over the web build (dist/) for the hermetic e2e: Node built-ins only, localhost only.
-// A path that names a file in dist/ serves that file; a path with no file extension (a client route such as
-// /book/abc) falls back to index.html, the single-page app; a missing asset is a 404, so the smoke walk sees it.
+// A path that names a file in dist/ serves that file; failing that, a `_redirects` file (Cloudflare Pages'
+// own config, copied from public/) decides the rest — the app's known routes rewrite to index.html at 200,
+// everything else is a real 404 (plan/CRITIQUE.md pass 13). With no `_redirects` present, a path with no file
+// extension falls back to index.html, the single-page app; a missing asset is a 404, so the smoke walk sees it.
 // Usage: node e2e/serve.mjs [port]   (default 4173; root is dist/ beside this folder, or E2E_DIST: the owner-tools
 // build in dist-owner/, scripts/e2e-owner.mjs)
 import { createReadStream, existsSync, readFileSync, statSync } from 'node:fs';
@@ -8,7 +10,7 @@ import { createServer } from 'node:http';
 import path from 'node:path';
 import { fileURLToPath } from 'node:url';
 
-// Reserved Cloudflare Pages config files: never served as content, only read for behavior (_headers below).
+// Reserved Cloudflare Pages config files: never served as content, only read for behavior (below).
 const RESERVED = new Set(['/_headers', '/_redirects']);
 
 const TYPES = {
@@ -48,8 +50,10 @@ const isFile = (p) => {
 };
 
 // Resolve a request URL to what to serve: { status: 200, file } or { status: 400 | 403 | 404 }.
-// `exists` is injectable so the logic is testable without a disk.
-export function resolveRequest(root, url, exists = isFile) {
+// `exists` is injectable so the logic is testable without a disk. `redirects` (parseRedirects' output)
+// is checked only once no real asset matches the path, same precedence Cloudflare Pages itself gives
+// `_redirects` over static assets.
+export function resolveRequest(root, url, exists = isFile, redirects = []) {
   const base = path.resolve(root);
   let pathname;
   try {
@@ -60,7 +64,15 @@ export function resolveRequest(root, url, exists = isFile) {
   if (pathname.includes('\0')) return { status: 400 };
   const target = path.resolve(base, '.' + path.posix.normalize('/' + pathname));
   if (target !== base && !target.startsWith(base + path.sep)) return { status: 403 };
-  if (target !== base && exists(target)) return { status: 200, file: target };
+  // The root itself (`/`) is a real asset too (index.html), not a client route a redirect rule should
+  // see — matching it here, before redirects, keeps `/*` catch-alls from shadowing it.
+  const asset = target === base ? path.join(base, 'index.html') : target;
+  if (exists(asset)) return { status: 200, file: asset };
+  const rule = redirectFor(redirects, pathname);
+  if (rule) {
+    const dest = path.resolve(base, '.' + path.posix.normalize('/' + rule.to));
+    return exists(dest) ? { status: rule.status, file: dest } : { status: 404 };
+  }
   if (path.posix.extname(pathname) === '') {
     const index = path.join(base, 'index.html');
     return exists(index) ? { status: 200, file: index } : { status: 404 };
@@ -132,10 +144,32 @@ export function headersFor(rules, pathname) {
   return out;
 }
 
+// A Cloudflare Pages `_redirects` file: blank/`#` lines ignored, every other line is `<pattern> <to>
+// [status]` (whitespace-separated); status defaults to 301 (Cloudflare's own default) when omitted.
+// Rules are checked in order, first match wins (`redirectFor`), the same pattern language `_headers`
+// uses (`matchesPattern`): `/foo/*` matches `/foo` and everything under it, anything else matches exactly.
+export function parseRedirects(text) {
+  const rules = [];
+  for (const raw of text.split('\n')) {
+    const line = raw.replace(/\r$/, '').trim();
+    if (!line || line.startsWith('#')) continue;
+    const [pattern, to, status] = line.split(/\s+/);
+    if (!pattern || !to) continue;
+    rules.push({ pattern, to, status: status ? Number(status) : 301 });
+  }
+  return rules;
+}
+
+export function redirectFor(rules, pathname) {
+  return rules.find((rule) => matchesPattern(rule.pattern, pathname)) ?? null;
+}
+
 export function createStaticServer(root) {
   const base = path.resolve(root);
   const headersPath = path.join(base, '_headers');
   const headerRules = existsSync(headersPath) ? parseHeaders(readFileSync(headersPath, 'utf8')) : [];
+  const redirectsPath = path.join(base, '_redirects');
+  const redirectRules = existsSync(redirectsPath) ? parseRedirects(readFileSync(redirectsPath, 'utf8')) : [];
   return createServer((req, res) => {
     if (req.method !== 'GET' && req.method !== 'HEAD') {
       res.writeHead(405, { Allow: 'GET, HEAD' }).end();
@@ -151,8 +185,8 @@ export function createStaticServer(root) {
       res.writeHead(404, { 'Content-Type': 'text/plain; charset=utf-8' }).end('404\n');
       return;
     }
-    const hit = resolveRequest(root, req.url ?? '/');
-    if (hit.status !== 200) {
+    const hit = resolveRequest(root, req.url ?? '/', undefined, redirectRules);
+    if (!hit.file) {
       res.writeHead(hit.status, { 'Content-Type': 'text/plain; charset=utf-8' }).end(`${hit.status}\n`);
       return;
     }
@@ -172,7 +206,7 @@ export function createStaticServer(root) {
       headers['Content-Range'] = `bytes ${range.start}-${range.end}/${size}`;
       headers['Content-Length'] = String(range.end - range.start + 1);
     } else headers['Content-Length'] = String(size);
-    res.writeHead(range ? 206 : 200, headers);
+    res.writeHead(range ? 206 : hit.status, headers);
     if (req.method === 'HEAD') {
       res.end();
       return;
