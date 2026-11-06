@@ -168,6 +168,23 @@ unchanged — and the top score (2.7) stays under the 3.0 bar, so per
 `skills/iterate.md` §6 failure mode 6 (posture bold) this tick hands
 straight to `/expand` instead of shipping a fix.
 
+This tick (cloud `/march`, 2026-11-06, base `c2b49ce`): triage gate cheap
+(0 unlabeled, 0 urgent via `gh issue list`). Critique gate not due (9
+commits / ~22h past pass 12's base `1572637`, under both the 12-commit
+and 24h floor). `node scripts/plan/order.mjs` again names only 01.28 as
+reachable; claimed and released unbuilt once more — its mechanism is
+still the one that shipped at commit 24068f1, only the owner's phone
+check (A41) remains, per the `[needs-user-call]` row below. No `data/`
+layer, so 3b doesn't apply. `/march`'s own expand gate (3c) falls short
+(1 commit / ~2h since pass 36's base `6f4c8c2`, under the 20-commit/48h
+floor), so fell to `/iterate`. A fresh audit found the same Top 5 as the
+prior pass — `git log -p 2341ede..HEAD -- spec.md design/` empty, `gh
+issue list` shows only the already-routed `#11` (`triage:needs-user`),
+no new `triage:loop-queued`/`triage:reviewed` rows, the three
+`[needs-user-call]` rows below unchanged — and the top score (2.7) stays
+under the 3.0 bar, so per `skills/iterate.md` §6 failure mode 6 (posture
+bold) this tick hands straight to `/expand` instead of shipping a fix.
+
 ## Pending — [needs-user-call]
 
 ### [needs-user-call] 01.28 shipped its mechanism; A41's phone check still needs a real device (A41)
