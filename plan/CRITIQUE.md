@@ -1,13 +1,38 @@
 # Critique log
 
-> Last pass: 2026-11-05 at commit 1572637
-> Pass count: 12
+> Last pass: 2026-11-06 at commit 03762de
+> Pass count: 13
 
 > External-observer feedback for Mood Read. Populated by
 > `/critique`, drained by `/iterate`. See `skills/critique.md`
 > for the contract.
 
 ## Pending
+
+### [MED] every unmatched path — Cloudflare Pages returns HTTP 200, not a real 404
+- pass: 13 (commit 03762de)
+- viewport: n/a (web-fetch engine, no browser tools on this runner)
+- category: seo
+- observation: a made-up path (`/nonexistent-page-xyz123`) serves the identical CSR shell as every
+  valid route, at HTTP status 200 — not 404. This is distinct from the already-open
+  pre-hydration-empty-body finding (every route, valid or not, ships an empty shell before JS
+  runs): that one is about content, this one is about the HTTP status code itself. There's no
+  `public/_redirects` or `public/_routes.json` in the repo, so Cloudflare Pages' default SPA
+  fallback serves `index.html` with `200` for any path that doesn't match a static asset,
+  regardless of whether the path is a route the app actually knows (`/browse`, `/book/[id]`, …)
+  or pure garbage. Crawlers and link-checkers see every typo'd/garbage URL as a valid, indexable
+  200 page — classic soft-404, duplicate-content/index-bloat risk.
+- evidence: `curl -s -o /dev/null -w "%{http_code}" https://mood-read.pages.dev/nonexistent-page-xyz123`
+  → `200` (same as `curl -s -o /dev/null -w "%{http_code}" https://mood-read.pages.dev/` → `200`).
+  `find . -iname "_redirects" -o -iname "_routes.json"` under `public/` → none (only
+  `public/_headers` exists).
+- suggested fix: add a `public/_redirects` file enumerating the app's known static/dynamic routes
+  (`/`, `/browse`, `/browse/*`, `/book/*`, `/soundtrack`, `/downloads`, `/settings`, `/import`,
+  `/credits`, `/licenses`, `/privacy`) each rewriting to `/index.html 200`, with a trailing
+  catch-all `/* /404.html 404` (needs a minimal static `404.html`, or point the catch-all at the
+  same shell with an explicit `404` status) so genuinely unmatched paths get a real 404 instead of
+  silently 200-ing.
+- source: web-fetch
 
 ### [LOW] every route — no `<link rel="canonical">`, no web app manifest
 - pass: 12 (commit 1572637); narrowed at 94a1159 (the same pass's og:/twitter: half shipped,
