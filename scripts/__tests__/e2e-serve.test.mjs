@@ -56,20 +56,17 @@ describe('resolving a request', () => {
     assert.deepEqual(resolveRequest(root, '/book/1', () => false), { status: 404 });
   });
 
-  it('honors redirect rules once no real asset matches, catch-all last', () => {
+  it('honors redirect rules (destination "/" means index.html) once no real asset matches, falling to 404.html for anything no rule covers', () => {
     const indexFiles = new Set([...files, path.join(root, '404.html')]);
     const withRedirects = (url) =>
-      resolveRequest(root, url, (p) => indexFiles.has(p), [
-        { pattern: '/browse/*', to: '/index.html', status: 200 },
-        { pattern: '/*', to: '/404.html', status: 404 },
-      ]);
+      resolveRequest(root, url, (p) => indexFiles.has(p), [{ pattern: '/browse/*', to: '/', status: 200 }]);
     assert.deepEqual(withRedirects('/browse/sample-1'), { status: 200, file: path.join(root, 'index.html') });
     assert.deepEqual(withRedirects('/nonexistent-page-xyz123'), { status: 404, file: path.join(root, '404.html') });
     assert.deepEqual(withRedirects('/_expo/app.js'), { status: 200, file: path.join(root, '_expo', 'app.js') });
   });
 
-  it('is a plain 404 (no file) when a matched redirect names a destination that does not exist', () => {
-    assert.deepEqual(resolveRequest(root, '/missing', exists, [{ pattern: '/*', to: '/404.html', status: 404 }]), {
+  it('is a plain 404 (no file) when a matched redirect names a destination that does not exist and there is no 404.html', () => {
+    assert.deepEqual(resolveRequest(root, '/missing', exists, [{ pattern: '/*', to: '/elsewhere.html', status: 200 }]), {
       status: 404,
     });
   });
@@ -121,18 +118,19 @@ describe('_headers (the Cloudflare Pages config file)', () => {
 
 describe('_redirects (the Cloudflare Pages config file)', () => {
   it('reads <pattern> <to> [status], ignoring blanks and comments, defaulting status to 301', () => {
-    const rules = parseRedirects('# a comment\n\n/browse/*  /index.html  200\n/*  /404.html  404\n/old  /new\n');
+    const rules = parseRedirects('# a comment\n\n/credits  /  200\n/browse/*  /  200\n/old  /new\n');
     assert.deepEqual(rules, [
-      { pattern: '/browse/*', to: '/index.html', status: 200 },
-      { pattern: '/*', to: '/404.html', status: 404 },
+      { pattern: '/credits', to: '/', status: 200 },
+      { pattern: '/browse/*', to: '/', status: 200 },
       { pattern: '/old', to: '/new', status: 301 },
     ]);
   });
 
   it('matches the first rule that applies, same pattern language as _headers', () => {
-    const rules = parseRedirects('/browse/*  /index.html  200\n/*  /404.html  404\n');
-    assert.deepEqual(redirectFor(rules, '/browse/sample-1'), { pattern: '/browse/*', to: '/index.html', status: 200 });
-    assert.deepEqual(redirectFor(rules, '/nope'), { pattern: '/*', to: '/404.html', status: 404 });
+    const rules = parseRedirects('/credits  /  200\n/browse/*  /  200\n');
+    assert.deepEqual(redirectFor(rules, '/credits'), { pattern: '/credits', to: '/', status: 200 });
+    assert.deepEqual(redirectFor(rules, '/browse/sample-1'), { pattern: '/browse/*', to: '/', status: 200 });
+    assert.equal(redirectFor(rules, '/nope'), null);
     assert.equal(redirectFor([], '/nope'), null);
   });
 });
@@ -149,7 +147,7 @@ describe('the server over a socket', () => {
     writeFileSync(path.join(dir, '_expo', 'app.js'), 'console.log(1);');
     writeFileSync(path.join(dir, '_headers'), '/*\n  X-Frame-Options: DENY\n');
     writeFileSync(path.join(dir, '404.html'), '<!doctype html><title>not found</title>');
-    writeFileSync(path.join(dir, '_redirects'), '/book/*  /index.html  200\n/*  /404.html  404\n');
+    writeFileSync(path.join(dir, '_redirects'), '/book/*  /  200\n');
     server = createStaticServer(dir);
     await new Promise((done) => server.listen(0, '127.0.0.1', done));
     base = `http://127.0.0.1:${server.address().port}`;
@@ -179,7 +177,7 @@ describe('the server over a socket', () => {
     await post.text();
   });
 
-  it('serves the real 404 page (status and body) for a path no redirect rule rewrites to index.html', async () => {
+  it('serves the real 404.html page (status and body) for a path no redirect rule covers', async () => {
     const res = await fetch(`${base}/nonexistent-page-xyz123`);
     assert.equal(res.status, 404);
     assert.match(await res.text(), /not found/);

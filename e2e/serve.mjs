@@ -1,8 +1,10 @@
 // A small static server over the web build (dist/) for the hermetic e2e: Node built-ins only, localhost only.
 // A path that names a file in dist/ serves that file; failing that, a `_redirects` file (Cloudflare Pages'
-// own config, copied from public/) decides the rest — the app's known routes rewrite to index.html at 200,
-// everything else is a real 404 (plan/CRITIQUE.md pass 13). With no `_redirects` present, a path with no file
-// extension falls back to index.html, the single-page app; a missing asset is a 404, so the smoke walk sees it.
+// own config, copied from public/) decides the rest — the app's known routes rewrite to the root at 200
+// (never to /index.html: see parseRedirects below). Failing that, a `404.html` at the root answers any
+// unmatched path at a real 404, the same built-in Cloudflare Pages convention (plan/CRITIQUE.md pass 13).
+// With neither present, a path with no file extension falls back to index.html, the single-page app; a
+// missing asset is a 404, so the smoke walk sees it.
 // Usage: node e2e/serve.mjs [port]   (default 4173; root is dist/ beside this folder, or E2E_DIST: the owner-tools
 // build in dist-owner/, scripts/e2e-owner.mjs)
 import { createReadStream, existsSync, readFileSync, statSync } from 'node:fs';
@@ -64,15 +66,20 @@ export function resolveRequest(root, url, exists = isFile, redirects = []) {
   if (pathname.includes('\0')) return { status: 400 };
   const target = path.resolve(base, '.' + path.posix.normalize('/' + pathname));
   if (target !== base && !target.startsWith(base + path.sep)) return { status: 403 };
-  // The root itself (`/`) is a real asset too (index.html), not a client route a redirect rule should
-  // see — matching it here, before redirects, keeps `/*` catch-alls from shadowing it.
-  const asset = target === base ? path.join(base, 'index.html') : target;
+  // The root path (`/`) — and any redirect destination of `/` — means index.html, the one real
+  // asset there; never the bare directory `isFile` would reject.
+  const asIndex = (p) => (p === base ? path.join(base, 'index.html') : p);
+  const asset = asIndex(target);
   if (exists(asset)) return { status: 200, file: asset };
   const rule = redirectFor(redirects, pathname);
   if (rule) {
-    const dest = path.resolve(base, '.' + path.posix.normalize('/' + rule.to));
+    const dest = asIndex(path.resolve(base, '.' + path.posix.normalize('/' + rule.to)));
     return exists(dest) ? { status: rule.status, file: dest } : { status: 404 };
   }
+  // Cloudflare Pages' own convention: a 404.html at the root answers any path nothing else
+  // matched, at a real 404 — not just an extensionless one, and regardless of `_redirects`.
+  const notFound = path.join(base, '404.html');
+  if (exists(notFound)) return { status: 404, file: notFound };
   if (path.posix.extname(pathname) === '') {
     const index = path.join(base, 'index.html');
     return exists(index) ? { status: 200, file: index } : { status: 404 };
@@ -147,7 +154,12 @@ export function headersFor(rules, pathname) {
 // A Cloudflare Pages `_redirects` file: blank/`#` lines ignored, every other line is `<pattern> <to>
 // [status]` (whitespace-separated); status defaults to 301 (Cloudflare's own default) when omitted.
 // Rules are checked in order, first match wins (`redirectFor`), the same pattern language `_headers`
-// uses (`matchesPattern`): `/foo/*` matches `/foo` and everything under it, anything else matches exactly.
+// uses (`matchesPattern`): `/foo/*` matches `/foo` and everything under it, anything else matches
+// exactly. Cloudflare only accepts 200/301/302/303/307/308 as a rule's status — not 404, so a rule
+// can rewrite but never itself serve a 404 (that's `404.html`'s job, resolveRequest's fallback below);
+// and a destination of `/index.html` is a footgun on the real platform (an auto redirect strips the
+// `/index.html` back to `/`, turning a 200 rewrite into a loop-breaking 301 and disabling any splat
+// rule that depends on it outright as an "infinite loop") — destinations should be `/`, not `/index.html`.
 export function parseRedirects(text) {
   const rules = [];
   for (const raw of text.split('\n')) {

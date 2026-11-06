@@ -1,15 +1,19 @@
-# Cloudflare Pages: static assets (JS bundles, robots.txt, sitemap.xml, og-image.png, ...) are matched
-# before these rules run. The app's own pretty-URL routes have no static file of their own (web.output:
-# "single", one index.html) so they need an explicit rewrite; a path that matches none of them is real
-# garbage, not a route this app knows, so it gets a real 404 instead of the SPA shell at 200
-# (plan/CRITIQUE.md pass 13).
-/browse/*    /index.html  200
-/book/*      /index.html  200
-/credits     /index.html  200
-/downloads   /index.html  200
-/import      /index.html  200
-/licenses    /index.html  200
-/privacy     /index.html  200
-/settings    /index.html  200
-/soundtrack  /index.html  200
-/*           /404.html    404
+# Cloudflare Pages: static assets (JS bundles, robots.txt, sitemap.xml, og-image.png, ...) are
+# matched before these rules run. The app's own pretty-URL routes have no static file of their
+# own (web.output: "single", one index.html) so they need an explicit rewrite to the root at 200
+# — NOT to /index.html: Cloudflare's own clean-URL layer auto-redirects any request that resolves
+# to literally /index.html back to / (308), which turns a 200 rewrite into a redirect loop-breaker
+# and (for a splat source) gets the whole rule silently disabled as an "infinite loop". Exact
+# patterns are listed before splats per Cloudflare's own ordering guidance (static before dynamic).
+# A path that matches none of these is real garbage, not a route this app knows: Cloudflare Pages
+# serves public/404.html automatically for any unmatched path, at a real 404 — no redirect rule for
+# that exists (404 isn't even a legal _redirects status; only 200/301/302/303/307/308 are).
+/credits     /  200
+/downloads   /  200
+/import      /  200
+/licenses    /  200
+/privacy     /  200
+/settings    /  200
+/soundtrack  /  200
+/book/*      /  200
+/browse/*    /  200
