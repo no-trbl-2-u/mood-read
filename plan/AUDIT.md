@@ -5,9 +5,28 @@
 > stays until the owner answers it, and the loop continues on the
 > default it names.
 
-# Site audit — 2026-11-05 (iterate: top score 2.7, below bar — handed to expand, commit cc1d887 base)
+# Site audit — 2026-11-06 (iterate: top score 4.2 — shipped, commit f8c2170 base)
 
 ## Top 5 findings (scored)
+
+### [4.2] every unmatched path — Cloudflare Pages returns HTTP 200, not a real 404 (plan/CRITIQUE.md pass 13) [x]
+- category: external-critique
+- impact: 6 (MED severity; every typo'd or garbage URL indexed as a valid 200 page site-wide —
+  a duplicate-content/soft-404 risk for every crawler and link-checker, not just one route)
+- ease: 7 (the static files themselves — `public/_redirects`, `public/404.html` — are cheap; the
+  real work was that the hermetic e2e's own static server had no `_redirects` support at all,
+  so this would have shipped unverified against anything but a post-deploy curl of the live site)
+- issue: #22
+- fixed: 2026-11-06 (/march, /iterate) — commit f8c2170: `public/_redirects` rewrites the app's
+  pretty-URL routes (`/browse/*`, `/book/*`, `/credits`, `/downloads`, `/import`, `/licenses`,
+  `/privacy`, `/settings`, `/soundtrack`) to `/index.html` at 200, with a trailing `/* /404.html
+  404` catch-all; `e2e/serve.mjs` now parses and honors `_redirects` the same way it already
+  honors `_headers`, so `e2e/smoke.spec.ts` proves both halves (a known route still 200s, a
+  garbage path gets the real 404 page) against the hermetic build, not only a post-deploy curl.
+  Caught before shipping: the first pass checked redirect rules ahead of the "this request is the
+  root itself" case, so the `/*` catch-all would have 404'd `/` on every real deploy — fixed by
+  matching the root to `index.html` as a literal asset first, ahead of any redirect rule; full
+  manual `pnpm e2e` run (all 23 spec files, batched into sequential foreground legs) green after.
 
 ### [4.2] every route — no Open Graph/Twitter card tags (plan/CRITIQUE.md pass 12) [x]
 - category: external-critique
@@ -55,24 +74,14 @@
 - ease: 8 (one `<lastmod>` per entry, at minimum the deploy date)
 - next: below the 3.0 actionable threshold alone
 
-### [1.8] /browse — the whole catalog has no crawlable path, from any entry point (plan/CRITIQUE.md pass 10)
-- category: external-critique
-- impact: 6 (MED severity; no sitemap entry or server-rendered link reaches
-  the catalog Browse exists to showcase)
-- ease: ~3 (archive.org's own `advancedsearch.php` call is public and
-  needs no secret, so a script *could* fetch the popular-books list, but
-  enumerating ids at commit-build time is exactly the O(content) breadth
-  agents.md §3 keeps off the per-commit path — this wants a scheduled job
-  writing a cached list, the same shape as 01.26's prescore job, not a
-  one-line build step)
-- next: too large for one `/iterate` tick as scoped; a candidate for
-  `/plan-a-spec` or `/expand` rather than a quick win
-
-Also pending, tied near the bottom: [1.2] every route's pre-hydration body
-is empty (plan/CRITIQUE.md pass 5, unchanged — still needs the provider-tree
-SSR-safety pass `plan/CANDIDATES.md`'s "[score 4.0]" candidate already
-covers) and [1.2] the narrowed canonical/manifest row (plan/CRITIQUE.md
-pass 12, split off [4.2] above).
+Also pending, tied near the bottom: [1.8] /browse has no crawlable path from any entry point
+(plan/CRITIQUE.md pass 10, unchanged — no sitemap entry or server-rendered link reaches the
+catalog; ease ~3, a scheduled job writing a cached id list, the same shape as 01.26's prescore
+job, not a one-line build step, so it dropped out of this tick's Top 5 to make room for pass 13's
+fix above), [1.2] every route's pre-hydration body is empty (plan/CRITIQUE.md pass 5, unchanged —
+still needs the provider-tree SSR-safety pass `plan/CANDIDATES.md`'s "[score 4.0]" candidate
+already covers) and [1.2] the narrowed canonical/manifest row (plan/CRITIQUE.md pass 12, split
+off [4.2] above).
 
 This tick's `/march`: triage gate cheap (0 unlabeled, 0 urgent via
 `gh issue list`). Critique gate not due (2 commits / ~10h past pass 12's
@@ -184,6 +193,18 @@ no new `triage:loop-queued`/`triage:reviewed` rows, the three
 `[needs-user-call]` rows below unchanged — and the top score (2.7) stays
 under the 3.0 bar, so per `skills/iterate.md` §6 failure mode 6 (posture
 bold) this tick hands straight to `/expand` instead of shipping a fix.
+
+This tick (cloud `/march`, 2026-11-06, base `4dd587f`): triage gate cheap (0 unlabeled, 0 urgent
+via `gh issue list`). Critique gate not due (1 commit / ~11.5h past pass 13's base `03762de`,
+under both floors). `node scripts/plan/order.mjs` again names only 01.28 as reachable, blocked on
+the owner's phone check (A41, per the `[needs-user-call]` row below) — skipped unclaimed rather
+than claimed and released. No `data/` layer, so 3b doesn't apply. `/march`'s own expand gate (3c)
+falls short (3 commits / ~14h since pass 37's base `c2b49ce`, under the 20-commit/48h floor), so
+fell to `/iterate`. Unlike the prior several ticks, this one found new signal: pass 13's own
+critique landed (commit 4dd587f) after the prior audit ran, so its soft-404 row hadn't been
+scored yet. Scored at 4.2, it cleared the 3.0 bar outright, so it shipped this tick (commit
+`f8c2170`) instead of handing to `/expand`; see the Top 5 above for the fix and the bug caught
+in review before it reached main.
 
 ## Pending — [needs-user-call]
 
