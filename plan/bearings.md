@@ -277,6 +277,17 @@ The design system (06.1, option A "acid sticker", owner direction "full gen z ch
 - **No AI or search key ships in the app** (A22).
 - **Secrets by name only:** a chunk names the secrets it needs on its line; values come through
   `node scripts/secrets.mjs run`, never a terminal.
+- **`public/_redirects` destinations are never `/index.html` (learned the hard way, 2026-11-06,
+  plan/CRITIQUE.md pass 13):** Cloudflare Pages' own clean-URL layer auto-redirects any request
+  that resolves to literally `/index.html` back to `/` (308) — a rule rewriting to `/index.html`
+  at 200 becomes a redirect loop-breaker instead, and for a splat source Cloudflare detects the
+  cycle and silently disables the whole rule as an "infinite loop" (it never matches again).
+  Destinations must be `/`. Also: `404` is not a legal `_redirects` status (only
+  200/301/302/303/307/308 are) — a custom 404 page needs no rule at all, just a `404.html` at the
+  project root, which Cloudflare serves automatically for any unmatched path. Before editing
+  `public/_redirects` again, verify with `pnpm exec wrangler pages dev dist` (not just a live
+  curl) — it faithfully emulates the real engine, including these parse-time warnings, and is far
+  faster to iterate against than a push-and-redeploy cycle.
 - **Android first, no iOS for now (owner, 2026-10-26):** Mood Read ships as the owner's Android preview APK, built
   on demand from main through EAS (`pnpm build:android:preview`, `android-preview.yml`; spec 04, complete). No
   Play Store, App Store or iOS build until the owner joins those programs (05.14, 05.15, 05.18 stay held); the owner

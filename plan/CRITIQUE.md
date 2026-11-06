@@ -154,7 +154,7 @@
 
 ## Done
 
-### [x] [MED] every unmatched path — Cloudflare Pages returns HTTP 200, not a real 404 (pass 13; issue #22; addressed at f8c2170)
+### [x] [MED] every unmatched path — Cloudflare Pages returns HTTP 200, not a real 404 (pass 13; issue #22; addressed at f8c2170, corrected at a16c61c — see plan/AUDIT.md's Top 5 and plan/bearings.md's standing decision on `_redirects` destinations)
 
 ### [x] [MED] every route — no Open Graph/Twitter card tags (pass 12; issue #21; addressed at 94a1159)
 

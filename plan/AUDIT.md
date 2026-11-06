@@ -19,14 +19,30 @@
 - issue: #22
 - fixed: 2026-11-06 (/march, /iterate) — commit f8c2170: `public/_redirects` rewrites the app's
   pretty-URL routes (`/browse/*`, `/book/*`, `/credits`, `/downloads`, `/import`, `/licenses`,
-  `/privacy`, `/settings`, `/soundtrack`) to `/index.html` at 200, with a trailing `/* /404.html
-  404` catch-all; `e2e/serve.mjs` now parses and honors `_redirects` the same way it already
-  honors `_headers`, so `e2e/smoke.spec.ts` proves both halves (a known route still 200s, a
-  garbage path gets the real 404 page) against the hermetic build, not only a post-deploy curl.
-  Caught before shipping: the first pass checked redirect rules ahead of the "this request is the
-  root itself" case, so the `/*` catch-all would have 404'd `/` on every real deploy — fixed by
-  matching the root to `index.html` as a literal asset first, ahead of any redirect rule; full
-  manual `pnpm e2e` run (all 23 spec files, batched into sequential foreground legs) green after.
+  `/privacy`, `/settings`, `/soundtrack`) at 200; `e2e/serve.mjs` now parses and honors
+  `_redirects` the same way it already honors `_headers`, so `e2e/smoke.spec.ts` proves both
+  halves (a known route still 200s, a garbage path gets the real 404 page) against the hermetic
+  build, not only a post-deploy curl. Caught before shipping: the first pass checked redirect
+  rules ahead of the "this request is the root itself" case, so a catch-all rule would have
+  404'd `/` on every real deploy — fixed by matching the root to `index.html` as a literal asset
+  first, ahead of any redirect rule.
+  **Caught only after shipping, by curling the live deploy right after** (this is why the deploy
+  gate's post-push verification matters, not just `pnpm e2e`): f8c2170's rules all rewrote to
+  `/index.html`, and the catch-all used status `404`. Both are wrong on the real platform —
+  Cloudflare's own clean-URL layer auto-redirects any request resolving to literally
+  `/index.html` back to `/` (308), so the 200 rewrites became redirect loop-breakers, and for the
+  two splat rules (`/book/*`, `/browse/*`) Cloudflare detected the resulting cycle and silently
+  disabled them outright as an "infinite loop" — every dynamic book/browse deep link 404'd in
+  production for roughly the few minutes between the two deploys. `404` also isn't a legal
+  `_redirects` status (only 200/301/302/303/307/308 are), so the catch-all was silently ignored
+  too; harmlessly, since Cloudflare Pages serves a root `404.html` automatically for anything
+  unmatched regardless. Corrected at commit `a16c61c`: destinations are now `/`, the catch-all
+  rule is gone, `e2e/serve.mjs` mirrors the `404.html`-fallback convention, and both `wrangler
+  pages dev` (9/9 valid rules, no warnings) and a second live-site curl confirmed every route
+  before moving on. Full manual `pnpm e2e` run (all 23 spec files, batched into sequential
+  foreground legs) green after each commit. The lesson is now a standing decision in
+  `plan/bearings.md` so it isn't relearned: verify any `_redirects` change with `wrangler pages
+  dev` before pushing, never against a live curl alone.
 
 ### [4.2] every route — no Open Graph/Twitter card tags (plan/CRITIQUE.md pass 12) [x]
 - category: external-critique
@@ -203,8 +219,10 @@ falls short (3 commits / ~14h since pass 37's base `c2b49ce`, under the 20-commi
 fell to `/iterate`. Unlike the prior several ticks, this one found new signal: pass 13's own
 critique landed (commit 4dd587f) after the prior audit ran, so its soft-404 row hadn't been
 scored yet. Scored at 4.2, it cleared the 3.0 bar outright, so it shipped this tick (commit
-`f8c2170`) instead of handing to `/expand`; see the Top 5 above for the fix and the bug caught
-in review before it reached main.
+`f8c2170`) instead of handing to `/expand` — see the Top 5 above for the fix, the bug caught in
+review before it reached main, and a second, more serious bug caught only by curling the live
+deploy right after (every dynamic route 404'd in production for a few minutes), corrected at
+commit `a16c61c` and now a standing decision in `plan/bearings.md`.
 
 ## Pending — [needs-user-call]
 
