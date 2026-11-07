@@ -222,6 +222,20 @@ shipped this tick (commit 50c43fc: one exact-match `_redirects` line ahead of th
 plus a dedicated regression test) instead of handing to `/expand`. Mirrored to GitHub as issue
 #23 before the fix landed; `Closes #23` on the fix commit auto-closes it.
 
+This tick (cloud `/march`, 2026-11-07, base `6a31616`): triage gate cheap (0 unlabeled, 0 urgent
+via `gh issue list`). Critique gate not due (3 commits / ~3.9h past pass 14's base `ed04f1d`,
+under both the 12-commit and 24h floor). `node scripts/plan/order.mjs` again names only 01.28 as
+reachable, blocked on the owner's phone check (A41, per the `[needs-user-call]` row below) —
+claimed and released unbuilt once more. No `data/` layer, so 3b doesn't apply. `/march`'s own
+expand gate (3c) falls short (5 commits / ~6h since pass 40's base `0ce8520`, under the
+20-commit/48h floor), so fell to `/iterate`. A fresh audit found the same Top 5 as the last pass
+— zero commits have landed since the audit's own base `50c43fc` other than its own tick commit,
+`git log -p 50c43fc..HEAD -- spec.md design/` empty, `gh issue list` shows no new
+`triage:loop-queued`/`triage:reviewed` rows, `design/` unchanged since `ca7361b`, the three
+`[needs-user-call]` rows below unchanged — and the top score (2.7) stays under the 3.0 bar, so per
+`skills/iterate.md` §6 failure mode 6 (posture bold) this tick hands straight to `/expand` instead
+of shipping a fix.
+
 ## Pending — [needs-user-call]
 
 ### [needs-user-call] 01.28 shipped its mechanism; A41's phone check still needs a real device (A41)
