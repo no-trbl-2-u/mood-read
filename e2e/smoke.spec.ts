@@ -57,6 +57,16 @@ test("a known pretty-URL route still rewrites to the app shell", async ({ reques
   expect(body).toContain("Mood Read");
 });
 
+// /browse itself (no trailing slash, the form sitemap.xml lists) needs its own exact rule: the splat rule
+// `/browse/*` only covers `/browse/` and under it on the real platform, so bare `/browse` 404'd until this
+// rule was added (plan/CRITIQUE.md pass 14).
+test("/browse (no trailing slash) rewrites to the app shell, not a 404", async ({ request }) => {
+  const res = await request.get("/browse");
+  expect(res.status()).toBe(200);
+  const body = await res.text();
+  expect(body).toContain("Mood Read");
+});
+
 // The web build ships a real robots.txt beside the app, so a crawler reads actual directives instead of the
 // SPA shell every unmatched path otherwise falls back to (plan/CRITIQUE.md, the robots.txt/sitemap.xml finding).
 test("/robots.txt is served with the web build and carries real directives", async ({ request }) => {

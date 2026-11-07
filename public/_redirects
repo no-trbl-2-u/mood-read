@@ -15,5 +15,6 @@
 /privacy     /  200
 /settings    /  200
 /soundtrack  /  200
+/browse      /  200
 /book/*      /  200
 /browse/*    /  200
