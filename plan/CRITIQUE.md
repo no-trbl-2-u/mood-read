@@ -9,33 +9,6 @@
 
 ## Pending
 
-### [HIGH] /browse — the primary catalog route 404s at its own canonical URL; the sitemap links straight to the 404
-- pass: 14 (commit ed04f1d)
-- viewport: n/a (web-fetch engine, no browser tools on this runner)
-- category: navigation
-- observation: `/browse` (no trailing slash — the form every other flat route uses, and the
-  form `sitemap.xml` lists) returns a real HTTP 404. Only `/browse/` (trailing slash) resolves.
-  Every other flat route in `public/_redirects` is the exact opposite: `/import`, `/settings`,
-  `/credits`, `/privacy`, `/downloads`, `/licenses`, `/soundtrack` all 200 with no trailing
-  slash and 404 with one. Root cause: `public/_redirects` has an exact-match 200 rewrite for
-  each of those routes, but `/browse` has no exact-match rule of its own — only `/browse/*`
-  (the splat rule that also covers `/browse/[id]`), which requires a literal `/browse/` prefix
-  and so never matches bare `/browse`. The request falls through to Cloudflare Pages' automatic
-  `public/404.html`. `sitemap.xml` lists `https://mood-read.pages.dev/browse` (no trailing
-  slash) as one of its 9 canonical URLs, so a crawler following the sitemap hits a dead link for
-  the catalog page the file's comment says `/browse/*` exists to showcase.
-- evidence: `curl -s -o /dev/null -w "%{http_code}" https://mood-read.pages.dev/browse` → `404`;
-  same for `/browse/` → `200`. Contrast `/import` → `200`, `/import/` → `404` (and same pattern
-  for `/settings`, `/credits`, `/privacy`). `public/_redirects` has `/import     /  200`,
-  `/settings   /  200`, etc. as exact rules but only `/browse/*   /  200` for browse — no bare
-  `/browse   /  200` line. `curl -s https://mood-read.pages.dev/sitemap.xml | grep browse` →
-  `<loc>https://mood-read.pages.dev/browse</loc>` (no trailing slash, the 404ing form).
-- suggested fix: add an exact-match `/browse   /  200` line to `public/_redirects`, ordered
-  before `/browse/*` (the file's own header comment already says exact rules go before splats;
-  every other flat route already follows this). One line, no sitemap change needed once the
-  route itself resolves.
-- source: web-fetch
-
 ### [LOW] every route — no `<link rel="canonical">`, no web app manifest
 - pass: 12 (commit 1572637); narrowed at 94a1159 (the same pass's og:/twitter: half shipped,
   moved to Done below)
@@ -180,6 +153,8 @@
 - source: web-fetch
 
 ## Done
+
+### [x] [HIGH] /browse — the primary catalog route 404s at its own canonical URL (pass 14; issue #23; addressed at 50c43fc)
 
 ### [x] [MED] every unmatched path — Cloudflare Pages returns HTTP 200, not a real 404 (pass 13; issue #22; addressed at f8c2170, corrected at a16c61c — see plan/AUDIT.md's Top 5 and plan/bearings.md's standing decision on `_redirects` destinations)
 

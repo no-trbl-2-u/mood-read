@@ -5,66 +5,21 @@
 > stays until the owner answers it, and the loop continues on the
 > default it names.
 
-# Site audit — 2026-11-06 (iterate: top score 4.2 — shipped, commit f8c2170 base)
+# Site audit — 2026-11-07 (iterate: top score 8.1 — shipped, commit 50c43fc base)
 
 ## Top 5 findings (scored)
 
-### [4.2] every unmatched path — Cloudflare Pages returns HTTP 200, not a real 404 (plan/CRITIQUE.md pass 13) [x]
+### [8.1] /browse — the primary catalog route 404s at its own canonical URL (plan/CRITIQUE.md pass 14) [x]
 - category: external-critique
-- impact: 6 (MED severity; every typo'd or garbage URL indexed as a valid 200 page site-wide —
-  a duplicate-content/soft-404 risk for every crawler and link-checker, not just one route)
-- ease: 7 (the static files themselves — `public/_redirects`, `public/404.html` — are cheap; the
-  real work was that the hermetic e2e's own static server had no `_redirects` support at all,
-  so this would have shipped unverified against anything but a post-deploy curl of the live site)
-- issue: #22
-- fixed: 2026-11-06 (/march, /iterate) — commit f8c2170: `public/_redirects` rewrites the app's
-  pretty-URL routes (`/browse/*`, `/book/*`, `/credits`, `/downloads`, `/import`, `/licenses`,
-  `/privacy`, `/settings`, `/soundtrack`) at 200; `e2e/serve.mjs` now parses and honors
-  `_redirects` the same way it already honors `_headers`, so `e2e/smoke.spec.ts` proves both
-  halves (a known route still 200s, a garbage path gets the real 404 page) against the hermetic
-  build, not only a post-deploy curl. Caught before shipping: the first pass checked redirect
-  rules ahead of the "this request is the root itself" case, so a catch-all rule would have
-  404'd `/` on every real deploy — fixed by matching the root to `index.html` as a literal asset
-  first, ahead of any redirect rule.
-  **Caught only after shipping, by curling the live deploy right after** (this is why the deploy
-  gate's post-push verification matters, not just `pnpm e2e`): f8c2170's rules all rewrote to
-  `/index.html`, and the catch-all used status `404`. Both are wrong on the real platform —
-  Cloudflare's own clean-URL layer auto-redirects any request resolving to literally
-  `/index.html` back to `/` (308), so the 200 rewrites became redirect loop-breakers, and for the
-  two splat rules (`/book/*`, `/browse/*`) Cloudflare detected the resulting cycle and silently
-  disabled them outright as an "infinite loop" — every dynamic book/browse deep link 404'd in
-  production for roughly the few minutes between the two deploys. `404` also isn't a legal
-  `_redirects` status (only 200/301/302/303/307/308 are), so the catch-all was silently ignored
-  too; harmlessly, since Cloudflare Pages serves a root `404.html` automatically for anything
-  unmatched regardless. Corrected at commit `a16c61c`: destinations are now `/`, the catch-all
-  rule is gone, `e2e/serve.mjs` mirrors the `404.html`-fallback convention, and both `wrangler
-  pages dev` (9/9 valid rules, no warnings) and a second live-site curl confirmed every route
-  before moving on. Full manual `pnpm e2e` run (all 23 spec files, batched into sequential
-  foreground legs) green after each commit. The lesson is now a standing decision in
-  `plan/bearings.md` so it isn't relearned: verify any `_redirects` change with `wrangler pages
-  dev` before pushing, never against a live curl alone.
-
-### [4.2] every route — no Open Graph/Twitter card tags (plan/CRITIQUE.md pass 12) [x]
-- category: external-critique
-- impact: 6 (MED severity; the shared root `<head>` had no `og:`/`twitter:`
-  metadata at all, so a link pasted into Slack, iMessage or Discord
-  unfurled with no image and whatever fallback the platform invents)
-- ease: 7 (the tags themselves are cheap; the real work was finding that
-  `expo export` reads a local `public/index.html` as its template in
-  place of its own default, since this build is pure CSR and a
-  React-rendered `<Head>` never reaches a non-JS crawler)
-- issue: #21
-- fixed: 2026-11-05 (/march, /iterate) — commit 94a1159: `public/index.html`
-  (a copy of Expo's default web template) now carries `og:type`,
-  `og:site_name`, `og:title`, `og:description`, `og:image`, `og:url` and
-  the matching `twitter:card`/`title`/`description`/`image`, baked into
-  the static export; `og:image`/`twitter:image` point at
-  `public/og-image.png` (a copy of the existing `assets/icon.png`, no new
-  design asset invented). `e2e/seo-meta.spec.ts` reads the exported
-  `dist/index.html` directly and asserts each tag appears exactly once.
-  Canonical link and the manifest, named in the same pass-12 row, stay
-  open (`plan/CRITIQUE.md`'s narrowed Pending row): canonical needs
-  per-route heads first, manifest is PWA scope nobody asked for.
+- impact: 9 (HIGH severity; the sitemap's own canonical URL for the catalog page — the one
+  `/browse/*` exists to showcase — 404s for every crawler and link-checker that follows it)
+- ease: 9 (one `_redirects` line, the same exact-match-before-splat pattern every other flat
+  route already uses; `e2e/serve.mjs`'s hermetic server already parses `_redirects`, from
+  pass 13's fix, so no harness work was needed)
+- issue: #23
+- fixed: 2026-11-07 (/march, /iterate) — commit 50c43fc: added `/browse   /  200` ahead of
+  `/browse/*` in `public/_redirects`; `e2e/smoke.spec.ts` gained a dedicated regression test for
+  the bare path. `pnpm verify` green (127 passed).
 
 ### [2.7] /robots.txt — no Sitemap directive pointing at sitemap.xml (plan/CRITIQUE.md pass 12)
 - category: external-critique
@@ -252,6 +207,20 @@ shows only the already-routed `#11` (`triage:needs-user`), no new `triage:loop-q
 `triage:reviewed` rows, the three `[needs-user-call]` rows below unchanged — and the top score
 (2.7) stays under the 3.0 bar, so per `skills/iterate.md` §6 failure mode 6 (posture bold) this
 tick hands straight to `/expand` instead of shipping a fix.
+
+This tick (cloud `/march`, 2026-11-07, base `056bf5a`): triage gate cheap (0 unlabeled, 0 urgent
+via `gh issue list`). Critique gate not due (pass 14 landed as the base commit itself — 0 commits
+since, well under both floors — and its own fresh HIGH finding was still queued for iterate, the
+third gate condition). `node scripts/plan/order.mjs` again names only 01.28 as reachable, blocked
+on the owner's phone check (A41, per the `[needs-user-call]` row below) — claimed and released
+unbuilt once more. No `data/` layer, so 3b doesn't apply. `/march`'s own expand gate (3c) falls
+short (1 commit / ~3.7h since pass 40's base `ed04f1d`, under the 20-commit/48h floor), so fell to
+`/iterate`. Unlike the prior several ticks, this one wasn't a no-op: pass 14's critique (commit
+056bf5a, landed just ahead of this tick) found a fresh HIGH row — `/browse` (no trailing slash)
+404ing at its own canonical, sitemap-listed URL — scored 8.1, clearing the 3.0 bar outright, so it
+shipped this tick (commit 50c43fc: one exact-match `_redirects` line ahead of the existing splat,
+plus a dedicated regression test) instead of handing to `/expand`. Mirrored to GitHub as issue
+#23 before the fix landed; `Closes #23` on the fix commit auto-closes it.
 
 ## Pending — [needs-user-call]
 
