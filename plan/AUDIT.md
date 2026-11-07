@@ -9,6 +9,22 @@
 
 ## Top 5 findings (scored)
 
+### [user-issue #24] [MED] Cloud march tick crashes transiently at the Claude Code Action step, no retry
+- category: external-issue
+- impact: 5 (no user-facing harm — the site and deploy are unaffected — but it burns a full
+  cron slot, leaves the tick's work undone until the next 2h firing, and spawns a crash issue
+  that needs a fresh triage pass each time it isn't deduped)
+- ease: 6 (scoped to one workflow step in `.github/workflows/march.yml` — wrap "Run /march
+  (cloud mode)" in a retry that re-fires once on the exact signature
+  `is_error:true && num_turns==1 && total_cost_usd==0`, i.e. the SDK session erred before any
+  model call; can't be exercised locally, only verified on the next cloud run, so not a pure
+  one-line change)
+- next: /iterate will pick up; reference #24 in commit body. Two occurrences so far (runs
+  42399709698 and 42409446062, both 2026-11-07, ~2h apart), both self-healed on the next
+  scheduled tick with no code change — root cause is a transient claude-code-action/SDK
+  init-level failure (zero cost, one turn, <500ms), not a repo or prompt bug. Distinct from
+  issue #1 (closed; that one was a missing `packageManager` field, fixed by commit d0aa122).
+
 ### [8.1] /browse — the primary catalog route 404s at its own canonical URL (plan/CRITIQUE.md pass 14) [x]
 - category: external-critique
 - impact: 9 (HIGH severity; the sitemap's own canonical URL for the catalog page — the one
