@@ -1,7 +1,7 @@
 # Critique log
 
-> Last pass: 2026-11-07 at commit ed04f1d
-> Pass count: 14
+> Last pass: 2026-11-08 at commit 7bc724b
+> Pass count: 15
 
 > External-observer feedback for Mood Read. Populated by
 > `/critique`, drained by `/iterate`. See `skills/critique.md`
@@ -150,6 +150,13 @@
   sqlite). Ease on this row should read low (not a cheap win) until
   someone scopes the provider-tree audit as its own chunk — recommend
   `/plan-a-spec` over another blind `/iterate` attempt.
+- reconfirmed (pass 15, commit 7bc724b): a fresh anonymous WebFetch pass over
+  `/`, `/browse`, `/browse/<a live archive.org identifier>`, `/import` and
+  `/soundtrack` found the identical empty pre-hydration shell on every one,
+  including `/browse/[id]` and the OG-tag routes whose per-route title (pass
+  10) and Open Graph/Twitter tags (pass 12) are Done — confirming those fixes
+  are client-side only and still never reach a non-JS client. Same root
+  cause, no new fix needed beyond the one already on this row.
 - source: web-fetch
 
 ## Done
