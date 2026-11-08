@@ -313,6 +313,29 @@ of shipping a fix.
 - default taken: 01.26 (and its dependents 01.20, 01.27) stay unclaimed and off the pick list; spec 01's only
   other candidate today is 01.28 (claimed live elsewhere) -- this tick falls through to /iterate.
 
+### [needs-user-call] [user-issue #24]'s fix is built and verified but cloud can't push it: `.github/workflows/march.yml` needs `workflows` permission
+- category: infra
+- logged: 2026-11-08 (march, cloud tick)
+- what: this tick's `/iterate` picked [user-issue #24] (score 3.0, top of the Top 5) and built the fix the
+  row already named: a retry wrapper around the "Run /march (cloud mode)" step, composing the prompt once
+  into `$GITHUB_ENV` so a retry sends the identical text, firing exactly once and only when the result
+  message matches the exact transient signature (`is_error:true`, `num_turns:1`, `total_cost_usd:0`).
+  `pnpm verify` ran fully green on it and `scripts/workflow-lint.mjs` reported 0 problems, but `git push
+  origin main` was rejected: "refusing to allow a GitHub App to create or update workflow
+  `.github/workflows/march.yml` without `workflows` permission". The owner job's `permissions:` block grants
+  `contents: write`, `issues: write`, `id-token: write` — GitHub requires a separate `workflows: write` scope
+  for any push touching a file under `.github/workflows/`, and no token available to this cloud checkout
+  carries it.
+- open: whether the owner adds `workflows: write` to the `owner` job's permissions (a real scope expansion
+  for every future cloud tick, not just this fix), sets up an `ACTIONS_PAT` with Workflows: write (switches
+  the loop to user-author mode, a bigger change), or just lands this one fix locally. The full verified patch
+  is pasted in full in issue #25's body so no work is lost even though this cloud runner's local commit
+  (unpushed, ephemeral) won't survive past the job.
+- default taken: the fix was not shipped; issue #25 opened with the patch and the three options above. A
+  future `/iterate` should not re-pick [user-issue #24] by re-deriving the same fix from scratch — reuse the
+  patch in issue #25 once a path to push `.github/workflows/*` from cloud exists, or close #24 once the owner
+  lands it locally. This tick ends as a no-op on `main` (see `Cloud-Run` on the run named in issue #25).
+
 ## Pending — findings
 
 ### [3.6] /sitemap.xml — still falls back to the SPA shell despite being marked fixed alongside robots.txt [x]
