@@ -143,57 +143,9 @@ jobs:
         # never commits the marker.
         run: touch .owner && echo .owner >> .git/info/exclude
 
-      # Writes MARCH_PROMPT to $GITHUB_ENV so both the first attempt
-      # and the retry below (issue #24: a transient claude-code-action
-      # init crash, is_error:true/num_turns:1/total_cost_usd:0, no
-      # model call made) send the exact same prompt without keeping
-      # two copies of it in sync by hand.
-      - name: Compose the march prompt
-        if: steps.ceiling.outputs.skip != 'true'
-        run: |
-          delim="MARCH_PROMPT_EOF_$$"
-          echo "MARCH_PROMPT<<$delim" >> "$GITHUB_ENV"
-          cat <<'PROMPT_BODY_EOF' >> "$GITHUB_ENV"
-          You are running mood-read's autonomous loop in CI (GitHub Actions).
-          Read agents.md first for the standing rules — they all apply.
-
-          Cloud-mode adjustments on top of agents.md:
-
-          1. Skip interactive /oversight (it asks; nobody is here). The read-only variant is mandatory instead: END every tick — shipped, no-op, or blocked — by running /oversight audit and printing its briefing into this log, so every run closes with a state-of-the-loop snapshot.
-          2. /critique MAY run when its /march gate opens, using the reader's WebFetch engine (Path B — the Chrome MCP is not available on the runner). Findings carry source: web-fetch. If bearings Auth is not "none" and no CRITIQUE_* secrets are configured in this workflow's env, run the anonymous pass only — never file auth-failed noise for a wall you knew about.
-          3. /expand may run; candidates land in plan/CANDIDATES.md. Promotion happens only via local /oversight — do not promote candidates from cloud.
-          4. The verify gate (`pnpm verify`) and deploy gate (`pnpm deploy:check`) are non-negotiable. Same as local. NEVER --no-verify. Run the gate FOREGROUND and wait for it — never `run_in_background`. Backgrounding the gate is the one thing that wedges this loop: the SDK ends your turn while the gate is still alive, the resume notification is unreliable here, and the run hangs with no commit. If the gate is too slow for one foreground call, run it as sequential foreground legs (each its own blocking call); do not background it. The same holds for agents: every subagent dispatch (the Agent tool, a Workflow) passes run_in_background: false explicitly. Leaving it out is a background dispatch, not a neutral default, and a backgrounded builder's work never lands: the job ends with the turn.
-          5. The git author identity is already configured by the workflow via GIT_AUTHOR_*/GIT_COMMITTER_* env vars (or the action's own default if unset). Do not run git config user.* — the workflow's env vars win at commit time anyway.
-          6. EVERY commit you ship in this tick MUST end with this exact trailer (a blank line before it, then the trailer as its own line):
-
-                Cloud-Run: ${{ github.server_url }}/${{ github.repository }}/actions/runs/${{ github.run_id }}
-
-             This is how the next tick's ceiling check distinguishes cloud-shipped commits from the user's local work. If a commit lacks this trailer it does not count toward the cloud ceiling, which would let the loop run away. Treat the trailer as non-negotiable, like the verify gate. agents.md's "no Co-Authored-By trailers, plain commit message bodies" rule has an explicit carve-out for this single trailer; nothing else.
-          7. If the tick cannot ship cleanly (red verify, red deploy, blocked phase, no work to do, anything else), do NOT half-commit. Either:
-             - exit cleanly with a one-line note in the action log explaining why no work shipped this tick, or
-             - if there is a real failure to surface, open a GitHub issue with `gh issue create --title "Cloud march failed: <iso-date>" --body "<context + run URL>"` and exit. Do not pass `--label` — the issue lands unlabeled and the next scheduled tick's /triage classifies and labels it appropriately.
-
-          8. This checkout is in owner mode (an untracked .owner) and the claims session is NEXUS_SESSION (cloud-<run id>): /next claims, settles and lands on main as the owner's checkout does.
-
-          The dispatch order is the standard /march order from skills/march.md: triage → critique (web-fetch engine) → /next top (the chunk step: one chunk, done fully) → ship-data → expand → iterate. Issues labeled loop:do jump the queue (the concierge lane - march step 1).
-
-          Requested verb: ${{ inputs.verb || 'march' }}. If it is not 'march', skip dispatch and execute skills/<verb>.md directly - the user asked for exactly that pass.
-
-          Begin. One tick. One commit-and-push (or no-op). Then exit.
-          PROMPT_BODY_EOF
-          echo "$delim" >> "$GITHUB_ENV"
-
       - name: Run /march (cloud mode)
         id: run_march
         if: steps.ceiling.outputs.skip != 'true'
-        # Issue #24: a transient claude-code-action/SDK init failure
-        # (is_error:true, num_turns:1, total_cost_usd:0 — the session
-        # erred before any model call) has fired twice, both self-healed
-        # on the next scheduled tick with no code change. continue-on-
-        # error lets the signature check below run and, when it matches,
-        # retry once rather than losing the whole tick; "Finalize" below
-        # is what actually fails the job when neither attempt lands.
-        continue-on-error: true
         uses: anthropics/claude-code-action@v1
         with:
           # Default: OAuth token against your Claude Pro/Max
@@ -224,9 +176,33 @@ jobs:
           claude_args: >-
             --model claude-sonnet-5
             --permission-mode bypassPermissions
-          # Composed by "Compose the march prompt" above, so the retry
-          # step sends the identical prompt without a second copy.
-          prompt: ${{ env.MARCH_PROMPT }}
+          prompt: |
+            You are running mood-read's autonomous loop in CI (GitHub Actions).
+            Read agents.md first for the standing rules — they all apply.
+
+            Cloud-mode adjustments on top of agents.md:
+
+            1. Skip interactive /oversight (it asks; nobody is here). The read-only variant is mandatory instead: END every tick — shipped, no-op, or blocked — by running /oversight audit and printing its briefing into this log, so every run closes with a state-of-the-loop snapshot.
+            2. /critique MAY run when its /march gate opens, using the reader's WebFetch engine (Path B — the Chrome MCP is not available on the runner). Findings carry source: web-fetch. If bearings Auth is not "none" and no CRITIQUE_* secrets are configured in this workflow's env, run the anonymous pass only — never file auth-failed noise for a wall you knew about.
+            3. /expand may run; candidates land in plan/CANDIDATES.md. Promotion happens only via local /oversight — do not promote candidates from cloud.
+            4. The verify gate (`pnpm verify`) and deploy gate (`pnpm deploy:check`) are non-negotiable. Same as local. NEVER --no-verify. Run the gate FOREGROUND and wait for it — never `run_in_background`. Backgrounding the gate is the one thing that wedges this loop: the SDK ends your turn while the gate is still alive, the resume notification is unreliable here, and the run hangs with no commit. If the gate is too slow for one foreground call, run it as sequential foreground legs (each its own blocking call); do not background it. The same holds for agents: every subagent dispatch (the Agent tool, a Workflow) passes run_in_background: false explicitly. Leaving it out is a background dispatch, not a neutral default, and a backgrounded builder's work never lands: the job ends with the turn.
+            5. The git author identity is already configured by the workflow via GIT_AUTHOR_*/GIT_COMMITTER_* env vars (or the action's own default if unset). Do not run git config user.* — the workflow's env vars win at commit time anyway.
+            6. EVERY commit you ship in this tick MUST end with this exact trailer (a blank line before it, then the trailer as its own line):
+
+                  Cloud-Run: ${{ github.server_url }}/${{ github.repository }}/actions/runs/${{ github.run_id }}
+
+               This is how the next tick's ceiling check distinguishes cloud-shipped commits from the user's local work. If a commit lacks this trailer it does not count toward the cloud ceiling, which would let the loop run away. Treat the trailer as non-negotiable, like the verify gate. agents.md's "no Co-Authored-By trailers, plain commit message bodies" rule has an explicit carve-out for this single trailer; nothing else.
+            7. If the tick cannot ship cleanly (red verify, red deploy, blocked phase, no work to do, anything else), do NOT half-commit. Either:
+               - exit cleanly with a one-line note in the action log explaining why no work shipped this tick, or
+               - if there is a real failure to surface, open a GitHub issue with `gh issue create --title "Cloud march failed: <iso-date>" --body "<context + run URL>"` and exit. Do not pass `--label` — the issue lands unlabeled and the next scheduled tick's /triage classifies and labels it appropriately.
+
+            8. This checkout is in owner mode (an untracked .owner) and the claims session is NEXUS_SESSION (cloud-<run id>): /next claims, settles and lands on main as the owner's checkout does.
+
+            The dispatch order is the standard /march order from skills/march.md: triage → critique (web-fetch engine) → /next top (the chunk step: one chunk, done fully) → ship-data → expand → iterate. Issues labeled loop:do jump the queue (the concierge lane - march step 1).
+
+            Requested verb: ${{ inputs.verb || 'march' }}. If it is not 'march', skip dispatch and execute skills/<verb>.md directly - the user asked for exactly that pass.
+
+            Begin. One tick. One commit-and-push (or no-op). Then exit.
         env:
           # Add any secrets your verify/deploy gates need. Examples:
           # NETLIFY_AUTH_TOKEN: ${{ secrets.NETLIFY_AUTH_TOKEN }}
@@ -261,62 +237,6 @@ jobs:
           # GIT_COMMITTER_NAME:  '<username>'
           # GIT_COMMITTER_EMAIL: '<id>+<username>@users.noreply.github.com'
 
-      - name: Check whether attempt 1 was the transient init crash
-        id: check_crash
-        if: steps.ceiling.outputs.skip != 'true' && steps.run_march.outcome == 'failure'
-        env:
-          EXEC_FILE: ${{ steps.run_march.outputs.execution_file }}
-        run: |
-          node -e '
-            const fs = require("fs");
-            const file = process.env.EXEC_FILE;
-            let retry = false;
-            try {
-              if (file && fs.existsSync(file)) {
-                const messages = JSON.parse(fs.readFileSync(file, "utf8"));
-                const result = Array.isArray(messages) ? messages.find((m) => m && m.type === "result") : undefined;
-                retry = !!result && result.is_error === true && result.num_turns === 1 && result.total_cost_usd === 0;
-              }
-            } catch (e) {
-              console.error("check_crash: could not read/parse execution file:", e.message);
-            }
-            console.log(retry
-              ? "attempt 1 matches the transient init-crash signature (is_error, 1 turn, $0 cost) — retrying once"
-              : "attempt 1 failed for some other reason — not retrying");
-            fs.appendFileSync(process.env.GITHUB_OUTPUT, "retry=" + retry + "\n");
-          '
-
-      - name: Run /march (cloud mode) — retry
-        id: run_march_retry
-        if: steps.check_crash.outputs.retry == 'true'
-        continue-on-error: true
-        uses: anthropics/claude-code-action@v1
-        with:
-          claude_code_oauth_token: ${{ secrets.CLAUDE_CODE_OAUTH_TOKEN }}
-          claude_args: >-
-            --model claude-sonnet-5
-            --permission-mode bypassPermissions
-          prompt: ${{ env.MARCH_PROMPT }}
-        env:
-          CLOUDFLARE_API_TOKEN:  ${{ secrets.CLOUDFLARE_API_TOKEN }}
-          CLOUDFLARE_ACCOUNT_ID: ${{ secrets.CLOUDFLARE_ACCOUNT_ID }}
-          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-          NEXUS_SESSION: cloud-${{ github.run_id }}
-          NEXUS_NO_HOOK_CHECK: '1'
-
-      - name: Finalize /march's cloud-mode result
-        id: finalize
-        if: always() && steps.ceiling.outputs.skip != 'true'
-        run: |
-          if [ "${{ steps.run_march.outcome }}" = "success" ]; then
-            echo "march succeeded on the first attempt"
-          elif [ "${{ steps.run_march_retry.outcome }}" = "success" ]; then
-            echo "march succeeded on the retry (attempt 1 was the transient init crash)"
-          else
-            echo "march failed (attempt 1${{ steps.check_crash.outputs.retry == 'true' && ' and the retry' || '' }})" >&2
-            exit 1
-          fi
-
       - name: Open cloud-failed issue if action crashed
         # Safety net for the case where Claude Code itself crashed
         # (auth error, runner OOM, etc.) before the agent could open
@@ -334,7 +254,6 @@ jobs:
           if [ "${{ steps.checkout.outcome }}" = "failure" ]; then failed_step="Checkout (full history for /march dispatch)"; fi
           if [ "${{ steps.ceiling.outcome }}" = "failure" ]; then failed_step="Daily commit ceiling check"; fi
           if [ "${{ steps.run_march.outcome }}" = "failure" ]; then failed_step="Run /march (cloud mode)"; fi
-          if [ "${{ steps.run_march_retry.outcome }}" = "failure" ]; then failed_step="Run /march (cloud mode) — retry"; fi
           existing=$(gh issue list --search 'in:title "Cloud march tick crashed" state:open' --json number --jq 'length')
           if [ "$existing" -eq 0 ]; then
             gh issue create \
