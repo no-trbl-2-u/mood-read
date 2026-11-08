@@ -252,6 +252,22 @@ expand gate (3c) falls short (5 commits / ~6h since pass 40's base `0ce8520`, un
 `skills/iterate.md` §6 failure mode 6 (posture bold) this tick hands straight to `/expand` instead
 of shipping a fix.
 
+This tick (cloud `/march`, 2026-11-08, base `dc1e83a`): triage gate cheap (0 unlabeled, 0 urgent
+via `gh issue list`; issues #11 and #25 stay labeled `triage:needs-user`, not new signal).
+Critique gate not due (1 commit / ~5.4h past pass 15's base `7bc724b`, under both the 12-commit
+and 24h floor). `node scripts/plan/order.mjs` again names only 01.28 as reachable, blocked on the
+owner's phone check (A41, per the `[needs-user-call]` row below) — claimed and released unbuilt
+once more; its mechanism (commit 24068f1) is unchanged. No `data/` layer, so 3b doesn't apply.
+`/march`'s own expand gate (3c) falls short (6 commits / ~15.9h since pass 42's base `bb6b921`,
+under the 20-commit/48h floor), so fell to `/iterate`. A fresh audit found the same Top 5 as the
+last pass — `git log -p 50c43fc..HEAD -- spec.md design/` empty, `gh issue list` shows no new
+`triage:loop-queued`/`triage:reviewed` rows, `design/` unchanged, the four `[needs-user-call]`
+rows below unchanged (the fourth, [user-issue #24]'s blocked workflow-permission fix, logged this
+morning's earlier tick, still waits on the owner; `.github/workflows/march.yml`'s `owner` job
+still grants only `contents`/`issues`/`id-token`, no `workflows: write`) — and the top score (2.7)
+stays under the 3.0 bar, so per `skills/iterate.md` §6 failure mode 6 (posture bold) this tick
+hands straight to `/expand` instead of shipping a fix.
+
 ## Pending — [needs-user-call]
 
 ### [needs-user-call] 01.28 shipped its mechanism; A41's phone check still needs a real device (A41)
