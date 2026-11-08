@@ -351,6 +351,14 @@ hands straight to `/expand` instead of shipping a fix.
   future `/iterate` should not re-pick [user-issue #24] by re-deriving the same fix from scratch — reuse the
   patch in issue #25 once a path to push `.github/workflows/*` from cloud exists, or close #24 once the owner
   lands it locally. This tick ends as a no-op on `main` (see `Cloud-Run` on the run named in issue #25).
+- update 2026-11-08 (march, cloud tick): a third occurrence opened issue #26 (run 42469998694), triaged closed
+  as a duplicate of this row — its proximate trigger was a Bun-binary download 504 from GitHub's release CDN
+  inside the claude-code-action setup (`bun: command not found`, exit 127), not #24's exact SDK init-crash
+  signature, but the same underlying gap: no retry around the "Run /march (cloud mode)" step. The already-built
+  fix in #25 retries on a specific result signature and may not even catch this CDN-timeout variant (the
+  composite action's own setup failed before producing a result message to check); whichever unblock path the
+  owner picks, confirm the retry step's condition also covers a pre-model setup failure, not just the
+  SDK-erred-with-zero-cost case, before closing this row.
 
 ## Pending — findings
 
