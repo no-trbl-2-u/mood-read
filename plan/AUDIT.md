@@ -300,6 +300,21 @@ no `workflows: write`) — and the top score (2.7) stays under the 3.0 bar, so p
 `skills/iterate.md` §6 failure mode 6 (posture bold) this tick hands straight to `/expand` instead
 of shipping a fix.
 
+This tick (cloud `/march`, 2026-11-09, base `d526f01`): triage gate cheap (0 unlabeled, 0 urgent
+via `gh issue list`; issues #11 and #25 stay labeled `triage:needs-user`, not new signal). Critique
+gate not due (8 commits / ~23.5h past pass 15's base `7bc724b`, under both the 12-commit and 24h
+floor). `node scripts/plan/order.mjs` again names only 01.28 as reachable, blocked on the owner's
+phone check (A41, per the `[needs-user-call]` row below) — skipped unclaimed rather than claimed
+and released again; its mechanism (commit 24068f1) is unchanged. No `data/` layer, so 3b doesn't
+apply. `/march`'s own expand gate (3c) falls short (1 commit / ~6h since pass 46's base `8deac57`,
+under the 20-commit/48h floor), so fell to `/iterate`. A fresh audit found the same Top 5 as the
+last pass — `git log -p 50c43fc..HEAD -- spec.md design/` empty, `gh issue list` shows no new
+`triage:loop-queued`/`triage:reviewed` rows, `design/` unchanged, a repo-wide TODO/FIXME/XXX/HACK
+grep across `src/` and `proxy/src/` found nothing, the four `[needs-user-call]` rows below
+unchanged (`.github/workflows/march.yml`'s `owner` job still grants no `workflows: write`) — and
+the top score (2.7) stays under the 3.0 bar, so per `skills/iterate.md` §6 failure mode 6 (posture
+bold) this tick hands straight to `/expand` instead of shipping a fix.
+
 ## Pending — [needs-user-call]
 
 ### [needs-user-call] 01.28 shipped its mechanism; A41's phone check still needs a real device (A41)
