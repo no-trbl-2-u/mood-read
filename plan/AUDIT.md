@@ -5,25 +5,16 @@
 > stays until the owner answers it, and the loop continues on the
 > default it names.
 
-# Site audit — 2026-11-07 (iterate: top score 8.1 — shipped, commit 50c43fc base)
+# Site audit — 2026-11-09 (iterate: top score 2.7 — below the 3.0 bar, handed to /expand)
 
 ## Top 5 findings (scored)
 
-### [user-issue #24] [MED] Cloud march tick crashes transiently at the Claude Code Action step, no retry
-- category: external-issue
-- impact: 5 (no user-facing harm — the site and deploy are unaffected — but it burns a full
-  cron slot, leaves the tick's work undone until the next 2h firing, and spawns a crash issue
-  that needs a fresh triage pass each time it isn't deduped)
-- ease: 6 (scoped to one workflow step in `.github/workflows/march.yml` — wrap "Run /march
-  (cloud mode)" in a retry that re-fires once on the exact signature
-  `is_error:true && num_turns==1 && total_cost_usd==0`, i.e. the SDK session erred before any
-  model call; can't be exercised locally, only verified on the next cloud run, so not a pure
-  one-line change)
-- next: /iterate will pick up; reference #24 in commit body. Two occurrences so far (runs
-  42399709698 and 42409446062, both 2026-11-07, ~2h apart), both self-healed on the next
-  scheduled tick with no code change — root cause is a transient claude-code-action/SDK
-  init-level failure (zero cost, one turn, <500ms), not a repo or prompt bug. Distinct from
-  issue #1 (closed; that one was a missing `packageManager` field, fixed by commit d0aa122).
+Dropped from this pass: `[user-issue #24]` (Cloud march tick crashes transiently, no retry) —
+issue #24 is now **closed** on GitHub, so it no longer qualifies as an open user-issue row. The
+underlying gap is unchanged (`.github/workflows/march.yml` still carries no retry wrapper and no
+`workflows: write` scope; confirmed by reading its `permissions:` blocks this tick), and the live
+tracker for it is issue #25, still open — see the `[needs-user-call]` row below. Don't re-derive
+the fix from scratch; reuse the patch already pasted into #25.
 
 ### [8.1] /browse — the primary catalog route 404s at its own canonical URL (plan/CRITIQUE.md pass 14) [x]
 - category: external-critique
@@ -330,6 +321,23 @@ false-positive, the four `[needs-user-call]` rows below unchanged — and the to
 under the 3.0 bar, so per `skills/iterate.md` §6 failure mode 6 (posture bold) this tick hands
 straight to `/expand` instead of shipping a fix.
 
+This tick (cloud `/march`, 2026-11-09, base `2f3305d`): triage gate cheap (0 unlabeled, 0 urgent
+via `gh issue list`; issues #11 and #25 stay labeled `triage:needs-user`, not new signal). Critique
+gate not due (3 commits / under 24h past pass 16's base `9caff22`, under both the 12-commit and
+24h floor). `node scripts/plan/order.mjs` again names only 01.28 as reachable, blocked on the
+owner's phone check (A41, per the `[needs-user-call]` row below) — skipped unclaimed rather than
+claimed and released again; its mechanism (commit 24068f1) is unchanged. No `data/` layer, so 3b
+doesn't apply. `/march`'s own expand gate (3c) falls short (1 commit / under 48h since pass 48's
+base `24b6dd3`, under the 20-commit/48h floor), so fell to `/iterate`. A fresh audit found the
+same substantive findings as the last pass — `git log -p d526f01..HEAD -- spec.md design/` empty,
+`gh issue list` shows no new `triage:loop-queued`/`triage:reviewed` rows, `design/` unchanged, a
+repo-wide TODO/FIXME/XXX/HACK grep across `src/` and `proxy/src/` found nothing beyond the known
+ID3 `TXXX` false-positive, `.github/workflows/march.yml`'s `permissions:` blocks still grant no
+`workflows: write` (the #24/#25 gap is unchanged) — one change: issue #24 itself is now closed on
+GitHub, so it dropped out of the regenerated Top 5 above (the live tracker is #25, still open and
+unchanged). The top score (2.7) stays under the 3.0 bar, so per `skills/iterate.md` §6 failure
+mode 6 (posture bold) this tick hands straight to `/expand` instead of shipping a fix.
+
 ## Pending — [needs-user-call]
 
 ### [needs-user-call] 01.28 shipped its mechanism; A41's phone check still needs a real device (A41)
@@ -421,6 +429,11 @@ straight to `/expand` instead of shipping a fix.
   composite action's own setup failed before producing a result message to check); whichever unblock path the
   owner picks, confirm the retry step's condition also covers a pre-model setup failure, not just the
   SDK-erred-with-zero-cost case, before closing this row.
+- update 2026-11-09 (march, cloud tick): issue #24 itself is now closed on GitHub (no code change on
+  `main` explains it — `.github/workflows/march.yml`'s `permissions:` blocks still grant no
+  `workflows: write` — so this was a manual close, not a shipped fix). Dropped from the regenerated
+  Top 5 above since it's no longer an open user-issue row; this row (and issue #25) stay the live
+  tracker for the underlying gap until the owner picks one of the three options above.
 
 ## Pending — findings
 
