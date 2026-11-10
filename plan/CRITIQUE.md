@@ -1,7 +1,7 @@
 # Critique log
 
-> Last pass: 2026-11-09 at commit 9caff22
-> Pass count: 16
+> Last pass: 2026-11-10 at commit 0d9cd61
+> Pass count: 17
 
 > External-observer feedback for Mood Read. Populated by
 > `/critique`, drained by `/iterate`. See `skills/critique.md`
