@@ -25,3 +25,6 @@ e2e) is green on main as-is, confirming A27 already holds.
   - OPENAI_API_KEY: The scoring proxy's OpenAI key (01.2): a Worker secret of mood-read-proxy, never in the app Get it: no link in the manifest. Goes to: local, github-actions, cloudflare. Set it: `node scripts/secrets.mjs set OPENAI_API_KEY`.
   - BRAVE_SEARCH_API_KEY: The scoring proxy's Brave Search key (01.2): a Worker secret of mood-read-proxy, never in the app Get it: no link in the manifest. Goes to: local, github-actions, cloudflare. Set it: `node scripts/secrets.mjs set BRAVE_SEARCH_API_KEY`.
   - PRESCORE_TOKEN: The owner's pre-scoring secret (05.10): a Worker secret of mood-read-proxy that `pnpm prescore` sends, locally and from the prescore GitHub job; never in the app Get it: no link in the manifest. Goes to: local, github-actions, cloudflare. Set it: `node scripts/secrets.mjs set PRESCORE_TOKEN`.
+
+- [needs-user-call] secret request 05.14: set EXPO_TOKEN in your terminal or the GUI's vault (never in a session), and 05.14 is ready again. Then delete this row.
+  - EXPO_TOKEN: EXPO / EAS Get it: no link in the manifest. Goes to: local, github-actions. Set it: `node scripts/secrets.mjs set EXPO_TOKEN`.
