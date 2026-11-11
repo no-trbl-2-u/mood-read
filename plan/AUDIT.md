@@ -15,6 +15,24 @@ unchanged (`.github/workflows/march.yml` still carries no retry wrapper and no `
 scope), and the live tracker for it is issue #25, still open — see the `[needs-user-call]` row
 below. Don't re-derive the fix from scratch; reuse the patch already pasted into #25.
 
+### [user-issue #27] [MED] Cloud march tick crashed at the Project toolchain step, no retry on a transient apt/DNS failure
+- category: external-issue
+- impact: 5 (no user-facing harm, but burns a full cron slot and opens a fresh crash issue each
+  occurrence)
+- ease: 7 (scoped to `.github/actions/setup/action.yml`'s "Install Playwright browsers (chromium
+  only)" step — `pnpm exec playwright install --with-deps chromium`'s apt-get leg hit "Temporary
+  failure resolving 'azure.archive.ubuntu.com'" fetching font packages, exit 100 — wrap it in a
+  retry loop on nonzero exit, no result-signature matching needed since this is a shell command,
+  not the claude-code-action step)
+- issue: #27
+- next: unlike issues #24/#25/#26 (which need a retry inside `.github/workflows/march.yml` itself,
+  blocked on the missing `workflows: write` permission scope — see the `[needs-user-call]` row
+  below), this fix lives in `.github/actions/setup/action.yml`, a composite action under
+  `.github/actions/`, outside `.github/workflows/`. GitHub's extra permission scope only gates
+  pushes touching files under `.github/workflows/`, so this edit may push clean from a cloud tick
+  where #25's did not. A future `/iterate` should build the retry wrapper and confirm the push
+  lands; if it's still rejected, fold this row into #25's tracking instead.
+
 ### [8.1] /browse — the primary catalog route 404s at its own canonical URL (plan/CRITIQUE.md pass 14) [x]
 - category: external-critique
 - impact: 9 (HIGH severity; the sitemap's own canonical URL for the catalog page — the one
