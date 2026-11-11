@@ -72,12 +72,13 @@ reconfirmed all of the above fresh: 0 unlabeled/urgent issues, issues #11/#25 un
 `triage:needs-user`, no spec/design diff since the last expand pass, no TODO/FIXME/XXX/HACK beyond
 the known ID3 `TXXX` false-positive, and `.github/workflows/march.yml` still grants no
 `workflows: write`. The following tick ran expand pass 58 (no candidates) and critique pass 18 (no
-findings), then expand pass 59 (no candidates). This tick (base `0d7f60c`) reconfirmed the same
-fresh: 0 unlabeled/urgent issues, the same two open issues unchanged, no spec/design diff, no new
-TODO/FIXME/XXX/HACK, no `workflows: write` grant, `node scripts/plan/order.mjs` still naming only
-01.28 reachable (claim taken and released again, unbuilt — mechanism already shipped, only the
-owner's phone check remains). Nothing moved, so this tick hands straight to `/expand` again.
-Per-tick detail for passes 17-59 lived here as one paragraph each; dropped in this consolidation per
+findings), then expand pass 59 (no candidates) and expand pass 60 (no candidates). This tick (base
+`dd3d589`) reconfirmed the same fresh: 0 unlabeled/urgent issues, the same two open issues
+unchanged, no spec/design diff, no new TODO/FIXME/XXX/HACK, no `workflows: write` grant, `node
+scripts/plan/order.mjs` still naming only 01.28 reachable (claim taken and released again, unbuilt
+— mechanism already shipped, only the owner's phone check remains). Nothing moved, so this tick
+hands straight to `/expand` again. Per-tick detail for passes 17-60 lived here as one paragraph
+each; dropped in this consolidation per
 `skills/iterate.md` §5 Step 1 ("the audit section... is yours to regenerate each pass") — the full
 narrative is still in `git log -p -- plan/AUDIT.md` for anyone who needs it.
 
