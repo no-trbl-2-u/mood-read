@@ -1,7 +1,7 @@
 # Critique log
 
-> Last pass: 2026-11-10 at commit 0d9cd61
-> Pass count: 17
+> Last pass: 2026-11-11 at commit 84fc3b1
+> Pass count: 18
 
 > External-observer feedback for Mood Read. Populated by
 > `/critique`, drained by `/iterate`. See `skills/critique.md`
@@ -157,6 +157,14 @@
   10) and Open Graph/Twitter tags (pass 12) are Done — confirming those fixes
   are client-side only and still never reach a non-JS client. Same root
   cause, no new fix needed beyond the one already on this row.
+- reconfirmed (pass 18, commit 84fc3b1): same five-URL anonymous WebFetch pass
+  (`/`, `/browse`, `/browse/allofgrace_2609_librivox`, `/import`,
+  `/soundtrack`) — every raw `<title>` is the literal string "Mood Read" with
+  no per-route text at all, not just the og:/twitter: meta pair called out at
+  pass 15. A non-JS client, crawler, or browser tab sees the same title on
+  every page, including the book detail page. Same root cause (pure CSR, no
+  per-route server-rendered head); no new fix beyond the one already on this
+  row.
 - source: web-fetch
 
 ## Done
