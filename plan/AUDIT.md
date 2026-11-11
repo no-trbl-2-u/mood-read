@@ -67,12 +67,17 @@ design/` empty; no `fix:` clustering; `plan/CRITIQUE.md`'s Pending rows unchange
 `/expand` per `skills/iterate.md` §6 failure mode 6 (posture bold), ~45 ticks running. `node
 scripts/plan/order.mjs` has named only 01.28 reachable the whole time, blocked on the owner's phone
 check (A41) — its mechanism shipped at commit 24068f1/c145ee8; 01.20/01.26/01.27 stay blocked on the
-same unset vault secrets. This tick (base `58e61b0`, after settling `plan/pending/secrets-05.14.md`)
+same unset vault secrets. The 58e61b0 tick (after settling `plan/pending/secrets-05.14.md`)
 reconfirmed all of the above fresh: 0 unlabeled/urgent issues, issues #11/#25 unchanged at
 `triage:needs-user`, no spec/design diff since the last expand pass, no TODO/FIXME/XXX/HACK beyond
 the known ID3 `TXXX` false-positive, and `.github/workflows/march.yml` still grants no
-`workflows: write`. Nothing moved, so this tick hands straight to `/expand` again. Per-tick detail
-for passes 17-57 lived here as one paragraph each; dropped in this consolidation per
+`workflows: write`. The following tick ran expand pass 58 (no candidates) and critique pass 18 (no
+findings). This tick (base `9703282`) reconfirmed the same fresh: 0 unlabeled/urgent issues, the
+same two open issues unchanged, no spec/design diff, no new TODO/FIXME/XXX/HACK, no
+`workflows: write` grant, `node scripts/plan/order.mjs` still naming only 01.28 reachable (claim
+taken and released again, unbuilt — mechanism already shipped, only the owner's phone check
+remains). Nothing moved, so this tick hands straight to `/expand` again. Per-tick detail
+for passes 17-58 lived here as one paragraph each; dropped in this consolidation per
 `skills/iterate.md` §5 Step 1 ("the audit section... is yours to regenerate each pass") — the full
 narrative is still in `git log -p -- plan/AUDIT.md` for anyone who needs it.
 
