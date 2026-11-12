@@ -5,7 +5,7 @@
 > stays until the owner answers it, and the loop continues on the
 > default it names.
 
-# Site audit — 2026-11-11 (iterate: top score 2.7 — below the 3.0 bar, handed to /expand)
+# Site audit — 2026-11-12 (iterate: fixed [user-issue #27] (score 3.5); next top score 2.7 — below the 3.0 bar)
 
 ## Top 5 findings (scored)
 
@@ -15,7 +15,7 @@ unchanged (`.github/workflows/march.yml` still carries no retry wrapper and no `
 scope), and the live tracker for it is issue #25, still open — see the `[needs-user-call]` row
 below. Don't re-derive the fix from scratch; reuse the patch already pasted into #25.
 
-### [user-issue #27] [MED] Cloud march tick crashed at the Project toolchain step, no retry on a transient apt/DNS failure
+### [user-issue #27] [MED] Cloud march tick crashed at the Project toolchain step, no retry on a transient apt/DNS failure [x]
 - category: external-issue
 - impact: 5 (no user-facing harm, but burns a full cron slot and opens a fresh crash issue each
   occurrence)
@@ -25,13 +25,11 @@ below. Don't re-derive the fix from scratch; reuse the patch already pasted into
   retry loop on nonzero exit, no result-signature matching needed since this is a shell command,
   not the claude-code-action step)
 - issue: #27
-- next: unlike issues #24/#25/#26 (which need a retry inside `.github/workflows/march.yml` itself,
-  blocked on the missing `workflows: write` permission scope — see the `[needs-user-call]` row
-  below), this fix lives in `.github/actions/setup/action.yml`, a composite action under
-  `.github/actions/`, outside `.github/workflows/`. GitHub's extra permission scope only gates
-  pushes touching files under `.github/workflows/`, so this edit may push clean from a cloud tick
-  where #25's did not. A future `/iterate` should build the retry wrapper and confirm the push
-  lands; if it's still rejected, fold this row into #25's tracking instead.
+- fixed: 2026-11-12 (/march, /iterate) — commit 27fc72f: the step now retries
+  `pnpm exec playwright install --with-deps chromium` up to 3 times (10s pause between attempts)
+  before failing the job. Unlike #24/#25/#26, `.github/actions/setup/action.yml` sits outside
+  `.github/workflows/`, so the push needed no `workflows: write` scope and landed clean from cloud.
+  `pnpm verify` green (127 e2e passed, 1 skipped); `node scripts/workflow-lint.mjs` 0 problems.
 
 ### [8.1] /browse — the primary catalog route 404s at its own canonical URL (plan/CRITIQUE.md pass 14) [x]
 - category: external-critique
@@ -98,7 +96,10 @@ scripts/plan/order.mjs` still naming only 01.28 reachable (claim taken and relea
 hands straight to `/expand` again. Per-tick detail for passes 17-60 lived here as one paragraph
 each; dropped in this consolidation per
 `skills/iterate.md` §5 Step 1 ("the audit section... is yours to regenerate each pass") — the full
-narrative is still in `git log -p -- plan/AUDIT.md` for anyone who needs it.
+narrative is still in `git log -p -- plan/AUDIT.md` for anyone who needs it. This tick (base
+`27fc72f`) reconfirmed 01.28 unchanged (claimed and released, still blocked on the owner's phone
+check) and fell through to `/iterate`, which found `/triage`'s freshly queued `[user-issue #27]`
+scoring 3.5 — above the 3.0 bar for the first time in this consolidated run — and shipped its fix.
 
 ## Pending — [needs-user-call]
 
