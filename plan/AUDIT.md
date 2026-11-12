@@ -111,7 +111,13 @@ same fresh: 0 unlabeled/urgent issues, issues #11/#25 both still single-comment 
 `triage:needs-user` (no new owner activity), no spec/design diff, no new TODO/FIXME/XXX/HACK,
 `plan/CRITIQUE.md`'s Pending rows unchanged, 01.28 still the only reachable chunk (same mechanism-
 shipped, phone-check-pending state as every prior tick). Top score holds at 2.7, under the 3.0
-bar, so this tick hands to `/expand` again.
+bar, so this tick hands to `/expand` again. This tick (base `715d67c`) reconfirmed the same fresh:
+0 unlabeled/urgent issues, issues #11/#25 both still single-comment and `triage:needs-user` (no new
+owner activity), no spec/design diff, no new TODO/FIXME/XXX/HACK beyond the known ID3 `TXXX` false
+positive, no `workflows: write` grant in `.github/workflows/march.yml`, `plan/CRITIQUE.md`'s Pending
+rows unchanged, and `node scripts/plan/order.mjs` still naming only 01.28 reachable (claimed and
+released again this tick, unbuilt — mechanism already shipped, only the owner's phone check
+remains). Top score holds at 2.7, under the 3.0 bar, so this tick hands to `/expand` again.
 
 ## Pending — [needs-user-call]
 
