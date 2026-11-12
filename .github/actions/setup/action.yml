@@ -38,4 +38,12 @@ runs:
     - name: Install Playwright browsers (chromium only)
       if: hashFiles('playwright.config.ts') != ''
       shell: bash
-      run: pnpm exec playwright install --with-deps chromium
+      run: |
+        for attempt in 1 2 3; do
+          if pnpm exec playwright install --with-deps chromium; then
+            exit 0
+          fi
+          echo "playwright install attempt $attempt failed, retrying in 10s..."
+          sleep 10
+        done
+        exit 1
