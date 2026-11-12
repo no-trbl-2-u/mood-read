@@ -5,7 +5,7 @@
 > stays until the owner answers it, and the loop continues on the
 > default it names.
 
-# Site audit — 2026-11-12 (iterate: fixed [user-issue #27] (score 3.5); next top score 2.7 — below the 3.0 bar)
+# Site audit — 2026-11-12 (iterate: no actionable work, top score 2.7 — below the 3.0 bar; handing to expand)
 
 ## Top 5 findings (scored)
 
@@ -100,13 +100,18 @@ narrative is still in `git log -p -- plan/AUDIT.md` for anyone who needs it. Thi
 `27fc72f`) reconfirmed 01.28 unchanged (claimed and released, still blocked on the owner's phone
 check) and fell through to `/iterate`, which found `/triage`'s freshly queued `[user-issue #27]`
 scoring 3.5 — above the 3.0 bar for the first time in this consolidated run — and shipped its fix.
-The following tick ran critique pass 19 (no findings). This tick (base `250dd30`) reconfirmed the
-same fresh: 0 unlabeled/urgent issues, issues #11/#25 unchanged at `triage:needs-user`, no
-spec/design diff, no new TODO/FIXME/XXX/HACK, no `workflows: write` grant, `plan/CRITIQUE.md`'s
-Pending rows unchanged, and `node scripts/plan/order.mjs` still naming only 01.28 reachable
-(claimed and released again, unbuilt — mechanism already shipped, only the owner's phone check
-remains). With `[user-issue #27]` closed, top score is back to 2.7, under the 3.0 bar, so this
-tick hands to `/expand` again.
+The following tick ran critique pass 19 (no findings). The tick after that (base `250dd30`)
+reconfirmed the same fresh: 0 unlabeled/urgent issues, issues #11/#25 unchanged at
+`triage:needs-user`, no spec/design diff, no new TODO/FIXME/XXX/HACK, no `workflows: write` grant,
+`plan/CRITIQUE.md`'s Pending rows unchanged, and `node scripts/plan/order.mjs` still naming only
+01.28 reachable (claimed and released again, unbuilt — mechanism already shipped, only the owner's
+phone check remains). With `[user-issue #27]` closed, top score was back to 2.7, under the 3.0
+bar, so that tick ran expand pass 62 (no candidates). This tick (base `3311782`) reconfirmed the
+same fresh: 0 unlabeled/urgent issues, issues #11/#25 both still single-comment and
+`triage:needs-user` (no new owner activity), no spec/design diff, no new TODO/FIXME/XXX/HACK,
+`plan/CRITIQUE.md`'s Pending rows unchanged, 01.28 still the only reachable chunk (same mechanism-
+shipped, phone-check-pending state as every prior tick). Top score holds at 2.7, under the 3.0
+bar, so this tick hands to `/expand` again.
 
 ## Pending — [needs-user-call]
 
