@@ -5,7 +5,7 @@
 > stays until the owner answers it, and the loop continues on the
 > default it names.
 
-# Site audit — 2026-11-13 (iterate: no actionable work, top score 2.7 — below the 3.0 bar; handing to expand)
+# Site audit — 2026-11-14 (iterate: no actionable work, top score 2.7 — below the 3.0 bar; handing to expand)
 
 ## Top 5 findings (scored)
 
@@ -158,6 +158,14 @@ and `triage:needs-user` (no new owner activity), no spec/design diff, no new TOD
 beyond the known ID3 `TXXX` false positive, no `workflows: write` grant in any workflow file,
 `plan/CRITIQUE.md`'s Pending rows unchanged (6 rows), `design/` still untouched since 2026-10-24,
 and `node scripts/plan/order.mjs` still naming only 01.28 reachable (same mechanism-shipped,
+phone-check-pending state as every prior tick — not re-claimed, same reasoning). Top score holds
+at 2.7, under the 3.0 bar, so this tick hands to `/expand` again. This tick (base `51ac272`)
+reconfirmed the same fresh: 0 unlabeled/urgent issues, issues #11/#25 both still single-comment
+and `triage:needs-user` (no new owner activity), no spec/design diff since the last expand pass,
+no new TODO/FIXME/XXX/HACK beyond the known ID3 `TXXX` false positive, no `workflows: write`
+grant in any workflow file, `plan/CRITIQUE.md`'s Pending rows unchanged (6 rows, the just-run
+critique pass 21 confirmed no new findings), `design/` still untouched since 2026-10-24, and
+`node scripts/plan/order.mjs` still naming only 01.28 reachable (same mechanism-shipped,
 phone-check-pending state as every prior tick — not re-claimed, same reasoning). Top score holds
 at 2.7, under the 3.0 bar, so this tick hands to `/expand` again.
 
