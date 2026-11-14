@@ -167,7 +167,13 @@ grant in any workflow file, `plan/CRITIQUE.md`'s Pending rows unchanged (6 rows,
 critique pass 21 confirmed no new findings), `design/` still untouched since 2026-10-24, and
 `node scripts/plan/order.mjs` still naming only 01.28 reachable (same mechanism-shipped,
 phone-check-pending state as every prior tick — not re-claimed, same reasoning). Top score holds
-at 2.7, under the 3.0 bar, so this tick hands to `/expand` again.
+at 2.7, under the 3.0 bar, so this tick hands to `/expand` again (pass 72, no candidates). This
+tick (base `a9b4363`) reconfirmed the same fresh once more: 0 unlabeled/urgent issues, issues
+#11/#25 unchanged at `triage:needs-user`, no workflow permission grant, `plan/CRITIQUE.md`'s
+Pending rows unchanged (6 rows), `design/` untouched since 2026-10-24, and `node
+scripts/plan/order.mjs` still naming only 01.28 reachable (same mechanism-shipped,
+phone-check-pending state — not re-claimed). Top score holds at 2.7, under the 3.0 bar; this
+tick hands to `/expand` again.
 
 ## Pending — [needs-user-call]
 
