@@ -1,7 +1,7 @@
 # Critique log
 
-> Last pass: 2026-11-14 at commit 1fcfb1e
-> Pass count: 22
+> Last pass: 2026-11-15 at commit 4e2cccb
+> Pass count: 23
 
 > External-observer feedback for Mood Read. Populated by
 > `/critique`, drained by `/iterate`. See `skills/critique.md`
@@ -165,6 +165,12 @@
   every page, including the book detail page. Same root cause (pure CSR, no
   per-route server-rendered head); no new fix beyond the one already on this
   row.
+- reconfirmed (pass 23, commit 4e2cccb): `reader` sub-agent's anonymous
+  WebFetch pass over `/`, `/browse/night-vigil`, `/browse`, `/soundtrack`,
+  `/downloads` got the identical content-free shell on all five — WebFetch's
+  markdown extraction saw nothing but the bare string "Mood Read" per page,
+  no headings/nav/body/links. Same root cause, no new fix beyond the one
+  already on this row.
 - source: web-fetch
 
 ## Done
