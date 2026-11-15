@@ -5,7 +5,7 @@
 > stays until the owner answers it, and the loop continues on the
 > default it names.
 
-# Site audit — 2026-11-14T3 (iterate: no actionable work, top score 2.7 — below the 3.0 bar; handing to expand)
+# Site audit — 2026-11-15 (iterate: no actionable work, top score 2.7 — below the 3.0 bar; handing to expand)
 
 ## Top 5 findings (scored)
 
@@ -196,7 +196,15 @@ positive, `plan/CRITIQUE.md`'s Pending rows unchanged (6 rows; its own rate-limi
 this tick, 9 commits / ~24h short of both thresholds), `design/` untouched since 2026-10-24, and
 `node scripts/plan/order.mjs` still naming only 01.28 reachable (claimed and released again,
 unbuilt — mechanism already shipped, only the owner's phone check remains). Top score holds at
-2.7, under the 3.0 bar; this tick hands to `/expand` again.
+2.7, under the 3.0 bar; this tick hands to `/expand` again. This tick (base `5b7868a`) reconfirmed
+the same fresh: 0 unlabeled/urgent issues, issues #11/#25 unchanged at `triage:needs-user`, no
+spec/design diff since the last expand pass, no new TODO/FIXME/XXX/HACK beyond the known ID3
+`TXXX` false positive, no `workflows: write` grant in any workflow file, `plan/CRITIQUE.md`'s
+Pending rows unchanged (6 rows; critique pass 22 just ran and found no new findings), `design/`
+untouched since 2026-10-24, and `node scripts/plan/order.mjs` still naming only 01.28 reachable
+(same mechanism-shipped, phone-check-pending state as every prior tick — not re-claimed, since
+claiming and releasing it again would add nothing beyond what this row already records). Top
+score holds at 2.7, under the 3.0 bar; this tick hands to `/expand` again.
 
 ## Pending — [needs-user-call]
 
