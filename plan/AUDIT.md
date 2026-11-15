@@ -75,160 +75,40 @@ candidate), [1.2] every route's pre-hydration body is empty (plan/CRITIQUE.md pa
 still needs the provider-tree SSR-safety pass `plan/CANDIDATES.md`'s other "[score 4.0]" candidate
 already covers) and [1.2] the narrowed canonical/manifest row (plan/CRITIQUE.md pass 12).
 
-### History (consolidated 2026-11-11)
+### History (consolidated 2026-11-15)
 
-This Top 5 has held unchanged since pass 17 (2026-11-05): every `/march` tick in between found no
-new signal (`gh issue list` for `triage:loop-queued`/`triage:reviewed` empty; `git log -p -- spec.md
-design/` empty; no `fix:` clustering; `plan/CRITIQUE.md`'s Pending rows unchanged) and handed off to
-`/expand` per `skills/iterate.md` §6 failure mode 6 (posture bold), ~45 ticks running. `node
-scripts/plan/order.mjs` has named only 01.28 reachable the whole time, blocked on the owner's phone
-check (A41) — its mechanism shipped at commit 24068f1/c145ee8; 01.20/01.26/01.27 stay blocked on the
-same unset vault secrets. The 58e61b0 tick (after settling `plan/pending/secrets-05.14.md`)
-reconfirmed all of the above fresh: 0 unlabeled/urgent issues, issues #11/#25 unchanged at
-`triage:needs-user`, no spec/design diff since the last expand pass, no TODO/FIXME/XXX/HACK beyond
-the known ID3 `TXXX` false-positive, and `.github/workflows/march.yml` still grants no
-`workflows: write`. The following tick ran expand pass 58 (no candidates) and critique pass 18 (no
-findings), then expand pass 59 (no candidates) and expand pass 60 (no candidates). This tick (base
-`dd3d589`) reconfirmed the same fresh: 0 unlabeled/urgent issues, the same two open issues
-unchanged, no spec/design diff, no new TODO/FIXME/XXX/HACK, no `workflows: write` grant, `node
-scripts/plan/order.mjs` still naming only 01.28 reachable (claim taken and released again, unbuilt
-— mechanism already shipped, only the owner's phone check remains). Nothing moved, so this tick
-hands straight to `/expand` again. Per-tick detail for passes 17-60 lived here as one paragraph
-each; dropped in this consolidation per
-`skills/iterate.md` §5 Step 1 ("the audit section... is yours to regenerate each pass") — the full
-narrative is still in `git log -p -- plan/AUDIT.md` for anyone who needs it. This tick (base
-`27fc72f`) reconfirmed 01.28 unchanged (claimed and released, still blocked on the owner's phone
-check) and fell through to `/iterate`, which found `/triage`'s freshly queued `[user-issue #27]`
-scoring 3.5 — above the 3.0 bar for the first time in this consolidated run — and shipped its fix.
-The following tick ran critique pass 19 (no findings). The tick after that (base `250dd30`)
-reconfirmed the same fresh: 0 unlabeled/urgent issues, issues #11/#25 unchanged at
-`triage:needs-user`, no spec/design diff, no new TODO/FIXME/XXX/HACK, no `workflows: write` grant,
-`plan/CRITIQUE.md`'s Pending rows unchanged, and `node scripts/plan/order.mjs` still naming only
-01.28 reachable (claimed and released again, unbuilt — mechanism already shipped, only the owner's
-phone check remains). With `[user-issue #27]` closed, top score was back to 2.7, under the 3.0
-bar, so that tick ran expand pass 62 (no candidates). This tick (base `3311782`) reconfirmed the
-same fresh: 0 unlabeled/urgent issues, issues #11/#25 both still single-comment and
-`triage:needs-user` (no new owner activity), no spec/design diff, no new TODO/FIXME/XXX/HACK,
-`plan/CRITIQUE.md`'s Pending rows unchanged, 01.28 still the only reachable chunk (same mechanism-
-shipped, phone-check-pending state as every prior tick). Top score holds at 2.7, under the 3.0
-bar, so this tick hands to `/expand` again. This tick (base `715d67c`) reconfirmed the same fresh:
-0 unlabeled/urgent issues, issues #11/#25 both still single-comment and `triage:needs-user` (no new
-owner activity), no spec/design diff, no new TODO/FIXME/XXX/HACK beyond the known ID3 `TXXX` false
-positive, no `workflows: write` grant in `.github/workflows/march.yml`, `plan/CRITIQUE.md`'s Pending
-rows unchanged, and `node scripts/plan/order.mjs` still naming only 01.28 reachable (claimed and
-released again this tick, unbuilt — mechanism already shipped, only the owner's phone check
-remains). Top score holds at 2.7, under the 3.0 bar, so this tick hands to `/expand` again. This
-tick (base `b4bf9a9`) reconfirmed the same fresh: 0 unlabeled/urgent issues, issues #11/#25 both
-still single-comment and `triage:needs-user` (no new owner activity), no spec/design diff, no new
-TODO/FIXME/XXX/HACK beyond the known ID3 `TXXX` false positive, no `workflows: write` grant in
-`.github/workflows/march.yml`, `plan/CRITIQUE.md`'s Pending rows unchanged, and `node
-scripts/plan/order.mjs` still naming only 01.28 reachable (same mechanism-shipped,
-phone-check-pending state as every prior tick — not re-claimed this tick, since claiming and
-releasing it again would add nothing beyond what this row already records). Top score holds at
-2.7, under the 3.0 bar, so this tick hands to `/expand` again. This tick (base `b58f33b`)
-reconfirmed the same fresh: 0 unlabeled/urgent issues, issues #11/#25 both still single-comment
-and `triage:needs-user` (no new owner activity), no spec/design diff, no new TODO/FIXME/XXX/HACK
-beyond the known ID3 `TXXX` false positive, no `workflows: write` grant in
-`.github/workflows/march.yml`, `plan/CRITIQUE.md`'s Pending rows unchanged, and `node
-scripts/plan/order.mjs` still naming only 01.28 reachable (same mechanism-shipped,
-phone-check-pending state as every prior tick — not re-claimed, same reasoning). Top score holds
-at 2.7, under the 3.0 bar, so this tick hands to `/expand` again. This tick (base `6a38e24`)
-reconfirmed the same fresh: 0 unlabeled/urgent issues, issues #11/#25 both still single-comment
-and `triage:needs-user` (no new owner activity), no spec/design diff, no new TODO/FIXME/XXX/HACK
-beyond the known ID3 `TXXX` false positive, no `workflows: write` grant in any workflow file,
-`plan/CRITIQUE.md`'s Pending rows unchanged (6 rows), and `node scripts/plan/order.mjs` still
-naming only 01.28 reachable (claimed and released again this tick, unbuilt — mechanism already
-shipped, only the owner's phone check remains). Top score holds at 2.7, under the 3.0 bar, so
-this tick hands to `/expand` again. This tick (base `7c1b55b`) reconfirmed the same fresh: 0
-unlabeled/urgent issues, issues #11/#25 both still single-comment and `triage:needs-user` (no new
-owner activity), no spec/design diff, no new TODO/FIXME/XXX/HACK beyond the known ID3 `TXXX` false
-positive, no `workflows: write` grant in any workflow file, `plan/CRITIQUE.md`'s Pending rows
-unchanged (6 rows), and `node scripts/plan/order.mjs` still naming only 01.28 reachable (same
-mechanism-shipped, phone-check-pending state as every prior tick — not re-claimed, same
-reasoning). Top score holds at 2.7, under the 3.0 bar, so this tick hands to `/expand` again.
-This tick (base `9aa0ee1`) reconfirmed the same fresh: 0 unlabeled/urgent issues, issues #11/#25
-both still single-comment and `triage:needs-user` (no new owner activity), no spec/design diff,
-no new TODO/FIXME/XXX/HACK beyond the known ID3 `TXXX` false positive, no `workflows: write`
-grant in any workflow file, `plan/CRITIQUE.md`'s Pending rows unchanged (6 rows), and `node
-scripts/plan/order.mjs` still naming only 01.28 reachable (same mechanism-shipped,
-phone-check-pending state as every prior tick — not re-claimed, same reasoning). Top score holds
-at 2.7, under the 3.0 bar, so this tick hands to `/expand` again. This tick (base `efa12d9`)
-reconfirmed the same fresh: 0 unlabeled/urgent issues, issues #11/#25 both still single-comment
-and `triage:needs-user` (no new owner activity), no spec/design diff, no new TODO/FIXME/XXX/HACK
-beyond the known ID3 `TXXX` false positive, no `workflows: write` grant in any workflow file,
-`plan/CRITIQUE.md`'s Pending rows unchanged (6 rows), `design/` still untouched since 2026-10-24,
-and `node scripts/plan/order.mjs` still naming only 01.28 reachable (same mechanism-shipped,
-phone-check-pending state as every prior tick — not re-claimed, same reasoning). Top score holds
-at 2.7, under the 3.0 bar, so this tick hands to `/expand` again. This tick (base `51ac272`)
-reconfirmed the same fresh: 0 unlabeled/urgent issues, issues #11/#25 both still single-comment
-and `triage:needs-user` (no new owner activity), no spec/design diff since the last expand pass,
-no new TODO/FIXME/XXX/HACK beyond the known ID3 `TXXX` false positive, no `workflows: write`
-grant in any workflow file, `plan/CRITIQUE.md`'s Pending rows unchanged (6 rows, the just-run
-critique pass 21 confirmed no new findings), `design/` still untouched since 2026-10-24, and
-`node scripts/plan/order.mjs` still naming only 01.28 reachable (same mechanism-shipped,
-phone-check-pending state as every prior tick — not re-claimed, same reasoning). Top score holds
-at 2.7, under the 3.0 bar, so this tick hands to `/expand` again (pass 72, no candidates). This
-tick (base `a9b4363`) reconfirmed the same fresh once more: 0 unlabeled/urgent issues, issues
-#11/#25 unchanged at `triage:needs-user`, no workflow permission grant, `plan/CRITIQUE.md`'s
-Pending rows unchanged (6 rows), `design/` untouched since 2026-10-24, and `node
-scripts/plan/order.mjs` still naming only 01.28 reachable (same mechanism-shipped,
-phone-check-pending state — not re-claimed). Top score holds at 2.7, under the 3.0 bar; this
-tick hands to `/expand` again (pass 73, no candidates). This tick (base `45ed15d`) reconfirmed
-the same fresh once more: 0 unlabeled/urgent issues, issues #11/#25 unchanged at
-`triage:needs-user`, no `workflows: write` grant in any workflow file, `plan/CRITIQUE.md`'s
-Pending rows unchanged (6 rows), `design/` untouched since 2026-10-24, no spec/design diff since
-the last expand pass, no new TODO/FIXME/XXX/HACK beyond the known ID3 `TXXX` false positive, and
-`node scripts/plan/order.mjs` still naming only 01.28 reachable (same mechanism-shipped,
-phone-check-pending state as every prior tick — not re-claimed, same reasoning). Top score holds
-at 2.7, under the 3.0 bar; this tick hands to `/expand` again. This tick (base `27b8851`)
-reconfirmed the same fresh once more: 0 unlabeled/urgent issues, issues #11/#25 both still
-single-comment and `triage:needs-user` (no new owner activity), no `workflows: write` grant in
-any workflow file, `plan/CRITIQUE.md`'s Pending rows unchanged (6 rows), `design/` untouched
-since 2026-10-24, and `node scripts/plan/order.mjs` still naming only 01.28 reachable (claimed
-and released again this tick, unbuilt — mechanism already shipped, only the owner's phone check
-remains). Top score holds at 2.7, under the 3.0 bar; this tick hands to `/expand` again. This
-tick (base `6533389`) reconfirmed the same fresh: `GH_TOKEN` was unset in this run's environment
-(the vault reports it `missing`), so `/march`'s triage gate fell through on the "don't fail the
-march" clause rather than confirming 0 unlabeled/urgent issues directly — issues #11/#25 are
-assumed unchanged at `triage:needs-user` pending a tick with the token available. No spec/design
-diff since the last expand pass, no new TODO/FIXME/XXX/HACK beyond the known ID3 `TXXX` false
-positive, `plan/CRITIQUE.md`'s Pending rows unchanged (6 rows; its own rate-limit gate held off
-this tick, 9 commits / ~24h short of both thresholds), `design/` untouched since 2026-10-24, and
-`node scripts/plan/order.mjs` still naming only 01.28 reachable (claimed and released again,
-unbuilt — mechanism already shipped, only the owner's phone check remains). Top score holds at
-2.7, under the 3.0 bar; this tick hands to `/expand` again. This tick (base `5b7868a`) reconfirmed
-the same fresh: 0 unlabeled/urgent issues, issues #11/#25 unchanged at `triage:needs-user`, no
-spec/design diff since the last expand pass, no new TODO/FIXME/XXX/HACK beyond the known ID3
-`TXXX` false positive, no `workflows: write` grant in any workflow file, `plan/CRITIQUE.md`'s
-Pending rows unchanged (6 rows; critique pass 22 just ran and found no new findings), `design/`
-untouched since 2026-10-24, and `node scripts/plan/order.mjs` still naming only 01.28 reachable
-(same mechanism-shipped, phone-check-pending state as every prior tick — not re-claimed, since
-claiming and releasing it again would add nothing beyond what this row already records). Top
-score holds at 2.7, under the 3.0 bar; this tick hands to `/expand` again. This tick (base
-`838a41c`) reconfirmed the same fresh: 0 unlabeled/urgent issues, issues #11/#25 both still
-single-comment and `triage:needs-user` (no new owner activity), no spec/design diff since the
-last expand pass, no new TODO/FIXME/XXX/HACK beyond the known ID3 `TXXX` false positive, no
-`workflows: write` grant in any workflow file, `plan/CRITIQUE.md`'s Pending rows unchanged (6
-rows), `design/` untouched since 2026-10-24, and `node scripts/plan/order.mjs` still naming only
-01.28 reachable (claimed and released again this tick, unbuilt — mechanism already shipped, only
-the owner's phone check remains). Top score holds at 2.7, under the 3.0 bar; this tick hands to
-`/expand` again. This tick (base `bd42473`) reconfirmed the same fresh: 0 unlabeled/urgent issues,
-issues #11/#25 both still single-comment and `triage:needs-user` (no new owner activity), no
-spec/design diff since the last expand pass, no new TODO/FIXME/XXX/HACK beyond the known ID3
-`TXXX` false positive, no `workflows: write` grant in any workflow file, `plan/CRITIQUE.md`'s
-Pending rows unchanged (6 rows), `design/` untouched since 2026-10-24, and `node
-scripts/plan/order.mjs` still naming only 01.28 reachable (same mechanism-shipped,
-phone-check-pending state as every prior tick — not re-claimed, since claiming and releasing it
-again would add nothing beyond what this row already records). Top score holds at 2.7, under the
-3.0 bar; this tick hands to `/expand` again. This tick (base `ec4cd93`) reconfirmed the same fresh:
-0 unlabeled/urgent issues, issues #11/#25 unchanged at `triage:needs-user` (both still
-single-comment), no spec/design diff since pass 79 (0 commits landed in between — this tick is
-back-to-back with the last), no new TODO/FIXME/XXX/HACK beyond the known ID3 `TXXX` false
-positive, no `workflows: write` grant in any workflow file, `plan/CRITIQUE.md`'s Pending rows
-unchanged (6 rows), `design/` still untouched since 2026-10-24, and `node scripts/plan/order.mjs`
-still naming only 01.28 reachable (same mechanism-shipped, phone-check-pending state as every
-prior tick — not re-claimed, same reasoning). Top score holds at 2.7, under the 3.0 bar; this tick
-hands to `/expand` again.
+Passes 17-80 (2026-11-05 through 2026-11-15, ~63 ticks) held this Top 5 steady with one exception:
+`/triage` queued `[user-issue #27]` (scored 3.5, above the 3.0 bar) partway through the span; that
+tick's `/iterate` shipped its fix (commit 27fc72f, see the row above), and once the issue closed the
+top score fell back to 2.7. Every other tick in the span found no new signal: `gh issue list` for
+`triage:loop-queued`/`triage:reviewed` stayed empty throughout; issues #11/#25 held at
+`triage:needs-user` the whole span (both still single-comment — one tick, base `6533389`, found
+`GH_TOKEN` unset and assumed them unchanged rather than re-checking directly, confirmed unchanged
+again once the token was available); no spec/design diff (`git log -p -- spec.md design/` stayed
+empty); no new TODO/FIXME/XXX/HACK beyond the known ID3 `TXXX` false positive; no `workflows: write`
+grant ever appeared in any workflow file; `plan/CRITIQUE.md`'s Pending rows held at 6 throughout;
+`design/` stayed untouched since 2026-10-24; and `node scripts/plan/order.mjs` named only 01.28
+reachable the entire span — its mechanism shipped at commit 24068f1/c145ee8 well before this span
+began, and 01.20/01.26/01.27 stayed blocked on the same unset vault secrets. Every qualifying tick
+handed off to `/expand` per `skills/iterate.md` §6 failure mode 6 (posture bold); those passes
+(58-80, skipping only the `[user-issue #27]` tick) each filed no candidates, and the two Pending
+candidates below sat unchanged throughout, still awaiting `/oversight` promotion. Per-tick detail
+for passes 17-80 lived here as one paragraph each; dropped in this second consolidation per the
+same `skills/iterate.md` §5 Step 1 reasoning as the first (2026-11-11) — the full narrative is
+still in `git log -p -- plan/AUDIT.md` for anyone who needs it.
+
+This tick (base `e2d761b`) reconfirmed the same fresh, with `gh` checked directly (ambient
+credentials worked this run even though the vault's own `GH_TOKEN` is unset): 0 unlabeled/urgent
+issues, issues #11/#25 unchanged at `triage:needs-user` (both still single-comment, confirmed via
+`gh issue list`), no spec/design diff since the last expand pass (only 1 commit landed in
+between — pass 80's own no-candidates commit, no shared surface to cluster), no new
+TODO/FIXME/XXX/HACK beyond the known ID3 `TXXX` false positive, no `workflows: write` grant in any
+workflow file, `plan/CRITIQUE.md`'s Pending rows unchanged (6 rows; its own rate-limit gate held
+off this tick, 1 commit / ~6h short of both thresholds), `design/` still untouched since
+2026-10-24, and `node scripts/plan/order.mjs` still naming only 01.28 reachable (same
+mechanism-shipped, phone-check-pending state as every prior tick — not re-claimed, since claiming
+and releasing it again would add nothing beyond what the `[needs-user-call]` row below already
+records). Top score holds at 2.7, under the 3.0 bar; this tick hands to `/expand` again.
 
 ## Pending — [needs-user-call]
 
