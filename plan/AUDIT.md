@@ -220,7 +220,15 @@ Pending rows unchanged (6 rows), `design/` untouched since 2026-10-24, and `node
 scripts/plan/order.mjs` still naming only 01.28 reachable (same mechanism-shipped,
 phone-check-pending state as every prior tick — not re-claimed, since claiming and releasing it
 again would add nothing beyond what this row already records). Top score holds at 2.7, under the
-3.0 bar; this tick hands to `/expand` again.
+3.0 bar; this tick hands to `/expand` again. This tick (base `ec4cd93`) reconfirmed the same fresh:
+0 unlabeled/urgent issues, issues #11/#25 unchanged at `triage:needs-user` (both still
+single-comment), no spec/design diff since pass 79 (0 commits landed in between — this tick is
+back-to-back with the last), no new TODO/FIXME/XXX/HACK beyond the known ID3 `TXXX` false
+positive, no `workflows: write` grant in any workflow file, `plan/CRITIQUE.md`'s Pending rows
+unchanged (6 rows), `design/` still untouched since 2026-10-24, and `node scripts/plan/order.mjs`
+still naming only 01.28 reachable (same mechanism-shipped, phone-check-pending state as every
+prior tick — not re-claimed, same reasoning). Top score holds at 2.7, under the 3.0 bar; this tick
+hands to `/expand` again.
 
 ## Pending — [needs-user-call]
 
