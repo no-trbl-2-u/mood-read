@@ -97,19 +97,21 @@ for passes 17-83 lived here as one paragraph each; dropped in this third consoli
 same `skills/iterate.md` §5 Step 1 reasoning as the prior two (2026-11-11, 2026-11-15) — the full
 narrative is still in `git log -p -- plan/AUDIT.md` for anyone who needs it.
 
-Passes 83-84 (bases `a6e156b`, `5e56111`) each reconfirmed the same fresh state with no new
-signal, and both handed to `/expand` (passes 83-84, no candidates either).
+Passes 83-85 (bases `a6e156b`, `5e56111`, `33bc8a3`) each reconfirmed the same fresh state
+with no new signal, and all three handed to `/expand` (passes 83-85, no candidates either).
 
-This tick (base `33bc8a3`) reconfirmed the same fresh state again: `gh issue list` 0
+This tick (base `ce292fa`) reconfirmed the same fresh state again: `gh issue list` 0
 unlabeled/urgent issues; issues #11/#25 unchanged at `triage:needs-user` (both still
-single-comment); no spec/design diff since the last audit base (`git log a6e156b..HEAD --
-spec.md design/` empty); no new TODO/FIXME/XXX/HACK beyond the known false positives;
+single-comment); no spec/design diff since the last audit base (`git log ce292fa..HEAD --
+spec.md design/` empty, `design/` still untouched since 2026-10-24); no new TODO/FIXME/XXX/HACK
+beyond the known false positives (ID3 `TXXX`, `scripts/new-skill.mjs`'s scaffold TODOs);
 `plan/CRITIQUE.md`'s Pending rows unchanged (6 rows; its own rate-limit gate held off this
-tick too — well short of both thresholds); `design/` still untouched since 2026-10-24; and
-`node scripts/plan/order.mjs` still naming only 01.28 reachable (same mechanism-shipped,
-phone-check-pending state as every prior tick — not re-claimed, since claiming and releasing
-it again would add nothing beyond what the `[needs-user-call]` row below already records).
-Top score holds at 2.7, under the 3.0 bar; this tick hands to `/expand` again.
+tick too — well short of both thresholds); `plan/CANDIDATES.md`'s two Pending candidates
+unchanged, still awaiting `/oversight` promotion; and `node scripts/plan/order.mjs` still
+naming only 01.28 reachable (same mechanism-shipped, phone-check-pending state as every prior
+tick — not re-claimed, since claiming and releasing it again would add nothing beyond what the
+`[needs-user-call]` row below already records). Top score holds at 2.7, under the 3.0 bar;
+this tick hands to `/expand` again.
 
 ## Pending — [needs-user-call]
 
