@@ -5,7 +5,7 @@
 > stays until the owner answers it, and the loop continues on the
 > default it names.
 
-# Site audit — 2026-11-16 (iterate: no actionable work, top score 2.7 — below the 3.0 bar; handing to expand)
+# Site audit — 2026-11-16 (iterate pass 2, base f7101d2: no actionable work, top score 2.7 — below the 3.0 bar; handing to expand)
 
 ## Top 5 findings (scored)
 
@@ -73,7 +73,13 @@ catalog; ease ~3, a scheduled job writing a cached id list, the same shape as 01
 job, not a one-line build step — tracked as `plan/CANDIDATES.md`'s "[score 4.0]" browse-sitemap
 candidate), [1.2] every route's pre-hydration body is empty (plan/CRITIQUE.md pass 5, unchanged —
 still needs the provider-tree SSR-safety pass `plan/CANDIDATES.md`'s other "[score 4.0]" candidate
-already covers) and [1.2] the narrowed canonical/manifest row (plan/CRITIQUE.md pass 12).
+already covers), [1.2] the narrowed canonical/manifest row (plan/CRITIQUE.md pass 12), and new
+this tick: [1.2] `/browse/[id]` and `/book/[id]` return HTTP 200, not 404, for an unknown book id
+(plan/CRITIQUE.md pass 24; impact 6, MED-SEO — a crawler or link-checker sees every bad id as a
+live page; ease deliberately scored 2 — the finding's own suggested fix says a blind `_redirects`
+patch can't distinguish "known route, unknown id" from "known route, real id" without catalog
+awareness at the edge, and recommends waiting on either a catalog-aware Cloudflare Pages Function
+or the same pre-hydration-shell SSR work already queued above, whichever lands first).
 
 ### History (consolidated 2026-11-16)
 
@@ -100,7 +106,7 @@ narrative is still in `git log -p -- plan/AUDIT.md` for anyone who needs it.
 Passes 83-85 (bases `a6e156b`, `5e56111`, `33bc8a3`) each reconfirmed the same fresh state
 with no new signal, and all three handed to `/expand` (passes 83-85, no candidates either).
 
-This tick (base `ce292fa`) reconfirmed the same fresh state again: `gh issue list` 0
+Passes 83-85's base (`ce292fa`) reconfirmed the same fresh state again: `gh issue list` 0
 unlabeled/urgent issues; issues #11/#25 unchanged at `triage:needs-user` (both still
 single-comment); no spec/design diff since the last audit base (`git log ce292fa..HEAD --
 spec.md design/` empty, `design/` still untouched since 2026-10-24); no new TODO/FIXME/XXX/HACK
@@ -110,8 +116,21 @@ tick too — well short of both thresholds); `plan/CANDIDATES.md`'s two Pending 
 unchanged, still awaiting `/oversight` promotion; and `node scripts/plan/order.mjs` still
 naming only 01.28 reachable (same mechanism-shipped, phone-check-pending state as every prior
 tick — not re-claimed, since claiming and releasing it again would add nothing beyond what the
-`[needs-user-call]` row below already records). Top score holds at 2.7, under the 3.0 bar;
-this tick hands to `/expand` again.
+`[needs-user-call]` row below already records). Top score held at 2.7, under the 3.0 bar;
+that tick handed to `/expand` again (pass 86, no candidates, commit c101e0a).
+
+This tick (base `f7101d2`, `/march` dispatching to `/iterate` since the chunk pick order still
+names only the already-released 01.28 and expand's own rate-limit window hadn't opened — 2
+commits / ~7.7h since pass 86, short of 20 commits / 48h) found one new signal: `/critique` ran
+in between (pass 24, commit f7101d2 itself) and filed a new `[MED]` row — `/browse/[id]` and
+`/book/[id]` return HTTP 200, not 404, for an unknown book id (added to "Also pending" above at
+[1.2], ease deliberately low per the row's own suggested fix). `gh issue list` still 0
+unlabeled/urgent; issues #11/#25 unchanged; no spec/design diff since `b5ff14d`;
+`plan/CRITIQUE.md`'s Pending rows now 7 (was 6); `plan/CANDIDATES.md`'s two Pending candidates
+unchanged; `node scripts/plan/order.mjs` still names only 01.28 reachable, re-claimed and
+released again this tick with nothing new to build (mechanism already on main, phone check
+still outstanding). Top score holds at 2.7 — the new finding scores lower (1.2) than the
+existing three tied rows, so it doesn't change the pick. This tick hands to `/expand` again.
 
 ## Pending — [needs-user-call]
 
