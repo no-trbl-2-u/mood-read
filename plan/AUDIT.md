@@ -75,9 +75,9 @@ candidate), [1.2] every route's pre-hydration body is empty (plan/CRITIQUE.md pa
 still needs the provider-tree SSR-safety pass `plan/CANDIDATES.md`'s other "[score 4.0]" candidate
 already covers) and [1.2] the narrowed canonical/manifest row (plan/CRITIQUE.md pass 12).
 
-### History (consolidated 2026-11-15)
+### History (consolidated 2026-11-16)
 
-Passes 17-80 (2026-11-05 through 2026-11-15, ~63 ticks) held this Top 5 steady with one exception:
+Passes 17-83 (2026-11-05 through 2026-11-16, ~66 ticks) held this Top 5 steady with one exception:
 `/triage` queued `[user-issue #27]` (scored 3.5, above the 3.0 bar) partway through the span; that
 tick's `/iterate` shipped its fix (commit 27fc72f, see the row above), and once the issue closed the
 top score fell back to 2.7. Every other tick in the span found no new signal: `gh issue list` for
@@ -91,24 +91,24 @@ grant ever appeared in any workflow file; `plan/CRITIQUE.md`'s Pending rows held
 reachable the entire span — its mechanism shipped at commit 24068f1/c145ee8 well before this span
 began, and 01.20/01.26/01.27 stayed blocked on the same unset vault secrets. Every qualifying tick
 handed off to `/expand` per `skills/iterate.md` §6 failure mode 6 (posture bold); those passes
-(58-80, skipping only the `[user-issue #27]` tick) each filed no candidates, and the two Pending
+(58-83, skipping only the `[user-issue #27]` tick) each filed no candidates, and the two Pending
 candidates below sat unchanged throughout, still awaiting `/oversight` promotion. Per-tick detail
-for passes 17-80 lived here as one paragraph each; dropped in this second consolidation per the
-same `skills/iterate.md` §5 Step 1 reasoning as the first (2026-11-11) — the full narrative is
-still in `git log -p -- plan/AUDIT.md` for anyone who needs it.
+for passes 17-83 lived here as one paragraph each; dropped in this third consolidation per the
+same `skills/iterate.md` §5 Step 1 reasoning as the prior two (2026-11-11, 2026-11-15) — the full
+narrative is still in `git log -p -- plan/AUDIT.md` for anyone who needs it.
 
-This tick (base `c6d1e4b`) reconfirmed the same fresh, with `gh` checked directly (ambient
+This tick (base `a6e156b`) reconfirmed the same fresh, with `gh` checked directly (ambient
 credentials worked this run even though the vault's own `GH_TOKEN` is unset): 0 unlabeled/urgent
 issues, issues #11/#25 unchanged at `triage:needs-user` (both still single-comment, confirmed via
-`gh issue list`), no spec/design diff since the last audit base (`git log e2d761b..HEAD -- spec.md
+`gh issue list`), no spec/design diff since the last audit base (`git log c6d1e4b..HEAD -- spec.md
 design/` empty), no new TODO/FIXME/XXX/HACK beyond the known ID3 `TXXX` false positive and
-`scripts/new-skill.mjs`'s intentional scaffold TODOs, no `workflows: write` grant in any workflow
-file, `plan/CRITIQUE.md`'s Pending rows unchanged (6 rows; its own rate-limit gate held off this
-tick too — 2 commits / ~8h short of both thresholds), `design/` still untouched since 2026-10-24,
-and `node scripts/plan/order.mjs` still naming only 01.28 reachable (same mechanism-shipped,
-phone-check-pending state as every prior tick — not re-claimed, since claiming and releasing it
-again would add nothing beyond what the `[needs-user-call]` row below already records). Top score
-holds at 2.7, under the 3.0 bar; this tick hands to `/expand` again.
+`scripts/new-skill.mjs`'s intentional scaffold TODOs, `plan/CRITIQUE.md`'s Pending rows unchanged
+(6 rows; its own rate-limit gate held off this tick too — 1 commit short of both thresholds),
+`design/` still untouched since 2026-10-24, and `node scripts/plan/order.mjs` still naming only
+01.28 reachable (same mechanism-shipped, phone-check-pending state as every prior tick — not
+re-claimed, since claiming and releasing it again would add nothing beyond what the
+`[needs-user-call]` row below already records). Top score holds at 2.7, under the 3.0 bar; this
+tick hands to `/expand` again.
 
 ## Pending — [needs-user-call]
 
