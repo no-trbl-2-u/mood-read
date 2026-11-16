@@ -5,7 +5,7 @@
 > stays until the owner answers it, and the loop continues on the
 > default it names.
 
-# Site audit — 2026-11-16 (iterate pass 2, base f7101d2: no actionable work, top score 2.7 — below the 3.0 bar; handing to expand)
+# Site audit — 2026-11-16 (iterate pass 3, base c5bfd22: no actionable work, top score 2.7 — below the 3.0 bar; handing to expand)
 
 ## Top 5 findings (scored)
 
@@ -131,6 +131,16 @@ unchanged; `node scripts/plan/order.mjs` still names only 01.28 reachable, re-cl
 released again this tick with nothing new to build (mechanism already on main, phone check
 still outstanding). Top score holds at 2.7 — the new finding scores lower (1.2) than the
 existing three tied rows, so it doesn't change the pick. This tick hands to `/expand` again.
+
+This tick (base `c5bfd22`, `/march` dispatching to `/iterate` since the chunk pick order still
+names only the already-released 01.28 and expand's own rate-limit window hadn't opened — 1
+commit / ~1.8h since pass 87, short of 20 commits / 48h) found no new signal: `gh issue list`
+still 0 unlabeled/urgent; issues #11/#25 unchanged (both still single-comment, `triage:needs-user`);
+no spec/design diff since `33b6cff`; `plan/CRITIQUE.md`'s Pending rows unchanged at 7;
+`plan/CANDIDATES.md`'s two Pending candidates unchanged; no new TODO/FIXME/XXX/HACK beyond the
+known false positives; no `workflows: write` grant in any workflow file; `node scripts/plan/order.mjs`
+still names only 01.28 reachable (same phone-check-pending state), re-claimed and released again
+with nothing new to build. Top score holds at 2.7. This tick hands to `/expand` again.
 
 ## Pending — [needs-user-call]
 
