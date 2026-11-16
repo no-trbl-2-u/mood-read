@@ -1,13 +1,38 @@
 # Critique log
 
-> Last pass: 2026-11-15 at commit 4e2cccb
-> Pass count: 23
+> Last pass: 2026-11-16 at commit c101e0a
+> Pass count: 24
 
 > External-observer feedback for Mood Read. Populated by
 > `/critique`, drained by `/iterate`. See `skills/critique.md`
 > for the contract.
 
 ## Pending
+
+### [MED] /browse/[id] and /book/[id] — an unknown book id returns HTTP 200, not a real 404
+- pass: 24 (commit c101e0a)
+- viewport: n/a (web-fetch engine, no browser tools on this runner)
+- category: seo
+- observation: the pass-13 fix made genuinely unmatched top-level paths return a real HTTP 404
+  (confirmed still true: `/totally-bogus-path-test-999` → 404). But a nonexistent id under either
+  dynamic catalog route stays HTTP 200 — the route pattern itself resolves (SPA fallback), and the
+  "not found" state is purely a client-side render after hydration, invisible to a crawler or
+  link-checker. This is distinct from the already-pending LOW row below ("`/book/[id]` not-found
+  screen never sets a page title") — that's about the `<title>` tag once hydrated; this is about
+  the transport-level status code any non-JS client sees, independent of title.
+- evidence: `curl -s -o /dev/null -w "%{http_code}" https://mood-read.pages.dev/browse/totally-bogus-book-id-999`
+  → `200`. `curl -s -o /dev/null -w "%{http_code}" https://mood-read.pages.dev/book/totally-bogus-book-id-999`
+  → `200`. Control: `curl -s -o /dev/null -w "%{http_code}" https://mood-read.pages.dev/totally-bogus-path-test-999`
+  → `404`.
+- suggested fix: same shape as the pass-13 fix (Cloudflare Pages `_redirects`/Functions layer) but
+  scoped to the dynamic id segment — needs a way to tell "unknown top-level path" apart from
+  "known route shape, unknown id" at the edge, which the current static `_redirects` rule can't do
+  without knowing the catalog. Likely needs either a Cloudflare Pages Function at `/browse/[id]`
+  and `/book/[id]` that checks the id against the catalog before falling through, or deferring
+  this until the static-export work on the pre-hydration-shell row below lands (which would give
+  per-route server-side rendering, including bad-id detection, for free). Low ease until one of
+  those lands — don't attempt a blind patch.
+- source: web-fetch
 
 ### [LOW] every route — no `<link rel="canonical">`, no web app manifest
 - pass: 12 (commit 1572637); narrowed at 94a1159 (the same pass's og:/twitter: half shipped,
