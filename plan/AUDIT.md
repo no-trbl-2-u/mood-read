@@ -5,7 +5,7 @@
 > stays until the owner answers it, and the loop continues on the
 > default it names.
 
-# Site audit — 2026-11-15 (iterate: no actionable work, top score 2.7 — below the 3.0 bar; handing to expand)
+# Site audit — 2026-11-16 (iterate: no actionable work, top score 2.7 — below the 3.0 bar; handing to expand)
 
 ## Top 5 findings (scored)
 
@@ -97,18 +97,18 @@ for passes 17-80 lived here as one paragraph each; dropped in this second consol
 same `skills/iterate.md` §5 Step 1 reasoning as the first (2026-11-11) — the full narrative is
 still in `git log -p -- plan/AUDIT.md` for anyone who needs it.
 
-This tick (base `e2d761b`) reconfirmed the same fresh, with `gh` checked directly (ambient
+This tick (base `c6d1e4b`) reconfirmed the same fresh, with `gh` checked directly (ambient
 credentials worked this run even though the vault's own `GH_TOKEN` is unset): 0 unlabeled/urgent
 issues, issues #11/#25 unchanged at `triage:needs-user` (both still single-comment, confirmed via
-`gh issue list`), no spec/design diff since the last expand pass (only 1 commit landed in
-between — pass 80's own no-candidates commit, no shared surface to cluster), no new
-TODO/FIXME/XXX/HACK beyond the known ID3 `TXXX` false positive, no `workflows: write` grant in any
-workflow file, `plan/CRITIQUE.md`'s Pending rows unchanged (6 rows; its own rate-limit gate held
-off this tick, 1 commit / ~6h short of both thresholds), `design/` still untouched since
-2026-10-24, and `node scripts/plan/order.mjs` still naming only 01.28 reachable (same
-mechanism-shipped, phone-check-pending state as every prior tick — not re-claimed, since claiming
-and releasing it again would add nothing beyond what the `[needs-user-call]` row below already
-records). Top score holds at 2.7, under the 3.0 bar; this tick hands to `/expand` again.
+`gh issue list`), no spec/design diff since the last audit base (`git log e2d761b..HEAD -- spec.md
+design/` empty), no new TODO/FIXME/XXX/HACK beyond the known ID3 `TXXX` false positive and
+`scripts/new-skill.mjs`'s intentional scaffold TODOs, no `workflows: write` grant in any workflow
+file, `plan/CRITIQUE.md`'s Pending rows unchanged (6 rows; its own rate-limit gate held off this
+tick too — 2 commits / ~8h short of both thresholds), `design/` still untouched since 2026-10-24,
+and `node scripts/plan/order.mjs` still naming only 01.28 reachable (same mechanism-shipped,
+phone-check-pending state as every prior tick — not re-claimed, since claiming and releasing it
+again would add nothing beyond what the `[needs-user-call]` row below already records). Top score
+holds at 2.7, under the 3.0 bar; this tick hands to `/expand` again.
 
 ## Pending — [needs-user-call]
 
