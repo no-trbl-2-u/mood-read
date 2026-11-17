@@ -5,7 +5,7 @@
 > stays until the owner answers it, and the loop continues on the
 > default it names.
 
-# Site audit — 2026-11-17 (iterate pass 7, base b886990: no actionable work, top score 2.7 — below the 3.0 bar; handing to expand)
+# Site audit — 2026-11-17 (iterate pass 8, base 78db1b4: no actionable work, top score 2.7 — below the 3.0 bar; handing to expand)
 
 ## Top 5 findings (scored)
 
@@ -103,7 +103,7 @@ for passes 17-83 lived here as one paragraph each; dropped in this third consoli
 same `skills/iterate.md` §5 Step 1 reasoning as the prior two (2026-11-11, 2026-11-15) — the full
 narrative is still in `git log -p -- plan/AUDIT.md` for anyone who needs it.
 
-Passes 83-91 (bases `a6e156b` through `a59d76a`, ~9 iterate ticks across 2026-11-16 to
+Passes 83-92 (bases `a6e156b` through `b886990`, ~10 iterate ticks across 2026-11-16 to
 2026-11-17) each reconfirmed the same fresh state with no new signal of substance, with one
 addition: one tick (base `f7101d2`) found `/critique` had run in between (pass 24) and filed a
 new `[MED]` row -- `/browse/[id]` and `/book/[id]` return HTTP 200, not 404, for an unknown book
@@ -120,19 +120,18 @@ phone-check-pending state as every prior tick -- not re-claimed each time, since
 releasing it again adds nothing beyond what the `[needs-user-call]` row below already records).
 Top score held at 2.7 throughout, under the 3.0 bar; every qualifying tick handed off to
 `/expand` per `skills/iterate.md` §6 failure mode 6 (posture bold), filing no candidates each
-time (expand passes 83-91, commits through `fc1cf1d`). Per-tick detail for this span dropped in
+time (expand passes 83-92, commits through `78db1b4`). Per-tick detail for this span dropped in
 this fourth consolidation, same reasoning as the prior three (2026-11-11, 2026-11-15,
 2026-11-16) -- full narrative still in `git log -p -- plan/AUDIT.md`.
 
-This tick (base `b886990`) reconfirmed the same fresh state once more, now also covering a
-critique pass that ran since the last consolidation: `/critique` pass 25 (commit `b886990`)
-filed no new findings. `gh issue list` still 0 unlabeled/urgent; issues #11/#25 unchanged (both
-still single-comment, `triage:needs-user`); no spec/design diff since `a59d76a`; `plan/CRITIQUE.md`'s
-Pending rows unchanged at 7; `plan/CANDIDATES.md`'s two Pending candidates unchanged; no new
-TODO/FIXME/XXX/HACK beyond the known false positives; `node scripts/plan/order.mjs` still names
-only 01.28 reachable (same mechanism-shipped, phone-check-pending state) -- not re-claimed, since
-claiming and releasing it again would add nothing beyond what the `[needs-user-call]` row below
-already records. Top score holds at 2.7. This tick hands to `/expand` again (pass 92).
+This tick (base `78db1b4`) reconfirmed the same fresh state once more: `gh issue list` still 0
+unlabeled/urgent; issues #11/#25 unchanged (both still single-comment, `triage:needs-user`); no
+spec/design diff since `a59d76a`; `plan/CRITIQUE.md`'s Pending rows unchanged at 7;
+`plan/CANDIDATES.md`'s two Pending candidates unchanged; no new TODO/FIXME/XXX/HACK beyond the
+known false positives; `node scripts/plan/order.mjs` still names only 01.28 reachable (same
+mechanism-shipped, phone-check-pending state) -- not re-claimed, since claiming and releasing it
+again would add nothing beyond what the `[needs-user-call]` row below already records. Top score
+holds at 2.7. This tick hands to `/expand` again (pass 93).
 
 ## Pending — [needs-user-call]
 
