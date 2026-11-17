@@ -5,7 +5,7 @@
 > stays until the owner answers it, and the loop continues on the
 > default it names.
 
-# Site audit — 2026-11-16 (iterate pass 3, base c5bfd22: no actionable work, top score 2.7 — below the 3.0 bar; handing to expand)
+# Site audit — 2026-11-17 (iterate pass 4, base 41a9bef: no actionable work, top score 2.7 — below the 3.0 bar; handing to expand)
 
 ## Top 5 findings (scored)
 
@@ -141,6 +141,19 @@ no spec/design diff since `33b6cff`; `plan/CRITIQUE.md`'s Pending rows unchanged
 known false positives; no `workflows: write` grant in any workflow file; `node scripts/plan/order.mjs`
 still names only 01.28 reachable (same phone-check-pending state), re-claimed and released again
 with nothing new to build. Top score holds at 2.7. This tick hands to `/expand` again.
+
+This tick (base `41a9bef`, `/march` dispatching to `/iterate` since the chunk pick order still
+names only 01.28 and expand's own rate-limit window hadn't opened — 1 commit / ~5.8h since
+pass 88, short of 20 commits / 48h) found no new signal: `gh issue list` still 0
+unlabeled/urgent; issues #11/#25 unchanged (both still single-comment, `triage:needs-user`); no
+spec/design diff since `c5bfd22` (`design/` still untouched since 2026-10-24); `plan/CRITIQUE.md`'s
+Pending rows unchanged at 7; `plan/CANDIDATES.md`'s two Pending candidates unchanged; no new
+TODO/FIXME/XXX/HACK beyond the known false positives (ID3 `TXXX`, `scripts/new-skill.mjs`'s
+scaffold TODOs); no `workflows: write` grant in any workflow file; `node scripts/plan/order.mjs`
+still names only 01.28 reachable (same mechanism-shipped, phone-check-pending state) — not
+re-claimed, since claiming and releasing it again would add nothing beyond what the
+`[needs-user-call]` row below already records. Top score holds at 2.7. This tick hands to
+`/expand` again.
 
 ## Pending — [needs-user-call]
 
