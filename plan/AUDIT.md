@@ -5,7 +5,7 @@
 > stays until the owner answers it, and the loop continues on the
 > default it names.
 
-# Site audit — 2026-11-18 (iterate pass 9, base d55d640: no actionable work, top score 2.7 — below the 3.0 bar; handing to expand)
+# Site audit — 2026-11-18 (iterate pass 10, base d7cf2f7: no actionable work, top score 2.7 — below the 3.0 bar; handing to expand)
 
 ## Top 5 findings (scored)
 
@@ -103,8 +103,8 @@ for passes 17-83 lived here as one paragraph each; dropped in this third consoli
 same `skills/iterate.md` §5 Step 1 reasoning as the prior two (2026-11-11, 2026-11-15) — the full
 narrative is still in `git log -p -- plan/AUDIT.md` for anyone who needs it.
 
-Passes 83-92 (bases `a6e156b` through `b886990`, ~10 iterate ticks across 2026-11-16 to
-2026-11-17) each reconfirmed the same fresh state with no new signal of substance, with one
+Passes 83-94 (bases `a6e156b` through `d55d640`, ~12 iterate ticks across 2026-11-16 to
+2026-11-18) each reconfirmed the same fresh state with no new signal of substance, with one
 addition: one tick (base `f7101d2`) found `/critique` had run in between (pass 24) and filed a
 new `[MED]` row -- `/browse/[id]` and `/book/[id]` return HTTP 200, not 404, for an unknown book
 id -- folded into "Also pending" above at `[1.2]` (ease deliberately low; the finding's own
@@ -116,24 +116,16 @@ checked); no new TODO/FIXME/XXX/HACK beyond the known false positives (ID3 `TXXX
 `scripts/new-skill.mjs`'s scaffold TODOs); no `workflows: write` grant in any workflow file;
 `plan/CANDIDATES.md`'s two Pending candidates unchanged, still awaiting `/oversight` promotion;
 and `node scripts/plan/order.mjs` still naming only 01.28 reachable (same mechanism-shipped,
-phone-check-pending state as every prior tick -- not re-claimed each time, since claiming and
-releasing it again adds nothing beyond what the `[needs-user-call]` row below already records).
-Top score held at 2.7 throughout, under the 3.0 bar; every qualifying tick handed off to
-`/expand` per `skills/iterate.md` §6 failure mode 6 (posture bold), filing no candidates each
-time (expand passes 83-92, commits through `78db1b4`). Per-tick detail for this span dropped in
-this fourth consolidation, same reasoning as the prior three (2026-11-11, 2026-11-15,
-2026-11-16) -- full narrative still in `git log -p -- plan/AUDIT.md`.
+phone-check-pending state as every prior tick -- re-claimed and released directly on one of these
+ticks, base `d55d640`, to re-check A41's phone-check gap rather than trust the note alone,
+confirming nothing new beyond the `[needs-user-call]` row below). Top score held at 2.7
+throughout, under the 3.0 bar; every qualifying tick handed off to `/expand` per
+`skills/iterate.md` §6 failure mode 6 (posture bold), filing no candidates each time (expand
+passes 83-94, commits through `d7cf2f7`). Per-tick detail for this span dropped in this fifth
+consolidation, same reasoning as the prior four (2026-11-11, 2026-11-15, 2026-11-16, 2026-11-17)
+-- full narrative still in `git log -p -- plan/AUDIT.md`.
 
-This tick (base `78db1b4`) reconfirmed the same fresh state once more: `gh issue list` still 0
-unlabeled/urgent; issues #11/#25 unchanged (both still single-comment, `triage:needs-user`); no
-spec/design diff since `a59d76a`; `plan/CRITIQUE.md`'s Pending rows unchanged at 7;
-`plan/CANDIDATES.md`'s two Pending candidates unchanged; no new TODO/FIXME/XXX/HACK beyond the
-known false positives; `node scripts/plan/order.mjs` still names only 01.28 reachable (same
-mechanism-shipped, phone-check-pending state) -- not re-claimed, since claiming and releasing it
-again would add nothing beyond what the `[needs-user-call]` row below already records. Top score
-holds at 2.7. This tick hands to `/expand` again (pass 93).
-
-This tick (base `d55d640`, cloud march) reconfirmed the same fresh state once more: `gh issue list`
+This tick (base `d7cf2f7`, cloud march) reconfirmed the same fresh state once more: `gh issue list`
 still 0 unlabeled/urgent; issues #11/#25 unchanged (both still single-comment, `triage:needs-user`);
 no spec/design diff since `a59d76a`; `plan/CRITIQUE.md`'s Pending rows unchanged at 7;
 `plan/CANDIDATES.md`'s two Pending candidates unchanged; no new TODO/FIXME/XXX/HACK beyond the known
@@ -141,7 +133,7 @@ false positives; no `workflows: write` grant in any workflow file. This tick did
 `01.28` (the only chunk `node scripts/plan/order.mjs` names reachable) to re-check A41's phone-check
 gap directly rather than trust the note alone — confirmed still mechanism-shipped,
 phone-check-pending, nothing new beyond the `[needs-user-call]` row below. Top score holds at 2.7.
-This tick hands to `/expand` again (pass 94).
+This tick hands to `/expand` again (pass 95).
 
 ## Pending — [needs-user-call]
 
