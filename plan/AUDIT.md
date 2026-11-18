@@ -5,7 +5,7 @@
 > stays until the owner answers it, and the loop continues on the
 > default it names.
 
-# Site audit — 2026-11-17 (iterate pass 8, base 78db1b4: no actionable work, top score 2.7 — below the 3.0 bar; handing to expand)
+# Site audit — 2026-11-18 (iterate pass 9, base d55d640: no actionable work, top score 2.7 — below the 3.0 bar; handing to expand)
 
 ## Top 5 findings (scored)
 
@@ -132,6 +132,16 @@ known false positives; `node scripts/plan/order.mjs` still names only 01.28 reac
 mechanism-shipped, phone-check-pending state) -- not re-claimed, since claiming and releasing it
 again would add nothing beyond what the `[needs-user-call]` row below already records. Top score
 holds at 2.7. This tick hands to `/expand` again (pass 93).
+
+This tick (base `d55d640`, cloud march) reconfirmed the same fresh state once more: `gh issue list`
+still 0 unlabeled/urgent; issues #11/#25 unchanged (both still single-comment, `triage:needs-user`);
+no spec/design diff since `a59d76a`; `plan/CRITIQUE.md`'s Pending rows unchanged at 7;
+`plan/CANDIDATES.md`'s two Pending candidates unchanged; no new TODO/FIXME/XXX/HACK beyond the known
+false positives; no `workflows: write` grant in any workflow file. This tick did claim and release
+`01.28` (the only chunk `node scripts/plan/order.mjs` names reachable) to re-check A41's phone-check
+gap directly rather than trust the note alone — confirmed still mechanism-shipped,
+phone-check-pending, nothing new beyond the `[needs-user-call]` row below. Top score holds at 2.7.
+This tick hands to `/expand` again (pass 94).
 
 ## Pending — [needs-user-call]
 
