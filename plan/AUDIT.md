@@ -5,7 +5,7 @@
 > stays until the owner answers it, and the loop continues on the
 > default it names.
 
-# Site audit — 2026-11-18 (iterate pass 12, base 7c9a0a5: no actionable work, top score 2.7 — below the 3.0 bar; handing to expand)
+# Site audit — 2026-11-19 (iterate pass 13, base 82b91e8: no actionable work, top score 2.7 — below the 3.0 bar; handing to expand)
 
 ## Top 5 findings (scored)
 
@@ -155,6 +155,16 @@ still names only 01.28 reachable (same mechanism-shipped, phone-check-pending st
 claimed and released it directly, per the standard `/next top` dispatch step, confirming nothing
 new beyond the `[needs-user-call]` row below before falling through. Top score holds at 2.7. This
 tick hands to `/expand` again (pass 97).
+
+This tick (base `82b91e8`, cloud march) reconfirmed the same fresh state once more: `gh issue list`
+still 0 unlabeled/urgent; issues #11/#25 unchanged (both still single-comment, `triage:needs-user`);
+no spec/design diff since `d5b52ee`; `/critique` ran in between (pass 26, commit `82b91e8` itself)
+and filed no findings, so `plan/CRITIQUE.md`'s Pending rows stay at 7; `plan/CANDIDATES.md`'s two
+Pending candidates unchanged; no new TODO/FIXME/XXX/HACK beyond the known false positives; no
+`workflows: write` grant in any workflow file. `node scripts/plan/order.mjs` still names only
+01.28 reachable (same mechanism-shipped, phone-check-pending state; not re-claimed this tick,
+since claiming and releasing it again would add nothing beyond what the `[needs-user-call]` row
+below already records). Top score holds at 2.7. This tick hands to `/expand` again (pass 98).
 
 ## Pending — [needs-user-call]
 
