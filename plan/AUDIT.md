@@ -5,7 +5,7 @@
 > stays until the owner answers it, and the loop continues on the
 > default it names.
 
-# Site audit — 2026-11-19 (iterate pass 16, base 77955dd: no actionable work, top score 2.7 — below the 3.0 bar; handing to expand)
+# Site audit — 2026-11-19 (iterate pass 16, base a489caa: no actionable work, top score 2.7 — below the 3.0 bar; handing to expand)
 
 ## Top 5 findings (scored)
 
@@ -125,76 +125,35 @@ passes 83-94, commits through `d7cf2f7`). Per-tick detail for this span dropped 
 consolidation, same reasoning as the prior four (2026-11-11, 2026-11-15, 2026-11-16, 2026-11-17)
 -- full narrative still in `git log -p -- plan/AUDIT.md`.
 
-This tick (base `d7cf2f7`, cloud march) reconfirmed the same fresh state once more: `gh issue list`
-still 0 unlabeled/urgent; issues #11/#25 unchanged (both still single-comment, `triage:needs-user`);
-no spec/design diff since `a59d76a`; `plan/CRITIQUE.md`'s Pending rows unchanged at 7;
-`plan/CANDIDATES.md`'s two Pending candidates unchanged; no new TODO/FIXME/XXX/HACK beyond the known
-false positives; no `workflows: write` grant in any workflow file. This tick did claim and release
-`01.28` (the only chunk `node scripts/plan/order.mjs` names reachable) to re-check A41's phone-check
-gap directly rather than trust the note alone — confirmed still mechanism-shipped,
-phone-check-pending, nothing new beyond the `[needs-user-call]` row below. Top score holds at 2.7.
-This tick hands to `/expand` again (pass 95).
+Passes 95-101 (bases `d7cf2f7` through `77955dd`/`bd7add4`, ~7 iterate ticks across 2026-11-18 to
+2026-11-19) each reconfirmed the same fresh state with no new signal: `gh issue list` 0
+unlabeled/urgent throughout; issues #11/#25 unchanged at `triage:needs-user` (both still
+single-comment); no spec/design diff (`git log -p -- spec.md design/` empty across every base
+checked); no new TODO/FIXME/XXX/HACK beyond the known false positives; no `workflows: write` grant
+in any workflow file; `plan/CRITIQUE.md`'s Pending rows held at 7 (one tick, base `82b91e8`, saw
+`/critique` pass 26 run in between and file no findings); `plan/CANDIDATES.md`'s two Pending
+candidates unchanged throughout, still awaiting `/oversight` promotion; and `node
+scripts/plan/order.mjs` still naming only 01.28 reachable (same mechanism-shipped,
+phone-check-pending state) — re-claimed and released directly on two of these ticks (bases
+`d7cf2f7` and `7c9a0a5`) to confirm A41's phone-check gap rather than trust the note alone, every
+other tick skipping the redundant reclaim since it would add nothing beyond the `[needs-user-call]`
+row below. Top score held at 2.7 throughout, under the 3.0 bar; every tick handed off to `/expand`
+per `skills/iterate.md` §6 failure mode 6 (posture bold), filing no candidates each time (expand
+passes 95-101). Per-tick detail for this span dropped in this sixth consolidation, same reasoning
+as the prior five (2026-11-11, 2026-11-15, 2026-11-16, 2026-11-17) -- full narrative still in `git
+log -p -- plan/AUDIT.md`.
 
-This tick (base `f97358d`, cloud march) reconfirmed the same fresh state once more: `gh issue list`
+This tick (base `a489caa`, cloud march) reconfirmed the same fresh state once more: `gh issue list`
 still 0 unlabeled/urgent; issues #11/#25 unchanged (both still single-comment, `triage:needs-user`);
-no spec/design diff since `a59d76a`; `plan/CRITIQUE.md`'s Pending rows unchanged at 7;
-`plan/CANDIDATES.md`'s two Pending candidates unchanged; no new TODO/FIXME/XXX/HACK beyond the known
-false positives; no `workflows: write` grant in any workflow file. `node scripts/plan/order.mjs`
-still names only 01.28 reachable (same mechanism-shipped, phone-check-pending state; not re-claimed
-this tick, since claiming and releasing it again would add nothing beyond what the
-`[needs-user-call]` row below already records — it was claimed and released once this march tick
-only to confirm the pick order, per the standard `/next top` dispatch step before falling through).
-Top score holds at 2.7. This tick hands to `/expand` again (pass 96).
-
-This tick (base `7c9a0a5`, cloud march) reconfirmed the same fresh state once more: `gh issue list`
-still 0 unlabeled/urgent; issues #11/#25 unchanged (both still single-comment, `triage:needs-user`);
-no spec/design diff since `b3a3299`; `plan/CRITIQUE.md`'s Pending rows unchanged at 7;
-`plan/CANDIDATES.md`'s two Pending candidates unchanged; no new TODO/FIXME/XXX/HACK beyond the known
-false positives; no `workflows: write` grant in any workflow file. `node scripts/plan/order.mjs`
-still names only 01.28 reachable (same mechanism-shipped, phone-check-pending state); this tick
-claimed and released it directly, per the standard `/next top` dispatch step, confirming nothing
-new beyond the `[needs-user-call]` row below before falling through. Top score holds at 2.7. This
-tick hands to `/expand` again (pass 97).
-
-This tick (base `82b91e8`, cloud march) reconfirmed the same fresh state once more: `gh issue list`
-still 0 unlabeled/urgent; issues #11/#25 unchanged (both still single-comment, `triage:needs-user`);
-no spec/design diff since `d5b52ee`; `/critique` ran in between (pass 26, commit `82b91e8` itself)
-and filed no findings, so `plan/CRITIQUE.md`'s Pending rows stay at 7; `plan/CANDIDATES.md`'s two
-Pending candidates unchanged; no new TODO/FIXME/XXX/HACK beyond the known false positives; no
-`workflows: write` grant in any workflow file. `node scripts/plan/order.mjs` still names only
-01.28 reachable (same mechanism-shipped, phone-check-pending state; not re-claimed this tick,
-since claiming and releasing it again would add nothing beyond what the `[needs-user-call]` row
-below already records). Top score holds at 2.7. This tick hands to `/expand` again (pass 98).
-
-This tick (base `ad0f487`, cloud march) reconfirmed the same fresh state once more: `gh issue list`
-still 0 unlabeled/urgent; issues #11/#25 unchanged (both still single-comment, `triage:needs-user`);
-no spec/design diff since `82b91e8`; `plan/CRITIQUE.md`'s Pending rows unchanged at 7;
-`plan/CANDIDATES.md`'s two Pending candidates unchanged (`/expand` pass 98 filed no new ones); no
+no spec/design diff since `77955dd`; `plan/CRITIQUE.md`'s Pending rows unchanged at 7;
+`plan/CANDIDATES.md`'s two Pending candidates unchanged (`/expand` pass 101 filed no new ones); no
 new TODO/FIXME/XXX/HACK beyond the known false positives; no `workflows: write` grant in any
 workflow file. `node scripts/plan/order.mjs` still names only 01.28 reachable (same
 mechanism-shipped, phone-check-pending state; not re-claimed this tick, since claiming and
 releasing it again would add nothing beyond what the `[needs-user-call]` row below already
-records). Top score holds at 2.7. This tick hands to `/expand` again (pass 99).
-
-This tick (base `f353e58`, cloud march) reconfirmed the same fresh state once more: `gh issue list`
-still 0 unlabeled/urgent; issues #11/#25 unchanged (both still single-comment, `triage:needs-user`);
-no spec/design diff since `ad0f487`; `plan/CRITIQUE.md`'s Pending rows unchanged at 7;
-`plan/CANDIDATES.md`'s two Pending candidates unchanged (`/expand` pass 99 filed no new ones); no
-new TODO/FIXME/XXX/HACK beyond the known false positives; no `workflows: write` grant in any
-workflow file. `node scripts/plan/order.mjs` still names only 01.28 reachable (same
-mechanism-shipped, phone-check-pending state; not re-claimed this tick, since claiming and
-releasing it again would add nothing beyond what the `[needs-user-call]` row below already
-records). Top score holds at 2.7. This tick hands to `/expand` again (pass 100).
-
-This tick (base `77955dd`, cloud march) reconfirmed the same fresh state once more: `gh issue list`
-still 0 unlabeled/urgent; issues #11/#25 unchanged (both still single-comment, `triage:needs-user`);
-no spec/design diff since `1a2658f`; `plan/CRITIQUE.md`'s Pending rows unchanged at 7;
-`plan/CANDIDATES.md`'s two Pending candidates unchanged (`/expand` pass 100 filed no new ones); no
-new TODO/FIXME/XXX/HACK beyond the known false positives; no `workflows: write` grant in any
-workflow file. `node scripts/plan/order.mjs` still names only 01.28 reachable (same
-mechanism-shipped, phone-check-pending state; not re-claimed this tick, since claiming and
-releasing it again would add nothing beyond what the `[needs-user-call]` row below already
-records). Top score holds at 2.7. This tick hands to `/expand` again (pass 101).
+records). The critique rate-limit gate (`skills/march.md` Step 2) also stayed shut this tick: only
+9 commits and ~20h since the last pass (`82b91e8`, 2026-11-18T12:28:31Z), short of the 12-commit/
+24h bar. Top score holds at 2.7. This tick hands to `/expand` again (pass 102).
 
 ## Pending — [needs-user-call]
 
