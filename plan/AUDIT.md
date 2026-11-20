@@ -5,7 +5,7 @@
 > stays until the owner answers it, and the loop continues on the
 > default it names.
 
-# Site audit — 2026-11-19 (iterate pass 16, base a489caa: no actionable work, top score 2.7 — below the 3.0 bar; handing to expand)
+# Site audit — 2026-11-20 (iterate pass 17, base b436fc5: no actionable work, top score 2.7 — below the 3.0 bar; handing to expand)
 
 ## Top 5 findings (scored)
 
@@ -154,6 +154,21 @@ releasing it again would add nothing beyond what the `[needs-user-call]` row bel
 records). The critique rate-limit gate (`skills/march.md` Step 2) also stayed shut this tick: only
 9 commits and ~20h since the last pass (`82b91e8`, 2026-11-18T12:28:31Z), short of the 12-commit/
 24h bar. Top score holds at 2.7. This tick hands to `/expand` again (pass 102).
+
+This tick (base `b436fc5`, cloud march) reconfirmed the same fresh state once more: `gh issue
+list` still 0 unlabeled/urgent; issues #11/#25 unchanged (both still single-comment,
+`triage:needs-user`); no spec/design diff since `a489caa`; `plan/CRITIQUE.md`'s Pending rows
+unchanged at 7 (`/critique` pass 27 ran in this same tick, immediately before this audit, and
+filed no new findings); `plan/CANDIDATES.md`'s two Pending candidates unchanged; no new
+TODO/FIXME/XXX/HACK beyond the known false positives; no `workflows: write` grant in any workflow
+file. `node scripts/plan/order.mjs` still names only 01.28 reachable; claimed and released it
+directly this tick to re-check A41's phone-check gap rather than trust the note alone — confirmed
+unchanged (no Android device in this cloud checkout). The expand rate-limit gate
+(`skills/march.md` Step 3c) stayed shut this tick too: only 2 commits and ~14h since the last
+expand pass (`bec68a8`, 2026-11-19T10:20:31Z), short of the 20-commit/48h bar — so `/march` itself
+did not dispatch to `/expand` directly; this hand-off comes from `/iterate`'s own §6 failure mode
+6 instead, which carries no such rate limit. Top score holds at 2.7. This tick hands to `/expand`
+again (pass 103).
 
 ## Pending — [needs-user-call]
 
