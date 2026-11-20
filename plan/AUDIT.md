@@ -5,7 +5,7 @@
 > stays until the owner answers it, and the loop continues on the
 > default it names.
 
-# Site audit — 2026-11-20 (iterate pass 21, base 9db79e0: no actionable work, top score 2.7 — below the 3.0 bar; handing to expand)
+# Site audit — 2026-11-20 (iterate pass 22, base a8c57d5: no actionable work, top score 2.7 — below the 3.0 bar; handing to expand)
 
 ## Top 5 findings (scored)
 
@@ -79,7 +79,14 @@ this tick: [1.2] `/browse/[id]` and `/book/[id]` return HTTP 200, not 404, for a
 live page; ease deliberately scored 2 — the finding's own suggested fix says a blind `_redirects`
 patch can't distinguish "known route, unknown id" from "known route, real id" without catalog
 awareness at the edge, and recommends waiting on either a catalog-aware Cloudflare Pages Function
-or the same pre-hydration-shell SSR work already queued above, whichever lands first).
+or the same pre-hydration-shell SSR work already queued above, whichever lands first). New from
+`/critique` pass 28: [0.9] `/Browse`, `/Credits` (and likely every static route) 404 on a
+capitalized path instead of redirecting to the canonical lowercase one (impact 3, LOW — a rare
+edge case: mobile autocapitalize or a title-cased link/typo, not a crawler path); ease scored 3,
+not the usual 8-9 for a one-line `_redirects` fix, because the finding's own suggested fix says
+case-insensitive matching needs a real Cloudflare Pages Function
+(`functions/_middleware.ts`-shaped), not a literal line per route/case combination — scope as its
+own small chunk if picked up, same posture as the catalog-aware 404 work above.
 
 ### History (consolidated 2026-11-17)
 
@@ -234,6 +241,27 @@ gate (`skills/march.md` Step 2) stayed shut this tick: 9 commits and ~20h since 
 (`44122d9`, this same base), nowhere near the 20-commit/48h bar — so `/march` itself did not
 dispatch to `/expand` directly. Top score holds at 2.7. This tick hands to `/expand` again
 (pass 107) per `/iterate`'s own §6 failure mode 6, which carries no such rate limit.
+
+This tick (base `a8c57d5`, cloud march) found one new signal since the last full audit: `/critique`
+pass 28 ran in the previous tick (commit `a8c57d5` itself) and filed one new `[LOW]` row —
+`/Browse`/`/Credits` 404 on a capitalized path instead of redirecting — moving `plan/CRITIQUE.md`'s
+Pending rows from 7 to 8. Scored into "Also pending" above at `[0.9]` (impact 3, ease 3 — a real
+Cloudflare Pages Function, not a one-line `_redirects` fix per the finding's own text), it doesn't
+change the Top 5 or the 2.7 ceiling. Everything else reconfirmed the same fresh state: `gh issue
+list` still 0 unlabeled/urgent; issues #11/#25 unchanged (both still single-comment,
+`triage:needs-user`); no spec/design diff since `9db79e0`; `plan/CANDIDATES.md`'s two Pending
+candidates unchanged (`/expand` pass 107 filed no new ones, landing as commit `8c50362`); no new
+TODO/FIXME/XXX/HACK beyond the known false positives; no `workflows: write` grant in any workflow
+file. `node scripts/plan/order.mjs` still names only 01.28 reachable (same mechanism-shipped,
+phone-check-pending state; not re-claimed this tick — the last recheck, base `b436fc5`, is 11
+commits old and nothing about the gap has changed: still no Android device, no `EXPO_TOKEN` to
+even build a preview APK from this cloud checkout). The critique rate-limit gate (`skills/march.md`
+Step 2) stayed shut this tick: only 1 commit and ~6h since the last pass (`8c50362`,
+2026-11-20T~10:00Z), short of the 12-commit/24h bar. The expand rate-limit gate (`skills/march.md`
+Step 3c) also stayed shut: only 2 commits and ~6h since the last expand pass (`8c50362`), nowhere
+near the 20-commit/48h bar — so `/march` itself did not dispatch to `/expand` directly. Top score
+holds at 2.7. This tick hands to `/expand` again (pass 108) per `/iterate`'s own §6 failure mode 6,
+which carries no such rate limit.
 
 ## Pending — [needs-user-call]
 
