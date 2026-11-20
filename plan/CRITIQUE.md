@@ -1,13 +1,33 @@
 # Critique log
 
-> Last pass: 2026-11-19 at commit 4a1e3d2
-> Pass count: 27
+> Last pass: 2026-11-20 at commit 8c50362
+> Pass count: 28
 
 > External-observer feedback for Mood Read. Populated by
 > `/critique`, drained by `/iterate`. See `skills/critique.md`
 > for the contract.
 
 ## Pending
+
+### [LOW] /Browse, /Credits (and likely every other static route) — capitalized path variants 404 instead of redirecting to the canonical lowercase route
+- pass: 28 (commit 8c50362)
+- viewport: n/a (web-fetch engine, no browser tools on this runner)
+- category: navigation
+- observation: routing is case-sensitive with no normalization. `/browse` and `/credits` load
+  normally; `/Browse` and `/Credits` return a real HTTP 404 instead of a 301/308 to the lowercase
+  canonical path. Anyone who types, autocapitalizes (mobile keyboards), or links with
+  title-cased casing lands on a dead page instead of the app.
+- evidence: `curl -s -o /dev/null -w "%{http_code}" https://mood-read.pages.dev/Browse` → `404`.
+  `curl -s -o /dev/null -w "%{http_code}" https://mood-read.pages.dev/Credits` → `404`. Control:
+  `curl -s -o /dev/null -w "%{http_code}" https://mood-read.pages.dev/browse` → `200`;
+  `.../credits` → `200`.
+- suggested fix: `public/_redirects` only does exact-path or splat matching, case-sensitively —
+  it can't express "any casing of /browse" without one literal line per route per case
+  combination, which doesn't scale (and still wouldn't cover `/book/[id]`'s and `/browse/[id]`'s
+  dynamic segments). A real fix needs a Cloudflare Pages Function (`functions/_middleware.ts` or
+  similar) that lowercases the pathname and 308s when it differs from the canonical route. Low
+  ease — don't attempt a blind `_redirects` patch; scope as its own small chunk if picked up.
+- source: web-fetch
 
 ### [MED] /browse/[id] and /book/[id] — an unknown book id returns HTTP 200, not a real 404
 - pass: 24 (commit c101e0a)
