@@ -5,7 +5,7 @@
 > stays until the owner answers it, and the loop continues on the
 > default it names.
 
-# Site audit — 2026-11-21 (iterate pass 25, base a2b41f5: no actionable work, top score 2.7 — below the 3.0 bar; handing to expand)
+# Site audit — 2026-11-21 (iterate pass 26, base 925772a: no actionable work, top score 2.7 — below the 3.0 bar; handing to expand)
 
 ## Top 5 findings (scored)
 
@@ -150,170 +150,43 @@ passes 95-101). Per-tick detail for this span dropped in this sixth consolidatio
 as the prior five (2026-11-11, 2026-11-15, 2026-11-16, 2026-11-17) -- full narrative still in `git
 log -p -- plan/AUDIT.md`.
 
-This tick (base `a489caa`, cloud march) reconfirmed the same fresh state once more: `gh issue list`
-still 0 unlabeled/urgent; issues #11/#25 unchanged (both still single-comment, `triage:needs-user`);
-no spec/design diff since `77955dd`; `plan/CRITIQUE.md`'s Pending rows unchanged at 7;
-`plan/CANDIDATES.md`'s two Pending candidates unchanged (`/expand` pass 101 filed no new ones); no
-new TODO/FIXME/XXX/HACK beyond the known false positives; no `workflows: write` grant in any
-workflow file. `node scripts/plan/order.mjs` still names only 01.28 reachable (same
-mechanism-shipped, phone-check-pending state; not re-claimed this tick, since claiming and
-releasing it again would add nothing beyond what the `[needs-user-call]` row below already
-records). The critique rate-limit gate (`skills/march.md` Step 2) also stayed shut this tick: only
-9 commits and ~20h since the last pass (`82b91e8`, 2026-11-18T12:28:31Z), short of the 12-commit/
-24h bar. Top score holds at 2.7. This tick hands to `/expand` again (pass 102).
+Passes 102-111 (bases `a489caa` through `a2b41f5`, ~10 iterate ticks across 2026-11-19 to
+2026-11-21) each reconfirmed the same fresh state with no new signal of substance, with one
+addition: the tick at base `a8c57d5` saw `/critique` pass 28 file one new `[LOW]` row —
+`/Browse`/`/Credits` 404 on a capitalized path instead of redirecting — moving
+`plan/CRITIQUE.md`'s Pending rows from 7 to 8, folded into "Also pending" above at `[0.9]`; that
+didn't change the Top 5 or the 2.7 ceiling. Every other check across the span stayed constant:
+`gh issue list` 0 unlabeled/urgent; issues #11/#25 unchanged at `triage:needs-user` (both still
+single-comment); no spec/design diff (`git log -p -- spec.md design/` empty across every base
+checked); no new TODO/FIXME/XXX/HACK beyond the known false positives; no `workflows: write`
+grant in any workflow file; `plan/CANDIDATES.md`'s two Pending candidates unchanged throughout,
+still awaiting `/oversight` promotion; and `node scripts/plan/order.mjs` still naming only 01.28
+reachable (same mechanism-shipped, phone-check-pending state — re-claimed and released directly
+on one of these ticks, base `9db79e0`, confirming `src/lib/silence.ts`/`media.ts`/`timeline.ts`
+unchanged since it shipped; every other tick skipped the redundant reclaim). Both march
+rate-limit gates (critique §Step 2, expand §Step 3c) stayed shut throughout the span; each tick's
+expand dispatch came from `/iterate`'s own §6 failure mode 6 instead, which carries no such rate
+limit. Top score held at 2.7 throughout. Per-tick detail for this span dropped in this seventh
+consolidation, same reasoning as the prior six — full narrative still in `git log -p --
+plan/AUDIT.md`.
 
-This tick (base `b436fc5`, cloud march) reconfirmed the same fresh state once more: `gh issue
+This tick (base `925772a`, cloud march) reconfirmed the same fresh state once more: `gh issue
 list` still 0 unlabeled/urgent; issues #11/#25 unchanged (both still single-comment,
-`triage:needs-user`); no spec/design diff since `a489caa`; `plan/CRITIQUE.md`'s Pending rows
-unchanged at 7 (`/critique` pass 27 ran in this same tick, immediately before this audit, and
-filed no new findings); `plan/CANDIDATES.md`'s two Pending candidates unchanged; no new
-TODO/FIXME/XXX/HACK beyond the known false positives; no `workflows: write` grant in any workflow
-file. `node scripts/plan/order.mjs` still names only 01.28 reachable; claimed and released it
-directly this tick to re-check A41's phone-check gap rather than trust the note alone — confirmed
-unchanged (no Android device in this cloud checkout). The expand rate-limit gate
-(`skills/march.md` Step 3c) stayed shut this tick too: only 2 commits and ~14h since the last
-expand pass (`bec68a8`, 2026-11-19T10:20:31Z), short of the 20-commit/48h bar — so `/march` itself
-did not dispatch to `/expand` directly; this hand-off comes from `/iterate`'s own §6 failure mode
-6 instead, which carries no such rate limit. Top score holds at 2.7. This tick hands to `/expand`
-again (pass 103).
-
-This tick (base `9dcf810`, cloud march) reconfirmed the same fresh state once more: `gh issue
-list` still 0 unlabeled/urgent; issues #11/#25 unchanged (both still single-comment,
-`triage:needs-user`); no spec/design diff since `b436fc5`; `plan/CRITIQUE.md`'s Pending rows
-unchanged at 7; `plan/CANDIDATES.md`'s two Pending candidates unchanged (`/expand` pass 103 filed
-no new ones, landing as this same base commit); no new TODO/FIXME/XXX/HACK beyond the known false
-positive; no `workflows: write` grant in any workflow file. `node scripts/plan/order.mjs` still
-names only 01.28 reachable (same mechanism-shipped, phone-check-pending state; not re-claimed this
-tick — it was reconfirmed directly two commits ago at `b436fc5`, so reclaiming again this soon
-would add nothing beyond the `[needs-user-call]` row below). The critique rate-limit gate
-(`skills/march.md` Step 2) stayed shut this tick: only 3 commits and ~16h since the last pass
-(`4a1e3d2`, 2026-11-19T10:26:36Z), short of the 12-commit/24h bar. The expand rate-limit gate
-(`skills/march.md` Step 3c) also stayed shut: 0 commits and 0h since the last expand pass
-(`9dcf810`, this same base), nowhere near the 20-commit/48h bar — so `/march` itself did not
-dispatch to `/expand` directly. Top score holds at 2.7. This tick hands to `/expand` again
-(pass 104) per `/iterate`'s own §6 failure mode 6, which carries no such rate limit.
-
-This tick (base `ec95727`, cloud march) reconfirmed the same fresh state once more: `gh issue
-list` still 0 unlabeled/urgent; issues #11/#25 unchanged (both still single-comment,
-`triage:needs-user`); no spec/design diff since `9dcf810`; `plan/CRITIQUE.md`'s Pending rows
-unchanged at 7; `plan/CANDIDATES.md`'s two Pending candidates unchanged (`/expand` pass 104 filed
-no new ones, landing as this same base commit); no new TODO/FIXME/XXX/HACK beyond the known false
-positives; no `workflows: write` grant in any workflow file. `node scripts/plan/order.mjs` still
-names only 01.28 reachable (same mechanism-shipped, phone-check-pending state; not re-claimed this
-tick, since claiming and releasing it again would add nothing beyond the `[needs-user-call]` row
-below — the last recheck, base `b436fc5`, is only 5 commits old). The critique rate-limit gate
-(`skills/march.md` Step 2) stayed shut this tick: only 5 commits and ~18h since the last pass
-(`4a1e3d2`, 2026-11-19T10:26:36Z), short of the 12-commit/24h bar. The expand rate-limit gate
-(`skills/march.md` Step 3c) also stayed shut: 0 commits and ~0h since the last expand pass
-(`ec95727`, this same base), nowhere near the 20-commit/48h bar — so `/march` itself did not
-dispatch to `/expand` directly. Top score holds at 2.7. This tick hands to `/expand` again
-(pass 105) per `/iterate`'s own §6 failure mode 6, which carries no such rate limit.
-
-This tick (base `4f36c65`, cloud march) reconfirmed the same fresh state once more: `gh issue
-list` still 0 unlabeled/urgent; issues #11/#25 unchanged (both still single-comment,
-`triage:needs-user`); no spec/design diff since `3403d03`; `plan/CRITIQUE.md`'s Pending rows
-unchanged at 7; `plan/CANDIDATES.md`'s two Pending candidates unchanged (`/expand` pass 105 filed
-no new ones, landing as this same base commit); no new TODO/FIXME/XXX/HACK beyond the known false
-positives; no `workflows: write` grant in any workflow file. `node scripts/plan/order.mjs` still
-names only 01.28 reachable (same mechanism-shipped, phone-check-pending state; not re-claimed this
-tick, since the last recheck, base `b436fc5`, is only 7 commits old and nothing about the gap has
-changed). The critique rate-limit gate (`skills/march.md` Step 2) stayed shut this tick: only 7
-commits and ~20h since the last pass (`4a1e3d2`, 2026-11-19T10:26:36Z), short of the 12-commit/24h
-bar. The expand rate-limit gate (`skills/march.md` Step 3c) also stayed shut: only 1 commit and
-~2h since the last expand pass (`3403d03`, 2026-11-20T04:22:44Z), nowhere near the 20-commit/48h
-bar — so `/march` itself did not dispatch to `/expand` directly. Top score holds at 2.7. This
-tick hands to `/expand` again (pass 106) per `/iterate`'s own §6 failure mode 6, which carries no
-such rate limit.
-
-This tick (base `9db79e0`, cloud march) reconfirmed the same fresh state once more: `gh issue
-list` still 0 unlabeled/urgent; issues #11/#25 unchanged (both still single-comment,
-`triage:needs-user`); no spec/design diff since `44122d9`; `plan/CRITIQUE.md`'s Pending rows
-unchanged at 7; `plan/CANDIDATES.md`'s two Pending candidates unchanged (`/expand` pass 106 filed
-no new ones, landing as this same base commit); no new TODO/FIXME/XXX/HACK beyond the known false
-positives; no `workflows: write` grant in any workflow file. `node scripts/plan/order.mjs` still
-names only 01.28 reachable (same mechanism-shipped, phone-check-pending state; re-claimed and
-released directly this tick to re-check A41's phone-check gap rather than trust the note alone —
-confirmed unchanged, no Android device in this cloud checkout; the code behind it, `src/lib/
-silence.ts`/`media.ts`/`timeline.ts`, hasn't changed since it shipped). The critique rate-limit
-gate (`skills/march.md` Step 2) stayed shut this tick: 9 commits and ~20h since the last pass
-(`4a1e3d2`, 2026-11-19T10:26:36Z), short of the 12-commit/24h bar. The expand rate-limit gate
-(`skills/march.md` Step 3c) also stayed shut: only 1 commit and ~0h since the last expand pass
-(`44122d9`, this same base), nowhere near the 20-commit/48h bar — so `/march` itself did not
-dispatch to `/expand` directly. Top score holds at 2.7. This tick hands to `/expand` again
-(pass 107) per `/iterate`'s own §6 failure mode 6, which carries no such rate limit.
-
-This tick (base `a8c57d5`, cloud march) found one new signal since the last full audit: `/critique`
-pass 28 ran in the previous tick (commit `a8c57d5` itself) and filed one new `[LOW]` row —
-`/Browse`/`/Credits` 404 on a capitalized path instead of redirecting — moving `plan/CRITIQUE.md`'s
-Pending rows from 7 to 8. Scored into "Also pending" above at `[0.9]` (impact 3, ease 3 — a real
-Cloudflare Pages Function, not a one-line `_redirects` fix per the finding's own text), it doesn't
-change the Top 5 or the 2.7 ceiling. Everything else reconfirmed the same fresh state: `gh issue
-list` still 0 unlabeled/urgent; issues #11/#25 unchanged (both still single-comment,
-`triage:needs-user`); no spec/design diff since `9db79e0`; `plan/CANDIDATES.md`'s two Pending
-candidates unchanged (`/expand` pass 107 filed no new ones, landing as commit `8c50362`); no new
-TODO/FIXME/XXX/HACK beyond the known false positives; no `workflows: write` grant in any workflow
-file. `node scripts/plan/order.mjs` still names only 01.28 reachable (same mechanism-shipped,
-phone-check-pending state; not re-claimed this tick — the last recheck, base `b436fc5`, is 11
-commits old and nothing about the gap has changed: still no Android device, no `EXPO_TOKEN` to
-even build a preview APK from this cloud checkout). The critique rate-limit gate (`skills/march.md`
-Step 2) stayed shut this tick: only 1 commit and ~6h since the last pass (`8c50362`,
-2026-11-20T~10:00Z), short of the 12-commit/24h bar. The expand rate-limit gate (`skills/march.md`
-Step 3c) also stayed shut: only 2 commits and ~6h since the last expand pass (`8c50362`), nowhere
-near the 20-commit/48h bar — so `/march` itself did not dispatch to `/expand` directly. Top score
-holds at 2.7. This tick hands to `/expand` again (pass 108) per `/iterate`'s own §6 failure mode 6,
-which carries no such rate limit.
-
-This tick (base `189be2b`, cloud march) reconfirmed the same fresh state once more: `gh issue
-list` still 0 unlabeled/urgent; issues #11/#25 unchanged (both still single-comment,
-`triage:needs-user`); no spec/design diff since `a8c57d5`; `plan/CRITIQUE.md`'s Pending rows
-unchanged at 8; `plan/CANDIDATES.md`'s two Pending candidates unchanged (`/expand` pass 108 filed
-no new ones, landing as this same base commit); no new TODO/FIXME/XXX/HACK beyond the known false
-positives; no `workflows: write` grant in any workflow file. `node scripts/plan/order.mjs` still
-names only 01.28 reachable (same mechanism-shipped, phone-check-pending state; not re-claimed this
-tick — the last recheck, base `a8c57d5`, is only 2 commits old and nothing about the gap has
-changed: still no Android device, no `EXPO_TOKEN` to even build a preview APK from this cloud
-checkout). The critique rate-limit gate (`skills/march.md` Step 2) stayed shut this tick: only 3
-commits and ~15.75h since the last pass (`8c50362`, 2026-11-20T10:25:43Z), short of the
-12-commit/24h bar. The expand rate-limit gate (`skills/march.md` Step 3c) also stayed shut: 0
-commits and ~0h since the last expand pass (`189be2b`, this same base), nowhere near the
-20-commit/48h bar — so `/march` itself did not dispatch to `/expand` directly. Top score holds at
-2.7. This tick hands to `/expand` again (pass 109) per `/iterate`'s own §6 failure mode 6, which
-carries no such rate limit.
-
-This tick (base `9dd39ae`, cloud march) reconfirmed the same fresh state once more: `gh issue
-list` still 0 unlabeled/urgent; issues #11/#25 unchanged (both still single-comment,
-`triage:needs-user`); no spec/design diff since `9db79e0`; `plan/CRITIQUE.md`'s Pending rows
-unchanged at 8; `plan/CANDIDATES.md`'s two Pending candidates unchanged (`/expand` pass 109 filed
+`triage:needs-user`); no spec/design diff since `a2b41f5`; `plan/CRITIQUE.md`'s Pending rows
+unchanged at 8; `plan/CANDIDATES.md`'s two Pending candidates unchanged (`/expand` pass 111 filed
 no new ones, landing as this same base commit); no new TODO/FIXME/XXX/HACK beyond the known false
 positives (only `TXXX`, the ID3 frame name, matches the `XXX` pattern); no `workflows: write`
 grant in any workflow file. `node scripts/plan/order.mjs` still names only 01.28 reachable (same
 mechanism-shipped, phone-check-pending state; not re-claimed this tick — the last recheck, base
-`a8c57d5`, is 5 commits old and nothing about the gap has changed: still no Android device, no
-`EXPO_TOKEN` to even build a preview APK from this cloud checkout). The critique rate-limit gate
-(`skills/march.md` Step 2) stayed shut this tick: 5 commits and ~17.75h since the last pass
+`9db79e0`, is well over a dozen commits old but nothing about the gap has changed: still no
+Android device, no `EXPO_TOKEN` to even build a preview APK from this cloud checkout, and
+`src/lib/silence.ts`/`media.ts`/`timeline.ts` unchanged since 2026-10-30). The critique rate-limit
+gate (`skills/march.md` Step 2) stayed shut this tick: 9 commits and ~21.75h since the last pass
 (`8c50362`, 2026-11-20T10:25:43Z), short of the 12-commit/24h bar. The expand rate-limit gate
-(`skills/march.md` Step 3c) also stayed shut: only 1 commit and ~1.75h since the last expand pass
-(`3fdb5b5`), nowhere near the 20-commit/48h bar — so `/march` itself did not dispatch to `/expand`
-directly. Top score holds at 2.7. This tick hands to `/expand` again (pass 110) per `/iterate`'s
-own §6 failure mode 6, which carries no such rate limit.
-
-This tick (base `a2b41f5`, cloud march) reconfirmed the same fresh state once more: `gh issue
-list` still 0 unlabeled/urgent; issues #11/#25 unchanged (both still single-comment,
-`triage:needs-user`); no spec/design diff since `a8c57d5`; `plan/CRITIQUE.md`'s Pending rows
-unchanged at 8; `plan/CANDIDATES.md`'s two Pending candidates unchanged (`/expand` pass 110 filed
-no new ones, landing as this same base commit); no new TODO/FIXME/XXX/HACK beyond the known false
-positives (only `TXXX`, the ID3 frame name, matches the `XXX` pattern); no `workflows: write`
-grant in any workflow file. `node scripts/plan/order.mjs` still names only 01.28 reachable (same
-mechanism-shipped, phone-check-pending state; not re-claimed this tick — the last recheck, base
-`a8c57d5`, is 6 commits old and nothing about the gap has changed: still no Android device, no
-`EXPO_TOKEN` to even build a preview APK from this cloud checkout, and `src/lib/silence.ts`/
-`media.ts`/`timeline.ts` unchanged since it shipped). The critique rate-limit gate
-(`skills/march.md` Step 2) stayed shut this tick: 7 commits and ~19.8h since the last pass
-(`8c50362`, 2026-11-20T10:25:43Z), short of the 12-commit/24h bar. The expand rate-limit gate
-(`skills/march.md` Step 3c) also stayed shut: 0 commits and ~1.85h since the last expand pass
-(`a2b41f5`, this same base), nowhere near the 20-commit/48h bar — so `/march` itself did not
-dispatch to `/expand` directly. Top score holds at 2.7. This tick hands to `/expand` again
-(pass 111) per `/iterate`'s own §6 failure mode 6, which carries no such rate limit.
+(`skills/march.md` Step 3c) also stayed shut: 1 commit and ~1.8h since the last expand pass
+(`115df8b`), nowhere near the 20-commit/48h bar — so `/march` itself did not dispatch to
+`/expand` directly. Top score holds at 2.7. This tick hands to `/expand` again (pass 112) per
+`/iterate`'s own §6 failure mode 6, which carries no such rate limit.
 
 ## Pending — [needs-user-call]
 
