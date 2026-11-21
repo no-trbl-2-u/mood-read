@@ -5,7 +5,7 @@
 > stays until the owner answers it, and the loop continues on the
 > default it names.
 
-# Site audit — 2026-11-21 (iterate pass 26, base 925772a: no actionable work, top score 2.7 — below the 3.0 bar; handing to expand)
+# Site audit — 2026-11-21 (iterate pass 27, base 1a9d404: no actionable work, top score 2.7 — below the 3.0 bar; handing to expand)
 
 ## Top 5 findings (scored)
 
@@ -187,6 +187,22 @@ gate (`skills/march.md` Step 2) stayed shut this tick: 9 commits and ~21.75h sin
 (`115df8b`), nowhere near the 20-commit/48h bar — so `/march` itself did not dispatch to
 `/expand` directly. Top score holds at 2.7. This tick hands to `/expand` again (pass 112) per
 `/iterate`'s own §6 failure mode 6, which carries no such rate limit.
+
+This tick (base `1a9d404`, cloud march) reconfirmed the same fresh state once more: `gh issue
+list` still 0 unlabeled/urgent, and `triage:loop-queued`/`triage:reviewed` both 0; issues #11/#25
+unchanged (both still single-comment, `triage:needs-user`); no spec/design/data diff since the
+last expand pass base (`ca7b543`); `plan/CRITIQUE.md`'s Pending rows unchanged at 8 (critique
+pass 29 ran in between, landing as this same base, and filed no new findings);
+`plan/CANDIDATES.md`'s two Pending candidates unchanged (`/expand` pass 112 filed no new ones);
+no new TODO/FIXME/XXX/HACK beyond the known false positives; no `workflows: write` grant in any
+workflow file; `design/` untouched (still just `layouts/` and `system/` from 2026-10-24). `node
+scripts/plan/order.mjs` still names only 01.28 reachable (same mechanism-shipped,
+phone-check-pending state; not re-claimed this tick — nothing about the gap has changed since the
+last recheck at base `9db79e0`). Both march rate-limit gates (critique §Step 2, expand §Step 3c)
+stayed shut this tick: 0 commits and well under 24h since critique pass 29 (`1a9d404`); 2 commits
+and ~5.8h since expand pass 112 (`ca7b543`), short of the 20-commit/48h bar — so `/march` itself
+did not dispatch to either directly. Top score holds at 2.7. This tick hands to `/expand` again
+(pass 113) per `/iterate`'s own §6 failure mode 6, which carries no such rate limit.
 
 ## Pending — [needs-user-call]
 
