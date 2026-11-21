@@ -5,7 +5,7 @@
 > stays until the owner answers it, and the loop continues on the
 > default it names.
 
-# Site audit — 2026-11-21 (iterate pass 27, base 1a9d404: no actionable work, top score 2.7 — below the 3.0 bar; handing to expand)
+# Site audit — 2026-11-21 (iterate pass 28, base c2ccb27: no actionable work, top score 2.7 — below the 3.0 bar; handing to expand)
 
 ## Top 5 findings (scored)
 
@@ -203,6 +203,20 @@ stayed shut this tick: 0 commits and well under 24h since critique pass 29 (`1a9
 and ~5.8h since expand pass 112 (`ca7b543`), short of the 20-commit/48h bar — so `/march` itself
 did not dispatch to either directly. Top score holds at 2.7. This tick hands to `/expand` again
 (pass 113) per `/iterate`'s own §6 failure mode 6, which carries no such rate limit.
+
+This tick (base `c2ccb27`, cloud march) reconfirmed the same fresh state yet again: `gh issue
+list` still 0 unlabeled/urgent; issues #11/#25 unchanged (both still single-comment,
+`triage:needs-user`); no spec/design diff since the last check; `plan/CRITIQUE.md`'s Pending rows
+unchanged at 8; `plan/CANDIDATES.md`'s two Pending candidates unchanged (`/expand` pass 113 filed
+no new ones); no new TODO/FIXME/XXX/HACK beyond the known `TXXX` false positive; no
+`workflows: write` grant in any workflow file; `design/` untouched. `node scripts/plan/order.mjs`
+still names only 01.28 reachable (same mechanism-shipped, phone-check-pending state; not
+re-claimed this tick — nothing about the gap has changed since the last recheck at base
+`9db79e0`). Both march rate-limit gates stayed shut this tick: 2 commits and ~5.85h since
+critique pass 29 (`1a9d404`); 1 commit and ~3.9h since expand pass 113 (`374bcc3`), both short of
+their bars — so `/march` itself did not dispatch to either directly. Top score holds at 2.7. This
+tick hands to `/expand` again (pass 114) per `/iterate`'s own §6 failure mode 6, which carries no
+such rate limit.
 
 ## Pending — [needs-user-call]
 
