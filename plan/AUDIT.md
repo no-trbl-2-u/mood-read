@@ -5,7 +5,7 @@
 > stays until the owner answers it, and the loop continues on the
 > default it names.
 
-# Site audit — 2026-11-20 (iterate pass 22, base a8c57d5: no actionable work, top score 2.7 — below the 3.0 bar; handing to expand)
+# Site audit — 2026-11-21 (iterate pass 23, base 189be2b: no actionable work, top score 2.7 — below the 3.0 bar; handing to expand)
 
 ## Top 5 findings (scored)
 
@@ -262,6 +262,23 @@ Step 3c) also stayed shut: only 2 commits and ~6h since the last expand pass (`8
 near the 20-commit/48h bar — so `/march` itself did not dispatch to `/expand` directly. Top score
 holds at 2.7. This tick hands to `/expand` again (pass 108) per `/iterate`'s own §6 failure mode 6,
 which carries no such rate limit.
+
+This tick (base `189be2b`, cloud march) reconfirmed the same fresh state once more: `gh issue
+list` still 0 unlabeled/urgent; issues #11/#25 unchanged (both still single-comment,
+`triage:needs-user`); no spec/design diff since `a8c57d5`; `plan/CRITIQUE.md`'s Pending rows
+unchanged at 8; `plan/CANDIDATES.md`'s two Pending candidates unchanged (`/expand` pass 108 filed
+no new ones, landing as this same base commit); no new TODO/FIXME/XXX/HACK beyond the known false
+positives; no `workflows: write` grant in any workflow file. `node scripts/plan/order.mjs` still
+names only 01.28 reachable (same mechanism-shipped, phone-check-pending state; not re-claimed this
+tick — the last recheck, base `a8c57d5`, is only 2 commits old and nothing about the gap has
+changed: still no Android device, no `EXPO_TOKEN` to even build a preview APK from this cloud
+checkout). The critique rate-limit gate (`skills/march.md` Step 2) stayed shut this tick: only 3
+commits and ~15.75h since the last pass (`8c50362`, 2026-11-20T10:25:43Z), short of the
+12-commit/24h bar. The expand rate-limit gate (`skills/march.md` Step 3c) also stayed shut: 0
+commits and ~0h since the last expand pass (`189be2b`, this same base), nowhere near the
+20-commit/48h bar — so `/march` itself did not dispatch to `/expand` directly. Top score holds at
+2.7. This tick hands to `/expand` again (pass 109) per `/iterate`'s own §6 failure mode 6, which
+carries no such rate limit.
 
 ## Pending — [needs-user-call]
 
