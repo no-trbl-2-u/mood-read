@@ -5,7 +5,7 @@
 > stays until the owner answers it, and the loop continues on the
 > default it names.
 
-# Site audit — 2026-11-22 (iterate pass 32, base 79d4c33: no actionable work, top score 2.7 — below the 3.0 bar; handing to expand)
+# Site audit — 2026-11-22 (iterate pass 33, base 1d30e7c: no actionable work, top score 2.7 — below the 3.0 bar; handing to expand)
 
 ## Top 5 findings (scored)
 
@@ -281,6 +281,23 @@ march rate-limit gates stayed shut this tick: 5 commits and ~9.8h since critique
 (`0e45b3a`), short of the 12-commit/24h bar; 0 commits and ~1.95h since expand pass 119
 (`79d4c33`), short of the 20-commit/48h bar — so `/march` itself did not dispatch to either
 directly. Top score holds at 2.7. This tick hands to `/expand` again (pass 120) per `/iterate`'s
+own §6 failure mode 6, which carries no such rate limit.
+
+This tick (base `1d30e7c`, cloud march) reconfirmed the same fresh state once more: `gh issue
+list` ran directly (0 unlabeled/urgent, 0 `loop:do`); issues #11/#25 unchanged (both still
+single-comment, `triage:needs-user`); no spec/design diff since the last check (`git log
+7fac7ca..HEAD -- spec.md design/` empty); `plan/CRITIQUE.md`'s Pending rows unchanged at 8;
+`plan/CANDIDATES.md`'s two Pending candidates unchanged (`/expand` pass 120 filed no new ones);
+no new TODO/FIXME/XXX/HACK beyond the known `TXXX` false positive; no `workflows: write` grant in
+any workflow file; `design/` untouched. `node scripts/plan/order.mjs` still names only 01.28
+reachable — re-claimed and released directly this tick to re-check A41's phone-check gap rather
+than trust the note alone (claim/release on the side claims ref only; nothing about the gap has
+changed: still no Android device, no `EXPO_TOKEN`, `src/lib/silence.ts`/`media.ts`/`timeline.ts`
+unchanged since 2026-10-30). `pnpm deploy:check` green (deploy `11a6220b`, state=ready). Both
+march rate-limit gates stayed shut this tick: 7 commits and ~11.7h since critique pass 30
+(`0e45b3a`), short of the 12-commit/24h bar; 1 commit and ~1.7h since expand pass 120
+(`0f3617b`), short of the 20-commit/48h bar — so `/march` itself did not dispatch to either
+directly. Top score holds at 2.7. This tick hands to `/expand` again (pass 121) per `/iterate`'s
 own §6 failure mode 6, which carries no such rate limit.
 
 ## Pending — [needs-user-call]
