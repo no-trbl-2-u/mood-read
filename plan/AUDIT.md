@@ -5,7 +5,7 @@
 > stays until the owner answers it, and the loop continues on the
 > default it names.
 
-# Site audit — 2026-11-22 (iterate pass 29, base 8374b08: no actionable work, top score 2.7 — below the 3.0 bar; handing to expand)
+# Site audit — 2026-11-22 (iterate pass 30, base e02d601: no actionable work, top score 2.7 — below the 3.0 bar; handing to expand)
 
 ## Top 5 findings (scored)
 
@@ -233,6 +233,21 @@ and ~19.75h since critique pass 29 (`5556e0a`), short of the 12-commit/24h bar; 
 ~9.85h since expand pass 114 (`6b6bfad`), short of the 20-commit/48h bar — so `/march` itself did
 not dispatch to either directly. Top score holds at 2.7. This tick hands to `/expand` again (pass
 115) per `/iterate`'s own §6 failure mode 6, which carries no such rate limit.
+
+This tick (base `e02d601`, cloud march) reconfirmed the same fresh state yet again: `gh issue
+list` ran directly this time (the Actions-minted token authenticates `gh` even with no vault
+`GH_TOKEN` configured) — 0 unlabeled/urgent, confirmed rather than assumed; issues #11/#25 still
+single-comment at `triage:needs-user`. No spec/design diff since the last check;
+`plan/CRITIQUE.md`'s Pending rows unchanged at 8; `plan/CANDIDATES.md`'s two Pending candidates
+unchanged (`/expand` pass 115 filed no new ones); no new TODO/FIXME/XXX/HACK beyond the known
+`TXXX` false positive; no `workflows: write` grant in any workflow file; `design/` untouched.
+`node scripts/plan/order.mjs` still names only 01.28 reachable (same mechanism-shipped,
+phone-check-pending state; not re-claimed this tick — nothing about the gap has changed). Both
+march rate-limit gates stayed shut this tick: 7 commits and ~23.85h since critique pass 29
+(`5556e0a`), short of the 12-commit/24h bar; 1 commit and ~3.85h since expand pass 115
+(`ffaac78`), short of the 20-commit/48h bar — so `/march` itself did not dispatch to either
+directly. Top score holds at 2.7. This tick hands to `/expand` again (pass 116) per `/iterate`'s
+own §6 failure mode 6, which carries no such rate limit.
 
 ## Pending — [needs-user-call]
 
