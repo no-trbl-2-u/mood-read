@@ -1,7 +1,7 @@
 # Critique log
 
-> Last pass: 2026-11-22 at commit 0e45b3a
-> Pass count: 30
+> Last pass: 2026-11-23 at commit b263b36
+> Pass count: 31
 
 > External-observer feedback for Mood Read. Populated by
 > `/critique`, drained by `/iterate`. See `skills/critique.md`
@@ -215,6 +215,12 @@
   `/downloads` got the identical content-free shell on all five — WebFetch's
   markdown extraction saw nothing but the bare string "Mood Read" per page,
   no headings/nav/body/links. Same root cause, no new fix beyond the one
+  already on this row.
+- reconfirmed (pass 31, commit b263b36): same anonymous WebFetch pass over
+  `/`, `/browse`, `/browse/allofgrace_2609_librivox`, `/soundtrack`,
+  `/downloads` — still only the literal string "Mood Read" and an empty
+  `<div id="root">` reach a non-JS client on every route. `/credits`
+  checked too, same result. Same root cause, no new fix beyond the one
   already on this row.
 - source: web-fetch
 
