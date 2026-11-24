@@ -1,7 +1,7 @@
 # Critique log
 
-> Last pass: 2026-11-23 at commit b263b36
-> Pass count: 31
+> Last pass: 2026-11-24 at commit 382f94b
+> Pass count: 32
 
 > External-observer feedback for Mood Read. Populated by
 > `/critique`, drained by `/iterate`. See `skills/critique.md`
@@ -221,6 +221,15 @@
   `/downloads` — still only the literal string "Mood Read" and an empty
   `<div id="root">` reach a non-JS client on every route. `/credits`
   checked too, same result. Same root cause, no new fix beyond the one
+  already on this row.
+- reconfirmed (pass 32, commit 382f94b): same anonymous WebFetch pass over
+  `/`, `/browse`, `/browse/allofgrace_2609_librivox`, `/soundtrack`,
+  `/import` — identical bare "Mood Read" shell on every route, including
+  `/import` (no non-JS fallback text at all — not even a label hinting
+  what the page does) and the book detail page (no "grace"/"librivox"/
+  "chapter"/"author" anywhere in the raw response, confirming the pass-10/
+  pass-12 per-book title and OG-tag fixes never reach a non-JS client or
+  link-unfurler either). Same root cause, no new fix beyond the one
   already on this row.
 - source: web-fetch
 
