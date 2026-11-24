@@ -5,7 +5,7 @@
 > stays until the owner answers it, and the loop continues on the
 > default it names.
 
-# Site audit — 2026-11-23 (iterate pass 38, base 5e27802: no actionable work, top score 2.7 — below the 3.0 bar; handing to expand)
+# Site audit — 2026-11-24 (iterate pass 39, base 296b6e1: no actionable work, top score 2.7 — below the 3.0 bar; handing to expand)
 
 ## Top 5 findings (scored)
 
@@ -272,6 +272,21 @@ green (deploy `0b34d014`, state=ready). Both march rate-limit gates stayed shut:
 commits, ~13.6h since `b263b36`, short of 12-commit/24h) and expand (2 commits, ~5.7h since
 `f7858dc`, short of 20-commit/48h). Top score holds at 2.7. This tick hands to `/expand` again
 (pass 126) per `/iterate`'s own §6 failure mode 6, which carries no such rate limit.
+
+This tick (base `296b6e1`, cloud march) reconfirmed the same fresh state again: `/expand` pass 126
+ran immediately before this tick (landing as this same base commit) and filed no candidates, so
+`plan/CANDIDATES.md`'s two Pending candidates stayed unchanged; `gh issue list` 0 unlabeled/urgent,
+0 `loop:do`; issues #11/#25 unchanged (both still single-comment, `triage:needs-user`); no
+spec/design diff since the last check (`git log -p -- spec.md design/` empty); `plan/CRITIQUE.md`'s
+Pending rows unchanged at 8; no new TODO/FIXME/XXX/HACK beyond the known `TXXX` false positive; no
+`workflows: write` grant in any workflow file. `node scripts/plan/order.mjs` still names only
+01.28 reachable (same mechanism-shipped, phone-check-pending state; not re-claimed this tick —
+still no Android device, no `EXPO_TOKEN` to even build a preview APK from this cloud checkout, and
+`src/lib/silence.ts`/`media.ts`/`timeline.ts` unchanged since 2026-10-30). `pnpm deploy:check`
+green (deploy `8fa67d13`, state=ready). Both march rate-limit gates stayed shut: critique (9
+commits, ~17.7h since `b263b36`, short of 12-commit/24h) and expand (1 commit, ~4h since
+`245358f`, short of 20-commit/48h). Top score holds at 2.7. This tick hands to `/expand` again
+(pass 127) per `/iterate`'s own §6 failure mode 6, which carries no such rate limit.
 
 ## Pending — [needs-user-call]
 
