@@ -5,7 +5,7 @@
 > stays until the owner answers it, and the loop continues on the
 > default it names.
 
-# Site audit — 2026-11-25 (iterate pass 132, base f72e561: no actionable work, top score 2.7 — below the 3.0 bar; handing to expand)
+# Site audit — 2026-11-25 (iterate pass 133, base 3b91c8a: no actionable work, top score 2.7 — below the 3.0 bar; handing to expand)
 
 ## Top 5 findings (scored)
 
@@ -79,14 +79,20 @@ this tick: [1.2] `/browse/[id]` and `/book/[id]` return HTTP 200, not 404, for a
 live page; ease deliberately scored 2 — the finding's own suggested fix says a blind `_redirects`
 patch can't distinguish "known route, unknown id" from "known route, real id" without catalog
 awareness at the edge, and recommends waiting on either a catalog-aware Cloudflare Pages Function
-or the same pre-hydration-shell SSR work already queued above, whichever lands first). New from
-`/critique` pass 28: [0.9] `/Browse`, `/Credits` (and likely every static route) 404 on a
-capitalized path instead of redirecting to the canonical lowercase one (impact 3, LOW — a rare
-edge case: mobile autocapitalize or a title-cased link/typo, not a crawler path); ease scored 3,
-not the usual 8-9 for a one-line `_redirects` fix, because the finding's own suggested fix says
-case-insensitive matching needs a real Cloudflare Pages Function
-(`functions/_middleware.ts`-shaped), not a literal line per route/case combination — scope as its
-own small chunk if picked up, same posture as the catalog-aware 404 work above.
+or the same pre-hydration-shell SSR work already queued above, whichever lands first). From
+`/critique` pass 28, rescoped at pass 33 (commit 3b91c8a, this tick's base): [1.8]
+`/Browse`/`/Credits` 404 on a capitalized path instead of redirecting to the canonical lowercase
+one — pass 33 confirmed this is site-wide, not an isolated pair: all eight static top-level
+routes (`/Settings`, `/Soundtrack`, `/Downloads`, `/Import`, `/Privacy`, `/Licenses` alongside the
+original `/Browse`/`/Credits`) 404 on their capitalized form. Severity raised LOW → MED (impact
+3 → 6: a site-wide pattern any mobile-autocapitalized or title-cased link/typo can hit, on any
+route, not a one-off). Ease unchanged at 3, not the usual 8-9 for a one-line `_redirects` fix,
+because the finding's own suggested fix says case-insensitive matching needs a real Cloudflare
+Pages Function (`functions/_middleware.ts`-shaped), not a literal line per route/case
+combination — score moves 0.9 → 1.8, still below the 3.0 bar and still a single-signal finding
+(one critique lineage, no corroborating independent source), so it stays here rather than
+graduating to an `/expand` candidate — scope as its own small chunk if picked up directly,
+same posture as the catalog-aware 404 work above.
 
 ### History (consolidated 2026-11-17)
 
