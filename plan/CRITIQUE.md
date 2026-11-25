@@ -1,7 +1,7 @@
 # Critique log
 
-> Last pass: 2026-11-24 at commit 382f94b
-> Pass count: 32
+> Last pass: 2026-11-25 at commit 4259be8
+> Pass count: 33
 
 > External-observer feedback for Mood Read. Populated by
 > `/critique`, drained by `/iterate`. See `skills/critique.md`
@@ -9,18 +9,21 @@
 
 ## Pending
 
-### [LOW] /Browse, /Credits (and likely every other static route) — capitalized path variants 404 instead of redirecting to the canonical lowercase route
-- pass: 28 (commit 8c50362)
+### [MED] every static route — capitalized path variants 404 instead of redirecting to the canonical lowercase route
+- pass: 28 (commit 8c50362); scope confirmed at pass 33 (commit 4259be8)
 - viewport: n/a (web-fetch engine, no browser tools on this runner)
 - category: navigation
-- observation: routing is case-sensitive with no normalization. `/browse` and `/credits` load
-  normally; `/Browse` and `/Credits` return a real HTTP 404 instead of a 301/308 to the lowercase
-  canonical path. Anyone who types, autocapitalizes (mobile keyboards), or links with
-  title-cased casing lands on a dead page instead of the app.
+- observation: routing is case-sensitive with no normalization. Confirmed across every static
+  top-level route, not just `/browse`/`/credits`: `/Settings`, `/Soundtrack`, `/Downloads`,
+  `/Import`, `/Privacy`, `/Licenses` all 404 on their capitalized form too, same as `/Browse` and
+  `/Credits` — all eight lowercase canonicals load fine. Severity raised LOW → MED since this is
+  a site-wide pattern, not an isolated pair. Anyone who types, autocapitalizes (mobile keyboards),
+  or links with title-cased casing lands on a dead page instead of the app, on any route.
 - evidence: `curl -s -o /dev/null -w "%{http_code}" https://mood-read.pages.dev/Browse` → `404`.
-  `curl -s -o /dev/null -w "%{http_code}" https://mood-read.pages.dev/Credits` → `404`. Control:
-  `curl -s -o /dev/null -w "%{http_code}" https://mood-read.pages.dev/browse` → `200`;
-  `.../credits` → `200`.
+  `curl -s -o /dev/null -w "%{http_code}" https://mood-read.pages.dev/Credits` → `404`. Pass 33:
+  same check against `/Settings`, `/Soundtrack`, `/Downloads`, `/Import`, `/Privacy`, `/Licenses`
+  → `404` on all six. Control: all eight lowercase forms (`/browse`, `/credits`, `/settings`,
+  `/soundtrack`, `/downloads`, `/import`, `/privacy`, `/licenses`) → `200`.
 - suggested fix: `public/_redirects` only does exact-path or splat matching, case-sensitively —
   it can't express "any casing of /browse" without one literal line per route per case
   combination, which doesn't scale (and still wouldn't cover `/book/[id]`'s and `/browse/[id]`'s
