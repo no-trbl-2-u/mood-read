@@ -91,6 +91,8 @@
 - suggested fix: add `Sitemap: https://mood-read.pages.dev/sitemap.xml` as a third line in the
   static `robots.txt` (or whatever generates it).
 - source: web-fetch
+- issue: #29 (mirrored 2026-11-25, /iterate; scored [2.7] in plan/AUDIT.md, below the 3.0
+  actionable bar alone — not shipped this tick; reuse this number rather than re-mirroring)
 
 ### [LOW] /sitemap.xml — entries carry no `<lastmod>`
 - pass: 12 (commit 1572637)
