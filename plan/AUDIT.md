@@ -5,7 +5,7 @@
 > stays until the owner answers it, and the loop continues on the
 > default it names.
 
-# Site audit — 2026-11-25 (iterate pass 133, base 3b91c8a: no actionable work, top score 2.7 — below the 3.0 bar; handing to expand)
+# Site audit — 2026-11-26 (iterate pass 134, base f9ba232: no actionable work, top score 2.7 — below the 3.0 bar; handing to expand)
 
 ## Top 5 findings (scored)
 
@@ -92,7 +92,12 @@ Pages Function (`functions/_middleware.ts`-shaped), not a literal line per route
 combination — score moves 0.9 → 1.8, still below the 3.0 bar and still a single-signal finding
 (one critique lineage, no corroborating independent source), so it stays here rather than
 graduating to an `/expand` candidate — scope as its own small chunk if picked up directly,
-same posture as the catalog-aware 404 work above.
+same posture as the catalog-aware 404 work above. New this tick, from `/critique` pass 34
+(commit 9b05d8f): [2.4] `og:url` is hardcoded to the homepage on every route (impact 3, LOW-SEO
+— a link-unfurler or dedup action keying off `og:url` sends a reader to `/` instead of the
+shared page; ease 8 for the stopgap of dropping the tag rather than shipping a wrong one, the
+real per-route fix blocked on the same static-export work as the pre-hydration-shell row above)
+— below the 3.0 bar, same posture as the other LOW SEO rows.
 
 ### History (consolidated 2026-11-17)
 
@@ -237,6 +242,29 @@ green (deploy `005dbea4`, state=ready). Both march rate-limit gates stayed shut:
 commits, ~16h since `382f94b`, short of 12-commit/24h) and expand (1 commit, ~2h since `b370d2e`,
 short of 20-commit/48h). Top score holds at 2.7. This tick hands to `/expand` again (pass 132)
 per `/iterate`'s own §6 failure mode 6, which carries no such rate limit.
+
+Pass 133 (base `3b91c8a`, 2026-11-25) reconfirmed the same fresh state once more and, like pass
+132, handed to `/expand` (pass 133, no candidates) per failure mode 6; no per-tick detail beyond
+the header line was recorded. This tick (pass 134, base `f9ba232`, 2026-11-26 cloud march) found
+one new signal: `/critique` pass 34 ran since (landing as this same base commit) and filed one
+new `[LOW]` row — `og:url` hardcoded to the homepage on every route — folded into "Also pending"
+above at `[2.4]`, moving `plan/CRITIQUE.md`'s Pending rows from 8 to 9; still below the 3.0 bar,
+so the Top 5 is otherwise unchanged. Every other check held constant: `gh issue list` 0
+unlabeled/urgent, 0 `loop:do`; issues #11/#25 unchanged (both still single-comment,
+`triage:needs-user`); no spec/design diff since the last check (`git log -p --since="2026-11-25"
+-- spec.md design/` empty); no new TODO/FIXME/XXX/HACK in `src/`; no `workflows: write` grant in
+any workflow file; `plan/CANDIDATES.md`'s two Pending candidates unchanged, still awaiting
+`/oversight` promotion. `node scripts/plan/order.mjs` still names only 01.28 reachable (same
+mechanism-shipped, phone-check-pending state; claimed and released directly this tick to
+re-check A41's phone-check gap rather than trust the note alone — confirmed nothing new: still
+no Android device, no `EXPO_TOKEN`, `src/lib/silence.ts`/`media.ts`/`timeline.ts` unchanged since
+2026-10-30); 01.26/01.20/01.27 still blocked on `OPENAI_API_KEY`, `BRAVE_SEARCH_API_KEY`,
+`PRESCORE_TOKEN` (`node scripts/secrets.mjs status` reports all 14 declared secrets missing from
+this checkout's vault). `pnpm deploy:check` green (deploy `0f7d73b8`, state=ready). Both march
+rate-limit gates stayed shut: critique (1 commit, ~3.5h since `9b05d8f`, short of 12-commit/24h)
+and expand (2 commits, ~8h since `234c7dd`, short of 20-commit/48h). Top score holds at 2.7. This
+tick hands to `/expand` again (pass 139) per `/iterate`'s own §6 failure mode 6, which carries no
+such rate limit.
 
 ## Pending — [needs-user-call]
 
