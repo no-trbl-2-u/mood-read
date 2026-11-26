@@ -1,13 +1,41 @@
 # Critique log
 
-> Last pass: 2026-11-25 at commit 4259be8
-> Pass count: 33
+> Last pass: 2026-11-26 at commit 9b05d8f
+> Pass count: 34
 
 > External-observer feedback for Mood Read. Populated by
 > `/critique`, drained by `/iterate`. See `skills/critique.md`
 > for the contract.
 
 ## Pending
+
+### [LOW] every route — `og:url` is hardcoded to the homepage, not the shared page
+
+- pass: 34 (commit 9b05d8f)
+- viewport: n/a (web-fetch engine, no browser tools on this runner)
+- category: seo
+- observation: `public/index.html`'s shared `<head>` (the same one-file-for-every-route shell
+  behind the already-filed pre-hydration-empty-body row) hardcodes
+  `<meta property="og:url" content="https://mood-read.pages.dev/" />`. Every route — `/soundtrack`,
+  `/licenses`, `/privacy`, `/browse`, and a book detail page alike — unfurls claiming its canonical
+  object URL is the homepage, not the page actually shared. This is distinct from the pass-12 "no
+  Open Graph tags" row (now Done) and the still-pending pass-12 "no `<link rel="canonical">`" row:
+  those are about *missing* per-route metadata; this is *present* metadata that's actively wrong
+  on every route except `/` itself. A link-unfurler or crawler that keys off `og:url` for
+  de-duplication or a "visit object" action sends a reader to the homepage instead of the page they
+  were sent.
+- evidence: `curl -s https://mood-read.pages.dev/soundtrack | grep -o 'property="og:url"[^>]*'`,
+  same for `/licenses`, `/privacy`, `/browse`, `/browse/allofgrace_2609_librivox` → all six routes
+  checked return the identical `content="https://mood-read.pages.dev/"`. `src/app/book/[id].tsx`
+  and `src/app/browse/[id].tsx` each render a per-route `<Head>` but only override `<title>`, never
+  `og:url`.
+- suggested fix: same blocker as the pre-hydration-empty-body row — `app.json`'s `web.output:
+  "single"` means one static HTML shell serves every route, so no per-route `og:url` is possible
+  without the static-export (SSG) work already scoped there. Once that lands, set `og:url` to each
+  route's real canonical URL alongside the per-route title/description. Until then, a narrower
+  stopgap — dropping the `og:url` tag entirely rather than shipping a wrong one — is low-risk and
+  cheap if picked up in isolation.
+- source: web-fetch
 
 ### [MED] every static route — capitalized path variants 404 instead of redirecting to the canonical lowercase route
 - pass: 28 (commit 8c50362); scope confirmed at pass 33 (commit 4259be8)
