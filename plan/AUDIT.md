@@ -5,7 +5,7 @@
 > stays until the owner answers it, and the loop continues on the
 > default it names.
 
-# Site audit — 2026-11-26 (iterate pass 137, base 84b412d: no actionable work, top score 2.7 — below the 3.0 bar; handing to expand)
+# Site audit — 2026-11-26 (iterate pass 138, base 4f0ee63: no actionable work, top score 2.7 — below the 3.0 bar; handing to expand)
 
 ## Top 5 findings (scored)
 
@@ -316,6 +316,24 @@ declared secrets missing from this checkout's vault). `pnpm deploy:check` green 
 `e931e0a4`, state=ready). Both march rate-limit gates stayed shut: critique (7 commits, ~18h
 since `9b05d8f`, short of 12-commit/24h) and expand (1 commit, ~6h since `f93823d`, short of
 20-commit/48h). Top score holds at 2.7. This tick hands to `/expand` again (pass 142) per
+`/iterate`'s own §6 failure mode 6, which carries no such rate limit.
+
+Pass 138 (base `4f0ee63`, 2026-11-26 cloud march) reconfirmed the same fresh state: `/expand`
+pass 142 (landing as this same base commit) filed no candidates, so `plan/CANDIDATES.md`'s two
+Pending rows are unchanged. Every other check held constant: `gh issue list` 0 unlabeled/urgent,
+0 `loop:do`; issues #11/#25/#29 unchanged (#29 still `loop:opened`, #11/#25 still
+`triage:needs-user`); no spec/design diff since the last check (`git log --oneline
+91d8b82..HEAD -- spec.md design/` empty); no new TODO/FIXME/XXX/HACK in `src/` (only the known
+`TXXX` ID3 substring false positive); no `workflows:` grant added to any workflow or action
+file; `plan/CRITIQUE.md`'s Pending rows unchanged at 9. `node scripts/plan/order.mjs` still
+names only 01.28 reachable (same mechanism-shipped, phone-check-pending state —
+`src/lib/silence.ts`/`media.ts`/`timeline.ts` unchanged since 2026-10-30, still no Android
+device, no `EXPO_TOKEN`); 01.26/01.20/01.27 still blocked on `OPENAI_API_KEY`,
+`BRAVE_SEARCH_API_KEY`, `PRESCORE_TOKEN` (`node scripts/secrets.mjs status` reports all 14
+declared secrets missing from this checkout's vault). `pnpm deploy:check` green (deploy
+`4e2d19eb`, state=ready). Both march rate-limit gates stayed shut: critique (9 commits, ~19.6h
+since `9b05d8f`, short of 12-commit/24h) and expand (2 commits, ~7.7h since `84b412d`, short of
+20-commit/48h). Top score holds at 2.7. This tick hands to `/expand` again (pass 143) per
 `/iterate`'s own §6 failure mode 6, which carries no such rate limit.
 
 ## Pending — [needs-user-call]
