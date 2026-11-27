@@ -5,7 +5,7 @@
 > stays until the owner answers it, and the loop continues on the
 > default it names.
 
-# Site audit — 2026-11-27 (iterate pass 139, base 414ab44: no actionable work, top score 2.7 — below the 3.0 bar; handing to expand)
+# Site audit — 2026-11-27 (iterate pass 140, base b146a5d: no actionable work, top score 2.7 — below the 3.0 bar; handing to expand)
 
 ## Top 5 findings (scored)
 
@@ -353,6 +353,28 @@ Both march rate-limit gates stayed shut: critique (1 commit, ~5.8h since `c0a0ec
 12-commit/24h) and expand (2 commits, ~5.9h since `745024b`, short of 20-commit/48h). Top score
 holds at 2.7. This tick hands to `/expand` again (pass 144) per `/iterate`'s own §6 failure mode
 6, which carries no such rate limit.
+
+Pass 140 (base `b146a5d`, 2026-11-27 cloud march) reconfirmed the same fresh state: `/expand`
+pass 144 (landing as this same base commit) filed no candidates, so `plan/CANDIDATES.md`'s two
+Pending rows are unchanged. Every other check held constant: `gh issue list` 0 unlabeled/urgent,
+0 `loop:do`; issues #11/#25/#29 unchanged (#29 still `loop:opened`, #11/#25 still
+`triage:needs-user`); no spec/design diff since the last check (`git log --oneline
+414ab44..HEAD -- spec.md design/` empty); no new TODO/FIXME/XXX/HACK in `src/` (only the known
+`TXXX` ID3 substring false positive, `src/lib/meta/id3.ts` and its test); no `workflows:` grant
+added to any workflow or action file; `plan/CRITIQUE.md`'s nine Pending rows unchanged. `node
+scripts/plan/order.mjs` still names only 01.28 reachable (same mechanism-shipped,
+phone-check-pending state — claimed and released directly this tick to re-check A41's
+phone-check gap rather than trust the note alone: still no Android device, no `EXPO_TOKEN`,
+`src/lib/silence.ts`/`media.ts`/`timeline.ts` unchanged since 2026-10-30); 01.26/01.20/01.27
+still blocked on `OPENAI_API_KEY`, `BRAVE_SEARCH_API_KEY`, `PRESCORE_TOKEN` (`node
+scripts/secrets.mjs status` reports all 14 declared secrets still missing from this checkout's
+vault — distinct from the Actions-minted `GH_TOKEN`/`CLOUDFLARE_*` credentials this job's own
+env already carries, which is how `gh issue list` and `pnpm deploy:check` ran clean without a
+vault entry). `pnpm deploy:check` green (deploy `5d054805`, state=ready). Both march rate-limit
+gates stayed shut: critique (3 commits, ~9.8h since `c0a0ec8`, short of 12-commit/24h) and
+expand (1 commit, ~2h since `e5b7b53`, short of 20-commit/48h). Top score holds at 2.7. This
+tick hands to `/expand` again (pass 145) per `/iterate`'s own §6 failure mode 6, which carries
+no such rate limit.
 
 ## Pending — [needs-user-call]
 
