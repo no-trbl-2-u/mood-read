@@ -5,7 +5,7 @@
 > stays until the owner answers it, and the loop continues on the
 > default it names.
 
-# Site audit — 2026-11-27 (iterate pass 141, base b0b3504: no actionable work, top score 2.7 — below the 3.0 bar; handing to expand)
+# Site audit — 2026-11-27 (iterate pass 142, base 24be0cb: no actionable work, top score 2.7 — below the 3.0 bar; handing to expand)
 
 ## Top 5 findings (scored)
 
@@ -392,6 +392,23 @@ deploy:check` green (deploy `0cdd9b0a`, state=ready). Both march rate-limit gate
 critique (5 commits, ~11.7h since `c0a0ec8`, short of 12-commit/24h) and expand (1 commit, ~1.8h
 since `69a2b8a`, short of 20-commit/48h). Top score holds at 2.7. This tick hands to `/expand`
 again (pass 146) per `/iterate`'s own §6 failure mode 6, which carries no such rate limit.
+
+Pass 142 (base `24be0cb`, 2026-11-27 cloud march) reconfirmed the same fresh state: `/expand`
+pass 146 (landing as this same base commit) filed no candidates, so `plan/CANDIDATES.md`'s two
+Pending rows are unchanged. Every other check held constant: `gh issue list` 0 unlabeled/urgent,
+0 `loop:do`; issues #11/#25/#29 unchanged (#29 still `loop:opened`, #11/#25 still
+`triage:needs-user`); no spec/design diff since the last check (`git log --oneline
+b0b3504..HEAD -- spec.md design/` empty); no new TODO/FIXME/XXX/HACK in `src/` (only the known
+`TXXX` ID3 substring false positive); no `workflows: write` grant added to any workflow or
+action file; `plan/CRITIQUE.md`'s nine Pending rows unchanged. `node scripts/plan/order.mjs`
+still names only 01.28 reachable (same mechanism-shipped, phone-check-pending state — still no
+Android device, no `EXPO_TOKEN`); 01.26/01.20/01.27 still blocked on `OPENAI_API_KEY`,
+`BRAVE_SEARCH_API_KEY`, `PRESCORE_TOKEN` (`node scripts/secrets.mjs status` reports all 14
+declared secrets still missing from this checkout's vault). `pnpm deploy:check` green (deploy
+`12426164`, state=ready). Both march rate-limit gates stayed shut: critique (7 commits, ~17.7h
+since `c0a0ec8`, short of 12-commit/24h) and expand (1 commit, ~5.8h since `5a659ad`, short of
+20-commit/48h). Top score holds at 2.7. This tick hands to `/expand` again (pass 147) per
+`/iterate`'s own §6 failure mode 6, which carries no such rate limit.
 
 ## Pending — [needs-user-call]
 
