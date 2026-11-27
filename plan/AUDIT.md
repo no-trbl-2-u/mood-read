@@ -5,7 +5,7 @@
 > stays until the owner answers it, and the loop continues on the
 > default it names.
 
-# Site audit — 2026-11-26 (iterate pass 138, base 4f0ee63: no actionable work, top score 2.7 — below the 3.0 bar; handing to expand)
+# Site audit — 2026-11-27 (iterate pass 139, base 414ab44: no actionable work, top score 2.7 — below the 3.0 bar; handing to expand)
 
 ## Top 5 findings (scored)
 
@@ -335,6 +335,24 @@ declared secrets missing from this checkout's vault). `pnpm deploy:check` green 
 since `9b05d8f`, short of 12-commit/24h) and expand (2 commits, ~7.7h since `84b412d`, short of
 20-commit/48h). Top score holds at 2.7. This tick hands to `/expand` again (pass 143) per
 `/iterate`'s own §6 failure mode 6, which carries no such rate limit.
+
+Pass 139 (base `414ab44`, 2026-11-27 cloud march) reconfirmed the same fresh state: `/expand`
+pass 143 (landing as `c0a0ec8`) and `/critique` pass 35 (landing as this same base commit) both
+filed nothing new — `plan/CANDIDATES.md`'s two Pending rows and `plan/CRITIQUE.md`'s nine
+Pending rows are both unchanged. Every other check held constant: `gh issue list` 0
+unlabeled/urgent, 0 `loop:do`; issues #11/#25/#29 unchanged (#29 still `loop:opened`, #11/#25
+still `triage:needs-user`); no spec/design diff since the last check (`git log --oneline
+4f0ee63..HEAD -- spec.md design/` empty); no new TODO/FIXME/XXX/HACK in `src/` (only the known
+`TXXX` ID3 substring false positive). `node scripts/plan/order.mjs` still names only 01.28
+reachable (same mechanism-shipped, phone-check-pending state — no Android device, no
+`EXPO_TOKEN`); 01.26/01.20/01.27 still blocked on `OPENAI_API_KEY`, `BRAVE_SEARCH_API_KEY`,
+`PRESCORE_TOKEN` (all 14 declared secrets still missing from this checkout's vault); the claim
+on 01.28 was taken and released this tick with no new build (same device gate, nothing to add
+beyond the existing row below). `pnpm deploy:check` green (deploy `c600a6f7`, state=ready).
+Both march rate-limit gates stayed shut: critique (1 commit, ~5.8h since `c0a0ec8`, short of
+12-commit/24h) and expand (2 commits, ~5.9h since `745024b`, short of 20-commit/48h). Top score
+holds at 2.7. This tick hands to `/expand` again (pass 144) per `/iterate`'s own §6 failure mode
+6, which carries no such rate limit.
 
 ## Pending — [needs-user-call]
 
